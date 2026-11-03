@@ -4,7 +4,8 @@
 //       style 'arame'  = arame farpado em mourões roliços tortos (pastos)
 //       style 'aroeira'= curral de tábuas de aroeira envelhecida com mourões grossos
 //       style 'varas'  = cerca de varas de faxina amarrada com cipó (quintal, galinheiro, cavalos, roça)
-//   __art.house(night)   casa da fazenda (taipa caiada, alpendre, telhado colonial de telha capa-canal)
+//   __art.house(night, lvl)  casa da fazenda (taipa caiada, alpendre, telhado colonial de telha capa-canal)
+//       lvl 0 = taipa com remendos e barra ocre; 1 = reformada, barra azul; 2 = sede, com placa e lampião
 //   __art.crop(kind, stage)  forrageiras da roça (palma, mandacaru sem espinho, maniçoba), 4 estágios
 //   __art.bed()           leira de terra preparada (vai assada no chão)
 module.exports = String.raw`window.__art = (() => {
@@ -60,7 +61,8 @@ module.exports = String.raw`window.__art = (() => {
   }
 
   /* ---------------- casa da fazenda ---------------- */
-  function house(night) {
+  function house(night, lvl) {
+    lvl = lvl | 0;
     const W = 136, H = 144, [c, g] = mkC(W, H), p = P(g), r = rnd(1871);
     const FLOOR_Y = 124, EAVE = 80, RIDGE = 32;
     // piso do alpendre: cimento queimado vermelho com degrau
@@ -70,10 +72,11 @@ module.exports = String.raw`window.__art = (() => {
     const cal = '#efe6d2', calS = '#d9cdb4';
     p(8, EAVE, 120, FLOOR_Y - EAVE, cal);
     for (let k = 0; k < 240; k++) { const x = 8 + Math.floor(r() * 120), y = EAVE + Math.floor(r() * (FLOOR_Y - EAVE)); p(x, y, 1 + (r() < .3 ? 1 : 0), 1, r() < .5 ? calS : '#f7f1e2'); }
-    p(8, FLOOR_Y - 11, 120, 11, '#c07a3e'); p(8, FLOOR_Y - 11, 120, 1, '#d89a5a'); for (let x = 8; x < 128; x += 3) if (r() < .3) p(x, FLOOR_Y - 9 + Math.floor(r() * 7), 2, 1, '#a8642e');
+    const barra = lvl ? ['#2a5d8f', '#4a80b4', '#1e4a74'] : ['#c07a3e', '#d89a5a', '#a8642e'];
+    p(8, FLOOR_Y - 11, 120, 11, barra[0]); p(8, FLOOR_Y - 11, 120, 1, barra[1]); for (let x = 8; x < 128; x += 3) if (r() < .3) p(x, FLOOR_Y - 9 + Math.floor(r() * 7), 2, 1, barra[2]);
     // reboco caído mostrando a taipa (barro e varas)
     const taipa = (x, y, w, h) => { p(x, y, w, h, '#a8784a'); for (let yy = y; yy < y + h; yy += 3) p(x, yy, w, 1, '#8a5a34'); for (let xx = x + 1; xx < x + w; xx += 4) p(xx, y, 1, h, '#7a5030'); p(x - 1, y - 1, w + 2, 1, calS); };
-    taipa(14, 104, 6, 5); taipa(118, 96, 5, 6);
+    if (!lvl) { taipa(14, 104, 6, 5); taipa(118, 96, 5, 6); }
     // portas e janelas de madeira azul colonial com moldura branca
     const azul = '#2a5d8f', azulL = '#4a80b4', azulD = '#1a3e64', mold = '#fbf7ee', dentro = night ? '#ffd27a' : '#2a1e18';
     const janela = x => { p(x - 2, 95, 20, 20, mold); p(x, 97, 16, 16, dentro); if (night) { p(x + 2, 99, 12, 12, '#fff0b0'); } else { p(x + 7, 97, 2, 16, '#3a2a22'); p(x, 104, 16, 1, '#3a2a22'); }
@@ -85,6 +88,10 @@ module.exports = String.raw`window.__art = (() => {
     p(59, 96, 9, FLOOR_Y - 96, azul); p(68, 96, 9, FLOOR_Y - 96, azul); p(59, 96, 1, FLOOR_Y - 96, azulL); p(76, 96, 1, FLOOR_Y - 96, azulD); p(67, 96, 2, FLOOR_Y - 96, azulD);
     for (let y = 100; y < FLOOR_Y; y += 8) { p(60, y, 7, 1, azulL); p(69, y, 7, 1, azulL); }
     p(65, 110, 1, 2, '#e8c860'); p(70, 110, 1, 2, '#e8c860');
+    if (lvl >= 2) { // placa de madeira com o nome da fazenda e lampião ao lado da porta
+      p(52, 82, 32, 6, '#6a4426'); p(52, 82, 32, 1, '#8e6038'); p(52, 87, 32, 1, '#4a2e18'); for (let x = 55; x < 81; x += 2) if (x % 6 !== 1) p(x, 84, 1, 2, '#f0e0b0');
+      p(82, 96, 4, 6, '#3a3a3a'); p(83, 97, 2, 4, night ? '#ffe08a' : '#c8b070'); p(83, 94, 2, 2, '#3a3a3a');
+      if (night) { g.fillStyle = 'rgba(255,214,120,0.18)'; g.fillRect(76, 90, 16, 18); } }
     if (night) { g.fillStyle = 'rgba(255,214,120,0.25)'; g.fillRect(67, 96, 2, FLOOR_Y - 96); }
     // sombra do beiral sobre a fachada
     for (let k = 0; k < 9; k++) { g.fillStyle = 'rgba(40,18,10,' + (0.42 - k * 0.045) + ')'; g.fillRect(8, EAVE + k, 120, 1); }

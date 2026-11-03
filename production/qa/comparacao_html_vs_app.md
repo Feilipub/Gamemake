@@ -81,3 +81,19 @@ ainda não foram portados.
 | Efeitos sonoros (cascos, mugido, aboio, chuva, vento…) | só música |
 
 Fotos: HTML em `production/qa/evidence/html-*.png`; app em `production/qa/evidence/app-*.png`.
+
+## Atualização — APK nº 9 em diante
+
+O APK agora é o **jogo HTML completo** dentro de um app Android (WebView, offline, com músicas,
+fonte e salvamento). Tudo o que as tabelas acima listam como faltando **passa a existir no APK**,
+porque é o mesmo jogo. Teste de fluxo (menu → criação → cutscene → jogo → andar → salvar) roda
+igual no original e na versão do APK, sem erros.
+
+Novidades em relação ao HTML v3.2 original:
+- Casa da fazenda nova: taipa caiada, alpendre com rede, telhado colonial de telha capa-canal;
+  muda com a reforma (barra azul na alvenaria; placa e lampião na sede).
+- Cercas brasileiras: arame farpado nos pastos, tábuas de aroeira nos currais, varas com cipó no
+  galinheiro, no haras e na roça.
+- Roça de forragem (no lugar do Lote C): 12 leiras; palma forrageira, mandacaru sem espinho e
+  maniçoba; muda paga, cresce com os dias, colheita em feixes de 10 kg (mochila, o resto no
+  depósito), rebrota. Feixes vão para os cochos de trato; cochos de trato novos nos Piquetes 1 e 2.

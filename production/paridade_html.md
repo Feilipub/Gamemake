@@ -1,5 +1,11 @@
 # Paridade com o HTML v3.2 — o que já está no APK
 
+> **Atualização 03/11/2026 (APK nº 9 em diante):** o APK passou a rodar o **próprio jogo HTML v3.2**
+> (`web/index.html`) num app Android offline (`android-app/`, ADR-0002). Com isso **todos os itens
+> abaixo estão no APK**, idênticos ao HTML, mais a casa nova, as cercas brasileiras e a roça de
+> forragem portadas para o HTML (`production/qa/evidence/html-*.png`). As caixas abaixo continuam
+> valendo só para o **porte em Godot**, que fica guardado no repositório e não vai no APK agora.
+
 Regra: um item só é marcado **[x]** quando está **no APK**, **testado no jogo** e com evidência em
 `production/qa/evidence/`. Fonte de cada item: `design/reference/inventario_original_v3_2.md`.
 Pedido da RF Games (03/11/2026): **nada pode faltar no APK**, inclusive o menu inicial **igual ao HTML**.
