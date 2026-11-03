@@ -39,3 +39,16 @@ Curta animado (`FILM` em `web/index.html`), ~70 s, pode ser pulado:
 7. A fazenda no fim da tarde.
 Ao terminar, o jogo começa no terreiro com o cão e o Seu Felipe, igual à cena antiga.
 Evidência: `abertura-nova-cenas.png`, `abertura-nova-paisagem.png`.
+
+## Etapa 1 do redesign geral — chão e estradas (GR em web/index.html)
+- Terreno pintado pixel a pixel em blocos de 64 px sob demanda (tela primeiro, resto ~3 ms por quadro).
+- Bordas orgânicas entre solos moles (capim, pasto, solo seco, terra, lama, areia, terreiro): cada pixel
+  lê o solo de um ponto deslocado por ruído. Asfalto, calçada, praça, ponte e água seguem a grade (colisão).
+- Capim: manchas grandes de tom + tufos em grade irregular (ponta clara, base escura); pasto com áreas
+  pisoteadas pelo gado e touceiras de capim alto; mata com folhiço.
+- Solo seco rachado (células de Voronoi), terra avermelhada com marcas de pneu e cascos e pedrinhas,
+  cascalho na região das Serras, lama com poças, terreiro pisoteado, areia ondulada.
+- Asfalto municipal envelhecido: remendos, rachaduras, faixa central amarela tracejada e gasta, linha de
+  bordo, sarjeta; calçada de placas com meio-fio; calçada portuguesa em ondas; ponte de tábuas com pregos.
+- Mapa do menu feito com a cor média de cada solo (não precisa pintar o mapa inteiro).
+- Antes/depois: `production/qa/evidence/chao-antes.png`, `chao-depois.png`, `chao-detalhe.png`.
