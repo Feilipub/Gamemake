@@ -343,6 +343,8 @@ body.lan .sw2 .pvbox{position:sticky;top:0}
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 240, MH = 110, WPX = MW * TS, HPX = MH * TS;
+// o mundo tem MH linhas; abaixo dele ficam os interiores das casas (até MHT). Os arrays do mapa cobrem MHT.
+const WMH = MH, MHT = 142, HPXT = MHT * TS;
 const GAME_V = '3.2.0', SAVE_V = 7;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
@@ -841,10 +843,10 @@ const BUILD = {
 const CUTS = ['picanha', 'maminha', 'fraldinha', 'costela', 'cupim', 'linguica', 'carnesol'];
 
 /* ============ MAPA ============ */
-const G = { GRASS: 0, DIRT: 1, WATER: 2, SAND: 3, PAVE: 4, WALK: 5, PLAZA: 6, DRY: 7, MUD: 8, FLOOR: 9, BRIDGE: 10, PAST: 11 };
-const forest = new Uint8Array(MW * MH), ground = new Uint8Array(MW * MH), obj = new Uint8Array(MW * MH), gateId = new Int16Array(MW * MH).fill(-1), areaId = new Int8Array(MW * MH).fill(-1), lockId = new Int8Array(MW * MH).fill(-1);
+const G = { GRASS: 0, DIRT: 1, WATER: 2, SAND: 3, PAVE: 4, WALK: 5, PLAZA: 6, DRY: 7, MUD: 8, FLOOR: 9, BRIDGE: 10, PAST: 11, LAJ: 12, WOODF: 13, CEM: 14, WALL: 15, CER: 16, MAT: 17 }; // 12+: interiores
+const forest = new Uint8Array(MW * MHT), ground = new Uint8Array(MW * MHT), obj = new Uint8Array(MW * MHT), gateId = new Int16Array(MW * MHT).fill(-1), areaId = new Int8Array(MW * MHT).fill(-1), lockId = new Int8Array(MW * MHT).fill(-1);
 const gi = (x, y) => y * MW + x;
-const gt = (x, y) => (x < 0 || y < 0 || x >= MW || y >= MH) ? -1 : ground[gi(x, y)];
+const gt = (x, y) => (x < 0 || y < 0 || x >= MW || y >= MHT) ? -1 : ground[gi(x, y)];
 const creekX = y => 62.6 + Math.round(Math.sin(y * 0.21) * 0.8 + Math.sin(y * 0.07) * 0.6);
 // áreas cercadas [x0,y0,x1,y1] (cercas na borda), porteira (2 tiles)
 const AREAS = {
@@ -998,6 +1000,173 @@ function addGate(tiles, area, open) {
   tiles.forEach(([x, y]) => { obj[gi(x, y)] = 2; gateId[gi(x, y)] = id; });
   return id;
 }
+/* ============ INTERIORES DAS CASAS ============
+   Cada casa tem um cômodo de verdade numa faixa do mapa abaixo do mundo (linhas 111+), fora do alcance de
+   quem anda lá fora (linha 110 é parede). Assim o interior usa a mesma colisão, o mesmo movimento, a mesma
+   câmera e o mesmo salvamento do resto do jogo. Paredes são chão G.WALL com obj=1; móveis são obj=3. */
+const ROOMS = [], FURN = [], roomOf = new Int16Array(MW * MHT).fill(-1);
+// estilo de cada casa: tipo de planta, piso, cor da parede, riqueza e objetos com história
+const HOUSE = {
+  casa: { t: 'sede', fl: 'lajota', wall: '#f0e2c4', own: 'player', note: 'Sua casa. A cama é para dormir, o fogão para cozinhar e o baú guarda as coisas.',
+    looks: { quadro: 'Retrato antigo do avô Tiãozinho montado no Trovão, com o gibão novo, no dia da primeira vaquejada.', oratorio: 'O oratório da avó, com Nossa Senhora Aparecida e um terço de contas de lágrima.', radio: 'O rádio de pilha do avô. Ainda pega a rádio de Itapetinga na hora do aboio.' } },
+  camposCasa: { t: 'sede', fl: 'madeira', wall: '#f2e6b4', own: 'felipe', rich: 1, looks: { quadro: 'Diplomas de exposição: Nelore campeão de Itapetinga, três anos seguidos.', estante: 'Livros de genética de zebu e cadernos de anotações de cada vaca, desde 1987.', relogio: 'Relógio de parede que era do pai do Seu Felipe. Atrasa cinco minutos desde sempre.' } },
+  duarteCasa: { t: 'sede', fl: 'lajota', wall: '#f4d8d0', own: 'ryan', looks: { quadro: 'Foto do Sr. Ryan ao lado de uma mula campeã de marcha, com faixa azul no pescoço.', sela: 'Uma sela de couro gravado, pendurada no cavalete. Presente do avô dele.', estante: 'Ferraduras de todos os cavalos que já passaram pela Fazenda Duarte, cada uma com um nome.' } },
+  cida: { t: 'casa', fl: 'cimento', wall: '#cfe2ee', own: 'cida', looks: { maquina: 'Máquina de costura de pedal. Uma colcha de retalhos pela metade, com flores de chita.', quadro: 'Foto da Cida criança no colo da mãe, na porta da mesma casa.' } },
+  rosa: { t: 'casa', fl: 'lajota', wall: '#f4d0d8', own: 'bene', looks: { chapeu: 'Chapéus de couro de vaqueiro na parede: cada um de uma pega de boi que o Seu Bené ganhou.', quadro: 'Recorte de jornal amarelado: "Bené, o maior aboiador de Itarantim".' } },
+  escola: { t: 'escola', fl: 'cerâmica', wall: '#f4ecc8', own: 'rita', open: [7, 17], looks: { quadroNegro: 'No quadro: "Hoje: o ciclo da água no sertão". Desenhos de nuvens e de um açude.', estante: 'Livros doados e uma coleção de cordéis encapados com plástico.' } },
+  ferraria: { t: 'ferraria', fl: 'cimento', wall: '#a88a70', own: 'raimundo', open: [6, 17], looks: { bigorna: 'A bigorna é mais velha que a cidade, diz o Raimundo. Veio no lombo de burro de Vitória da Conquista.', forja: 'Brasa viva e o cheiro de carvão. Ferraduras esfriando num balde.' } },
+  farmacia: { t: 'farmacia', fl: 'cerâmica', wall: '#e4f0ec', own: 'elias', open: [7, 18], looks: { prateleira: 'Vidros de remédio com rótulos à mão e um pote de balas de hortelã no balcão.', quadro: 'Diploma de farmacêutico de 1979, Universidade Federal da Bahia.' } },
+  casaNena: { t: 'casa', fl: 'lajota', wall: '#f0d8b8', own: 'nena', looks: { oratorio: 'Oratório com Padre Cícero, São Francisco e velas acesas. Dona Nena reza o terço toda tarde.', filtro: 'Filtro de barro com água fresquinha. Tem uma caneca de alumínio pendurada do lado.' } },
+  casaZe: { t: 'casa', fl: 'cimento', wall: '#d4e6c4', own: 'ze', looks: { viola: 'Duas violas e uma sanfona de oito baixos. Uma delas tem o nome "Rosinha" pintado.', quadro: 'Pôster de uma festa de São João de 1998, com o nome do Zé Cantador em letras grandes.' } },
+  casaLou: { t: 'casa', fl: 'lajota', wall: '#f0e0cc', own: 'lourival', looks: { quadro: 'Foto do Lourival com o uniforme do time de futebol de Itarantim, campeão regional.', radio: 'Rádio ligado no jogo. O Lourival nunca perde uma partida.' } },
+  rdSede: { t: 'sede', fl: 'lajota', wall: '#ecdcb8', own: 'valdomiro', looks: { quadro: 'Quatro gerações da família na frente do curral de madeira, todas com o mesmo chapéu de couro.', chapeu: 'O chapéu de couro do pai do Seu Valdomiro, guardado com cuidado.' } },
+  scSede: { t: 'sede', fl: 'madeira', wall: '#e8eef0', own: 'helena', rich: 1, looks: { estante: 'Pastas com o registro de cada matriz e cada bezerro. Tudo em ordem alfabética.', quadro: 'Diploma de Zootecnia (UFMG) e foto da Dra. Helena com um touro Girolando campeão.' } },
+  psCasa: { t: 'casa', fl: 'cimento', wall: '#f4e8c8', own: 'caetano', looks: { queijo: 'Queijos de cabra curando numa prateleira de madeira. Cheiro forte e bom.', quadro: 'Foto da primeira barraca do Seu Caetano na feira de Itapetinga.' } },
+  mrMansao: { t: 'mansao', fl: 'cerâmica', wall: '#f8f4ec', own: 'otavio', rich: 2, looks: { quadro: 'Quadro grande de cavalos Mangalarga em galope. Assinado por um pintor de São Paulo.', trofeu: 'Troféus de exposição em fila: Campeão Nacional, Grande Campeão, Melhor Marcha.', tv: 'TV de tela grande passando leilão de gado.' } },
+  mrFunc: { t: 'casa', fl: 'cimento', wall: '#e0e4e8', own: 'severino', looks: { quadro: 'Fotos dos funcionários da Monte Real numa festa de fim de ano.', rede: 'Três redes armadas: aqui dormem os peões que vieram de longe.' } }
+};
+const FDEF = { // tamanho em ladrilhos, sólido, vai na parede
+  cama: [2, 2, 1], camaC: [2, 2, 1], guardaRoupa: [2, 1, 1], criado: [1, 1, 1], rede: [3, 1, 0], sofa: [3, 1, 1], banco: [2, 1, 1], mesa: [2, 2, 1], cadeira: [1, 1, 0],
+  fogao: [2, 1, 1], pia: [2, 1, 1], filtro: [1, 1, 1], armario: [2, 1, 1], estante: [2, 1, 1], radio: [1, 1, 1], tv: [2, 1, 1], tapete: [3, 2, 0], vaso: [1, 1, 1], bau: [1, 1, 1],
+  maquina: [1, 1, 1], forja: [2, 1, 1], bigorna: [1, 1, 1], carteira: [1, 1, 1], balcao: [4, 1, 1], prateleira: [3, 1, 1], sela: [1, 1, 1], queijo: [2, 1, 1], trofeu: [2, 1, 1],
+  quadro: [1, 1, 0, 1], oratorio: [1, 1, 0, 1], relogio: [1, 1, 0, 1], viola: [1, 1, 0, 1], chapeu: [1, 1, 0, 1], quadroNegro: [3, 1, 0, 1], janela: [2, 1, 0, 1], lamp: [1, 1, 0, 1]
+};
+function genInteriors() {
+  for (let y = WMH; y < MHT; y++) for (let x = 0; x < MW; x++) { const i = gi(x, y); ground[i] = G.WALL; obj[i] = 1; forest[i] = 0; areaId[i] = -1; }
+  for (let k = PROPS.length - 1; k >= 0; k--) if (PROPS[k].y >= WMH * TS) PROPS.splice(k, 1);
+  ROOMS.length = 0; FURN.length = 0; roomOf.fill(-1);
+  const sizes = { sede: [22, 12], casa: [15, 10], escola: [15, 10], ferraria: [13, 9], farmacia: [13, 9], mansao: [24, 13] };
+  let cx = 2, cy = WMH + 2, rowH = 0;
+  for (const b of BLD) { const H0 = HOUSE[b.id]; if (!H0) continue; const [w, h] = sizes[H0.t];
+    if (cx + w + 2 > MW) { cx = 2; cy += rowH + 2; rowH = 0; } if (cy + h + 1 >= MHT) break;
+    const R0 = { b: b.id, x0: cx, y0: cy, w, h, H: H0, id: ROOMS.length }; ROOMS.push(R0); buildRoom(R0); cx += w + 3; rowH = Math.max(rowH, h);
+  }
+}
+function buildRoom(R0) {
+  const { x0, y0, w, h, H: H0 } = R0, fl = { lajota: G.LAJ, madeira: G.WOODF, cimento: G.CEM, 'cerâmica': G.CER }[H0.fl] || G.LAJ;
+  for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) { const i = gi(x, y), edge = x === x0 || x === x0 + w - 1 || y <= y0 + 1 || y === y0 + h - 1; ground[i] = edge ? G.WALL : fl; obj[i] = edge ? 1 : 0; roomOf[i] = R0.id; }
+  R0.door = [x0 + Math.floor(w / 2), y0 + h - 1]; { const i = gi(R0.door[0], R0.door[1]); ground[i] = G.MAT; obj[i] = 0; }
+  const put = (t, dx, dy, extra) => { const d = FDEF[t], f = Object.assign({ t, r: R0.id, tx: x0 + dx, ty: y0 + dy, w: d[0], h: d[1], wall: !!d[3] }, extra || {}); f.look = f.look || (H0.looks || {})[t]; f.x = (f.tx + f.w / 2) * TS; f.y = (f.ty + f.h) * TS; FURN.push(f); if (d[2]) for (let yy = 0; yy < f.h; yy++) for (let xx = 0; xx < f.w; xx++) obj[gi(f.tx + xx, f.ty + yy)] = 3; return f; };
+  const part = (px, gapY) => { for (let y = y0 + 2; y < y0 + h - 1; y++) if (y - y0 !== gapY && y - y0 !== gapY + 1) { const i = gi(x0 + px, y); ground[i] = G.WALL; obj[i] = 1; } }; // parede interna com vão de porta
+  // janelas na parede de cima (luz do dia)
+  for (let k = 3; k < w - 3; k += 6) put('janela', k, 0);
+  if (H0.t === 'sede' || H0.t === 'mansao') {
+    const L = H0.looks || {}, p1 = Math.floor(w * 0.36), qx = w - 7, kx = p1 + 1; part(p1, 4); part(qx, h - 5);
+    put('sofa', 2, 3); put('tapete', 2, 5); put('radio', p1 - 2, 2); put('quadro', 2, 1); put('oratorio', 4, 1); put('lamp', 3, 1); put('vaso', 1, h - 3); put('rede', 2, h - 3);
+    if (L.estante) put('estante', p1 - 2, h - 3); if (L.relogio) put('relogio', p1 - 1, 1); if (L.sela) put('sela', p1 - 1, 3); if (L.chapeu) put('chapeu', p1 - 2, 1);
+    if (H0.t === 'mansao') { put('tv', 5, 3); put('trofeu', 5, 5); }
+    put('fogao', kx, 2); put('pia', kx + 2, 2); put('filtro', kx + 4, 2); put('mesa', kx + 1, 5); put('cadeira', kx, 5); put('cadeira', kx + 3, 5); put('cadeira', kx, 6); put('cadeira', kx + 3, 6); put('armario', kx, h - 3); put('lamp', kx + 3, 1);
+    put('camaC', qx + 2, 2); put('criado', qx + 4, 2); put('guardaRoupa', qx + 2, h - 3); put('bau', qx + 5, h - 3); put('quadro', qx + 3, 1, { look: 'Foto de casamento na parede, em moldura de madeira.' }); put('lamp', qx + 1, 1);
+  } else if (H0.t === 'casa') {
+    const qx = w - 6; part(qx, h - 4);
+    put('banco', 2, 3); put('mesa', 5, 4); put('cadeira', 4, 4); put('cadeira', 7, 4); put('fogao', 2, 2); put('filtro', 4, 2); put('armario', 6, 2); put('quadro', 3, 1); put('rede', 2, h - 3); put('vaso', 1, h - 3);
+    put('cama', qx + 2, 2); put('guardaRoupa', qx + 2, h - 3); put('criado', qx + 4, 2); put('lamp', qx + 3, 1); put('lamp', 7, 1);
+    const L = H0.looks || {}; if (L.oratorio) put('oratorio', 8, 1); if (L.maquina) put('maquina', 8, h - 3); if (L.viola) put('viola', 5, 1); if (L.chapeu) put('chapeu', 6, 1); if (L.radio) put('radio', 8, 2); if (L.queijo) put('queijo', 6, h - 3); if (L.rede) put('rede', 5, h - 3);
+  } else if (H0.t === 'escola') {
+    put('quadroNegro', 5, 1); put('estante', 1, 2); put('mesa', 6, 3); for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) put('carteira', 3 + c * 3, 6 + r * 2); put('lamp', 3, 1); put('lamp', 11, 1);
+  } else if (H0.t === 'ferraria') {
+    put('forja', 2, 2); put('bigorna', 5, 3); put('banco', 8, 2); put('prateleira', 8, h - 3); put('lamp', 4, 1);
+  } else if (H0.t === 'farmacia') {
+    put('prateleira', 2, 2); put('prateleira', 7, 2); put('balcao', 4, 5); put('quadro', 6, 1); put('vaso', 1, h - 3); put('lamp', 3, 1); put('lamp', 9, 1);
+  }
+}
+const roomById = id => ROOMS.find(r => r.b === id);
+function roomAt(x, y) { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); if (ty < WMH || ty >= MHT || tx < 0 || tx >= MW) return null; const r = roomOf[gi(tx, ty)]; return r >= 0 ? ROOMS[r] : null; }
+// ---------- entrar, bater na porta e sair ----------
+function houseRule(b) { // quem pode entrar e quando
+  const H0 = HOUSE[b.id]; if (!H0) return { ok: false, why: 'fechado' };
+  if (H0.own === 'player') return { ok: true };
+  const e = npcs.find(n => n.id === H0.own), hr = hour(), hs = hearts(H0.own), home = e && e.hidden && e.act === 'home';
+  if (H0.open) { if (hr >= H0.open[0] && hr < H0.open[1]) return { ok: true, txt: 'Pode entrar, a casa é sua!' }; return { ok: hs >= 8, txt: hs >= 8 ? 'Fechado, mas pra você eu abro.' : 'Está fechado agora. Abre das ' + H0.open[0] + 'h às ' + H0.open[1] + 'h.' }; }
+  if (home) { if ((hr >= 22 || hr < 6) && hs < 6) return { ok: false, txt: 'Toc toc... (uma voz sonolenta) — Já tá tarde, ' + S.cf.name + '. Volta amanhã, viu?' }; if (hs >= 1 || H0.own === 'nena' || H0.own === 'bene') return { ok: true, txt: 'Toc toc... — Entra, ' + S.cf.name + '! Fica à vontade.' }; return { ok: false, txt: 'Toc toc... — Quem é? Ah... ainda não te conheço direito. Outra hora, tá?' }; }
+  if (hs >= 8) return { ok: true, txt: 'Ninguém em casa. A chave fica debaixo do vaso — você é de confiança.' };
+  return { ok: false, txt: 'Ninguém em casa. A porta está trancada.' };
+}
+function enterHouse(b) {
+  const R0 = roomById(b.id); if (!R0) return false;
+  if (P.lead || lasso.t || P.cart) { say('Solte o animal e a carroça antes de entrar em casa.'); return true; }
+  const rule = houseRule(b); if (!rule.ok) { AU.knock && AU.knock(); say(rule.txt || 'Fechado.', 3200); return true; }
+  if (rule.txt) say(rule.txt, 2600);
+  if (P.mnt) { const h = byId(P.mnt); dismount(); if (h) { h._st = 'tied'; h.tie = null; } }
+  fadeTo(1, () => { P.out = { x: P.x, y: P.y + 6, b: b.id }; P.inside = b.id; P.x = (R0.door[0] + 0.5) * TS; P.y = (R0.door[1] - 0.4) * TS; P.dir = 1; P._auto = null; P._vx = P._vy = 0; cam.snap = true; AU.door && AU.door(); fadeTo(0); questEvent('door', b.id); });
+  return true;
+}
+function exitHouse() {
+  const o = P.out || {}; const b = BLD.find(q => q.id === (o.b || P.inside)); fadeTo(1, () => { if (b) { P.x = o.x || (b.door + 0.5) * TS; P.y = o.y || (b.r[3] + 1.6) * TS; } P.inside = null; P.out = null; P.dir = 0; P._auto = null; P._vx = P._vy = 0; cam.snap = true; AU.door && AU.door(); fadeTo(0); });
+}
+function insideTick() {
+  if (!P.inside) return; const R0 = roomById(P.inside); if (!R0) { P.inside = null; return; }
+  const tx = Math.floor(P.x / TS), ty = Math.floor(P.y / TS); if (tx === R0.door[0] && ty >= R0.door[1] && !insideTick.lock) { insideTick.lock = 1; exitHouse(); setTimeout(() => { insideTick.lock = 0; }, 900); }
+}
+// morador dentro de casa: dorme na cama de noite, cozinha no fim da tarde, senta na sala no resto do tempo
+function roomOwnerPos(R0) {
+  const own = R0.H.own; if (own === 'player') return null; const e = npcs.find(n => n.id === own); if (!e) return null; const hr = hour();
+  const atHome = e.hidden && e.act === 'home', atWork = R0.H.open && !e.hidden && (e.act === 'work' || e.act === 'shop'); if (!atHome && !atWork) return null;
+  const F = FURN.filter(f => f.r === R0.id), bed = F.find(f => f.t === 'cama' || f.t === 'camaC'), stove = F.find(f => f.t === 'fogao'), seat = F.find(f => f.t === 'sofa' || f.t === 'banco' || f.t === 'balcao' || f.t === 'bigorna' || f.t === 'quadroNegro') || F[0];
+  if (atHome && (hr >= 21 || hr < 5) && bed) return { e, x: bed.x, y: bed.y - 10, pose: 'lie', dir: 0, sleep: 1 };
+  if (atHome && hr >= 16 && hr < 21 && stove) return { e, x: stove.x, y: stove.y + 12, pose: 'feed', dir: 1 };
+  return { e, x: seat.x, y: seat.y + (seat.t === 'sofa' || seat.t === 'banco' ? 2 : 14), pose: seat.t === 'sofa' || seat.t === 'banco' ? 'sit' : 'idle', dir: 0 };
+}
+function furnCtx(C2) {
+  if (!P.inside) return; const R0 = roomById(P.inside); if (!R0) return;
+  const op = roomOwnerPos(R0); if (op) { const d = hyp(op.x - P.x, op.y - P.y); if (d < 30) C2(d - 10, op.sleep ? '💤 ' + op.e.d.n + ' está dormindo' : '💬 ' + op.e.d.n, () => op.sleep ? say(op.e.d.n + ' ronca baixinho. Melhor não acordar.') : openNpc(op.e.id), op.x, op.y - 30); }
+  for (const f of FURN) { if (f.r !== R0.id) continue; const fx = f.x, fy = f.wall ? (f.ty + 1.6) * TS : f.y, d = hyp(fx - P.x, fy - P.y); if (d > 26) continue;
+    const mine = R0.H.own === 'player';
+    if (mine && (f.t === 'cama' || f.t === 'camaC')) C2(d, '🛏️ Dormir', () => sleep(false), fx, fy - 20);
+    else if (mine && f.t === 'fogao') C2(d, '🍳 Fogão e casa', openHouse, fx, fy - 20);
+    else if (mine && f.t === 'bau') C2(d, '📦 Baú da casa', openChest, fx, fy - 20);
+    else if (mine && f.t === 'guardaRoupa') C2(d, '👕 Guarda-roupa', () => openSetup(true), fx, fy - 20);
+    else if (f.t === 'cadeira' || f.t === 'sofa' || f.t === 'banco' || f.t === 'rede') C2(d + 4, '🪑 Sentar', () => { act('sit', 2.5, { x: fx, y: fy }, null, { zoom: false }); }, fx, fy - 20);
+    else if (f.look) C2(d + 2, '👁️ Olhar', () => say(f.look, 5200), fx, fy - 20);
+    else if (f.t === 'filtro') C2(d + 2, '💧 Beber água', () => { P.en = cl(P.en + 2, 0, 100); say('Água fresquinha do filtro de barro.'); }, fx, fy - 20); }
+}
+
+// móveis em pixel art (desenhados uma vez e guardados): madeira com veio, luz de cima à esquerda, contorno escuro
+function furnSpr(t, w, h, wallC) {
+  const up = { guardaRoupa: 18, armario: 14, estante: 16, fogao: 10, filtro: 8, cadeira: 8, vaso: 10, prateleira: 14, forja: 12, sofa: 6, cama: 6, camaC: 6, criado: 2, tv: 6, trofeu: 10, balcao: 6, sela: 6, queijo: 8, maquina: 6, pia: 4, bigorna: 2, carteira: 6, radio: 0, mesa: 2, banco: 2, bau: 2 }[t] || 0;
+  const W2 = w * 16, H2 = h * 16 + up;
+  return [cached('fu|' + t + '|' + (wallC || ''), W2, H2, g => {
+    const p = (x, y, ww, hh, c) => { g.fillStyle = c; g.fillRect(x, y, ww, hh); }, ln = '#2a160c';
+    const wood = (x, y, ww, hh, c) => { p(x, y, ww, hh, ln); p(x + 1, y + 1, ww - 2, hh - 2, c); p(x + 1, y + 1, ww - 2, 1, shade(c, .22)); p(x + 1, y + hh - 2, ww - 2, 1, shade(c, -.25)); for (let k = 3; k < ww - 3; k += 5) p(x + k, y + 3, 1, hh - 6, shade(c, -.1)); };
+    const B = H2; // base (chão) do móvel
+    switch (t) {
+      case 'cama': case 'camaC': { const ww = W2 - 2; wood(1, up - 2, ww, 10, '#7a4a26'); p(2, up + 6, ww - 2, B - up - 8, '#e8e0d0'); p(2, up + 6, ww - 2, 2, '#fff8ec'); p(3, up + 9, ww - 4, B - up - 12, t === 'camaC' ? '#b8443a' : '#3a6aa0'); for (let k = 4; k < ww - 3; k += 4) p(k, up + 9, 2, B - up - 12, t === 'camaC' ? '#d06a5a' : '#5a8ac0'); p(4, up + 2, ww / 2 - 6, 6, '#f8f4ec'); if (t === 'camaC') p(ww / 2 + 2, up + 2, ww / 2 - 6, 6, '#f8f4ec'); p(1, B - 3, ww, 3, '#5a3418'); break; }
+      case 'guardaRoupa': case 'armario': { wood(0, 0, W2, B - 1, t === 'armario' ? '#8a5a30' : '#6a3e20'); p(W2 / 2, 3, 1, B - 8, ln); p(W2 / 2 - 3, B / 2, 2, 3, '#e0b040'); p(W2 / 2 + 2, B / 2, 2, 3, '#e0b040'); if (t === 'armario') { for (let k = 0; k < 4; k++) { p(4 + k * 7, 5, 5, 5, ['#f0ece0', '#c84a3a', '#3a6aa0', '#f0ece0'][k]); p(5 + k * 7, 6, 3, 3, '#d8d0c0'); } } break; }
+      case 'estante': case 'prateleira': { wood(0, 0, W2, B - 1, '#7a4a26'); for (let r = 0; r < 3; r++) { const yy = 3 + r * Math.floor((B - 6) / 3); p(2, yy + 8, W2 - 4, 2, '#5a3418'); for (let k = 3; k < W2 - 4; k += 3) p(k, yy + 1, 2, 7, t === 'prateleira' ? ['#e8f0f0', '#a8d0c8', '#f0d090', '#c8e0f0'][(k + r) % 4] : ['#a83a2a', '#3a6a3a', '#2a4a7a', '#c8a040', '#6a3a6a'][(k * 7 + r) % 5]); } break; }
+      case 'fogao': { p(0, up, W2, B - up, ln); p(1, up + 1, W2 - 2, B - up - 2, '#c8b8a0'); p(1, up + 1, W2 - 2, 3, '#4a4a4a'); p(4, up + 2, 6, 2, '#2a2a2a'); p(W2 - 10, up + 2, 6, 2, '#2a2a2a'); p(3, B - 8, 7, 5, '#2a1a10'); p(4, B - 6, 5, 2, '#e8702a'); p(W2 - 6, 0, 4, up + 1, '#5a5a5a'); p(W2 - 5, 0, 1, up, '#8a8a8a'); p(6, up - 3, 5, 3, '#6a6a6a'); break; } // fogão a lenha com chaminé e panela
+      case 'pia': { p(0, up, W2, B - up, ln); p(1, up + 1, W2 - 2, B - up - 2, '#e8e4dc'); p(4, up + 2, W2 - 8, 6, '#a8b8c0'); p(W2 / 2, 0, 2, up + 3, '#9aa0a6'); p(2, B - 6, W2 - 4, 4, '#3a6aa0'); for (let k = 4; k < W2 - 4; k += 4) p(k, B - 6, 2, 4, '#f0ece0'); break; }
+      case 'filtro': { p(3, B - 6, 10, 5, '#6a4224'); p(4, up - 2, 8, 10, ln); p(5, up - 1, 6, 8, '#c8743a'); p(5, up - 1, 2, 8, '#e0905a'); p(5, up + 7, 6, 4, '#b06030'); p(7, up - 3, 2, 2, '#8a5a30'); p(11, up + 9, 2, 1, '#9aa0a6'); break; } // filtro de barro
+      case 'mesa': { wood(0, up - 2, W2, B - up - 4, '#9a6638'); p(2, B - 6, 3, 6, '#5a3418'); p(W2 - 5, B - 6, 3, 6, '#5a3418'); p(W2 / 2 - 5, up + 4, 10, 5, '#f0ece0'); p(W2 / 2 - 3, up + 2, 6, 3, '#d8d0c0'); break; }
+      case 'cadeira': { p(3, 0, 10, 9, ln); p(4, 1, 8, 7, '#8a5a30'); p(5, 3, 6, 1, '#6a3e20'); p(2, 9, 12, 4, ln); p(3, 10, 10, 2, '#a06a3a'); p(3, 13, 2, B - 13, '#5a3418'); p(11, 13, 2, B - 13, '#5a3418'); break; }
+      case 'sofa': case 'banco': { if (t === 'sofa') { p(0, 2, W2, B - 4, ln); p(1, 3, W2 - 2, 8, '#8a4a3a'); p(1, 11, W2 - 2, B - 15, '#a85a48'); p(1, 11, W2 - 2, 2, '#c8786a'); p(0, 6, 4, B - 9, '#7a3e30'); p(W2 - 4, 6, 4, B - 9, '#7a3e30'); for (let k = 8; k < W2 - 6; k += 12) p(k, 12, 1, B - 17, '#7a3e30'); } else { wood(0, B - 12, W2, 6, '#9a6638'); p(2, B - 6, 3, 6, '#5a3418'); p(W2 - 5, B - 6, 3, 6, '#5a3418'); } break; }
+      case 'rede': { g.strokeStyle = '#7a5a30'; g.lineWidth = 1; g.beginPath(); g.moveTo(1, 3); g.quadraticCurveTo(W2 / 2, 16, W2 - 1, 3); g.stroke(); for (let x = 4; x < W2 - 4; x++) { const yy = 3 + Math.round(Math.sin((x / W2) * Math.PI) * 9); p(x, yy - 1, 1, 5, ['#d84a3a', '#e8b040', '#3a8a5a', '#3a6aa0'][Math.floor(x / 6) % 4]); } p(0, 0, 2, 5, '#5a3418'); p(W2 - 2, 0, 2, 5, '#5a3418'); break; } // rede listrada
+      case 'tapete': { p(2, 2, W2 - 4, B - 4, '#7a2a20'); p(4, 4, W2 - 8, B - 8, '#c8503a'); for (let k = 6; k < W2 - 6; k += 6) for (let r = 6; r < B - 6; r += 6) p(k, r, 2, 2, '#f0c060'); p(2, 2, W2 - 4, 1, '#f0c060'); p(2, B - 3, W2 - 4, 1, '#f0c060'); break; }
+      case 'radio': { p(2, 4, 12, 10, ln); p(3, 5, 10, 8, '#8a5a30'); p(4, 6, 5, 5, '#d8c8a0'); for (let k = 0; k < 3; k++) p(4, 7 + k * 2, 5, 1, '#8a7a5a'); p(10, 7, 2, 2, '#e0b040'); p(11, 0, 1, 5, '#5a5a5a'); p(2, 14, 12, 2, '#5a3418'); break; }
+      case 'tv': { p(2, 0, W2 - 4, B - 6, ln); p(3, 1, W2 - 6, B - 8, '#3a4048'); p(5, 3, W2 - 10, B - 13, '#4a7a9a'); p(6, 4, 8, 3, '#7ab0c8'); wood(0, B - 6, W2, 6, '#5a3418'); break; }
+      case 'vaso': { p(5, 12, 7, B - 12, ln); p(6, 13, 5, B - 14, '#b0603a'); for (let k = 0; k < 6; k++) { const a = -1.2 + k * 0.5; p(8 + Math.round(Math.cos(a) * 5), 10 + Math.round(Math.sin(a) * 6) - 4, 3, 5, k % 2 ? '#3a8a3a' : '#5aaa4a'); } break; }
+      case 'bau': { p(1, 5, 14, B - 6, ln); p(2, 6, 12, B - 8, '#7a4c28'); p(2, 6, 12, 3, '#9a6438'); p(2, 9, 12, 1, ln); p(4, 6, 2, B - 8, '#8a8e94'); p(10, 6, 2, B - 8, '#8a8e94'); p(7, 9, 2, 3, '#e0b040'); break; }
+      case 'criado': { wood(1, 2, 14, B - 3, '#8a5a30'); p(4, 8, 8, 1, '#5a3418'); p(6, 0, 4, 4, '#e8c060'); p(7, -1, 2, 2, '#fff0a0'); break; }
+      case 'maquina': { wood(1, 8, 14, 8, '#6a4224'); p(3, 2, 10, 7, ln); p(4, 3, 8, 5, '#2a2a2a'); p(4, 3, 3, 2, '#c8a040'); p(10, 6, 2, 4, '#9aa0a6'); p(2, B - 4, 12, 2, '#3a3a3a'); break; }
+      case 'forja': { p(0, up, W2, B - up, ln); p(1, up + 1, W2 - 2, B - up - 2, '#8a5a40'); p(3, up + 2, W2 - 6, 6, '#2a1a10'); for (let k = 4; k < W2 - 4; k += 3) p(k, up + 4, 2, 3, k % 2 ? '#f0702a' : '#ffc040'); p(W2 / 2 - 3, 0, 6, up + 2, '#4a4a4a'); p(W2 / 2 - 2, 0, 2, up, '#6a6a6a'); break; }
+      case 'bigorna': { p(2, 6, 12, 4, ln); p(3, 7, 10, 2, '#5a5e64'); p(3, 7, 10, 1, '#9aa0a6'); p(6, 10, 4, 4, '#4a4e54'); p(4, 14, 8, 2, '#5a3418'); break; }
+      case 'carteira': { wood(1, 4, 14, 6, '#b08050'); p(3, 10, 2, 6, '#5a5a5a'); p(11, 10, 2, 6, '#5a5a5a'); p(4, 5, 6, 3, '#f8f4ec'); break; }
+      case 'balcao': { wood(0, up - 2, W2, B - up + 1, '#8a5a30'); p(2, up - 2, W2 - 4, 3, '#c8a070'); p(8, up - 6, 8, 5, '#f0e0c0'); p(W2 - 16, up - 8, 6, 7, '#c8e0e8'); break; }
+      case 'sela': { p(3, B - 4, 10, 4, '#5a3418'); p(2, up, 12, 8, ln); p(3, up + 1, 10, 6, '#8a4e24'); p(3, up + 1, 10, 2, '#b07040'); p(1, up + 4, 2, 6, '#6a3a18'); break; }
+      case 'queijo': { wood(0, B - 8, W2, 4, '#8a5a30'); for (let k = 0; k < 3; k++) { p(2 + k * 10, B - 15, 8, 7, ln); p(3 + k * 10, B - 14, 6, 5, '#f0e0a0'); p(3 + k * 10, B - 14, 6, 1, '#fff4c8'); } break; }
+      case 'trofeu': { wood(0, B - 8, W2, 6, '#5a3418'); for (let k = 0; k < 3; k++) { p(4 + k * 9, B - 18, 6, 6, '#e0b040'); p(5 + k * 9, B - 17, 2, 4, '#fff0a0'); p(6 + k * 9, B - 12, 2, 4, '#c8901c'); } break; }
+      // objetos na parede (desenhados sobre a face da parede)
+      case 'quadro': { p(3, 2, 10, 11, ln); p(4, 3, 8, 9, '#c8a060'); p(5, 4, 6, 7, '#d8c8a8'); p(6, 6, 2, 3, '#6a4a3a'); p(8, 5, 2, 4, '#5a3a2a'); break; }
+      case 'oratorio': { p(4, 1, 8, 13, ln); p(5, 2, 6, 11, '#3a6aa0'); p(5, 2, 6, 2, '#e0b040'); p(7, 5, 2, 6, '#f0e8d8'); p(7, 4, 2, 2, '#e8c8a0'); p(6, 12, 1, 2, '#ffe080'); p(9, 12, 1, 2, '#ffe080'); break; }
+      case 'relogio': { p(4, 1, 8, 13, ln); p(5, 2, 6, 11, '#8a5a30'); p(6, 3, 4, 4, '#f0ece0'); p(7, 4, 1, 2, ln); p(7, 9, 2, 3, '#e0b040'); break; }
+      case 'viola': { p(6, 1, 2, 7, '#5a3418'); p(4, 8, 6, 6, ln); p(5, 9, 4, 4, '#c88a48'); p(6, 10, 2, 2, '#2a160c'); p(10, 3, 2, 6, '#5a3418'); p(9, 9, 5, 5, ln); p(10, 10, 3, 3, '#a86a30'); break; }
+      case 'chapeu': { p(2, 9, 12, 3, ln); p(3, 9, 10, 2, '#8a4e24'); p(5, 4, 6, 6, ln); p(6, 5, 4, 4, '#7a4220'); p(7, 6, 1, 1, '#f0d070'); p(9, 6, 1, 1, '#f0d070'); break; }
+      case 'quadroNegro': { p(0, 1, W2, 13, '#5a3418'); p(2, 2, W2 - 4, 10, '#2a4a3a'); for (let k = 4; k < W2 - 8; k += 6) p(k, 5 + (k % 3), 4, 1, '#d8e0d8'); p(4, 12, 8, 1, '#f0ece0'); break; }
+      case 'janela': { p(2, 3, W2 - 4, 12, ln); p(3, 4, W2 - 6, 10, '#9ac8e8'); p(3, 4, W2 - 6, 3, '#c8e4f4'); p(W2 / 2 - 1, 4, 1, 10, '#f0ece0'); p(3, 9, W2 - 6, 1, '#f0ece0'); p(1, 14, W2 - 2, 2, '#e8dcc0'); p(2, 3, 3, 12, '#3a6aa0'); p(W2 - 5, 3, 3, 12, '#3a6aa0'); break; }
+      case 'lamp': { p(7, 2, 2, 3, '#5a5a5a'); p(5, 5, 6, 7, ln); p(6, 6, 4, 5, '#f8e8a0'); p(7, 7, 2, 3, '#fff8d0'); p(5, 12, 6, 2, '#8a5a30'); break; }
+    }
+  }, true), up];
+}
+
 function genMap() {
   const R = mulberry(19871);
   ground.fill(G.GRASS); obj.fill(0); gateId.fill(-1); areaId.fill(-1); lockId.fill(-1);
@@ -1136,10 +1305,11 @@ function genMap() {
   // (a rampa de embarque entre o Curral Principal e o Recebimento foi retirada: era uma parede no corredor; o embarque continua pela Ação no curral)
   // flores e moitas na borda leste
   for (let y = 0; y < MH; y += 3) { const x = 111; if (ground[gi(x, y)] === G.GRASS && !obj[gi(x, y)]) PROPS.push({ t: 'arbusto', x: (x + .5) * TS, y: (y + .8) * TS, v: y % 4 }); }
+  genInteriors();
 }
 /* ---------- Mata dos Fundos: árvores de vários portes, moitas, pedras, trilhas, clareiras e um riacho ---------- */
 const FOREST = { r: [1, 1, 28, 20], trail: [], clear: [[11, 11, 3.2], [24, 5, 2.6], [5, 5, 2.4]], ford: [] };
-function inForest(x, y) { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); return tx >= 0 && ty >= 0 && tx < MW && ty < MH && forest[gi(tx, ty)] === 1; }
+function inForest(x, y) { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); return tx >= 0 && ty >= 0 && tx < MW && ty < MHT && forest[gi(tx, ty)] === 1; }
 const forestStreamX = y => 19.5 + Math.round(Math.sin(y * 0.42) * 2.2 + Math.sin(y * 0.17) * 1.2);
 function genForest(R) {
   forest.fill(0); const [x0, y0, x1, y1] = FOREST.r;
@@ -1175,7 +1345,7 @@ function vnoise(x, y, s) { const x0 = Math.floor(x), y0 = Math.floor(y), fx = x 
 function pick2(R, a) { return a[Math.floor(R() * a.length)]; }
 /* ---------- colisão ---------- */
 function solidT(tx, ty, who) {
-  if (tx < 0 || ty < 0 || tx >= MW || ty >= MH) return true;
+  if (tx < 0 || ty < 0 || tx >= MW || ty >= MHT) return true;
   const i = ty * MW + tx, o = obj[i];
   if (o === 1) return who !== 'ghost';
   if (o === 2) return who !== 'ghost' && GATES[gateId[i]].anim < 0.65;
@@ -1282,7 +1452,7 @@ function farmPath(fromK, toK) {
 }
 function nearestFarmKey(x, y) { const a = areaAt(x, y); if (a) return a; let best = 'sede', bd = 1e9; for (const k of ['sede', 'deposito', 'galpao', 'reserv']) { const p = FSP[k].p; const d = hyp(p[0] * TS - x, p[1] * TS - y); if (d < bd) { bd = d; best = k; } } return best; }
 /* ---------- chão pré-renderizado ---------- */
-const [groundC, gg] = mkC(WPX, HPX);
+const [groundC, gg] = mkC(WPX, HPXT);
 let groundSeason = -1;
 const PAL = [
   { grass: '#5f8f3a', g1: '#4d7a2e', g2: '#74a448', g3: '#8ab858', dry: '#b49a62', dry1: '#9e8452', dry2: '#c8ae74', past: '#7a7c40', dirt: '#ad8152', d1: '#8e6640', d2: '#c49a68' },
@@ -1295,7 +1465,7 @@ const PAL = [
    com pontilhado; detalhes (pedrinhas, flores, pegadas, marcas de pneu, rachaduras) vêm do próprio pixel.
    Pintado em blocos de 64 px sob demanda (primeiro o que está na tela, o resto aos poucos). */
 const GR = (() => {
-  const CK = 64, NCX = Math.ceil(WPX / CK), NCY = Math.ceil(HPX / CK), built = new Uint8Array(NCX * NCY);
+  const CK = 64, NCX = Math.ceil(WPX / CK), NCY = Math.ceil(HPXT / CK), built = new Uint8Array(NCX * NCY);
   let season = -1, queue = [], roadInfo = null;
   // ruído de valor com tabela (rápido)
   const LAT = new Float32Array(256 * 256); { const R = mulberry(9917); for (let i = 0; i < LAT.length; i++) LAT[i] = R(); }
@@ -1321,7 +1491,7 @@ const GR = (() => {
     plazaD: RAMP(['#24221f', '#2e2c29', '#383633']), plazaL: RAMP(['#cfc8b8', '#ddd6c6', '#e9e3d5']), mortar: hex('#a49e90'),
     plank: RAMP(['#5e3c20', '#744a28', '#8a5a30', '#9e6a3a', '#b07a46']),
     water: RAMP(['#1a4a72', '#225a84', '#2c6e98', '#3a84ac', '#52a0c4']) };
-  const SOFT = new Uint8Array(16); [G.GRASS, G.PAST, G.DRY, G.DIRT, G.MUD, G.SAND, G.FLOOR].forEach(t => SOFT[t] = 1);
+  const SOFT = new Uint8Array(32); [G.GRASS, G.PAST, G.DRY, G.DIRT, G.MUD, G.SAND, G.FLOOR].forEach(t => SOFT[t] = 1);
   const tone = (ramp, v, x, y) => { const q = Math.max(0, Math.min(0.999, v)) * (ramp.length - 1), i = Math.floor(q); return ramp[(q - i) * 16 > B4[(y & 3) * 4 + (x & 3)] ? Math.min(ramp.length - 1, i + 1) : i]; };
   // direção e eixo das estradas (para marcas de pneu e faixas): por ladrilho, mede a largura da pista
   function roads() {
@@ -1340,7 +1510,7 @@ const GR = (() => {
     return t2 >= 0 && SOFT[t2] ? t2 : t;
   }
   function paint(cx, cy) {
-    const x0 = cx * CK, y0 = cy * CK, w = Math.min(CK, WPX - x0), h = Math.min(CK, HPX - y0); if (w <= 0 || h <= 0) return;
+    const x0 = cx * CK, y0 = cy * CK, w = Math.min(CK, WPX - x0), h = Math.min(CK, HPXT - y0); if (w <= 0 || h <= 0) return;
     const pal = PALS[season & 1], img = gg.createImageData(w, h), D = img.data, RI = roadInfo;
     const M = 2, SW = w + M * 2, SH = h + M * 2, soil = new Int8Array(SW * SH); // solo com margem, para as bordas
     for (let yy = 0; yy < SH; yy++) for (let xx = 0; xx < SW; xx++) soil[yy * SW + xx] = soilAt(x0 + xx - M, y0 + yy - M);
@@ -1413,6 +1583,16 @@ const GR = (() => {
       } else if (t === G.BRIDGE) { const pl = Math.floor(x / 5), lx = x % 5; c = lx === 0 ? P0.plank[0] : tone(P0.plank, 0.35 + hh(pl, 0, 24) * 0.4 + vn(x / 3, y / 14, 25) * 0.2, x, y); if (lx === 2 && ((y & 15) === 3 || (y & 15) === 12)) c = hex('#c8c0b0'); if ((y & 15) === 0 || (y & 15) === 15) c = P0.plank[0];
       } else if (t === G.WATER) {
         const dp = wdepth[ti] || 3, v = 1 - Math.min(4, dp) / 4 + fbm(x / 24, y / 24, 26) * 0.25 - 0.05; c = tone(P0.water, v, x, y); if (hx > 0.985) c = P0.water[4];
+      } else if (t >= G.LAJ) { // interiores: pisos, paredes e capacho
+        const lx = x & 15, ly = y & 15, ro = roomOf[ti] >= 0 ? ROOMS[roomOf[ti]] : null;
+        if (t === G.WALL) { if (!ro) c = [14, 10, 8]; else { const R0 = ro, ry = ty - R0.y0, wc = hex(R0.H.wall), top = ry <= 1 && tx > R0.x0 && tx < R0.x0 + R0.w - 1;
+            if (top) { const yy = ry * 16 + ly; c = yy < 3 ? [90, 54, 30] : yy < 5 ? [130, 84, 48] : yy > 27 ? [110, 70, 40] : yy > 25 ? [150, 100, 60] : (((x >> 2) + (yy >> 3)) % 7 === 0 && hx > 0.5) ? wc.map(v => v * 0.94) : wc.map(v => v * (0.98 + hx * 0.04)); }
+            else c = (lx === 0 || ly === 0) ? [70, 44, 26] : [104, 68, 40]; } }
+        else if (t === G.LAJ) { const bx = (x >> 3), by = (y >> 3); c = (x & 7) === 0 || (y & 7) === 0 ? [120, 74, 52] : tone(RAMP(['#9a4a30', '#a8543a', '#b45e40', '#c06a48']), 0.3 + hh(bx, by, 91) * 0.5 + (x & 7) / 40, x, y); }
+        else if (t === G.WOODF) { const row = y >> 2, off = (row * 23) % 32; c = (y & 3) === 0 || ((x + off) % 32) === 0 ? [92, 56, 30] : tone(RAMP(['#8a5830', '#9a6638', '#aa7444', '#b8824e']), 0.3 + hh(Math.floor((x + off) / 32), row, 92) * 0.5 + vn(x / 9, y / 2, 93) * 0.2, x, y); }
+        else if (t === G.CEM) { c = (x % 32) === 0 || (y % 32) === 0 ? [120, 48, 40] : tone(RAMP(['#9a3a30', '#a8423a', '#b44a40', '#c05448']), 0.35 + fbm(x / 20, y / 20, 94) * 0.5, x, y); } // cimento queimado vermelho
+        else if (t === G.CER) { c = (x & 7) === 0 || (y & 7) === 0 ? [170, 166, 156] : tone(RAMP(['#d8d4ca', '#e2ded4', '#ece8de', '#f4f0e8']), 0.35 + hh(x >> 3, y >> 3, 95) * 0.5, x, y); }
+        else if (t === G.MAT) { c = ly < 2 || ly > 13 || lx < 2 || lx > 13 ? [90, 54, 30] : ((lx + ly) & 1) ? [150, 110, 60] : [176, 136, 80]; }
       } else c = [26, 42, 16];
       const k = (yy * w + xx) * 4; D[k] = c[0]; D[k + 1] = c[1]; D[k + 2] = c[2]; D[k + 3] = 255;
     }
@@ -1496,7 +1676,7 @@ function ranchoSpr(b, night) { // casa nível 0: rancho de taipa com palha, vara
   });
 }
 /* ---------- açude: profundidade, vau, nado ---------- */
-const wdepth = new Uint8Array(MW * MH), pondT = new Uint8Array(MW * MH);
+const wdepth = new Uint8Array(MW * MHT), pondT = new Uint8Array(MW * MHT);
 function computeDepth() {
   wdepth.fill(0); const q = []; for (let i = 0; i < MW * MH; i++) if (ground[i] === G.WATER && pondT[i]) { const x = i % MW, y = (i / MW) | 0; let edge = false; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const t = gt(x + dx, y + dy); if (t !== G.WATER) edge = true; } if (edge) { wdepth[i] = 1; q.push(i); } }
   while (q.length) { const i = q.shift(), x = i % MW, y = (i / MW) | 0; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= MW || ny >= MH) continue; const j = gi(nx, ny); if (ground[j] === G.WATER && pondT[j] && !wdepth[j]) { wdepth[j] = Math.min(4, wdepth[i] + 1); q.push(j); } } }
@@ -4893,6 +5073,7 @@ function playerPose() {
     if (A.k === 'throw') return ['throw', u > 0.45 ? 1 : 0];
     if (A.k === 'pickup') return ['pickup', u < 0.5 ? 0 : 1];
     if (A.k === 'eat') return ['eat', Math.floor(T * 4) % 2];
+    if (A.k === 'sit') return ['sit', 0];
     if (A.k === 'train') return [Math.floor(A.t * 1.5) % 2 ? 'wave' : 'reach', Math.floor(T * 3) % 2];
     return [ACT_POSE[A.k] || 'reach', Math.floor(T * 6) % 2];
   }
@@ -4922,6 +5103,7 @@ function mountToggle() {
   if (P.mnt) return dismount();
   const m = mainHorse(); const h = nearestOwn(a => (a.sp === 'cavalo' || a.sp === 'burro' || a.sp === 'jumento') && a.age >= 12 && S.cart.hitch !== a.id, 40);
   if (h) return mountHorse(h);
+  { const lh = loanedHorse(); if (lh && hyp(lh.x - P.x, lh.y - P.y) < 40) return mountHorse(lh); }
   if (m && m.own === 'player' && m._st !== 'tied') { m._st = 'come'; m._t = 25; act('call', 0.6, null, null, { zoom: false }); AU.whistle(); say('Você assobiou. ' + m.n + ' vem vindo!', 2500); }
   else if (m && m._st === 'tied') { say(m.n + ' está amarrado(a) no mourão. Vou até lá.'); mountHorse(m); }
 }
@@ -5458,9 +5640,9 @@ function forestSounds(dt) {
 /* ============ CAMINHO AUTOMÁTICO (A*) — MODO TOQUE E "IR ATÉ" ============ */
 // Grade de tiles; porteiras fechadas são atravessáveis (o vaqueiro abre e fecha de novo).
 const PF = { open: null, g: null, f: null, from: null, st: null, stamp: 0, heap: [] };
-function pfInit() { const N = MW * MH; PF.g = new Float32Array(N); PF.from = new Int32Array(N); PF.st = new Uint32Array(N); PF.cl = new Uint32Array(N); }
+function pfInit() { const N = MW * MHT; PF.g = new Float32Array(N); PF.from = new Int32Array(N); PF.st = new Uint32Array(N); PF.cl = new Uint32Array(N); }
 function pfPass(tx, ty) {
-  if (tx < 0 || ty < 0 || tx >= MW || ty >= MH) return 0; const i = ty * MW + tx;
+  if (tx < 0 || ty < 0 || tx >= MW || ty >= MHT) return 0; const i = ty * MW + tx;
   if (obj[i] === 2) { const g = GATES[gateId[i]]; return g && (!g.lock || PF.npc) ? (g.open ? 1 : 3) : 0; } // moradores têm a chave das porteiras trancadas
   return solidT(tx, ty, 'p') ? 0 : 1;
 }
@@ -6520,7 +6702,57 @@ A.sa = k => {
 };
 A.rename = v => { const a = byId(+v), n = $('rn').value.trim(); if (a && n) { hist(a, 'Renomeado de ' + a.n + ' para ' + n); a.n = n; if (a.main) S.cf.hn = n; toast('Novo nome: ' + n); } if (SH.a) renderSheet(); else renderModal(); };
 /* ---------- conversa com NPC ---------- */
+/* ---------- cavalos emprestados pelos vizinhos ----------
+   O cavalo continua do vizinho (a.own não muda): não dá para vender, trocar nem levar para o leilão.
+   a.loan = { to, until (minuto absoluto), fee, hp0, saddle0 }. Devolve conversando com o dono ou
+   desmontando no pasto dele; se passar do horário, o dono vai buscar e fica chateado. */
+const LEND = {
+  ryan: { min: 2, fee: 0, yes: 'Pode levar! O {h} é manso e marcha macio. Só me devolve até de noite, viu?', no: 'Cavalo meu só monta quem eu conheço bem. Vem tomar um café comigo antes.' },
+  felipe: { min: 4, fee: 0, yes: 'Leva o {h}. Mas trate como se fosse seu: água e sombra no meio do dia.', no: 'Meus cavalos são de lida, não de passeio. Quando a gente se conhecer melhor, quem sabe.' },
+  valdomiro: { min: 3, fee: 0, yes: 'O {h} conhece cada trilha da serra. Volta antes do sol se pôr.', no: 'Hum... o {h} estranha gente nova. Outra hora.' },
+  helena: { min: 1, fee: 60, yes: 'Empresto o {h} por R$ 60 a diária: tudo anotado no caderno, nada pessoal.', no: 'Ainda não te conheço o suficiente para emprestar um animal registrado.' },
+  caetano: { min: 1, fee: 0, yes: 'Vai no {h}, vizinho! Ele adora passear.', no: 'Agora ele tá na lida, outra hora.' },
+  otavio: { min: 6, fee: 250, quest: 'r7', yes: 'O {h} vale mais que a sua fazenda. R$ 250 e cuidado redobrado. Devolva antes das 18h.', no: 'Os cavalos da Monte Real não saem da fazenda. Só para quem já provou que entende de cavalo.' },
+  severino: { min: 4, fee: 0, yes: 'Pega o {h}, mas não conta pro Dr. Otávio!', no: 'Não posso, o patrão não gosta.' },
+  _: { min: 5, fee: 0, yes: 'Pode montar o {h}. Devolve até a noite.', no: 'Não empresto meu cavalo, não.' }
+};
+const LEND_OK = (a) => a && (a.sp === 'cavalo' || a.sp === 'burro') && a.age >= 12 && a.own !== 'player' && !!NPCDEF[a.own];
+const loanedHorse = () => S.animals.find(a => a.loan && a.loan.to === 'player');
+function lendAsk(a) {
+  if (!LEND_OK(a)) return; const L = LEND[a.own] || LEND._, d = NPCDEF[a.own], hs = hearts(a.own), cur = loanedHorse();
+  if (cur) return say('Devolva primeiro o ' + cur.n + ' para ' + NPCDEF[cur.own].n + '.');
+  const qOk = !L.quest || (typeof qState === 'function' && QBY[L.quest] && qState(L.quest).s === 'done');
+  const tired = (a._stam !== undefined && a._stam < 30) || a.sick;
+  let ok = hs >= L.min && qOk && !tired;
+  if (ok && hs < L.min + 2 && Math.random() < 0.2) ok = false; // às vezes o dono precisa do cavalo
+  const txt = tired ? a.n + ' está cansado hoje. Deixa ele descansar.' : (ok ? L.yes : L.no).replace('{h}', a.n);
+  showModal('', null, null, () => `<div class="dlg"><div>${charImg(d.ap, 4)}</div><div style="flex:1"><b style="font-size:16px">${esc(d.n)}</b><div class="txt" style="margin-top:6px">${esc(txt)}</div></div></div><div class="row">${ok ? btn(L.fee ? 'Aceitar (' + fmt(L.fee) + ')' : 'Aceitar', 'lendYes', a.id) + btn('Deixa pra lá', 'close') : btn('Tudo bem', 'close')}</div>`);
+  if (!ok) remember(a.own, 'pediu o cavalo emprestado');
+}
+A.lendYes = v => { const a = byId(+v); if (!a) return; const L = LEND[a.own] || LEND._; if (L.fee && !pay(L.fee, 'Aluguel do cavalo ' + a.n)) return;
+  const now = S.day * 1440 + S.min, until = S.day * 1440 + (a.own === 'otavio' ? 18 * 60 : 21 * 60) + (S.min > 19 * 60 ? 1440 : 0);
+  a.loan = { to: 'player', until, fee: L.fee, hp0: a.hp, saddle0: a.saddle || null, warned: 0 }; a._st = 'idle'; a._t = 5; remember(a.own, 'emprestou o ' + a.n); closeModal();
+  toast('🐴 ' + NPCDEF[a.own].n + ' emprestou o ' + a.n + ' até as ' + Math.floor((until % 1440) / 60) + 'h. Monte nele (Montar).'); questEvent('talk', a.own); };
+A.close = () => closeModal();
+function lendReturn(a, how) {
+  if (!a || !a.loan) return; const own = a.own, d = NPCDEF[own], L = a.loan, late = S.day * 1440 + S.min > L.until;
+  if (P.mnt === a.id) { P.mnt = null; }
+  const hurt = (L.hp0 || 100) - (a.hp || 100) > 15 || (a._stam !== undefined && a._stam < 15);
+  a.saddle = L.saddle0; a.loan = null; a._st = null; a.tie = null; if (a.area && AREAS[a.area]) { const q = randIn(a.area); if (how !== 'here') { a.x = q[0]; a.y = q[1]; } }
+  if (how === 'reclaim') { addFr(own, -20); remember(own, 'não devolveu o cavalo ' + a.n + ' na hora'); toast('😠 ' + d.n + ' foi buscar o ' + a.n + ' — você passou do horário.'); return; }
+  if (hurt) { addFr(own, -15); remember(own, 'devolveu o ' + a.n + ' judiado'); say(d.n + ': "O ' + a.n + ' voltou esgotado! Assim não empresto mais."', 4000); }
+  else if (late) { addFr(own, -5); say(d.n + ': "Chegou tarde, hein. Mas tá inteiro, obrigado."', 3500); }
+  else { addFr(own, 8); remember(own, 'devolveu o ' + a.n + ' bem cuidado'); say(d.n + ': "Voltou bem tratado. Quando quiser, é só pedir!"', 3500); }
+}
+function lendTick() { // a cada meia hora de jogo
+  const a = loanedHorse(); if (!a) return; const now = S.day * 1440 + S.min;
+  const inHome = AREAS[a.area] && AREAS[a.area].own === a.own && areaAt(a.x, a.y) === a.area; if (!inHome) a.loan.left = 1;
+  if (a.loan.left && inHome && P.mnt !== a.id && !P._act) return lendReturn(a, 'here'); // levou para passear e deixou de volta no pasto do dono
+  if (now > a.loan.until - 60 && !a.loan.warned) { a.loan.warned = 1; toast('⏰ Hora de devolver o ' + a.n + ' para ' + NPCDEF[a.own].n + '.'); }
+  if (now > a.loan.until + 90) { if (P.mnt === a.id) { P.mnt = null; P.x = a.x + 14; P.y = a.y + 4; } lendReturn(a, 'reclaim'); }
+}
 function openNpc(id, text) {
+  { const lh = loanedHorse(); if (lh && lh.own === id && hyp(lh.x - P.x, lh.y - P.y) < 100) { if (P.mnt === lh.id) { P.mnt = null; P.x = lh.x + 14; P.y = lh.y + 4; } lendReturn(lh); } }
   const d = NPCDEF[id]; M.npc = id; M.txt = text || talk(id); questEvent('talk', id);
   showModal('', null, null, () => {
     const s = npcState(id);
@@ -6579,6 +6811,7 @@ function shopRow(id, opt) {
 }
 function openBuilding(b) { questEvent('door', b.id);
   const k = b.act; if (k === 'none') return say(b.n + ': fechado.');
+  if ((k === 'casa' || k.startsWith('npcHome:')) && HOUSE[b.id] && enterHouse(b)) return;
   if (k.startsWith('npcHome:')) { const id = k.split(':')[1], e = npcs.find(n => n.id === id); if (e && e.hidden && e.act === 'home' && hyp(e.x - P.x, e.y - P.y) < 80) { return openNpc(id, isNight() ? 'Toc toc... Ah, é você! Entra, mas fala baixo que já é tarde.' : 'Ô de casa! Pode entrar!'); } return say('Ninguém em ' + b.n + ' agora.'); }
   const shops = { agro: 'agro', mercadinho: 'mercadinho', bar: 'bar', acougue: 'acougue', pedreiro: 'pedreiro', banco: 'banco' };
   if (shops[k] && !shopOpen(k)) { if (k === 'banco') return openBank(true); const kp = shopKeeper(k); return say(b.n + ' está fechado agora. ' + (kp ? kp.d.n + ' atende das ' + kp.d.sched[1][0] + 'h.' : '')); }
@@ -7382,7 +7615,7 @@ function regionDay() {
     const r = Math.random();
     if (F.near) {
       if (r < 0.05 && st.money > 9000) { const sp = F.own === 'felipe' ? 'boi' : pick(['cavalo', 'cavalo', 'burro', 'jumento']); if ((hd[sp] || 0) < (sp === 'boi' ? 9 : 6)) { const a = mkAnimal(sp, sp === 'boi' ? pick(['nelore', 'nelore', 'guzera', 'tabapua']) : sp === 'cavalo' ? pick(['mm', 'qm', 'campolina']) : sp === 'burro' ? 'burro' : 'pega', { own: F.own }); const p = randIn(k); a.x = p[0]; a.y = p[1]; S.animals.push(a); st.money -= Math.round(animalValue(a)); regionNews(`${NPCDEF[F.own].n} comprou ${sp === 'boi' ? 'um boi ' + breedOf(a).n : 'um animal novo'} para a ${F.n}.`); } }
-      else if (r < 0.09) { const L = S.animals.filter(a => a.own === F.own && !a.mis); if (L.length > 4) { const a = pick(L); S.animals = S.animals.filter(b => b !== a); st.money += Math.round(animalValue(a)); regionNews(`${NPCDEF[F.own].n} vendeu ${a.n} no frigorífico.`); } }
+      else if (r < 0.09) { const L = S.animals.filter(a => a.own === F.own && !a.mis && !a.loan); if (L.length > 4) { const a = pick(L); S.animals = S.animals.filter(b => b !== a); st.money += Math.round(animalValue(a)); regionNews(`${NPCDEF[F.own].n} vendeu ${a.n} no frigorífico.`); } }
     } else {
       const H = st.herd;
       if (k === 'serra') { if (r < 0.25 && st.money > 20000) { const n = rint(5, 20); H.boi += n; st.money -= n * 3800; regionNews(`A Serra Azul comprou ${n} garrotes. Seu Abílio não para de crescer.`); } else if (r < 0.4) { const n = rint(10, 30); H.boi = Math.max(50, H.boi - n); st.money += n * 4600; } if (r > 0.97 && st.workers < 14) { st.workers++; regionNews('A Serra Azul contratou mais um vaqueiro.'); } }
@@ -7752,7 +7985,7 @@ function rfarmDay() { const R = rfarmS(), se = season();
     st.money = Math.round(st.money + inc - cost);
     const cap = k === 'f4' ? 22 : k === 'f2' ? 20 : 16, r = Math.random(), arr = S.arroba || 300;
     if (st.money > (k === 'f4' ? 200000 : 18000) && heads < cap && r < 0.3) { const a = rfarmSpawn(k); if (a) { st.money -= animalValue(a); rfNews(k, `${NPCDEF[F.own].n} comprou ${catName(a).toLowerCase()} ${breedOf(a).n}.`); } }
-    else if (heads > 6 && (arr > 330 || st.money < 3000) && r < 0.25) { const L = own.filter(a => !a.vip), a = L.length ? pick(L) : null; if (a) { S.animals = S.animals.filter(b => b !== a); st.money += animalValue(a); rfNews(k, `${F.n} vendeu ${a.n} (${breedOf(a).n}) — ${arr > 330 ? 'arroba boa' : 'apertou o caixa'}.`); } }
+    else if (heads > 6 && (arr > 330 || st.money < 3000) && r < 0.25) { const L = own.filter(a => !a.vip && !a.loan), a = L.length ? pick(L) : null; if (a) { S.animals = S.animals.filter(b => b !== a); st.money += animalValue(a); rfNews(k, `${F.n} vendeu ${a.n} (${breedOf(a).n}) — ${arr > 330 ? 'arroba boa' : 'apertou o caixa'}.`); } }
     if (st.money > (k === 'f4' ? 400000 : 30000) && st.staff < (k === 'f4' ? 7 : 3) && r > 0.9) { st.staff++; st.money -= F.wage; rfNews(k, `${F.n} contratou mais um funcionário (agora são ${st.staff}).`); }
     const nb = F.builds.find(b => !st.built.includes(b[0])); if (nb && st.money > nb[2] * 3 && r > 0.94) { st.built.push(nb[0]); st.money -= nb[2]; rfNews(k, `${F.n} construiu ${nb[1]}.`); }
   } }
@@ -8011,11 +8244,13 @@ function clampCam(v, span, world) { return span >= world ? (world - span) / 2 : 
 function camUpdate(dt) {
   cam.az = lerp(cam.az, cam.taz, Math.min(1, dt * 5)); cam.z = cam.uz * cam.az;
   const vw = VW(), vh = VH();
-  if (cam.free) { cam.x = clampCam(cam.x, vw, WPX); cam.y = clampCam(cam.y, vh, HPX); return; }
+  const RB = P && P.inside ? roomById(P.inside) : null, bx0 = RB ? RB.x0 * TS : 0, bx1 = RB ? (RB.x0 + RB.w) * TS : WPX, by0 = RB ? RB.y0 * TS : 0, by1 = RB ? (RB.y0 + RB.h) * TS : HPX;
+  const clampB = (v, span, lo, hi) => span >= hi - lo ? lo + (hi - lo - span) / 2 : cl(v, lo, hi - span); // dentro de casa a câmera fica no cômodo
+  if (cam.free) { cam.x = clampB(cam.x, vw, bx0, bx1); cam.y = clampB(cam.y, vh, by0, by1); return; }
   let tx, ty;
   if (cam.fx !== null) { tx = cam.fx; ty = cam.fy; }
   else { const k = Math.min(1, dt * 2.2); cam.lx = lerp(cam.lx, cl((P._vx || 0) * 0.4, -40, 40), k); cam.ly = lerp(cam.ly, cl((P._vy || 0) * 0.32, -30, 30), k); cam.shY = lerp(cam.shY, $('ap').classList.contains('on') ? vh * 0.2 : 0, Math.min(1, dt * 6)); tx = ix(P) + cam.lx; ty = iy(P) - 10 + cam.ly + cam.shY; }
-  const nx = clampCam(tx - vw / 2, vw, WPX), ny = clampCam(ty - vh / 2, vh, HPX);
+  const nx = clampB(tx - vw / 2, vw, bx0, bx1), ny = clampB(ty - vh / 2, vh, by0, by1);
   if (cam.snap) { cam.x = nx; cam.y = ny; cam.snap = false; return; }
   if (cam.hold > 0) { cam.hold -= dt; return; }
   const k = cam.fx !== null ? Math.min(1, dt * (cam.spd || 1.6)) : Math.min(1, dt * (cam.ret > 0 ? 3 : 8)); if (cam.ret > 0) cam.ret -= dt;
@@ -8165,7 +8400,7 @@ function render(dt) {
   X.setTransform(1, 0, 0, 1, 0, 0); X.fillStyle = '#1a2a10'; X.fillRect(0, 0, W, H);
   const ox = Math.round(cam.x * s), oy = Math.round(cam.y * s);
   X.setTransform(s, 0, 0, s, -ox, -oy);
-  const sx = Math.max(0, Math.floor(cam.x)), sy = Math.max(0, Math.floor(cam.y)), sw = Math.min(WPX - sx, Math.ceil(vw) + 2), sh = Math.min(HPX - sy, Math.ceil(vh) + 2);
+  const sx = Math.max(0, Math.floor(cam.x)), sy = Math.max(0, Math.floor(cam.y)), sw = Math.min(WPX - sx, Math.ceil(vw) + 2), sh = Math.min(HPXT - sy, Math.ceil(vh) + 2);
   X.drawImage(groundC, sx, sy, sw, sh, sx, sy, sw, sh);
   const tx0 = Math.max(0, Math.floor(cam.x / TS) - 3), tx1 = Math.min(MW - 1, Math.ceil((cam.x + vw) / TS) + 3), ty0 = Math.max(0, Math.floor(cam.y / TS) - 2), ty1 = Math.min(MH - 1, Math.ceil((cam.y + vh) / TS) + 5);
   const se = season(), wind = S.weather === 'vento' ? 2 : 1;
@@ -8212,6 +8447,9 @@ function render(dt) {
   for (const w of S.workers) { if (w.x === undefined || !inV(w.x, w.y, 30)) continue; if (w._mnt) { const h = workerHorse(w); if (h) { add(w.y, () => { const sp = h._mv || 0, an = sp < 2 ? 'idle' : sp > 40 ? 'trot' : 'walk', cyc = RIG.cycleLen(rigBreed(h), an === 'idle' ? 'walk' : an, rigK(h)) || 20; drawMounted(h, w.ap, w.x, w.y, w.dir || 0, an, an === 'idle' ? 0 : Math.floor(((h._dist || 0) / cyc % 1) * 8) % 8); }); continue; } } if (w._sleep) continue; add(iy(w), () => { const wx = ix(w), wy = iy(w); const pz = w._pose === 'walk' ? 'walk' : w._pose || 'idle'; drawPerson(w.ap, wx, wy, w.dir || 0, pz === 'walk' ? Math.floor((w._ph || 0) / 22 * 8 / 0.22) % 8 : Math.floor(drawT * 3) % 2, pz === 'carry' && w._pose === 'walk' ? 'carryW' : pz); if (w.task && w._pose !== 'walk' && !w._wait) { X.fillStyle = '#2b1608'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), 16, 3); X.fillStyle = '#7ad040'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), Math.round(16 * (w.task.prog || 0)), 3); } }); }
   for (const w of WILD) if (inV(w.x, w.y, 40)) add(WKIND[w.k].sky ? w.y + 200 : w.y, () => drawWild(w));
   if (inV(S.cart.x, S.cart.y, 60)) { const an = cartAnimal(); add(an ? Math.max(iy(S.cart), iy(an)) : iy(S.cart), drawCart); }
+  if (P.inside) { const RB = roomById(P.inside);
+    if (RB) { for (const f of FURN) { if (f.r !== RB.id) continue; const [c, up] = furnSpr(f.t, f.w, f.h, RB.H.wall); const sx2 = f.tx * TS, sy2 = f.ty * TS - up; add(f.wall ? -1e9 + f.ty : f.t === 'tapete' ? -1e8 : f.y - (f.t === 'rede' ? 30 : 0), () => X.drawImage(c, sx2, sy2)); }
+      const op = roomOwnerPos(RB); if (op) add(op.y, () => drawPerson(op.e.d.ap, op.x, op.y, op.dir, op.pose === 'feed' ? Math.floor(drawT * 2) % 2 : 0, op.pose)); } }
   add(iy(P) + 0.5, drawPlayer);
   L.sort((a, b) => a.y - b.y); for (const o of L) o.f();
   forestOverlay(tx0, ty0, tx1, ty1); drawEventDecor(true); drawMemGlints(); misMarkers(); questMarkers(); drawMoveFx(); drawDebugCol();
@@ -8229,12 +8467,13 @@ function render(dt) {
   if (P._ctx && P._ctx.x !== undefined && mode === 'play' && !P._act && !P._auto) { const y = P._ctx.y - 6 + Math.sin(drawT * 6) * 2; X.fillStyle = '#2b1608'; X.fillRect(Math.round(P._ctx.x - 3), Math.round(y - 5), 7, 3); X.fillStyle = '#ffe08a'; X.fillRect(Math.round(P._ctx.x - 2), Math.round(y - 4), 5, 2); X.fillRect(Math.round(P._ctx.x - 1), Math.round(y - 2), 3, 2); X.fillRect(Math.round(P._ctx.x), Math.round(y), 1, 1); }
   if (P._auto && P._auto.path && P._auto.mark) { const L = P._auto.path; X.fillStyle = 'rgba(255,224,138,0.55)'; let px = P.x, py = P.y; for (let i = P._auto.wp; i < L.length; i++) { const q = L[i], n = Math.floor(hyp(q.x - px, q.y - py) / 9); for (let k = 1; k <= n; k++) X.fillRect(Math.round(px + (q.x - px) * k / n) - 1, Math.round(py + (q.y - py) * k / n) - 1, 2, 2); px = q.x; py = q.y; } }
   if (P._auto && P._auto.tgt) { const t = P._auto.tgt; X.strokeStyle = 'rgba(255,224,138,0.8)'; X.setLineDash([2, 2]); X.beginPath(); X.ellipse(t.x, t.y, 7, 3, 0, 0, 7); X.stroke(); X.setLineDash([]); }
-  { const ci = S.wx ? S.wx.ci : 0.1; if (ci > 0.02) { X.fillStyle = `rgba(10,10,30,${0.04 + ci * 0.1})`; const nC = 3 + Math.round(ci * 5); for (let i = 0; i < nC; i++) { const cx = ((drawT * (6 + (S.weather === 'vento' ? 14 : 0)) + i * 470) % (WPX + 400)) - 200, cy = (i * 377) % HPX; if (inV(cx, cy, 160)) { X.beginPath(); X.ellipse(cx, cy, 90, 40, 0, 0, 7); X.fill(); X.beginPath(); X.ellipse(cx + 50, cy + 10, 60, 30, 0, 0, 7); X.fill(); } } } }
+  if (P.inside) { const RB = roomById(P.inside); if (RB) { const x0 = RB.x0 * TS, y0 = RB.y0 * TS, x1 = (RB.x0 + RB.w) * TS, y1 = (RB.y0 + RB.h) * TS; X.fillStyle = '#0e0a08'; X.fillRect(cam.x - 50, cam.y - 50, x0 - cam.x + 50, vh + 100); X.fillRect(x1, cam.y - 50, vw + 100, vh + 100); X.fillRect(cam.x - 50, cam.y - 50, vw + 100, y0 - cam.y + 50); X.fillRect(cam.x - 50, y1, vw + 100, vh + 100); } }
+  if (!P.inside) { const ci = S.wx ? S.wx.ci : 0.1; if (ci > 0.02) { X.fillStyle = `rgba(10,10,30,${0.04 + ci * 0.1})`; const nC = 3 + Math.round(ci * 5); for (let i = 0; i < nC; i++) { const cx = ((drawT * (6 + (S.weather === 'vento' ? 14 : 0)) + i * 470) % (WPX + 400)) - 200, cy = (i * 377) % HPX; if (inV(cx, cy, 160)) { X.beginPath(); X.ellipse(cx, cy, 90, 40, 0, 0, 7); X.fill(); X.beginPath(); X.ellipse(cx + 50, cy + 10, 60, 30, 0, 0, 7); X.fill(); } } } }
   X.setTransform(1, 0, 0, 1, 0, 0);
   const B = BASE;
-  { const ri = S.wx ? S.wx.ri : 0; if (ri > 0.03) { const n = Math.round(30 + ri * 130); while (rain.length < n) rain.push({ x: rnd(0, W), y: rnd(0, H), s: rnd(220, 300) }); const sl = 0.15 + (S.weather === 'tempestade' ? 0.25 : 0); X.strokeStyle = `rgba(200,218,245,${0.35 + ri * 0.45})`; X.lineWidth = Math.max(1, B * 0.5); X.beginPath(); for (let k = 0; k < n; k++) { const d = rain[k]; d.y += d.s * B * dt * (0.7 + ri * 0.5); d.x -= d.s * sl * B * dt; if (d.y > H) { d.y = -6 * B; d.x = rnd(0, W + 30 * B); } X.moveTo(d.x, d.y); X.lineTo(d.x - 2 * B * (1 + sl * 2), d.y + (3 + ri * 4) * B); } X.stroke(); X.lineWidth = 1; X.fillStyle = `rgba(40,50,70,${0.06 + ri * 0.16})`; X.fillRect(0, 0, W, H); }
+  if (!P.inside) { const ri = S.wx ? S.wx.ri : 0; if (ri > 0.03) { const n = Math.round(30 + ri * 130); while (rain.length < n) rain.push({ x: rnd(0, W), y: rnd(0, H), s: rnd(220, 300) }); const sl = 0.15 + (S.weather === 'tempestade' ? 0.25 : 0); X.strokeStyle = `rgba(200,218,245,${0.35 + ri * 0.45})`; X.lineWidth = Math.max(1, B * 0.5); X.beginPath(); for (let k = 0; k < n; k++) { const d = rain[k]; d.y += d.s * B * dt * (0.7 + ri * 0.5); d.x -= d.s * sl * B * dt; if (d.y > H) { d.y = -6 * B; d.x = rnd(0, W + 30 * B); } X.moveTo(d.x, d.y); X.lineTo(d.x - 2 * B * (1 + sl * 2), d.y + (3 + ri * 4) * B); } X.stroke(); X.lineWidth = 1; X.fillStyle = `rgba(40,50,70,${0.06 + ri * 0.16})`; X.fillRect(0, 0, W, H); }
     if (S.wx && S.wx.flash > 0) { X.fillStyle = `rgba(235,240,255,${Math.min(0.7, S.wx.flash * 0.7)})`; X.fillRect(0, 0, W, H); } }
-  const fog = S.weather === 'neblina' ? cl(1 - (hour() - 6) / 4, 0, 1) : 0;
+  const fog = S.weather === 'neblina' && !P.inside ? cl(1 - (hour() - 6) / 4, 0, 1) : 0;
   if (fog > 0) { if (!fogB.length) for (let i = 0; i < 7; i++) fogB.push({ x: rnd(0, W), y: rnd(0, H), r: rnd(50, 90) * B, v: rnd(3, 8) * B }); for (const f of fogB) { f.x += f.v * dt; if (f.x - f.r > W) f.x = -f.r; const g = X.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r); g.addColorStop(0, `rgba(230,235,240,${0.55 * fog})`); g.addColorStop(1, 'rgba(230,235,240,0)'); X.fillStyle = g; X.fillRect(f.x - f.r, f.y - f.r, f.r * 2, f.r * 2); } X.fillStyle = `rgba(220,225,230,${0.25 * fog})`; X.fillRect(0, 0, W, H); }
   lighting();
 }
@@ -8252,13 +8491,14 @@ function ambient() {
   return { dark, tint, ta };
 }
 function lighting() {
-  const { dark, tint, ta } = ambient();
+  let { dark, tint, ta } = ambient(); if (P && P.inside) { dark = Math.min(0.5, dark * 0.75 + 0.06); ta *= 0.5; } /* dentro de casa: penumbra; os lampiões acendem */
   if (tint && ta > 0.01) { X.globalCompositeOperation = 'soft-light'; X.fillStyle = tint; X.globalAlpha = ta * 2; X.fillRect(0, 0, W, H); X.globalAlpha = 1; X.globalCompositeOperation = 'source-over'; }
   if (dark < 0.02) return;
   const lx = LX, lw = LC.width, lh = LC.height; lx.globalCompositeOperation = 'source-over'; lx.clearRect(0, 0, lw, lh); lx.fillStyle = `rgba(8,12,38,${dark})`; lx.fillRect(0, 0, lw, lh);
   lx.globalCompositeOperation = 'destination-out';
   const lights = [], vw = VW(), vh = VH(), z = SCL(), toS = (x, y) => [(x - cam.x) * z, (y - cam.y) * z];
   const L = (x, y, r, k) => { if (x < cam.x - r || x > cam.x + vw + r || y < cam.y - r || y > cam.y + vh + r) return; lights.push([x, y, r, k]); };
+  if (P.inside) for (const f of FURN) { const R0 = ROOMS[f.r]; if (R0.b !== P.inside) continue; if (f.t === 'lamp') L(f.x, (f.ty + 1) * TS, 64, 'lamp'); else if (f.t === 'fogao' || f.t === 'forja') L(f.x, f.ty * TS + 6, 40, 'fire'); else if (f.t === 'janela' && hour() > 6 && hour() < 18) L(f.x, (f.ty + 2) * TS, 70, 'self'); }
   for (const p of PROPS) { if (p.t === 'poste') L(p.x + 6, p.y - 33, 58, 'lamp'); if (p.t === 'fogueira') { const lv = fireLevel(); if (lv > 0) L(p.x, p.y - 8, (34 + 46 * lv) + Math.sin(drawT * 9) * 3 + Math.sin(drawT * 23) * 1.5, 'fire'); } if (p.t === 'churrasqueira' && S.fires.churr > 0) L(p.x, p.y - 14, 50, 'fire'); }
   for (const b of BLD) { if (b.id === 'galpao' || b.id === 'deposito' || b.id === 'camposGalpao' || b.id === 'duarteEst') continue; L((b.r[0] + b.r[2] + 1) / 2 * TS, (b.r[3] + 1) * TS - 8, 46, 'win'); }
   const px = ix(P), py = iy(P);
@@ -8272,7 +8512,7 @@ function lighting() {
 /* ---------- HUD e região ---------- */
 let hudT = 0, regT = 0, curReg = null, regHide = null;
 const WXIC = { sol: 'sun', nublado: 'cloud', chuva: 'rain', neblina: 'fog', vento: 'wind' };
-function regionAt(x, y) { const tx = x / TS, ty = y / TS;
+function regionAt(x, y) { if (P && P.inside) { const b = BLD.find(q => q.id === P.inside), R0 = roomById(P.inside); if (b) return [b.n, R0 && R0.H.own !== 'player' && NPCDEF[R0.H.own] ? 'Casa de ' + NPCDEF[R0.H.own].n : 'Dentro de casa']; } const tx = x / TS, ty = y / TS;
   if (tx >= 112) { if (tx < 118) return ['Serra do Leste', 'ESTRADA PARA A REGIÃO']; for (const k in RFARMS) { const r = RFARMS[k].rect; if (tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]) return [RFARMS[k].n, NPCDEF[RFARMS[k].own].n.toUpperCase()]; } return ['Região das Serras', 'ESTRADA DO LESTE']; }
   if (tx < 60) return ty < 21 && S.exp.norte ? ['Gleba do Mandacaru', 'FAZENDA BOA ESPERANÇA'] : ty > 67 && S.exp.sul ? ['Gleba do Açude', 'FAZENDA BOA ESPERANÇA'] : ['Fazenda Boa Esperança', 'SUA PROPRIEDADE']; if (tx > 66 && ty < 27) return ['Fazenda Campos', 'SR. FELIPE']; if (tx > 66 && ty > 62) return ['Fazenda Duarte', 'SR. RYAN']; if (tx >= 68 && ty >= 28 && ty <= 62) return ['Itarantim', 'CENTRO DA CIDADE']; return ['Estrada do Riacho', 'ITARANTIM · BAHIA']; }
 function hud(dt) {
@@ -9350,9 +9590,11 @@ function computeCtx() {
   if (mode !== 'play' || P._act || inst.on) { P._ctx = null; return; }
   let best = null, bs = 1e9; const C2 = (score, label, fn, x, y) => { if (score < bs) { bs = score; best = { label, fn, x, y }; } };
   if (P.cart) { C2(0, '🛒 Carroça', openCart, S.cart.x, S.cart.y - 30); P._ctx = best; return; }
+  if (P.inside) { furnCtx(C2); P._ctx = best; return; }
   for (const e of npcs) { if (e.hidden) continue; const d = hyp(e.x - P.x, e.y - P.y); if (d < 26) { const ev = S.event && S.event.day === S.day && e.act === 'festa' && has('assado') && npcState(e.id).served !== S.day; C2(d - 14, ev ? '🍽️ Servir ' + e.d.n.split(' ').pop() : '💬 ' + e.d.n, () => ev ? serve(e.id) : openNpc(e.id), e.x, e.y - 34); } }
   { const ch = chestAt(P.x, P.y, 24); if (ch) C2(hyp(ch.x - P.x, ch.y - P.y) - 6, '📦 ' + ch.name, () => openChestUI(ch), ch.x, ch.y - 16); }
   for (const o of interactables(false)) { const d = o.k === 'clean' ? 30 : hyp(o.x - P.x, o.y - P.y); if (d < o.r) C2(d - o.prio * 4, o.label, o.fn, o.k === 'clean' ? undefined : o.x, o.k === 'clean' ? undefined : o.y - 22); }
+  if (!P.mnt) for (const a of near(P.x, P.y, 24)) { if (a._hid) continue; const d = hyp(a.x - P.x, a.y - P.y); if (a.loan && a.loan.to === 'player') C2(d + 1, '🐴 Montar o ' + a.n + ' (emprestado)', () => mountHorse(a), a.x, a.y - 30); else if (LEND_OK(a) && !a.loan && !a._wr) C2(d + 3, '🐴 Pedir o ' + a.n + ' emprestado', () => lendAsk(a), a.x, a.y - 30); }
   if (!P.mnt) for (const a of near(P.x, P.y, 22)) { if (a.own !== 'player' || a._hid || S.cart.hitch === a.id) continue; const d = hyp(a.x - P.x, a.y - P.y); C2(d + 2, (a.sp === 'cao' ? '🐕 ' : a.sp === 'galinha' ? '🐔 ' : a.sp === 'boi' ? '🐄 ' : '🐴 ') + a.n, () => openSheet(a), a.x, a.y - 30); }
   P._ctx = best;
 }
@@ -9366,7 +9608,7 @@ const STEP = 1 / 60; let acc = 0, lastT = 0, saveT = 0;
 function tick(dt) {
   drawT += dt;
   if (mode === 'play' && !paused) {
-    holdTick(); placeTick(dt); bagSync(); const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
+    holdTick(); placeTick(dt); bagSync(); insideTick(); if ((tick.lendT = (tick.lendT || 0) - dt) < 0) { tick.lendT = 1; lendTick(); const lh = loanedHorse(); if (lh && P.mnt !== lh.id && lh._st !== 'tied' && !lh._act) lh._st = 'tied'; } const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
     { const h = P.mnt ? byId(P.mnt) : null; if (h && h._react && (h._react.t -= dt) <= 0) h._react = null; }
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);
