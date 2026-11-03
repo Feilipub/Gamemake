@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted — aprovado pela RF Games em 2026-11-03.
 
 > Quem pode mudar para `Accepted`: o usuário (RF Games), ou o `technical-director`
 > com confirmação explícita do usuário.
