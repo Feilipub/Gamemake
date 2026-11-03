@@ -309,7 +309,7 @@ body.lan .sw2 .pvbox{position:sticky;top:0}
 'use strict';
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
-const TS = 16, MW = 112, MH = 110, WPX = MW * TS, HPX = MH * TS;
+const TS = 16, MW = 240, MH = 110, WPX = MW * TS, HPX = MH * TS;
 const GAME_V = '3.2.0', SAVE_V = 7;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
@@ -819,6 +819,74 @@ const AREAS = {
   aprisco: { n: 'Aprisco (cabras)', k: 'pasto', r: [41, 100, 57, 108], g: [[41, 103], [41, 104]] },
   pomar: { n: 'Pomar', k: 'pomar', r: [2, 91, 30, 107], g: [[30, 98], [30, 99]] }
 };
+/* ============ REGIÃO DAS SERRAS (depois de Itarantim pela estrada do leste) ============ */
+// Mapa contínuo a leste (x 112 a 239), separado da cidade por uma serra intransponível: só se chega pela viagem.
+// 4 fazendas com dono, funcionários, animais, economia própria, empregos e reputação. Ver design/level/regiao_serras.md
+const REG = { x0: 118, gateTown: [111.2, 43.9], gateReg: [118.6, 43.9] };
+const RFARMS = {
+  f1: { n: 'Fazenda Riacho Doce', short: 'RIACHO DOCE', own: 'valdomiro', type: 'Propriedade tradicional', rect: [119, 5, 163, 41], color: '#7a5230', money: 26000, staff: 1, wage: 900,
+    hist: 'Fazenda de família há quatro gerações. Seu Valdomiro levantou o curral de madeira com o pai e ainda tange o gado no aboio.', builds: [['rdCurralNovo', 'um curral novo de aroeira', 9000], ['rdAcude', 'um tanque para o gado', 14000]] },
+  f2: { n: 'Fazenda Santa Clara', short: 'SANTA CLARA', own: 'helena', type: 'Criação e melhoramento genético', rect: [119, 46, 165, 98], color: '#2a5a8a', money: 52000, staff: 2, wage: 1200,
+    hist: 'Comprada pela Dra. Helena depois de vinte anos como zootecnista em Minas. Ela registra cada matriz e cada bezerro.', builds: [['scTronco', 'um tronco de contenção novo', 12000], ['scBalanca', 'uma balança de gado', 18000]] },
+  f3: { n: 'Fazenda Pé de Serra', short: 'PE DE SERRA', own: 'caetano', type: 'Fazenda diversificada', rect: [180, 3, 230, 40], color: '#3a7a3a', money: 21000, staff: 1, wage: 850,
+    hist: 'Seu Caetano começou com três cabras e uma porca. Hoje tem de tudo um pouco e vende na feira de Itarantim e de Itapetinga.', builds: [['psEstufa', 'uma horta coberta', 7000], ['psQueijaria', 'uma queijaria de leite de cabra', 15000]] },
+  f4: { n: 'Fazenda Monte Real', short: 'MONTE REAL', own: 'otavio', type: 'Agropecuária de alto padrão', rect: [180, 54, 237, 106], color: '#2a4a6a', money: 900000, staff: 4, wage: 2400,
+    hist: 'Do Dr. Otávio Sampaio, que fez fortuna com soja no oeste da Bahia e voltou para a terra do pai. Genética de ponta, cavalos de exposição e uma mansão que se vê da estrada.', builds: [['mrPicadeiro', 'um picadeiro coberto', 120000], ['mrLaboratorio', 'um laboratório de embriões', 260000]] }
+};
+Object.assign(AREAS, {
+  rd_curral: { n: 'Curral (Riacho Doce)', k: 'npc', noPast: 1, r: [124, 20, 132, 27], g: [[128, 27], [129, 27]], own: 'valdomiro', reg: 'f1' },
+  rd_pasto: { n: 'Pasto (Riacho Doce)', k: 'npc', r: [137, 18, 161, 37], g: [[137, 26], [137, 27]], own: 'valdomiro', reg: 'f1' },
+  rd_galin: { n: 'Galinheiro (Riacho Doce)', k: 'npc', noPast: 1, r: [142, 7, 148, 13], g: [[142, 10], [142, 11]], own: 'valdomiro', reg: 'f1' },
+  sc_manejo: { n: 'Curral de manejo (Santa Clara)', k: 'npc', noPast: 1, r: [124, 57, 133, 64], g: [[133, 60], [133, 61]], own: 'helena', reg: 'f2' },
+  sc_mat: { n: 'Pasto das matrizes (Santa Clara)', k: 'npc', r: [120, 68, 137, 86], g: [[137, 76], [137, 77]], own: 'helena', reg: 'f2' },
+  sc_bez: { n: 'Bezerreiro (Santa Clara)', k: 'npc', r: [140, 68, 150, 78], g: [[140, 72], [140, 73]], own: 'helena', reg: 'f2' },
+  sc_rep: { n: 'Reprodutores (Santa Clara)', k: 'npc', r: [152, 68, 164, 86], g: [[152, 76], [152, 77]], own: 'helena', reg: 'f2' },
+  sc_p2: { n: 'Pasto de rodízio (Santa Clara)', k: 'npc', r: [140, 80, 150, 96], g: [[140, 88], [140, 89]], own: 'helena', reg: 'f2' },
+  ps_gado: { n: 'Pasto do gado (Pé de Serra)', k: 'npc', r: [182, 24, 204, 38], g: [[190, 24], [191, 24]], own: 'caetano', reg: 'f3' },
+  ps_chiq: { n: 'Chiqueiro (Pé de Serra)', k: 'npc', noPast: 1, r: [208, 5, 216, 12], g: [[208, 8], [208, 9]], own: 'caetano', reg: 'f3' },
+  ps_cabra: { n: 'Aprisco (Pé de Serra)', k: 'npc', r: [208, 16, 224, 28], g: [[208, 21], [208, 22]], own: 'caetano', reg: 'f3' },
+  ps_galin: { n: 'Galinheiro (Pé de Serra)', k: 'npc', noPast: 1, r: [219, 5, 226, 12], g: [[219, 8], [219, 9]], own: 'caetano', reg: 'f3' },
+  mr_curral: { n: 'Currais (Monte Real)', k: 'npc', noPast: 1, r: [198, 80, 208, 89], g: [[203, 80], [204, 80]], own: 'otavio', reg: 'f4' },
+  mr_pista: { n: 'Pista de treino (Monte Real)', k: 'npc', noPast: 1, r: [182, 86, 196, 101], g: [[189, 86], [190, 86]], own: 'otavio', reg: 'f4', vip: 1 },
+  mr_p1: { n: 'Pastagens (Monte Real)', k: 'npc', r: [210, 82, 234, 104], g: [[214, 82], [215, 82]], own: 'otavio', reg: 'f4' }
+});
+// construções dos donos que aparecem quando a fazenda investe
+const RBUILT_PROPS = { rdCurralNovo: ['curralNovo', 128.5, 31.6], rdAcude: ['tanque', 152, 40.4], scTronco: ['tronco2', 128.5, 66.4], scBalanca: ['balanca', 136.5, 66.4], psEstufa: ['estufa', 188.5, 19.4], psQueijaria: ['queijaria', 228.5, 20.4], mrPicadeiro: ['picadeiro', 224.5, 79.6], mrLaboratorio: ['laboratorio', 228.5, 70.4] };
+function genRegion(R) {
+  // serra entre a cidade e a região: pedra, mandacaru e mato fechado (não dá para atravessar a pé)
+  for (let y = 0; y < MH; y++) for (let x = 112; x < MW; x++) ground[gi(x, y)] = x < 118 || (H2(x, y, 61) < 0.18 && y % 7 > 2) ? G.DRY : G.GRASS;
+  for (let y = 0; y < MH; y++) for (let x = 112; x <= 116; x++) { obj[gi(x, y)] = 3; if ((x + y) % 2 === 0) PROPS.push({ t: H2(x, y, 5) < 0.4 ? 'pedra' : H2(x, y, 6) < 0.6 ? 'mandacaru' : 'jurema', x: (x + 0.5) * TS, y: (y + 0.85) * TS, v: (x * 7 + y) % 8 }); }
+  for (let x = 112; x <= 117; x++) for (const y of [43, 44]) { ground[gi(x, y)] = G.DIRT; }
+  // estradas da região
+  fillR(118, 43, 237, 44, G.DIRT); fillR(176, 2, 177, 107, G.DIRT); fillR(134, 15, 135, 42, G.DIRT); fillR(134, 45, 135, 56, G.DIRT); fillR(178, 20, 206, 21, G.DIRT);
+  fillR(178, 59, 198, 61, G.WALK); fillR(178, 60, 198, 60, G.PAVE); fillR(198, 62, 207, 74, G.WALK); fillR(201, 70, 204, 75, G.PAVE); fillR(186, 74, 214, 75, G.WALK);
+  // riacho da serra, de norte a sul, com ponte na estrada
+  for (let y = 0; y < MH; y++) { const cx = Math.round(168 + Math.sin(y * 0.15) * 1.5 + Math.sin(y * 0.05) * 1.2); for (let x = cx; x <= cx + 1; x++) ground[gi(x, y)] = (y === 43 || y === 44) ? G.BRIDGE : G.WATER; }
+  // chão próprio de cada fazenda
+  fillR(125, 21, 131, 26, G.MUD); fillR(125, 58, 132, 63, G.MUD); fillR(209, 6, 215, 11, G.MUD); fillR(199, 81, 207, 88, G.MUD); fillR(183, 87, 195, 100, G.SAND);
+  fillR(122, 16, 133, 18, G.FLOOR); fillR(122, 54, 133, 56, G.FLOOR); fillR(182, 14, 206, 18, G.FLOOR);
+  // cercas: perímetro da Monte Real com portão na entrada
+  fenceLine(180, 54, 237, 54); fenceLine(180, 106, 237, 106); fenceLine(237, 54, 237, 106); fenceLine(180, 54, 180, 58); fenceLine(180, 63, 180, 106);
+}
+function genRegionPost(P) { // depois das áreas e porteiras: props, cochos e açudes
+  P('portalRD', 134.5, 41.6, 0); P('portalSC', 134.5, 47.8, 0); P('portalPS', 179.5, 22.6, 0); P('portalMR', 181.5, 62.4, 0); P('guarita', 183.5, 58.4, 0); obj[gi(183, 57)] = 3;
+  P('placaEstrada', 110.6, 41.8, 0); P('porteiraEstrada', 112.6, 45.2, 0); P('placaEstrada', 119.4, 41.8, 0);
+  P('piscina', 215.5, 68.2, 0); for (let y = 64; y <= 67; y++) for (let x = 212; x <= 218; x++) obj[gi(x, y)] = 3;
+  P('chafariz', 202.5, 73.2, 0); obj[gi(202, 72)] = obj[gi(203, 72)] = 3;
+  for (let x = 184; x <= 196; x += 2) { P('sebe', x + 0.5, 58.4, 0); P('canteiro', x + 0.5, 62.6, 0); }
+  for (const x of [199, 206]) for (let y = 64; y <= 70; y += 2) P('sebe', x + 0.5, y + 0.4, 0);
+  P('palmeira', 197.5, 72.5, 1); P('palmeira', 208.5, 72.5, 1); P('palmeira', 184.5, 70.5, 1);
+  P('tronco2', 128.5, 60.6, 0); for (const [x, y] of [[123, 66], [139, 66], [151, 66], [139, 98]]) P('placaSC', x + 0.5, y + 0.6, 0);
+  for (let x = 150; x <= 160; x += 2) for (let y = 8; y <= 13; y += 2) P(x % 4 ? 'palma' : 'capim', x + 0.5, y + 0.8, 0); // roça do Seu Valdomiro
+  for (let x = 184; x <= 192; x += 2) P('canteiro', x + 0.5, 16.6, 0); // horta do Seu Caetano
+  ['fr:manga', 'fr:goiaba', 'fr:caju', 'fr:limao', 'fr:laranja'].forEach((t, i) => { P(t, 196.5 + i * 2.2, 17.4, 0); });
+  P('pocilga', 212.5, 12.6, 0); P('abrigoCabra', 220.5, 27.6, 0); P('coop', 223, 11.4, 0);
+  for (const k in RBUILT_PROPS) { const [t, x, y] = RBUILT_PROPS[k]; PROPS.push({ t, x: x * TS, y: y * TS, v: 0, rb: k }); }
+  // cochos nos pastos das fazendas (abastecidos pelos donos)
+  const tr = (a, k, x, y, w, cap) => { TROUGHS.push({ a, k, x, y, w, cap }); for (let i = 0; i < w; i++) obj[gi(x + i, y)] = 3; };
+  tr('rd_curral', 'racao', 125, 21, 2, 150); tr('rd_pasto', 'agua', 139, 19, 2, 300); tr('sc_mat', 'agua', 122, 70, 2, 300); tr('sc_mat', 'racao', 126, 70, 2, 200); tr('sc_bez', 'racao', 142, 69, 2, 100); tr('sc_rep', 'agua', 154, 69, 2, 200);
+  tr('ps_gado', 'agua', 184, 25, 2, 300); tr('ps_chiq', 'racao', 210, 6, 2, 100); tr('ps_cabra', 'agua', 210, 17, 2, 150); tr('mr_curral', 'agua', 200, 81, 2, 200); tr('mr_p1', 'agua', 212, 83, 2, 400); tr('mr_p1', 'racao', 216, 83, 3, 400);
+}
 const AKEYS = Object.keys(AREAS);
 // roça de forragem (novo): cercado de varas com porteira, 12 leiras de palma, mandacaru sem espinho e maniçoba. Ocupa o antigo Lote C.
 const ROCA = { n: 'Roça de forragem', r: [27, 32, 36, 42], g: [[27, 37], [27, 38]] };
@@ -857,6 +925,20 @@ const BDEF = [
   { id: 'casaZe', n: 'Casa do Zé Cantador', art: 'casa', r: [100, 25, 104, 29], door: 102.5, act: 'npcHome:ze', wall: '#a8c890', trim: '#6a3a1a', roof: '#b0502a' },
   { id: 'casaLou', n: 'Casa do Lourival', art: 'casa', r: [106, 25, 110, 29], door: 108.5, act: 'npcHome:lourival', wall: '#e8c8a8', trim: '#2f6f9f', roof: '#a8482a' }
 ];
+// Região das Serras
+BDEF.push(
+  { id: 'rdSede', n: 'Sede da Riacho Doce', art: 'sede', r: [124, 10, 131, 15], door: 127.5, act: 'npcHome:valdomiro', wall: '#e8d8b0', trim: '#6a3a1a', roof: '#a8482a' },
+  { id: 'rdGalpao', n: 'Galpão (Riacho Doce)', art: 'galpao', r: [136, 10, 141, 14], door: 138.5, act: 'none', wall: '#9a6a3a', roof: '#9aa0a4' },
+  { id: 'scSede', n: 'Sede da Santa Clara', art: 'sede', r: [124, 48, 131, 53], door: 127.5, act: 'npcHome:helena', wall: '#eef2f4', trim: '#2a5a8a', roof: '#3a4a5a' },
+  { id: 'scEst', n: 'Estábulo (Santa Clara)', art: 'estabulo', r: [138, 48, 145, 52], door: 141.5, act: 'none', wall: '#c8a070', roof: '#3a4a5a' },
+  { id: 'psCasa', n: 'Casa da Pé de Serra', art: 'casa', r: [184, 8, 190, 13], door: 187, act: 'npcHome:caetano', wall: '#e8c890', trim: '#3a7a3a', roof: '#b0502a' },
+  { id: 'psGalpao', n: 'Galpão (Pé de Serra)', art: 'galpao', r: [193, 8, 198, 12], door: 195.5, act: 'none', wall: '#8a5a32', roof: '#8e9498' },
+  { id: 'mrMansao', n: 'Mansão da Monte Real', art: 'mansao', r: [196, 62, 209, 68], door: 202.5, act: 'npcHome:otavio' },
+  { id: 'mrGaragem', n: 'Garagem (Monte Real)', art: 'garagem', r: [186, 63, 192, 66], door: 189, act: 'none' },
+  { id: 'mrGalpao', n: 'Galpão de máquinas (Monte Real)', art: 'galpaoMod', r: [212, 72, 220, 77], door: 216, act: 'none' },
+  { id: 'mrEst', n: 'Estábulo (Monte Real)', art: 'estabuloLux', r: [184, 76, 194, 81], door: 189, act: 'none' },
+  { id: 'mrFunc', n: 'Casa dos funcionários (Monte Real)', art: 'casa', r: [222, 72, 227, 77], door: 224.5, act: 'npcHome:severino', wall: '#f0e8d8', trim: '#2a4a6a', roof: '#a8482a' }
+);
 /* ---------- geração ---------- */
 function fillR(x0, y0, x1, y1, t) { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (x >= 0 && y >= 0 && x < MW && y < MH) ground[gi(x, y)] = t; }
 function fenceLine(x0, y0, x1, y1) { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (x >= 0 && y >= 0 && x < MW && y < MH && obj[gi(x, y)] === 0) obj[gi(x, y)] = 1; }
@@ -878,7 +960,8 @@ function genMap() {
     if (x > 62 && y > 62 && n > 1.2) ground[gi(x, y)] = G.DRY;
   }
   // pastos
-  for (const k of AKEYS) { const a = AREAS[k], r = a.r; if (a.k === 'pasto' || a.k === 'npc' || a.k === 'haras') fillR(r[0] + 1, r[1] + 1, r[2] - 1, r[3] - 1, G.PAST); }
+  genRegion(R);
+  for (const k of AKEYS) { const a = AREAS[k], r = a.r; if ((a.k === 'pasto' || a.k === 'npc' || a.k === 'haras') && !a.noPast) fillR(r[0] + 1, r[1] + 1, r[2] - 1, r[3] - 1, G.PAST); }
   fillR(42, 92, 48, 97, G.MUD); fillR(1, 90, 58, 90, G.DIRT); // chão do chiqueiro e carreador da gleba
   fillR(41, 34, 48, 41, G.MUD); fillR(52, 36, 57, 41, G.MUD); fillR(41, 47, 48, 55, G.MUD); fillR(52, 47, 57, 52, G.MUD); fillR(3, 33, 8, 38, G.FLOOR);
   // estradas
@@ -945,6 +1028,7 @@ function genMap() {
   P('esterqueira', 52.6, 94.8, 1); P('placaPomar', 32.2, 97.4, 0);
   P('caixa', 2, 29.5, 1); P('bau', 9.4, 29.7, 1); P('forrageira', 26.6, 28.6, 1); P('coqueiro', 11.6, 27.6, 1); P('caju', 22.4, 38.2, 1); P('manga', 2.2, 42.2, 1);
   [[12.5, 30.8], [39.5, 42.4], [106.6, 45.6], [104, 58.4], [97, 13.2], [97, 75.2]].forEach(p => { POSTS.push({ x: p[0] * TS, y: p[1] * TS }); P('mourao', p[0], p[1], 0); });
+  genRegionPost(P);
   P('placaHist', 79.6, 47.2, 0); P('chapeuAvo', 4.6, 29.9, 0); P('quadro', 85.2, 45.9, 0); P('placaLeilao', 99.0, 45.9, 0); P('placaTS', 42.6, 43.0, 0); obj[gi(79, 47)] = 3;
   P('coreto', 84, 52.6, 0); for (let y = 51; y <= 52; y++) for (let x = 83; x <= 84; x++) obj[gi(x, y)] = 3;
   [[80.5, 47.5], [87.5, 47.5], [80.5, 56.5], [87.5, 56.5]].forEach(p => P('palmeira', p[0], p[1], 1));
@@ -1247,7 +1331,7 @@ function buyParcel(k) {
 }
 function applyLand() { // trava porteiras de terras não compradas
   for (const k in PARCELS) for (const a of PARCELS[k].areas) { const g = GATES[AREAS[a].gate]; if (g) g.lock = S.land ? !S.land[k] : false; if (g && g.lock) g.open = false; }
-  for (const k of AKEYS) { const a = AREAS[k]; if (!a.exp) continue; const g = GATES[a.gate]; if (g) { g.lock = !(S.exp && S.exp[a.exp]); if (g.lock) g.open = false; } } // piquetes das glebas: só depois da compra
+  for (const k of AKEYS) { const a = AREAS[k]; if (a.vip) { const g = GATES[a.gate]; if (g) { g.lock = !(S.rep && S.rep.trust && S.rep.trust.f4 >= 40); if (g.lock) g.open = false; } } if (!a.exp) continue; const g = GATES[a.gate]; if (g) { g.lock = !(S.exp && S.exp[a.exp]); if (g.lock) g.open = false; } } // piquetes das glebas: só depois da compra
 }
 const HOUSES = [{ n: 'Casa de taipa', d: 'Paredes de taipa caiadas, telhado colonial de telha de barro e alpendre com rede. O reboco já mostra o barro aqui e ali, mas é seu.' }, { n: 'Casa de alvenaria', p: 18000, mat: { tijolo: 4, telha: 3, cimento: 20, madeira: 2 }, d: 'Reboco novo, barra azul colonial e telhado revisado. Dorme melhor: +energia ao acordar.' }, { n: 'Casa sede', p: 45000, mat: { tijolo: 8, telha: 6, cimento: 40, madeira: 4 }, d: 'A casa grande da fazenda: escritório, despensa e respeito na região.' }];
 function upgradeHouse() { const lv = (S.house || 0) + 1, H0 = HOUSES[lv]; if (!H0) return; if (!canPay(H0.p)) return say('A reforma custa ' + fmt(H0.p) + '.'); pay(H0.p, 'Reforma: ' + H0.n); S.house = lv; delete SPR_BLD_CASA.c; toast('Reforma concluída: ' + H0.n + '!'); setTimeout(storyCheck, 800); AU.hammer && AU.hammer(P.x, P.y); checkRank(); if (M.open) renderModal(); }
@@ -1468,6 +1552,87 @@ function dogSpr(a, pose, fr) {
   });
 }
 /* ============ CENÁRIO ============ */
+/* RART:begin (gerado de tools/asset-pipeline/region_art.js) */
+const RART = (() => {
+  const mk = (w, h) => { const [c, g] = mkC(w, h); const p = (x, y, ww, hh, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), ww, hh); }; return [c, g, p]; };
+  const roofTiles = (p, x0, y0, w, h, base, light, dark) => { p(x0, y0, w, h, base); for (let y = y0 + 2; y < y0 + h; y += 4) { p(x0, y, w, 1, dark); for (let x = x0 + ((y >> 2) % 2 ? 0 : 3); x < x0 + w; x += 6) { p(x, y - 2, 3, 2, light); p(x + 3, y - 1, 1, 2, dark); } } };
+  const window2 = (p, x, y, w, h, night, frame) => { p(x - 2, y - 2, w + 4, h + 4, frame); p(x, y, w, h, night ? '#ffd27a' : '#34465a'); if (!night) { p(x + 1, y + 1, Math.max(1, w / 3 | 0), h - 2, '#5a7896'); p(x, y + (h >> 1), w, 1, frame); } p(x + (w >> 1), y, 1, h, frame); p(x - 3, y + h + 2, w + 6, 2, shade(frame, -.15)); };
+  function mansao(night) {
+    const W = 224, H = 168, [c, g, p] = mk(W, H), wall = '#f4efe4', wallS = '#ddd5c4', trim = '#7a5a3a', roof = '#a94a2c', roofL = '#cf6a40', roofD = '#7a2e18';
+    const GY = 150; // chão
+    p(6, GY + 6, W - 12, 8, 'rgba(30,20,10,0.25)');
+    // telhado de quatro águas (fundo) e corpo do 2º andar
+    for (let y = 0; y < 30; y++) { const x0 = 30 - y, w = W - 60 + y * 2; p(x0, 14 + y, w, 1, y % 4 === 2 ? roofD : roof); if (y % 4 === 0) for (let x = x0 + (y % 8 ? 0 : 3); x < x0 + w; x += 6) p(x, 14 + y, 3, 1, roofL); }
+    p(30, 12, W - 60, 3, roofD); p(28, 43, W - 56, 3, roofD);
+    p(24, 46, W - 48, 46, wall); for (let y = 48; y < 92; y += 6) p(24, y, W - 48, 1, wallS);
+    p(24, 46, W - 48, 3, '#c8bfae'); for (let k = 0; k < 6; k++) window2(p, 38 + k * 28, 56, 12, 20, night, trim);
+    // sacada central com balaústres
+    p(84, 86, 56, 4, '#e8e0d0'); for (let x = 86; x < 138; x += 4) p(x, 78, 2, 8, '#e8e0d0'); p(84, 76, 56, 2, '#e8e0d0');
+    // 1º andar com varanda de colunas
+    p(10, 92, W - 20, 6, '#c8bfae'); p(16, 98, W - 32, GY - 98, wall); for (let y = 100; y < GY; y += 6) p(16, y, W - 32, 1, wallS);
+    for (let k = 0; k < 7; k++) { const x = 26 + k * 28; if (k === 3) continue; window2(p, x, 108, 14, 24, night, trim); }
+    // portal central: frontão, colunas e porta dupla de madeira
+    for (let y = 0; y < 14; y++) p(92 - y * 0.5 + 0.5, 92 - y, 40 + y, 1, y % 3 ? wall : wallS); p(88, 92, 48, 3, '#c8bfae');
+    p(100, 112, 24, GY - 112, '#6a3e22'); p(100, 112, 24, 2, '#8a5a32'); p(111, 112, 2, GY - 112, '#4a2a16'); p(104, 128, 2, 3, '#e8c860'); p(118, 128, 2, 3, '#e8c860'); p(98, 108, 28, 4, trim);
+    for (const x of [12, 44, 86, 132, 174, 206]) { p(x, 96, 6, GY - 96, '#fbf8f0'); p(x, 96, 2, GY - 96, '#ffffff'); p(x + 5, 96, 1, GY - 96, '#d8d0c0'); p(x - 1, 94, 8, 3, '#e8e0d0'); p(x - 1, GY - 3, 8, 3, '#d8d0c0'); }
+    // degraus, vasos e lampiões
+    p(84, GY, 56, 3, '#d8d0c0'); p(80, GY + 3, 64, 3, '#c8c0b0'); p(76, GY + 6, 72, 3, '#b8b0a0');
+    for (const x of [70, 148]) { p(x, GY - 8, 8, 8, '#a8603a'); p(x + 1, GY - 16, 6, 8, '#3a7a3a'); p(x, GY - 14, 3, 3, '#4a9a4a'); }
+    for (const x of [92, 128]) { p(x, 112, 3, 6, '#2a2a2a'); p(x - 1, 110, 5, 3, night ? '#ffe08a' : '#c8b070'); }
+    if (night) { g.fillStyle = 'rgba(255,214,120,0.16)'; g.fillRect(84, 100, 56, 50); }
+    // chaminé e brasão
+    p(170, 2, 12, 20, '#e8e0d0'); p(168, 0, 16, 3, '#a94a2c'); p(104, 96, 16, 10, '#b8963a'); p(106, 98, 12, 6, '#7a2e18'); p(110, 99, 4, 4, '#e8c860');
+    outline(g, W, H); return c;
+  }
+  function piscina() {
+    const W = 112, H = 64, [c, g, p] = mk(W, H);
+    p(0, 4, W, H - 6, '#e8dcc0'); for (let x = 0; x < W; x += 8) p(x, 4, 1, H - 6, '#d4c8aa'); for (let y = 4; y < H - 2; y += 8) p(0, y, W, 1, '#d4c8aa');
+    p(10, 12, W - 20, H - 26, '#f2f2f2'); p(12, 14, W - 24, H - 30, '#2aa8c8');
+    for (let k = 0; k < 18; k++) p(14 + (k * 37) % (W - 30), 16 + (k * 13) % (H - 34), 6, 1, '#7ad8ec');
+    p(12, 14, W - 24, 3, '#1a7a9a'); p(W - 22, 20, 2, 10, '#c8c8d0'); p(W - 18, 20, 2, 10, '#c8c8d0'); for (let y = 22; y < 30; y += 3) p(W - 22, y, 6, 1, '#c8c8d0');
+    for (const x of [16, 40]) { p(x, H - 10, 18, 6, '#f4f0e8'); p(x, H - 10, 18, 1, '#ffffff'); p(x + 16, H - 14, 2, 6, '#f4f0e8'); p(x, H - 4, 2, 3, '#a8a8a8'); p(x + 16, H - 4, 2, 3, '#a8a8a8'); }
+    p(76, H - 18, 1, 14, '#5a4a3a'); for (let y = 0; y < 6; y++) p(68 - y, H - 24 + y, 18 + y * 2, 1, y % 2 ? '#e05a3a' : '#f4e8d8');
+    outline(g, W, H); return c;
+  }
+  function chafariz() { const [c, g, p] = mk(48, 48); p(4, 38, 40, 8, '#b8b0a0'); p(6, 34, 36, 6, '#c8c0b0'); p(8, 35, 32, 4, '#2aa8c8'); p(21, 16, 6, 20, '#c8c0b0'); p(15, 14, 18, 4, '#b8b0a0'); p(17, 15, 14, 2, '#2aa8c8'); p(23, 6, 2, 9, '#7ad8ec'); for (let k = 0; k < 6; k++) p(16 + k * 3, 18 + (k % 2) * 3, 1, 14 - (k % 3) * 3, '#9ae4f4'); outline(g, 48, 48); return c; }
+  function galpaoModerno(night) {
+    const W = 144, H = 96, [c, g, p] = mk(W, H), m = '#8a9aa8';
+    for (let y = 0; y < 22; y++) p(4 + y * 0.6, 8 + y, W - 8 - y * 1.2, 1, y % 2 ? '#9aaab8' : '#b0bec8'); p(2, 6, W - 4, 3, '#6a7a88');
+    p(10, 30, W - 20, H - 36, m); for (let x = 10; x < W - 10; x += 4) p(x, 30, 1, H - 36, '#7a8a98'); p(10, 30, W - 20, 2, '#c8d4dc');
+    for (const x0 of [22, 82]) { p(x0, 48, 40, H - 54, '#4a5a68'); for (let y = 50; y < H - 6; y += 6) p(x0, y, 40, 1, '#3a4a58'); p(x0 + 19, 48, 2, H - 54, '#2a3a48'); p(x0 - 2, 46, 44, 3, '#2a3a48'); }
+    p(54, 34, 36, 9, '#f4f0e8'); txt(p, 'MONTE REAL', 55, 36, '#2a5a8a');
+    if (night) { p(70, 26, 4, 4, '#ffe08a'); g.fillStyle = 'rgba(255,214,120,0.15)'; g.fillRect(56, 30, 32, 40); }
+    p(6, H - 6, W - 12, 6, '#a8a8a8'); outline(g, W, H); return c;
+  }
+  function estabuloLuxo(night) {
+    const W = 176, H = 104, [c, g, p] = mk(W, H), brick = '#b0603a', wood = '#6a4426';
+    roofTiles(p, 6, 22, W - 12, 26, '#3a4a5a', '#5a6a7a', '#2a3440'); p(4, 46, W - 8, 3, '#2a3440');
+    p(76, 4, 24, 20, '#f4efe4'); p(74, 2, 28, 4, '#3a4a5a'); p(82, 8, 12, 10, '#2a3a48'); p(87, 0, 2, 4, '#3a3a3a'); p(83, -1, 10, 1, '#3a3a3a');
+    p(12, 49, W - 24, H - 55, brick); for (let y = 51; y < H - 6; y += 4) { p(12, y, W - 24, 1, '#d8c0a0'); for (let x = 12 + (y % 8 ? 0 : 6); x < W - 12; x += 12) p(x, y + 1, 1, 3, '#d8c0a0'); }
+    for (let k = 0; k < 6; k++) { const x = 20 + k * 24; p(x, 62, 18, H - 68, wood); p(x, 62, 18, 2, '#8a5a32'); for (let y = 66; y < H - 8; y += 5) p(x + 1, y, 16, 1, '#4a2e18'); p(x + 1, 62, 16, 12, '#2a1a10'); p(x + 3, 58, 12, 4, '#f4efe4'); p(x + 5, 56, 8, 2, '#f4efe4'); if (night) p(x + 2, 63, 14, 10, '#ffd27a'); for (let i = 0; i < 4; i++) p(x + i * 5, 66 + i * 6, 1, 1, '#8a5a32'); }
+    p(8, H - 6, W - 16, 6, '#9a9690'); outline(g, W, H); return c;
+  }
+  function garagem() {
+    const W = 112, H = 72, [c, g, p] = mk(W, H);
+    roofTiles(p, 2, 4, W - 4, 16, '#8a8e92', '#a8acb0', '#6a6e72'); p(6, 20, W - 12, H - 26, '#e8e2d4'); p(14, 26, W - 28, H - 32, '#3a3a3a');
+    // caminhonete prata
+    p(22, 44, 66, 16, '#c8ccd0'); p(22, 44, 66, 2, '#e8ecf0'); p(50, 34, 30, 12, '#c8ccd0'); p(54, 36, 22, 7, '#5a7896'); p(22, 52, 66, 2, '#8a8e92'); for (const x of [30, 74]) { p(x, 56, 10, 10, '#1a1a1e'); p(x + 3, 59, 4, 4, '#9a9aa2'); } p(86, 48, 3, 3, '#ffe08a'); p(22, 48, 2, 3, '#e04a3a');
+    p(4, H - 6, W - 8, 6, '#a8a8a8'); outline(g, W, H); return c;
+  }
+  function guarita(night) { const [c, g, p] = mk(48, 56); roofTiles(p, 4, 6, 26, 8, '#a94a2c', '#cf6a40', '#7a2e18'); p(6, 14, 22, 36, '#f4efe4'); p(10, 20, 14, 10, night ? '#ffd27a' : '#34465a'); p(10, 34, 8, 16, '#6a3e22'); p(30, 34, 2, 16, '#3a3a3a'); p(30, 32, 18, 3, '#e04a3a'); for (let x = 32; x < 48; x += 6) p(x, 32, 3, 3, '#f4f0e8'); outline(g, 48, 56); return c; }
+  function portal(nome, cor) {
+    const W = 96, H = 64, [c, g, p] = mk(W, H), wood = '#5a3a20';
+    for (const x of [6, 84]) { p(x, 14, 7, H - 14, wood); p(x, 14, 2, H - 14, '#7a5230'); p(x - 2, 10, 11, 6, '#4a2e18'); }
+    p(4, 16, W - 8, 12, cor || '#7a5230'); p(4, 16, W - 8, 2, shade(cor || '#7a5230', .3)); p(4, 26, W - 8, 2, shade(cor || '#7a5230', -.35));
+    const L = nome.length * 4; txt(p, nome, Math.round(W / 2 - L / 2), 19, '#f8f0d8');
+    p(30, 2, 36, 12, cor || '#7a5230'); p(42, 4, 12, 8, '#e8c860'); p(46, 6, 4, 4, cor || '#7a5230');
+    outline(g, W, H); return c;
+  }
+  function sebe(v) { const [c, g, p] = mk(32, 22); p(1, 6, 30, 14, '#2e6a2a'); p(1, 6, 30, 3, '#4a8a3a'); for (let k = 0; k < 14; k++) p(2 + (k * 7 + v * 3) % 28, 7 + (k * 5) % 12, 2, 1, k % 2 ? '#5a9a44' : '#24561f'); p(1, 19, 30, 2, 'rgba(20,30,10,0.4)'); outline(g, 32, 22); return c; }
+  function canteiro(v) { const [c, g, p] = mk(32, 16); p(1, 8, 30, 7, '#6a4a2c'); p(1, 8, 30, 1, '#8a6a44'); const cols = ['#e04a6a', '#f0d040', '#f4f0e8', '#b060c0']; for (let k = 0; k < 10; k++) { const x = 3 + k * 3; p(x, 4 + (k % 2), 1, 5, '#3a7a3a'); p(x - 1, 2 + (k % 2), 3, 3, cols[(k + v) % 4]); } outline(g, 32, 16); return c; }
+  return { mansao, piscina, chafariz, galpaoModerno, estabuloLuxo, garagem, guarita, portal, sebe, canteiro };
+})();
+/* RART:end */
 /* FLORA:begin (gerado de tools/asset-pipeline/flora.js) */
 const FLORA = (() => {
   const BX = 32, BY = 70;
@@ -2043,6 +2208,28 @@ const ART2 = (() => {
 // cercas: 'a' arame farpado em mourões roliços, 'm' tábuas de aroeira (currais), 'v' varas de faxina com cipó
 function fenceSpr(style, L, Rt, U, D, cond, pst) { const st = style === 'm' ? 'aroeira' : style === 'v' ? 'varas' : 'arame'; const post = st === 'aroeira' ? true : !!pst;
   return cached(`f3|${st}|${L}${Rt}${U}${D}|${cond}|${post ? 1 : 0}`, 16, 30, g => g.drawImage(ART2.fence(st, L, Rt, U, D, cond, post, cond * 3 + (post ? 1 : 0)), 0, 0)); }
+const RBLD = { mansao: n => RART.mansao(n), garagem: () => RART.garagem(), galpaoMod: n => RART.galpaoModerno(n), estabuloLux: n => RART.estabuloLuxo(n) };
+const RBC = new Map(); function rbSpr(art, night) { const k = art + (night ? 1 : 0); let c = RBC.get(k); if (!c) { c = RBLD[art](night); RBC.set(k, c); } return c; }
+// objetos grandes da região (portais, piscina, jardins, construções novas das fazendas)
+const RPC = new Map();
+function rpropSpr(p) { const k = p.t + '|' + (p.v || 0) + '|' + (isNight() ? 1 : 0); let c = RPC.get(k); if (c) return c; const mk = (w, h, fn) => { const [cc, g] = mkC(w, h); const q = (x, y, ww, hh, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), ww, hh); }; fn(q, g); outline(g, w, h); return cc; };
+  switch (p.t) {
+    case 'portalRD': c = RART.portal('RIACHO DOCE', '#7a5230'); break; case 'portalSC': c = RART.portal('SANTA CLARA', '#2a5a8a'); break; case 'portalPS': c = RART.portal('PE DE SERRA', '#3a7a3a'); break; case 'portalMR': c = RART.portal('MONTE REAL', '#2a4a6a'); break;
+    case 'guarita': c = RART.guarita(isNight()); break; case 'piscina': c = RART.piscina(); break; case 'chafariz': c = RART.chafariz(); break; case 'sebe': c = RART.sebe(p.v); break; case 'canteiro': c = RART.canteiro(p.v); break;
+    case 'placaEstrada': c = mk(56, 40, q => { q(26, 12, 4, 28, '#5a3a20'); q(2, 4, 52, 14, '#2a6a3a'); q(2, 4, 52, 1, '#4a9a5a'); txt(q, 'SERRAS', 6, 6, '#f4f0e8'); q(42, 8, 8, 6, '#f4f0e8'); q(48, 6, 2, 10, '#f4f0e8'); }); break;
+    case 'porteiraEstrada': c = mk(64, 36, q => { q(2, 6, 5, 30, '#5a3a20'); q(57, 6, 5, 30, '#5a3a20'); for (let y = 10; y < 32; y += 6) q(7, y, 50, 3, '#8a6a44'); q(7, 10, 50, 1, '#a88a5a'); for (let k = 0; k < 5; k++) q(9 + k * 10, 10 + k * 4, 3, 3, '#6a4a2a'); }); break;
+    case 'placaSC': c = mk(20, 26, q => { q(9, 8, 2, 18, '#5a3a20'); q(1, 2, 18, 9, '#f4f0e8'); q(3, 4, 14, 1, '#2a5a8a'); q(3, 7, 10, 1, '#2a5a8a'); }); break;
+    case 'tronco2': c = mk(44, 30, q => { for (const x of [2, 40]) q(x, 4, 3, 26, '#5a3a20'); for (let y = 8; y < 28; y += 5) q(5, y, 35, 2, '#8a6a44'); q(18, 2, 8, 4, '#8a8a92'); }); break;
+    case 'curralNovo': c = mk(96, 34, q => { for (let x = 0; x < 96; x += 12) q(x, 4, 4, 30, '#4a3424'); for (let y = 8; y < 30; y += 6) q(0, y, 96, 3, '#8f7558'); }); break;
+    case 'tanque': c = mk(80, 30, q => { q(2, 8, 76, 20, '#b8a888'); q(6, 11, 68, 14, '#3a88b0'); for (let k = 0; k < 8; k++) q(10 + k * 8, 14 + (k % 2) * 4, 5, 1, '#7ac0dc'); }); break;
+    case 'balanca': c = mk(48, 30, q => { q(2, 18, 44, 10, '#8a8a92'); q(2, 18, 44, 2, '#b8b8c0'); for (const x of [2, 44]) q(x, 4, 3, 16, '#5a5a62'); q(16, 2, 16, 10, '#f4f0e8'); q(18, 4, 12, 4, '#2a8a3a'); }); break;
+    case 'estufa': c = mk(64, 40, q => { q(2, 10, 60, 28, 'rgba(220,240,240,0.7)'); for (let x = 2; x < 62; x += 8) q(x, 10, 1, 28, '#8a9a9a'); for (let y = 0; y < 8; y++) q(2 + y, 10 - y, 60 - y * 2, 1, '#c8dcdc'); for (let k = 0; k < 10; k++) q(6 + k * 5, 30, 3, 6, '#3a8a3a'); }); break;
+    case 'queijaria': c = mk(56, 48, q => { for (let y = 0; y < 10; y++) q(4 - y * 0.3, 8 + y, 48 + y * 0.6, 1, y % 3 ? '#b24a2a' : '#7e2f1a'); q(6, 18, 44, 28, '#f4efe4'); q(22, 30, 12, 16, '#6a3e22'); q(10, 24, 8, 8, '#34465a'); q(38, 24, 8, 8, '#34465a'); q(14, 19, 28, 6, '#f8f0d8'); txt(q, 'QUEIJO', 16, 20, '#7a3a1a'); }); break;
+    case 'picadeiro': c = mk(144, 64, q => { for (let y = 0; y < 14; y++) q(y, y, 144 - y * 2, 1, y % 2 ? '#8a9aa8' : '#a8b8c4'); for (let x = 6; x < 140; x += 22) q(x, 14, 4, 48, '#5a5a62'); q(0, 58, 144, 6, '#d8c090'); }); break;
+    case 'laboratorio': c = mk(64, 48, q => { q(4, 8, 56, 38, '#f4f6f8'); q(4, 8, 56, 3, '#2a6ab0'); q(2, 4, 60, 5, '#c8ccd0'); q(26, 26, 12, 20, '#8ab0d0'); for (const x of [8, 44]) q(x, 16, 12, 8, '#9ac0e0'); txt(q, 'LAB', 24, 13, '#f4f6f8'); }); break;
+    default: if (p.t.startsWith('fr:')) { c = mk(64, 72, (q, g) => FLORA.fruit(g, p.t.slice(3), 2, { fruta: 1 })); break; } return null;
+  } RPC.set(k, c); return c; }
+function rbuiltOn(key) { if (!S.rfarm) return false; for (const f in RFARMS) if (RFARMS[f].builds.some(b => b[0] === key)) return (S.rfarm[f].built || []).includes(key); return false; }
 function casaSpr(lvl, night) { return cached('casa3|' + lvl + '|' + (night ? 1 : 0), 136, 144, g => g.drawImage(ART2.house(night, lvl), 0, 0), false); }
 function fenceSprOld(style, L, Rt, U, D, cond, pst) {
   return cached(`f2|${style}|${L}${Rt}${U}${D}|${cond}|${pst ? 1 : 0}`, 16, 30, g => {
@@ -2077,7 +2264,7 @@ function fenceSprOld(style, L, Rt, U, D, cond, pst) {
     }
   });
 }
-function fenceStyleAt(tx, ty) { const inR = r => tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]; if (inR(ROCA.r)) return 'v'; for (const k of ['galin', 'haras']) if (inR(AREAS[k].r)) return 'v'; for (const k of ['curral', 'receb', 'conf', 'quar']) if (inR(AREAS[k].r)) return 'm'; return 'a'; }
+function fenceStyleAt(tx, ty) { const inR = r => tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]; if (inR(ROCA.r)) return 'v'; if (tx > 112) { for (const k of ['rd_curral', 'sc_manejo', 'mr_curral', 'rd_galin', 'ps_galin']) if (inR(AREAS[k].r)) return 'm'; for (const k of ['mr_pista', 'ps_chiq', 'ps_cabra', 'sc_bez']) if (inR(AREAS[k].r)) return 'v'; return 'a'; } for (const k of ['galin', 'haras']) if (inR(AREAS[k].r)) return 'v'; for (const k of ['curral', 'receb', 'conf', 'quar']) if (inR(AREAS[k].r)) return 'm'; return 'a'; }
 function drawGate(gt, X) { // porteira maior: pilares grossos com chapéu, folha de 5 travessas com mão-francesa, dobradiças e trava
   const a = gt.anim, th = a * Math.PI / 2 * 0.92, curral = gt.a && ['curral', 'receb', 'conf', 'quar', 'galin', 'haras'].includes(gt.a);
   const wood = curral ? '#d6c8aa' : '#a06a36', wd = shade(wood, -.45), wl = shade(wood, .22), post = '#5e3e22', pl = shade(post, .3), pd = shade(post, -.3), iron = '#3a3a42', ironL = '#7a7a84';
@@ -3625,6 +3812,7 @@ function schedFor(e) {
   if (d.days && !d.days.includes(wday())) return { spot: d.sched[0][1], act: 'home' }; // moradores de longe só vêm à cidade em certos dias
   for (const s of d.sched) if (h >= s[0]) cur = s;
   let spot = cur[1], act = cur[2];
+  if (d.reg) return { spot, act };
   if (wday() === 0 && h >= 8.8 && h < 10.4 && !['zefa'].includes(e.id) && (d.sched.length > 3)) { spot = 'igreja'; act = 'missa'; }
   if (S.event && S.event.day === S.day && h >= 18 && h < 21.6 && S.event.guests.includes(e.id)) { spot = ['churras1', 'churras2', 'churras3'][S.event.guests.indexOf(e.id) % 3]; act = 'festa'; }
   if (d.visit && wday() === d.visit[0] && h >= d.visit[1] && h < d.visit[2] && hearts(e.id) >= 2 && !isRain()) { spot = 'fazenda_varanda'; act = 'visit'; }
@@ -3685,6 +3873,7 @@ function talk(id) {
   if (s.talked === S.day) return pick(['Já proseamos hoje, mas é sempre bom te ver!', 'Voltou? Tô aqui, pode falar.', 'Hoje já demos dois dedos de prosa!']);
   s.talked = S.day; addFr(id, 20 * (perk() === 'negocio' ? 1.1 : 1));
   const sl = storyTalk(id); if (sl) { remember(id, 'falou de Tiãozinho'); return sl; }
+  { const rx = regionTalkExtra(id); if (rx && Math.random() < 0.65) return rx; }
   const line = npcLine(id); remember(id, 'conversa: "' + line.slice(0, 40) + '…"'); return line;
 }
 function giveGift(id, it) {
@@ -3777,7 +3966,7 @@ function deliveries() {
   now.forEach(d => { const a = byId(d.id); if (!a) return; a.own = 'player'; if (S.firsts && S.firsts.compra && !S.firsts.cs_compra) setTimeout(() => csPrimeiraCompra(a), 900); a.newArr = 1; const p = randIn(d.to || 'receb'); a.x = p[0]; a.y = p[1]; a._st = null; toast('🚚 ' + a.n + ' chegou ao ' + AREAS[d.to || 'receb'].n); });
   if (S.frete && S.fretePend) { for (const k in S.fretePend) S.dep[k] = (S.dep[k] || 0) + S.fretePend[k]; S.fretePend = null; toast('🚚 Entrega da Casa do Agro no depósito.'); }
 }
-function dayTick() { storyCheck(); regionDay(); missionDay(); bicoDay(); qRefresh();
+function dayTick() { storyCheck(); regionDay(); missionDay(); bicoDay(); if (S.reg && S.reg.pop) { rfarmDay(); jobDay(); } qRefresh();
   wildDayTick(); rollOffer(); setTimeout(() => S && eventAnnounce(), 2500); if (S.offer && S.offer.day < S.day - 1) S.offer = null;
   S.day++;
   const se = season();
@@ -5722,7 +5911,7 @@ function openNpc(id, text) {
     if (M.sub === 'gift') { const g = Object.keys(S.inv).filter(k => S.inv[k] > 0 && IT[k] && !['escova', 'violao', 'viola', 'lampiao', 'galaoV'].includes(k)); return `<h3>Presentear ${d.n}</h3><div class="grid">${g.map(k => `<div class="sl" data-a="gift" data-v="${k}">${iic(k, 26)}<small>${IT[k].n.split(' (')[0]}</small><b>${S.inv[k]}</b></div>`).join('') || '<p class="mut">Nada para dar.</p>'}</div>${btn('Voltar', 'npcBack')}`; }
     if (M.sub === 'trade') return tradeView(id);
     if (M.sub === 'haggle') return haggleView();
-    let h = `<div class="dlg"><div>${charImg(d.ap, 4)}</div><div style="flex:1"><b style="font-size:16px">${d.n}</b><br><span class="mut">${d.role}</span><br>${hrt(hearts(id))}<div class="txt" style="margin-top:6px">${esc(M.txt)}</div></div></div><p class="mut">${d.pers}</p>${NPC_LORE[id] ? `<details class="card"><summary><b>📖 História</b></summary><p>${esc(NPC_LORE[id])}</p></details>` : ''}${qOfferHTML(id)}`;
+    let h = `<div class="dlg"><div>${charImg(d.ap, 4)}</div><div style="flex:1"><b style="font-size:16px">${d.n}</b><br><span class="mut">${d.role}</span><br>${hrt(hearts(id))}<div class="txt" style="margin-top:6px">${esc(M.txt)}</div></div></div><p class="mut">${d.pers}</p>${NPC_LORE[id] ? `<details class="card"><summary><b>📖 História</b></summary><p>${esc(NPC_LORE[id])}</p></details>` : ''}${qOfferHTML(id)}${regionNpcHTML(id)}`;
     if (s.quest) h += `<div class="card">📜 <b>Favor:</b> ${esc(s.quest.t)}<br><span class="mut">Prazo: dia ${s.quest.due}</span></div>`;
     h += '<div class="row">' + btn('💬 Conversar', 'npcTalk') + btn('🎁 Presentear', 'npcGift', '', s.gift === S.day) + btn(s.quest ? '📜 Entregar favor' : '📜 Pedir favor', 'npcQuest') + (d.sells ? btn('🤝 Negociar animais', 'npcTrade') : '') + '</div>';
     for (const m of (S.missions || []).filter(m => m.giver === id && (m.st === 'offer' || m.st === 'active'))) h += misHTML(m, true);
@@ -5842,7 +6031,7 @@ A.irrigBuy = () => { if (S.irrig) return; if (!pay(2800 * priceMul(), 'Irrigaç�
 /* ============ MOTOR DE MISSÕES (história inicial) + BICOS ============ */
 // Missões: NPC responsável, introdução, etapas com evento, recompensa, consequência e condição de liberação.
 // Eventos: questEvent(tipo, chave, n) chamado pelos sistemas do jogo; 'visit', 'have' e 'check' são conferidos a cada meio segundo.
-const QRECT = { curral: [40, 33, 49, 42], praca: [79, 45, 88, 58], camposCasa: [91, 4, 104, 16], gleba: [1, 89, 58, 108], sede: [2, 22, 26, 31], pomar: [2, 91, 30, 107] };
+const QRECT = { f1: [119, 5, 163, 41], f2: [119, 46, 165, 98], mrEntrada: [180, 56, 200, 64], curral: [40, 33, 49, 42], praca: [79, 45, 88, 58], camposCasa: [91, 4, 104, 16], gleba: [1, 89, 58, 108], sede: [2, 22, 26, 31], pomar: [2, 91, 30, 107] };
 const QDEF = [
   { id: 'q1', n: 'Uma nova vida', giver: 'felipe', auto: 1,
     intro: [['felipe', 'Antes de eu ir, deixa eu te mostrar o básico. Seu avô fazia tudo na ordem: casa, curral, água e bicho.'], ['me', 'Pode falar, Seu Felipe. Quero aprender do jeito dele.']],
@@ -5897,12 +6086,43 @@ const QDEF = [
     steps: [{ t: 'Ter pelo menos 6 animais na fazenda', ev: 'check', key: 'animals6' }, { t: 'Ter 3 árvores plantadas no pomar', ev: 'check', key: 'trees3' }, { t: 'Conversar com o Padre Antônio', ev: 'talk', key: 'padre', at: [84, 43] }],
     outro: [['padre', 'Tiãozinho estaria orgulhoso. O Seu Felipe me contou que os donos do Terreno dos Piquetes 3 e 4 aceitam vender mais barato pra quem cuida bem da terra.'], ['padre', 'E dizem que depois da cidade, pela estrada do leste, tem fazendas grandes precisando de gente que sabe trabalhar.']],
     onDone: () => { S.landDisc = Object.assign(S.landDisc || {}, { piquetes: 0.8 }); setTimeout(() => typeof csLegado === 'function' && csLegado(), 600); },
-    reward: { cash: 1500, fr: { padre: 40, felipe: 20 } } }
+    reward: { cash: 1500, fr: { padre: 40, felipe: 20 } } },
+  // ---- Região das Serras (liberam ao chegar lá pela primeira vez) ----
+  { id: 'r1', n: 'Pela estrada do leste', giver: 'valdomiro', cond: () => !!(S.reg && S.reg.visited),
+    intro: [['valdomiro', 'Neto do Tiãozinho na serra! Seja bem-vindo. Quer conhecer a lida da Riacho Doce? Serviço não falta pra quem tem disposição.']],
+    steps: [{ t: 'Conhecer a Riacho Doce (sede e curral)', ev: 'visit', key: 'f1', at: [128, 17] }, { t: 'Perguntar ao Seu Valdomiro sobre vagas', ev: 'jobAsk', key: 'f1' }],
+    outro: [['valdomiro', 'Começa pelo trato do curral. Serviço bem feito, eu pago e conto pros outros fazendeiros.']], reward: { cash: 100, fr: { valdomiro: 20 } } },
+  { id: 'r2', n: 'Um dia de trabalho no curral', giver: 'valdomiro', after: 'r1',
+    intro: [['valdomiro', 'Hoje tem serviço no curral. Faz direitinho que no fim do dia tem salário na mão.']],
+    steps: [{ t: 'Aceitar um serviço na Riacho Doce', ev: 'jobTake', key: 'f1' }, { t: 'Terminar o serviço e receber o primeiro salário', ev: 'jobDone', key: 'f1' }],
+    outro: [['valdomiro', 'Taí seu primeiro salário na serra. Dinheiro suado é o que mais rende.'], ['toinho', 'Bem-vindo à lida, parceiro! Amanhã tem mais.']], reward: { cash: 80, items: { carnesol: 1 }, fr: { valdomiro: 25, toinho: 15 } } },
+  { id: 'r3', n: 'Aprendendo a manejar', giver: 'helena', after: 'r2',
+    intro: [['helena', 'O Valdomiro disse que você trabalha bem. Aqui o manejo é técnico: brinco, peso, desmame. Quer aprender?']],
+    steps: [{ t: 'Conhecer a Santa Clara', ev: 'visit', key: 'f2', at: [128, 55] }, { t: 'Fazer um serviço na Santa Clara', ev: 'jobDone', key: 'f2' }],
+    outro: [['helena', 'Anotou tudo direitinho. Quem observa aprende mais rápido que quem só faz força.']], reward: { cash: 150, items: { vermifugo: 2 }, fr: { helena: 25, marta: 15 } } },
+  { id: 'r4', n: 'Uma oportunidade especializada', giver: 'caetano', after: 'r3',
+    intro: [['caetano', 'Serviço especializado paga o dobro, mas exige confiança e experiência. Fica de olho: quando chegar lá, agarra a chance.']],
+    steps: [{ t: 'Chegar à reputação de Ajudante', ev: 'check', key: 'rep1' }, { t: 'Fazer um serviço especializado em qualquer fazenda', ev: 'jobDone', key: 'esp' }],
+    outro: [['caetano', 'Viu? Quem se especializa nunca fica sem serviço. Agora é crescer!']], reward: { cash: 300, fr: { caetano: 25, jonas: 10 } } },
+  { id: 'r5', n: 'Conhecendo a propriedade milionária', giver: 'bruno', after: 'r2',
+    intro: [['bruno', 'O Dr. Otávio soube que tem gente nova trabalhando bem na serra. Ele quer te conhecer. Pode subir até a mansão.']],
+    steps: [{ t: 'Entrar na Fazenda Monte Real', ev: 'visit', key: 'mrEntrada', at: [184, 60.5] }, { t: 'Conversar com o Dr. Otávio', ev: 'talk', key: 'otavio', at: [204, 70] }],
+    onDone: () => { const r = repS(); r.trust.f4 = Math.max(r.trust.f4, 12); },
+    outro: [['otavio', 'Gosto de conhecer quem trabalha na minha serra. Aqui o padrão é alto, mas quem entrega é bem pago. Fale com o Severino.']], reward: { fr: { otavio: 20, severino: 10 } } },
+  { id: 'r6', n: 'Um serviço especial para o grande pecuarista', giver: 'otavio', after: ['r5', 'r4'],
+    intro: [['otavio', 'Tenho um serviço que não confio a qualquer um. O Severino vai te explicar. Faça bem feito.']],
+    steps: [{ t: 'Aceitar um serviço na Monte Real', ev: 'jobTake', key: 'f4' }, { t: 'Concluir o serviço na Monte Real', ev: 'jobDone', key: 'f4' }],
+    outro: [['otavio', 'Sem precisar ser vigiado. É exatamente isso que eu procuro.']], reward: { cash: 500, fr: { otavio: 25, severino: 20, dalva: 10 } } },
+  { id: 'r7', n: 'A conquista da confiança', giver: 'otavio', after: 'r6',
+    intro: [['otavio', 'Confiança aqui se ganha com tempo e serviço. Continue trabalhando na Monte Real e a gente conversa de novo.']],
+    steps: [{ t: 'Chegar a 60 de confiança na Monte Real', ev: 'check', key: 'trustF4_60' }, { t: 'Conversar com o Dr. Otávio', ev: 'talk', key: 'otavio' }],
+    onDone: () => { applyLand(); const a = mkAnimal('boi', 'nelore', { own: 'delivery', sex: 'F', age: 18, gen: 90, n: 'Imperatriz' }); a.x = a.y = -999; S.animals.push(a); S.delivery.push({ id: a.id, day: S.day + 1, to: 'receb' }); },
+    outro: [['otavio', 'Você tem minha confiança. A pista e o estábulo de exposição estão abertos para você.'], ['otavio', 'E aceite um presente: uma novilha Nelore da minha melhor linhagem. Chega amanhã na sua fazenda. Cuide como eu cuidaria.']], reward: { cash: 800, fr: { otavio: 40 } } }
 ];
 const QBY = Object.fromEntries(QDEF.map(q => [q.id, q]));
 function qS() { S.qs = S.qs || { st: {}, track: null }; return S.qs; }
 function qState(id) { const st = qS().st; return st[id] || (st[id] = { s: 'locked', step: 0, cnt: 0 }); }
-function qUnlocked(q) { if (q.auto) return !!(S.story && S.story.intro); const a = [].concat(q.after || []); return a.every(id => qState(id).s === 'done'); }
+function qUnlocked(q) { if (q.cond) return q.cond(); if (q.auto) return !!(S.story && S.story.intro); const a = [].concat(q.after || []); return a.every(id => qState(id).s === 'done'); }
 function qRefresh() { for (const q of QDEF) { const st = qState(q.id); if (st.s === 'locked' && qUnlocked(q)) { st.s = q.auto ? 'active' : 'offer'; if (q.auto) { qS().track = q.id; setTimeout(() => qDialog(q.intro, () => toast('📜 Missão: ' + q.n)), 400); } else toast('📜 ' + NPCDEF[q.giver].n + ' quer falar com você: ' + q.n); } } }
 function questEvent(kind, key, n) {
   if (!S || !S.qs) return; n = n || 1;
@@ -5923,10 +6143,10 @@ function questTick(dt) { if (!S || mode !== 'play' || (qTickT += dt) < 0.5) retu
   for (const q of QDEF) { const st = qState(q.id); if (st.s !== 'active') continue; const sp = q.steps[st.step]; if (!sp) continue;
     if (sp.ev === 'visit') { const r = QRECT[sp.key], tx = P.x / TS, ty = P.y / TS; if (tx >= r[0] && tx <= r[2] + 1 && ty >= r[1] && ty <= r[3] + 1) qAdvance(q); }
     else if (sp.ev === 'have') { if ((S.inv[sp.key] || 0) >= (sp.n || 1)) qAdvance(q); }
-    else if (sp.ev === 'check') { const ok = sp.key === 'curralAnimal' ? myAnimals().some(a => a.area === 'curral' && !a.main) : sp.key === 'animals6' ? myAnimals().filter(a => !a.main && a.sp !== 'cao').length >= 6 : sp.key === 'trees3' ? pomarS().filter(Boolean).length >= 3 : false; if (ok) qAdvance(q); } }
+    else if (sp.ev === 'check') { const ok = sp.key === 'rep1' ? repLv() >= 1 : sp.key === 'trustF4_60' ? trust('f4') >= 60 : sp.key === 'curralAnimal' ? myAnimals().some(a => a.area === 'curral' && !a.main) : sp.key === 'animals6' ? myAnimals().filter(a => !a.main && a.sp !== 'cao').length >= 6 : sp.key === 'trees3' ? pomarS().filter(Boolean).length >= 3 : false; if (ok) qAdvance(q); } }
   bicoTick(); qHud(); }
 // conversa em sequência (retrato, nome e fala; toque para continuar)
-function qDialog(lines, end) { if (!lines || !lines.length) { end && end(); return; } let i = 0; M.qdl = { lines, end }; const show = () => { const [who, t] = lines[i], me = who === 'me', ap = me ? S.cf.ap : NPCDEF[who].ap, nm = me ? S.cf.name : NPCDEF[who].n;
+function qDialog(lines, end) { if (!lines || !lines.length) { end && end(); return; } if (CS.on || mode !== 'play') { setTimeout(() => qDialog(lines, end), 800); return; } let i = 0; M.qdl = { lines, end }; const show = () => { const [who, t] = lines[i], me = who === 'me', ap = me ? S.cf.ap : NPCDEF[who].ap, nm = me ? S.cf.name : NPCDEF[who].n;
     showModal('', null, null, () => `<div class="dlg"><div>${charImg(ap, 4)}</div><div style="flex:1"><b style="font-size:16px">${esc(nm)}</b><div class="txt" style="margin-top:6px">${esc(t)}</div></div></div><div class="row">${btn(i < lines.length - 1 ? 'Continuar ▸' : 'Fechar', 'qNext')}</div>`); };
   A.qNext = () => { i++; if (i < lines.length) show(); else { closeModal(); end && end(); } }; show(); }
 function qOfferHTML(id) { const L = QDEF.filter(q => q.giver === id && ['offer', 'active'].includes(qState(q.id).s)); return L.map(q => { const st = qState(q.id); return `<div class="card">📜 <b>${q.n}</b>${st.s === 'offer' ? `<p class="mut">${esc(q.intro[0][1])}</p>${btn('Aceitar missão', 'qAcc', q.id)}` : `<br><span class="mut">Agora: ${esc(q.steps[st.step].t)}</span>`}</div>`; }).join(''); }
@@ -5934,9 +6154,10 @@ A.qAcc = v => { const q = QBY[v]; closeModal(); qDialog(q.intro, () => { qAccept
 // lembrete na tela com o passo atual (toque abre o diário)
 function qHud() { let el = document.getElementById('qtrack'); if (!el) { el = document.createElement('div'); el.id = 'qtrack'; el.style.cssText = 'position:absolute;z-index:6;left:calc(6px + var(--sal));top:calc(66px + var(--sat));max-width:58%;background:rgba(20,10,5,.78);border:2px solid #7c4424;color:#fbe9c2;font:11px "Pixelify Sans",Georgia,serif;padding:3px 6px;pointer-events:auto;display:none'; el.onclick = () => openMenu('mis'); ($('hud').parentNode || document.body).appendChild(el); }
   const q = QBY[qS().track], st = q && qState(q.id), b = (S.bicos || []).find(x => x.st === 'active');
-  const txt = q && st.s === 'active' ? '📜 ' + q.n + ': ' + q.steps[st.step].t + (q.steps[st.step].n > 1 ? ' (' + st.cnt + '/' + q.steps[st.step].n + ')' : '') : b ? '🛠️ Bico: ' + bicoStepTxt(b) : '';
+  const jb = S.job, jp = jb && jb.pts.find(x => !x.ok);
+  const txt = jb && jp ? '🧰 ' + jb.n + ': ' + jp.l + ' (' + jb.pts.filter(x => x.ok).length + '/' + jb.pts.length + ')' + (jb.h ? ' · turno ' + jb.h[0] + 'h–' + jb.h[1] + 'h' : '') : q && st.s === 'active' ? '📜 ' + q.n + ': ' + q.steps[st.step].t + (q.steps[st.step].n > 1 ? ' (' + st.cnt + '/' + q.steps[st.step].n + ')' : '') : b ? '🛠️ Bico: ' + bicoStepTxt(b) : '';
   const mn = $('mn'); el.style.display = txt && mode === 'play' && !M.open && !(mn && mn.style.display === 'block') ? 'block' : 'none'; if (el.textContent !== txt) el.textContent = txt; }
-function questMarkers() { const q = QBY[qS().track], st = q && qState(q.id); if (q && st.s === 'active') { const sp = q.steps[st.step]; if (sp && sp.at) drawMisMark(sp.at[0] * TS, sp.at[1] * TS - 34); } for (const b of S.bicos || []) if (b.st === 'active') { const p = bicoPoint(b); if (p) drawMisMark(p[0] * TS, p[1] * TS - 34); }
+function questMarkers() { if (S.job) for (const pt of S.job.pts) if (!pt.ok) { drawMisMark(pt.x * TS, pt.y * TS - 34); if (S.job.kind !== 'tarefa') break; } const q = QBY[qS().track], st = q && qState(q.id); if (q && st.s === 'active') { const sp = q.steps[st.step]; if (sp && sp.at) drawMisMark(sp.at[0] * TS, sp.at[1] * TS - 34); } for (const b of S.bicos || []) if (b.st === 'active') { const p = bicoPoint(b); if (p) drawMisMark(p[0] * TS, p[1] * TS - 34); }
   QDEF.forEach(q => { if (qState(q.id).s !== 'offer') return; const e = npcs.find(n => n.id === q.giver); if (e && !e.hidden) drawMisMark(e.x, e.y - 40); }); }
 function qJournalHTML() { qS(); let h = '<p class="mut">A história da Boa Esperança continua com você. Missões são oferecidas pelos moradores (um “!” aparece sobre quem tem pedido).</p>';
   for (const q of QDEF) { const st = qState(q.id); if (st.s === 'locked') continue; h += `<div class="card ${qS().track === q.id ? 'sel' : ''}"><b>${st.s === 'done' ? '✅' : st.s === 'offer' ? '❗' : '📜'} ${q.n}</b> <span class="mut">— ${NPCDEF[q.giver].n}</span>${q.steps.map((s, i) => `<br><span class="mut">${st.s === 'done' || i < st.step ? '☑' : i === st.step && st.s === 'active' ? '▸' : '☐'} ${esc(s.t)}</span>`).join('')}${st.s === 'active' && qS().track !== q.id ? btn('Acompanhar', 'qTrack', q.id) : ''}</div>`; }
@@ -5971,6 +6192,12 @@ function csOnce(key, steps, end) { S.firsts = S.firsts || {}; if (S.firsts['cs_'
 function csPrimeiraCompra(a) { csOnce('compra', [{ fade: 1, d: 0.4 }, { fade: 0, cam: [a.x / TS, a.y / TS], snap: 1, z: 2.2, txt: `O caminhão da Casa do Agro chegou com <b>${esc(a.n)}</b>, ${catName(a).toLowerCase()} ${esc(breedOf(a).n)}. O primeiro animal comprado com o seu dinheiro.`, d: 4.2, fn: () => { a._st = 'idle'; a._t = 6; AU.cartRattle && AU.cartRattle(); } }, { txt: 'Animal novo: deixe uns dias no Recebimento ou na Quarentena antes de juntar com o rebanho.', d: 3.6 }]); }
 function csNascimento(m) { if (!m) return; csOnce('nasc', [{ fade: 1, d: 0.4 }, { fade: 0, cam: [m.x / TS, m.y / TS], snap: 1, z: 2.4, txt: `Nasceram leitões! ${esc(m.n)} cuida da ninhada debaixo do abrigo.`, d: 4.4, fn: () => AU.oink && AU.oink(m.x, m.y, 1.6) }, { txt: 'Leitão cresce rápido com ração de suínos. Pode vender, engordar ou guardar para matriz.', d: 3.8 }]); }
 function csPrimeiraColheita(F) { csOnce('colheita', [{ fade: 1, d: 0.4 }, { fade: 0, cam: [P.x / TS, P.y / TS], snap: 1, z: 2.2, txt: `A primeira colheita do pomar: ${esc(F.n.toLowerCase())}. O Seu Dito compra no Mercadinho, e fora da safra vale mais.`, d: 4.4 }]); }
+function csMonteReal() { csOnce('monte', [{ fade: 1, d: 0.5 }, { fade: 0, cam: [181.5, 60.5], snap: 1, z: 1.6, txt: 'O portal da <b>Fazenda Monte Real</b>. A estrada de terra vira calçamento, com cerca viva e flores dos dois lados.', d: 4.6, fn: () => csTitle('Fazenda Monte Real', 'Dr. Otávio Sampaio') },
+  { fn: () => csTitle(null), cam: [202.5, 66], spd: 0.7, z: 1.15, txt: 'No fim do calçamento, a mansão de dois andares, colunas brancas e telhado colonial. Um chafariz recebe as visitas.', d: 5 },
+  { cam: [215.5, 67], spd: 1, z: 1.4, txt: 'Ao lado, a piscina e o jardim. O dinheiro da soja voltou para a terra do pai.', d: 4 },
+  { cam: [190, 86], spd: 0.8, z: 1.1, txt: 'Estábulo de exposição, pista de treino e garanhões que valem mais que muita fazenda inteira.', d: 4.6 },
+  { cam: [222, 92], spd: 0.8, z: 0.9, txt: 'Pastagens divididas, açude e um rebanho de genética selecionada, cada animal com número e história.', d: 4.4 },
+  { cam: [P.x / TS, P.y / TS], spd: 1.4, z: 1.3, d: 1.2 }]); }
 function csLegado() { csOnce('legado', [{ fade: 1, d: 0.6 }, { fade: 0, cam: [20, 36], snap: 1, z: 0.9, txt: 'A Boa Esperança voltou a ter bicho no curral, água no cocho e árvore crescendo no pomar.', d: 4.6, fn: () => { S.min = Math.max(S.min, 17.2 * 60); } }, { cam: [6, 30], spd: 0.7, z: 1.5, txt: 'No alpendre, o chapéu de Tiãozinho continua no prego. Agora a casa tem dono de novo.', d: 4.6 }, { cam: [38.5, 44], z: 1.1, spd: 0.8, txt: 'Pela estrada do leste, depois da cidade, dizem que há fazendas grandes e trabalho para quem sabe lidar.', d: 4.6 }]); }
 /* ============ PAINEL DE PRODUÇÃO E RENTABILIDADE ============ */
 // Estimativas por espécie (custos e tempos do próprio jogo). Não é promessa de lucro: depende de pasto, água, saúde, preço e sorte.
@@ -5990,6 +6217,7 @@ function prodHTML() {
   const lact = mine.filter(a => a.sp === 'cabra' && a.sex === 'F' && a.lact > 0), hens = mine.filter(a => a.sp === 'galinha' && a.sex === 'F' && a.age >= 6).length, trees = pomarS().filter(q => q && fruitStage(q) === 2).length;
   h += '<h3>Seu plantel hoje</h3>' + (sp.map(k => { const L = mine.filter(a => a.sp === k), v = L.reduce((t, a) => t + animalValue(a), 0); return `<div class="row sp"><span>${SPN[k]}: <b>${L.length}</b></span><span class="mut">${fmt(v)}</span></div>`; }).join('') || '<p class="mut">Sem animais ainda.</p>');
   h += `<div class="card"><b>Produção estimada por dia</b><br>🥚 Ovos: ~${Math.round(hens * 0.85)} · 🥛 Leite de cabra: ~${lact.reduce((t, a) => t + ((GOATS[a.br] || {}).milk || 0.6) * 2.2, 0).toFixed(1)} L${built('ordenha') ? ' · leite de vaca na ordenha' : ''} · 💩 Esterco: ~${(mine.filter(a => a.sp === 'porco' && a.area === 'chiq').length * 0.35 + mine.filter(a => a.sp === 'cabra' && a.area === 'aprisco').length * 0.12).toFixed(1)} saco · 🌳 Árvores produzindo: ${trees}${S.crowd && Object.keys(S.crowd).length ? '<br><span style="color:#a83a2a">⚠️ Lotado: ' + Object.keys(S.crowd).map(k => AREAS[k].n).join(', ') + '</span>' : ''}</div>`;
+  if (S.reg && S.reg.visited) h += `<h3>Região das Serras</h3><div class="card">Reputação profissional: <b>${REP_LV[repLv()][1]}</b> (${repS().xp} xp) · salários recebidos: ${fmt(repS().paid)}${S.job ? '<br>Serviço atual: ' + esc(S.job.n) : ''}</div>` + rfarmHTML();
   h += '<h3>Guia econômico por criação</h3><p class="mut">Estimativas do jogo. Lucro depende de comida, água, saúde, preço do dia e tempo.</p>' + Object.entries(ECON).map(([k, e]) => `<details class="card"><summary><b>${k === 'fruta' ? 'Pomar' : SPN[k] || k}</b> — ${esc(e.rent)}</summary><p class="mut"><b>Investimento:</b> ${esc(e.inv)}<br><b>Alimentação:</b> ${esc(e.food)}<br><b>Manutenção:</b> ${esc(e.man)}<br><b>Crescimento:</b> ${esc(e.grow)}<br><b>Produção e reprodução:</b> ${esc(e.prod)}<br><b>Venda:</b> ${esc(e.sell)}<br><b>Riscos:</b> ${esc(e.risk)}</p></details>`).join('');
   return h;
 }
@@ -6729,6 +6957,202 @@ const NPC_LORE = {
   ze: 'Repentista criado nas feiras do sertão. Venceu cantorias em Vitória da Conquista e transforma qualquer acontecido em verso. Seu avô pagava café só para ouvir de novo o repente que Zé fez sobre a vaquejada de 1985.',
   lourival: 'Carteiro há vinte e cinco anos, conhece cada estrada de terra do município de bicicleta. Por anos levou as cartas que Tiãozinho mandava para a família na capital, escritas devagar, com letra de quem aprendeu tarde. De noite troca a bolsa pela sanfona de oito baixos que herdou do pai.'
 };
+const RSPOTS = {
+  valdomiro_casa: { p: [127.5, 16.6], via: [[134.5, 16.6], [134.5, 43.5]] }, rd_curral: { p: [128.5, 28.6], via: [[134.5, 28.6], [134.5, 43.5]] }, rd_pasto: { p: [136, 30], via: [[134.5, 30], [134.5, 43.5]] },
+  helena_casa: { p: [127.5, 54.6], via: [[134.5, 54.6], [134.5, 43.5]] }, sc_manejo: { p: [134.5, 60.5], via: [[134.5, 55], [134.5, 43.5]] }, sc_est: { p: [141.5, 53.6], via: [[134.5, 53.6], [134.5, 43.5]] },
+  caetano_casa: { p: [187, 14.6], via: [[178.5, 14.6], [176.5, 14.6]] }, ps_horta: { p: [189, 17.4], via: [[189, 20.5], [176.5, 20.5]] }, ps_chiq: { p: [207, 10], via: [[206.5, 20.5], [176.5, 20.5]] },
+  otavio_casa: { p: [202.5, 69.6], via: [[202.5, 74.5], [198.5, 60.5], [176.5, 60.5]] }, mr_varanda: { p: [205, 70.4], via: [[202.5, 74.5], [198.5, 60.5], [176.5, 60.5]] }, mr_curral: { p: [203.5, 78.6], via: [[203.5, 75], [198.5, 60.5], [176.5, 60.5]] },
+  mr_est: { p: [189, 82.6], via: [[189, 75], [198.5, 60.5], [176.5, 60.5]] }, mr_func: { p: [224.5, 78.6], via: [[224.5, 75], [198.5, 60.5], [176.5, 60.5]] }, mr_guarita: { p: [184.5, 60.4], via: [[184.5, 60.5], [176.5, 60.5]] }, mr_pista: { p: [197.5, 92], via: [[197.5, 75], [198.5, 60.5], [176.5, 60.5]] }
+};
+Object.assign(RN, { rw: [118.5, 43.5], rx: [134.5, 43.5], rc: [176.5, 43.5], re: [236.5, 43.5], rn: [176.5, 3], rs: [176.5, 106], rp: [176.5, 20.5], rm: [176.5, 60.5] });
+RE.push(['rw', 'rx'], ['rx', 'rc'], ['rc', 're'], ['rc', 'rp'], ['rp', 'rn'], ['rc', 'rm'], ['rm', 'rs']);
+Object.assign(SPOTS, RSPOTS);
+Object.assign(NPCDEF, {
+  valdomiro: { n: 'Seu Valdomiro', farm: 'Fazenda Riacho Doce', role: 'Pecuarista tradicional', reg: 'f1', ap: { sex: 'M', skin: 3, hair: 1, hairC: 6, hat: 0, shirt: 2, shirtC: 4, pants: 3, pantsC: 1, boots: 2, acc: 1, scarfC: 1, orn: 'estrelas' },
+    pers: 'Trabalhador, desconfiado no começo e leal depois. Mede gente pelo jeito de tratar bicho.', likes: ['cafe', 'carnesol', 'rapadura'], loves: ['queijo'], dislikes: ['ovo'],
+    sched: [[0, 'valdomiro_casa', 'home'], [5, 'rd_curral', 'work'], [9, 'rd_pasto', 'work'], [12, 'valdomiro_casa', 'eat'], [13.5, 'rd_pasto', 'work'], [17, 'rd_curral', 'work'], [19, 'valdomiro_casa', 'home']] },
+  toinho: { n: 'Toinho', farm: 'Fazenda Riacho Doce', role: 'Peão da Riacho Doce', reg: 'f1', ap: { sex: 'M', skin: 5, hair: 2, hairC: 0, hat: 1, shirt: 0, shirtC: 2, pants: 0, pantsC: 0, boots: 2, acc: 0, scarfC: 3, orn: 'none' },
+    pers: 'Rapaz alegre e falador, aprendeu tudo com o Seu Valdomiro.', likes: ['cafe', 'milhoAssado'], loves: ['assado'], dislikes: ['farinha'],
+    sched: [[0, 'valdomiro_casa', 'home'], [6, 'rd_pasto', 'work'], [11, 'rd_curral', 'work'], [16, 'rd_pasto', 'work'], [19.5, 'valdomiro_casa', 'home']] },
+  helena: { n: 'Dra. Helena Prado', farm: 'Fazenda Santa Clara', role: 'Zootecnista e criadora', reg: 'f2', ap: { sex: 'F', skin: 1, hair: 4, hairC: 3, hat: 3, shirt: 3, shirtC: 7, pants: 0, pantsC: 2, boots: 1, acc: 5, scarfC: 0, orn: 'none' },
+    pers: 'Precisa e exigente, fala de genética com paixão. Respeita quem anota e observa.', likes: ['cafe', 'queijo'], loves: ['leiteCabra'], dislikes: ['carvao'],
+    sched: [[0, 'helena_casa', 'home'], [6.5, 'sc_manejo', 'work'], [10, 'sc_est', 'work'], [12.5, 'helena_casa', 'eat'], [14, 'sc_manejo', 'work'], [18, 'helena_casa', 'home']] },
+  marta: { n: 'Marta', farm: 'Fazenda Santa Clara', role: 'Tratadora de bezerros', reg: 'f2', ap: { sex: 'F', skin: 4, hair: 6, hairC: 0, hat: 5, shirt: 0, shirtC: 2, pants: 0, pantsC: 0, boots: 1, acc: 0, scarfC: 4, orn: 'none' },
+    pers: 'Carinhosa com os bezerros, brava com quem deixa porteira aberta.', likes: ['leite', 'rapadura'], loves: ['canjica'], dislikes: ['lenha'],
+    sched: [[0, 'helena_casa', 'home'], [5.5, 'sc_manejo', 'work'], [12, 'sc_est', 'work'], [17.5, 'helena_casa', 'home']] },
+  caetano: { n: 'Seu Caetano', farm: 'Fazenda Pé de Serra', role: 'Produtor diversificado', reg: 'f3', ap: { sex: 'M', skin: 2, hair: 3, hairC: 1, hat: 5, shirt: 1, shirtC: 3, pants: 1, pantsC: 3, boots: 0, acc: 0, scarfC: 2, orn: 'none' },
+    pers: 'Empreendedor inquieto, sempre com uma ideia nova e um caderno de contas no bolso.', likes: ['cafe', 'pamonha', 'linguica'], loves: ['queijo'], dislikes: ['rapadura'],
+    sched: [[0, 'caetano_casa', 'home'], [5.5, 'ps_chiq', 'work'], [8, 'ps_horta', 'work'], [12, 'caetano_casa', 'eat'], [13, 'ps_horta', 'work'], [16, 'ps_chiq', 'work'], [19, 'caetano_casa', 'home']] },
+  jonas: { n: 'Jonas', farm: 'Fazenda Pé de Serra', role: 'Filho do Seu Caetano', reg: 'f3', ap: { sex: 'M', skin: 2, hair: 0, hairC: 1, hat: 7, shirt: 0, shirtC: 5, pants: 0, pantsC: 0, boots: 1, acc: 0, scarfC: 0, orn: 'none' },
+    pers: 'Estuda agronomia à distância e quer modernizar a fazenda do pai.', likes: ['cafe', 'milhoAssado'], loves: ['pamonha'], dislikes: ['carvao'],
+    sched: [[0, 'caetano_casa', 'home'], [7, 'ps_horta', 'work'], [11, 'ps_chiq', 'work'], [15, 'ps_horta', 'work'], [18, 'caetano_casa', 'home']] },
+  otavio: { n: 'Dr. Otávio Sampaio', farm: 'Fazenda Monte Real', role: 'Pecuarista milionário', reg: 'f4', ap: { sex: 'M', skin: 1, hair: 1, hairC: 6, hat: 3, shirt: 3, shirtC: 1, pants: 1, pantsC: 2, boots: 3, acc: 2, scarfC: 0, orn: 'fivela' },
+    pers: 'Reservado, educado e calculista. Não esquece um favor nem um descuido. Valoriza quem trabalha sem precisar ser vigiado.', likes: ['cafe', 'queijo'], loves: ['picanha'], dislikes: ['farinha'],
+    sched: [[0, 'otavio_casa', 'home'], [8, 'mr_varanda', 'chat'], [10, 'mr_est', 'work'], [12.5, 'otavio_casa', 'eat'], [15, 'mr_curral', 'work'], [17.5, 'mr_varanda', 'chat'], [20, 'otavio_casa', 'home']] },
+  severino: { n: 'Seu Severino', farm: 'Fazenda Monte Real', role: 'Gerente da Monte Real', reg: 'f4', ap: { sex: 'M', skin: 4, hair: 1, hairC: 0, hat: 0, shirt: 3, shirtC: 2, pants: 3, pantsC: 1, boots: 2, acc: 1, scarfC: 2, orn: 'none' },
+    pers: 'Vaqueiro que virou gerente. Firme com a equipe, justo no pagamento. É quem contrata.', likes: ['cafe', 'carnesol'], loves: ['assado'], dislikes: ['ovo'],
+    sched: [[0, 'mr_func', 'home'], [5.5, 'mr_curral', 'work'], [9, 'mr_guarita', 'work'], [11, 'mr_est', 'work'], [14, 'mr_curral', 'work'], [18.5, 'mr_func', 'home']] },
+  dalva: { n: 'Dalva', farm: 'Fazenda Monte Real', role: 'Tratadora dos cavalos de exposição', reg: 'f4', ap: { sex: 'F', skin: 5, hair: 7, hairC: 0, hat: 7, shirt: 0, shirtC: 1, pants: 0, pantsC: 2, boots: 3, acc: 0, scarfC: 1, orn: 'none' },
+    pers: 'Conhece cada cavalo pelo relincho. Não deixa ninguém sem experiência chegar perto dos garanhões.', likes: ['cafe', 'canjica'], loves: ['rapadura'], dislikes: ['carvao'],
+    sched: [[0, 'mr_func', 'home'], [5, 'mr_est', 'work'], [10, 'mr_pista', 'work'], [14, 'mr_est', 'work'], [18, 'mr_func', 'home']] },
+  bruno: { n: 'Bruno', farm: 'Fazenda Monte Real', role: 'Segurança da portaria', reg: 'f4', ap: { sex: 'M', skin: 0, hair: 0, hairC: 0, hat: 4, shirt: 1, shirtC: 7, pants: 1, pantsC: 2, boots: 3, acc: 0, scarfC: 0, orn: 'none' },
+    pers: 'Sério na portaria, mas gosta de conversar sobre futebol.', likes: ['cafe'], loves: ['pamonha'], dislikes: ['ovo'],
+    sched: [[0, 'mr_guarita', 'work'], [7, 'mr_guarita', 'work'], [19, 'mr_func', 'home']] }
+});
+Object.assign(NPC_LINES, {
+  valdomiro: { intro: 'Valdomiro, da Riacho Doce. Você é o neto do Tiãozinho de Itarantim? Seu avô me vendeu um touro bom em 1998.', t0: ['Gado aqui é na lida antiga: aboio, laço e paciência.', 'Precisando de serviço, fala comigo.'], t1: ['Peão bom eu reconheço pelo jeito que fecha porteira.'], t2: ['Já te considero da casa.'], t3: ['Se um dia eu vender a Riacho Doce, você é o primeiro a saber.'], rain: 'Chuva na serra é dinheiro no pasto.', dry: 'Na seca, eu tiro o gado do morro e levo pro riacho.', night: 'Hora de recolher, moço.' },
+  toinho: { intro: 'Toinho! Peão da Riacho Doce. Tá procurando serviço? O patrão paga direitinho.', t0: ['O Seu Valdomiro acorda antes do galo.', 'Já laçou boi no mato? Eu já.'], t1: ['Dizem que na Monte Real tem até piscina!'], t2: ['Você trabalha bem, parceiro.'], t3: ['Amigo de lida é pra vida toda.'], rain: 'Barro até o joelho!', dry: 'Poeira que só.', night: 'Boa noite!' },
+  helena: { intro: 'Helena Prado, zootecnista. Aqui cada animal tem ficha, brinco e pedigree. Você entende de genética?', t0: ['Um bom reprodutor melhora o rebanho inteiro em poucos anos.', 'Anotar é tão importante quanto tratar.'], t1: ['Cruzar Gir com Holandês dá a Girolando: leite no calor.'], t2: ['Seu jeito com os animais é cuidadoso. Gosto disso.'], t3: ['Quando quiser uma matriz de primeira, eu separo pra você.'], rain: 'Chuva demais traz verme. Atenção ao vermífugo.', dry: 'Na seca, a suplementação faz a diferença no bezerro.', night: 'Estou fechando as anotações do dia.' },
+  marta: { intro: 'Sou a Marta, cuido dos bezerros. Entra devagar e fecha a porteira, por favor.', t0: ['Bezerro novo precisa de colostro nas primeiras horas.'], t1: ['A doutora é exigente, mas ensina muito.'], t2: ['Os bezerros já te conhecem!'], t3: ['Você é das minhas: trata bicho com carinho.'], rain: 'Bezerro molhado adoece. Abrigo neles!', dry: 'Água limpa no bezerreiro.', night: 'Boa noite.' },
+  caetano: { intro: 'Caetano, da Pé de Serra! Aqui tem de tudo: gado, porco, cabra, galinha, horta e pomar. Ovo num cesto só não presta.', t0: ['Feira de sábado é onde o dinheiro gira.', 'Tô pensando em fazer queijo de cabra.'], t1: ['Porco dá lucro rápido; gado dá segurança.'], t2: ['Você tem cabeça de negociante!'], t3: ['Bora ser sócio num negócio? Brincadeira... ou não.'], rain: 'A horta agradece!', dry: 'Na seca, a palma salvou minhas cabras.', night: 'Fechando o caderno de contas.' },
+  jonas: { intro: 'E aí! Jonas, filho do Caetano. Estudo agronomia pelo celular, acredita?', t0: ['Irrigação por gotejamento economiza muita água.'], t1: ['Meu pai não gosta de mudança, mas tá aprendendo.'], t2: ['Você devia irrigar seu pomar!'], t3: ['Quando eu me formar, quero trabalhar com você.'], rain: 'Chuva boa!', dry: 'Tá seco demais.', night: 'Vou estudar.' },
+  otavio: { intro: 'Otávio Sampaio. Bem-vindo à Monte Real. Aqui nada é por acaso: cada animal tem número, história e propósito.', t0: ['Genética é investimento de longo prazo.', 'Eu contrato quem trabalha bem sem precisar ser vigiado.'], t1: ['Meu pai tinha vinte vacas nessa mesma terra.'], t2: ['O Severino falou bem de você.'], t3: ['Você tem futuro. E eu sei reconhecer futuro.'], rain: 'Chuva é bom para o pasto e ruim para a pista.', dry: 'Seca não me assusta: tenho reserva e irrigação.', night: 'A fazenda dorme, mas não para.' },
+  severino: { intro: 'Severino, gerente da Monte Real. Quer trabalhar aqui? Primeiro mostre serviço por aí. Aqui o padrão é alto.', t0: ['Horário é horário.', 'Ferramenta limpa no lugar depois do serviço.'], t1: ['Comecei como peão aqui mesmo.'], t2: ['Pode contar com uma vaga quando abrir.'], t3: ['Você já é da equipe, mesmo sem crachá.'], rain: 'Cavalo na baia hoje.', dry: 'Bebedouros cheios, sempre.', night: 'Turno encerrado.' },
+  dalva: { intro: 'Dalva. Cuido dos cavalos de exposição. Não passa por trás deles, viu?', t0: ['Cavalo de exposição é como atleta.'], t1: ['O Dr. Otávio pagou uma fortuna no garanhão Árabe.'], t2: ['Você tem mão leve com cavalo.'], t3: ['Pode escovar o garanhão. Poucos podem.'], rain: 'Ninguém sai pra pista hoje.', dry: 'Banho no fim da tarde.', night: 'Boa noite.' },
+  bruno: { intro: 'Boa tarde. Portaria da Monte Real. Visitante só até a sede, beleza?', t0: ['Viu o jogo ontem?'], t1: ['O Severino que libera as áreas internas.'], t2: ['Pode passar, já te conheço.'], t3: ['Você é de casa aqui.'], rain: 'Chuva forte na guarita...', dry: 'Calor!', night: 'Plantão noturno.' }
+});
+Object.assign(NPC_LORE, {
+  valdomiro: 'Quarta geração na Riacho Doce. Aprendeu a aboiar com o pai e a negociar com o avô. Conheceu Tiãozinho em feiras de gado e comprou dele um touro que até hoje é lembrado na família.',
+  toinho: 'Sobrinho da cozinheira da Riacho Doce, chegou com 14 anos e foi ficando. Hoje é o braço direito do Seu Valdomiro e sonha em ter um cavalo de vaquejada.',
+  helena: 'Zootecnista formada em Viçosa, trabalhou vinte anos em centrais de genética em Minas. Comprou a Santa Clara para provar que dá para fazer gado de ponta no sertão.',
+  marta: 'Nasceu na serra e trabalha com bezerros desde menina. A Dra. Helena diz que ninguém tem o olho dela para perceber um bezerro doente.',
+  caetano: 'Filho de meeiro, começou com três cabras e uma porca. Foi juntando, plantando e vendendo na feira até comprar a Pé de Serra.',
+  jonas: 'Filho único do Seu Caetano, estuda agronomia à distância e quer irrigação, energia solar e queijaria na fazenda do pai.',
+  otavio: 'Filho de um pequeno sitiante da serra, foi ser agrônomo no oeste baiano e fez fortuna com soja. Voltou rico, comprou as terras em volta da do pai e montou a Monte Real.',
+  severino: 'Entrou na Monte Real como peão quando ela ainda era do pai do Dr. Otávio. Virou gerente e é quem decide quem trabalha lá.',
+  dalva: 'Filha de ferreiro, cresceu entre cavalos de tropa. Hoje cuida de animais que valem mais que casas e não se deixa impressionar por dinheiro.',
+  bruno: 'Rapaz de Itapetinga, trabalha na portaria da Monte Real e torce pelo Vitória.'
+});
+
+/* ---------- viagem entre Itarantim e a Região das Serras ---------- */
+function inRegion() { return P.x > 112 * TS; }
+function travelAsk(dir) { if (CS.on || M.open) return; showModal('🛤️ Estrada do leste', null, null, () => `<p>${dir === 'go' ? 'Você chegou ao fim da cidade. A estrada segue para a <b>Região das Serras</b>, onde ficam quatro grandes fazendas.' : 'A estrada volta para <b>Itarantim</b>.'}</p><p><b>${dir === 'go' ? 'Você deseja sair da região?' : 'Voltar para Itarantim?'}</b></p><p class="mut">${P.mnt ? 'Você vai montado em ' + esc(byId(P.mnt).n) + '.' : P.cart ? 'Você vai de carroça.' : 'Você vai a pé.'}${P.lead ? ' ' + esc(byId(P.lead).n) + ' vai no cabresto.' : ''}</p><div class="row">${btn(dir === 'go' ? 'Sim, viajar' : 'Sim, voltar', 'travelGo', dir)}${btn(dir === 'go' ? 'Não, continuar na cidade' : 'Ficar na região', 'travelNo')}</div>`); }
+A.travelNo = () => { closeModal(); P.x -= (inRegion() ? -20 : 20); S.travelCd = drawT + 3; };
+A.travelGo = v => { closeModal(); csTravel(v); };
+function travelParty() { const L = []; if (P.mnt) L.push(byId(P.mnt)); if (P.lead) L.push(byId(P.lead)); if (P.cart && S.cart.hitch) L.push(byId(S.cart.hitch)); for (const d of myAnimals('cao')) if (d._cmd !== 'ficar') L.push(d); return L.filter(Boolean); }
+function placeParty(x, y) { const pt = travelParty(); P.x = x; P.y = y; pt.forEach((a, i) => { if (a.id === P.mnt) { a.x = x; a.y = y; } else { a.x = x - 22 - i * 12; a.y = y + 8 + (i % 2) * 6; } a._st = null; }); if (P.cart) { S.cart.x = x - 24; S.cart.y = y; } }
+function csTravel(dir) {
+  const go = dir === 'go', h = P.mnt ? byId(P.mnt) : null, sp = h ? (go ? 1 : 1) : 1, walk = !h && !P.cart;
+  const ride = (x0, x1, y) => (dt, u) => { const x = lerp(x0 * TS, x1 * TS, u); const mv = Math.abs(x - P.x); placeParty(x, y * TS); P._gal = h || P.cart ? 1 : 0; P._st = u < 1 ? (h ? 'walk' : 'walk') : 'idle'; P.dir = x1 > x0 ? 3 : 2; if (h) h.f = x1 > x0 ? 1 : -1; P._cyc = ((P._cyc || 0) + mv / 28) % 1; P._mv = mv / Math.max(dt, 1e-3); P._dist = (P._dist || 0) + mv; if (h) h._dist = (h._dist || 0) + mv; travelParty().forEach(a => { a._pose = 'walk'; a._mv = 20; a._dist = (a._dist || 0) + mv; a.f = x1 > x0 ? 1 : -1; }); cam.fx = x; cam.fy = y * TS; cam.spd = 7; if (u < 1 && h && Math.random() < dt * 5) AU.hoof(x, y * TS); };
+  const who = h ? `Montado em <b>${esc(h.n)}</b>` : P.cart ? 'De carroça' : 'A pé', tag = h ? ' (' + esc(breedOf(h).n || '') + ')' : '';
+  const T = walk ? 1.25 : 1;
+  const steps = go ? [
+    { fade: 1, d: 0.5, fn: () => placeParty(104 * TS, 43.9 * TS) },
+    { fade: 0, snap: 1, cam: [104, 43.9], z: 1.8, txt: `${who}${tag}, você deixa Itarantim pela estrada do leste.`, d: 4.2 * T, upd: ride(104, 111, 43.9) },
+    { fade: 1, d: 0.6 },
+    { fade: 0, snap: 1, cam: [119, 43.9], z: 1.25, txt: 'A estrada sobe a serra entre pedras, mandacaru e catingueiras. Lá embaixo, o riacho da serra corta os pastos.', d: 5 * T, upd: ride(118.6, 128, 43.9), fn: () => { S.min = Math.min(S.min + 45, 19 * 60); } },
+    { cam: [150, 30], spd: 0.6, z: 0.8, txt: 'Fazendas grandes, de porteira em porteira: Riacho Doce, Santa Clara, Pé de Serra... e, ao longe, a mansão da Monte Real.', d: 5, fn: () => csTitle('Região das Serras', 'estrada do leste') },
+    { fn: () => csTitle(null), cam: [128, 43.9], spd: 1.4, z: 1.4, d: 1.2 }
+  ] : [
+    { fade: 1, d: 0.5, fn: () => placeParty(126 * TS, 43.9 * TS) },
+    { fade: 0, snap: 1, cam: [126, 43.9], z: 1.7, txt: `${who}${tag}, você pega a estrada de volta.`, d: 3.6 * T, upd: ride(126, 118.6, 43.9) },
+    { fade: 1, d: 0.6 },
+    { fade: 0, snap: 1, cam: [110, 43.9], z: 1.4, txt: 'A serra fica para trás. Itarantim aparece no fim da estrada.', d: 4 * T, upd: ride(111, 104, 43.9), fn: () => { S.min = Math.min(S.min + 45, 19 * 60); } }
+  ];
+  cutscene(steps, () => { placeParty(go ? 128 * TS : 104 * TS, 43.9 * TS); P._gal = 0; P._st = 'idle'; S.travelCd = drawT + 3; S.reg = S.reg || {}; if (go && !S.reg.visited) { S.reg.visited = S.day; toast('🗺️ Nova região: Região das Serras. Fale com os fazendeiros sobre trabalho.'); qRefresh(); } questEvent('travel', go ? 'serras' : 'itarantim'); SAVE.save('auto', true); });
+}
+function travelTick() { if (mode === 'play' && !CS.on && !M.open) { const tx = P.x / TS, ty = P.y / TS, r = QRECT.mrEntrada; if (tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3] && !(S.firsts && S.firsts.cs_monte)) { csMonteReal(); return; } } if (mode !== 'play' || M.open || CS.on || (S.travelCd || 0) > drawT) return; const tx = P.x / TS, ty = P.y / TS; if (ty > 41.5 && ty < 46.5) { if (tx > 110.6 && tx < 112.5) travelAsk('go'); else if (tx > 117.2 && tx < 119.6) travelAsk('back'); } }
+
+/* ---------- reputação profissional e empregos ---------- */
+const REP_LV = [[0, 'Novato'], [40, 'Ajudante'], [120, 'Peão de confiança'], [260, 'Vaqueiro experiente'], [480, 'Capataz']];
+function repS() { S.rep = S.rep || { xp: 0, trust: { f1: 0, f2: 0, f3: 0, f4: 0 }, done: {}, fail: {}, paid: 0, spec: {} }; return S.rep; }
+function repLv() { const x = repS().xp; let i = 0; REP_LV.forEach((r, k) => { if (x >= r[0]) i = k; }); return i; }
+function trust(f) { return repS().trust[f] || 0; }
+function indicado() { return ['f1', 'f2', 'f3'].some(f => trust(f) >= 50); }
+// modelos de trabalho por fazenda. kind: tarefa | turno | esp (especializado) | extra. pts: pontos de serviço [x, y, ação, rótulo]
+const JOBS = {
+  f1: [
+    { id: 'rdTrato', n: 'Tratador do curral', kind: 'tarefa', pay: 140, xp: 12, desc: 'Pôr ração nos cochos do curral e água no bebedouro do pasto.', pts: [[126, 22.6, 'feed', 'Pôr ração no cocho'], [130, 22.6, 'feed', 'Pôr ração no cocho'], [140, 20.6, 'fill', 'Encher o bebedouro']] },
+    { id: 'rdLimpa', n: 'Limpeza do curral', kind: 'turno', h: [6, 11], pay: 170, xp: 14, desc: 'Turno da manhã (6h–11h): varrer e tirar o esterco do curral de madeira.', pts: [[126, 23.5, 'sweep', 'Varrer o curral'], [129, 25, 'sweep', 'Tirar esterco'], [131, 22.5, 'sweep', 'Varrer o curral'], [127, 26, 'sweep', 'Tirar esterco']] },
+    { id: 'rdConduz', n: 'Conduzir o gado', kind: 'tarefa', pay: 220, xp: 18, req: { lv: 1 }, desc: 'Abrir as porteiras e tocar o lote do pasto até o curral, de ponto em ponto pela trilha.', pts: [[150, 30, 'reach', 'Juntar o lote no fundo do pasto'], [140, 27, 'reach', 'Passar pela porteira do pasto'], [129, 28.5, 'reach', 'Entrar com o lote no curral']] }
+  ],
+  f2: [
+    { id: 'scBrinco', n: 'Identificação de matrizes', kind: 'tarefa', pay: 190, xp: 16, desc: 'Conferir o brinco e anotar o peso de 3 matrizes no pasto.', pts: [[124, 74, 'exam', 'Conferir brinco e anotar'], [130, 80, 'exam', 'Conferir brinco e anotar'], [133, 72, 'exam', 'Conferir brinco e anotar']] },
+    { id: 'scBezerro', n: 'Cuidar dos bezerros', kind: 'turno', h: [6, 12], pay: 210, xp: 16, desc: 'Turno da manhã (6h–12h): ração no bezerreiro, água e separar os bezerros desmamados.', pts: [[143, 70.6, 'feed', 'Ração no bezerreiro'], [146, 74, 'reach', 'Separar bezerro desmamado'], [148, 76, 'reach', 'Separar bezerro desmamado']] },
+    { id: 'scRepro', n: 'Cuidados com os reprodutores', kind: 'esp', pay: 380, xp: 26, req: { trust: 30 }, desc: 'Especializado: escovar, examinar e conferir os cascos dos touros de genética.', pts: [[156, 72, 'brush', 'Escovar o touro'], [160, 78, 'brush', 'Escovar o touro'], [158, 84, 'exam', 'Conferir os cascos']] }
+  ],
+  f3: [
+    { id: 'psOvos', n: 'Recolher ovos e tratar as aves', kind: 'tarefa', pay: 110, xp: 10, desc: 'Recolher os ovos dos ninhos e pôr milho para as galinhas.', pts: [[222, 9, 'pickup', 'Recolher ovos'], [224, 10.5, 'pickup', 'Recolher ovos'], [220.5, 11, 'feed', 'Milho no cocho das aves']] },
+    { id: 'psOrdenha', n: 'Ordenha das cabras', kind: 'turno', h: [5, 9], pay: 160, xp: 14, desc: 'Turno cedinho (5h–9h): ordenhar 3 cabras no aprisco.', pts: [[213, 20, 'feed', 'Ordenhar cabra'], [216, 23, 'feed', 'Ordenhar cabra'], [219, 19, 'feed', 'Ordenhar cabra']] },
+    { id: 'psFeira', n: 'Levar mercadoria para a feira', kind: 'tarefa', pay: 240, xp: 18, desc: 'Carregar caixas de verdura e queijo da Pé de Serra e entregar na praça de Itarantim (precisa viajar).', pts: [[195, 13.6, 'pickup', 'Carregar as caixas no galpão'], [84, 50, 'pickup', 'Entregar na barraca da praça']] },
+    { id: 'psChiq', n: 'Limpar o chiqueiro', kind: 'tarefa', pay: 130, xp: 12, desc: 'Varrer o chiqueiro e pôr ração para os porcos.', pts: [[210, 9, 'sweep', 'Varrer'], [213, 10, 'sweep', 'Varrer'], [211, 7.6, 'feed', 'Ração no cocho']] }
+  ],
+  f4: [
+    { id: 'mrBaias', n: 'Limpeza das baias', kind: 'turno', h: [6, 12], pay: 320, xp: 22, req: { lv: 1 }, desc: 'Turno (6h–12h) no estábulo: limpar baias e trocar a cama.', pts: [[187, 82.6, 'sweep', 'Limpar a baia'], [190, 82.6, 'sweep', 'Limpar a baia'], [193, 82.6, 'sweep', 'Trocar a cama']] },
+    { id: 'mrCavalos', n: 'Tratador de cavalos de exposição', kind: 'esp', pay: 620, xp: 36, req: { trust: 40 }, desc: 'Especializado: escovar e banhar os cavalos de exposição sob a supervisão da Dalva.', pts: [[188, 90, 'brush', 'Escovar o cavalo'], [192, 94, 'brush', 'Escovar o cavalo'], [189, 98, 'water', 'Dar banho']] },
+    { id: 'mrLeilao', n: 'Preparação para o leilão', kind: 'esp', pay: 900, xp: 48, req: { trust: 60 }, desc: 'Especializado: escovar, banhar e conduzir 3 animais de elite até o curral de embarque.', pts: [[218, 92, 'brush', 'Preparar o animal'], [226, 98, 'brush', 'Preparar o animal'], [203.5, 82, 'reach', 'Conduzir ao curral de embarque']] }
+  ]
+};
+const JOB_EXTRA = [ // serviços extraordinários (aparecem às vezes)
+  { id: 'xFuga', f: 'f1', n: 'Boi fugido na serra', kind: 'extra', pay: 450, xp: 30, desc: 'Um boi da Riacho Doce fugiu para a serra. Achar a trilha e trazer de volta.', pts: [[160, 6, 'reach', 'Seguir o rastro na serra'], [150, 4, 'reach', 'Achar o boi'], [140, 27, 'reach', 'Devolver ao pasto']] },
+  { id: 'xParto', f: 'f2', n: 'Parto difícil', kind: 'extra', pay: 520, xp: 34, desc: 'A Dra. Helena precisa de ajuda com uma vaca em trabalho de parto no curral de manejo.', pts: [[128, 61, 'feed', 'Ajudar no parto']] },
+  { id: 'xVisita', f: 'f4', n: 'Recepção de compradores', kind: 'extra', pay: 700, xp: 30, req: { lv: 2 }, desc: 'Compradores de Goiás visitam a Monte Real. Acompanhar e mostrar os animais.', pts: [[186, 60.5, 'reach', 'Receber na portaria'], [203.5, 82, 'reach', 'Mostrar o curral'], [189, 90, 'reach', 'Mostrar a pista']] }
+];
+function jobReqOk(j, f) { const r = j.req || {}; if (r.lv && repLv() < r.lv) return false; if (r.trust && trust(f) < r.trust) return false; if (f === 'f4' && repLv() < 1 && !indicado()) return false; return true; }
+function jobReqTxt(j, f) { const r = j.req || {}, L = []; if (r.lv) L.push('reputação: ' + REP_LV[r.lv][1]); if (r.trust) L.push('confiança na fazenda ≥ ' + r.trust); if (f === 'f4') L.push('ser Ajudante ou ter indicação de outra fazenda'); return L.join(' · ') || 'nenhum'; }
+function jobPay(j) { return Math.round(j.pay * (1 + repLv() * 0.08)); }
+function jobsHTML(f) { const F = RFARMS[f], R0 = repS(), act = S.job; let h = `<div class="card"><b>${F.n}</b> — ${F.type}<br><span class="mut">Sua reputação: <b>${REP_LV[repLv()][1]}</b> (${R0.xp} xp) · confiança aqui: ${trust(f)}/100 · serviços feitos aqui: ${R0.done[f] || 0}</span></div>`;
+  const L = JOBS[f].concat((S.jobExtra && S.jobExtra.f === f && S.jobExtra.day >= S.day - 1) ? [JOB_EXTRA.find(x => x.id === S.jobExtra.id)] : []);
+  h += L.map(j => { const ok = jobReqOk(j, f), kn = { tarefa: 'Por tarefa', turno: 'Por turno', esp: 'Especializado', extra: 'Serviço extraordinário' }[j.kind];
+    return `<div class="card"><div class="row sp"><b>${j.n}</b><b>${fmt(jobPay(j))}</b></div><span class="mut">${kn} · ${j.h ? 'Horário: ' + j.h[0] + 'h–' + j.h[1] + 'h' : 'Prazo: até amanhã às 18h'} · ${j.pts.length} tarefa(s)<br>${esc(j.desc)}<br>Requisitos: ${jobReqTxt(j, f)} · Extras: +${j.xp} xp${j.kind === 'esp' || j.kind === 'extra' ? ', bônus de 20% se fizer rápido' : ''}</span><br>${act ? (act.id === j.id ? '<b>Em andamento</b>' : '') : ok ? btn('Aceitar o serviço', 'jobTake', f + '|' + j.id) : '<span class="mut">🔒 Ainda não</span>'}</div>`; }).join('');
+  if (act && act.f === f) h += btn('Desistir do serviço (perde confiança)', 'jobQuit'); return h; }
+A.jobTake = v => { const [f, id] = v.split('|'), j = JOBS[f].concat(JOB_EXTRA).find(x => x.id === id); if (S.job) return say('Você já está num serviço.'); if (j.h && (hour() >= j.h[1])) return say('O turno de hoje já passou. Volte amanhã às ' + j.h[0] + 'h.');
+  S.job = { f, id, n: j.n, kind: j.kind, h: j.h, pay: jobPay(j), xp: j.xp, pts: j.pts.map(p => ({ x: p[0], y: p[1], act: p[2], l: p[3], ok: 0 })), day: S.day, due: S.day + 1, t0: S.min };
+  remember(RFARMS[f].own, 'aceitou o serviço ' + j.n); toast('🧰 Serviço aceito: ' + j.n + (j.h ? ' (' + j.h[0] + 'h–' + j.h[1] + 'h)' : '')); closeModal(); questEvent('jobTake', f); };
+A.jobQuit = () => { const j = S.job; if (!j) return; const R0 = repS(); R0.trust[j.f] = Math.max(0, trust(j.f) - 8); R0.fail[j.f] = (R0.fail[j.f] || 0) + 1; remember(RFARMS[j.f].own, 'largou o serviço ' + j.n + ' pela metade'); S.job = null; toast('Você desistiu do serviço. O patrão não gostou.'); closeModal(); };
+function jobInteractables(add, foot) { const j = S.job; if (!j) return; j.pts.forEach((p, i) => { if (p.ok) return; const prev = j.pts.slice(0, i).every(q => q.ok); if (j.kind !== 'tarefa' && !prev) return; const x = p.x * TS, y = p.y * TS, onH = !foot && (p.act === 'reach');
+    if (!foot && !onH) return; add({ k: 'job', label: '🧰 ' + p.l, x, y, r: 26, prio: 7, hit: [x - 16, y - 28, x + 16, y + 8], fn: () => { if (j.h && (hour() < j.h[0] || hour() >= j.h[1])) return say('Fora do horário do turno (' + j.h[0] + 'h–' + j.h[1] + 'h).'); if (p.act === 'reach') { jobDo(j, p); return; } act(p.act === 'sweep' ? 'sweep' : p.act === 'brush' ? 'brush' : p.act === 'fill' ? 'fill' : 'pickup', 1.6, { x, y }, () => jobDo(j, p)); } }); }); }
+function jobDo(j, p) { p.ok = 1; P.en = Math.max(0, P.en - 3); dust(P.x + 6, P.y, 3); if (j.pts.every(q => q.ok)) jobFinish(j); else toast('✔ ' + p.l + ' (' + j.pts.filter(q => q.ok).length + '/' + j.pts.length + ')'); }
+function jobFinish(j) { const R0 = repS(), F = RFARMS[j.f], fast = (S.day === j.day) && (S.min - j.t0 < 120), bonus = (j.kind === 'esp' || j.kind === 'extra') && fast ? Math.round(j.pay * 0.2) : 0;
+  receive(j.pay + bonus, 'Salário: ' + j.n + ' (' + F.n + ')', 'cash'); R0.xp += j.xp; R0.trust[j.f] = Math.min(100, trust(j.f) + (j.kind === 'esp' ? 12 : j.kind === 'extra' ? 10 : 7)); R0.done[j.f] = (R0.done[j.f] || 0) + 1; R0.paid += j.pay + bonus; if (j.kind === 'esp') R0.spec[j.f] = (R0.spec[j.f] || 0) + 1;
+  addFr(F.own, 15); remember(F.own, 'fez bem o serviço ' + j.n); S.rfarm && S.rfarm[j.f] && (S.rfarm[j.f].money -= j.pay + bonus); const lv0 = repLv(); S.job = null;
+  toast('💰 ' + j.n + ': ' + fmt(j.pay) + (bonus ? ' + bônus ' + fmt(bonus) : '') + ' · +' + j.xp + ' xp'); if (repLv() > lv0) toast('⭐ Nova reputação: ' + REP_LV[repLv()][1] + '!');
+  questEvent('jobDone', j.f); questEvent('jobDone', j.kind); questEvent('salary', j.f);
+  // indicação: confiança alta numa fazenda abre portas nas outras
+  if (trust(j.f) >= 50 && !(R0.indic || {})[j.f]) { R0.indic = R0.indic || {}; R0.indic[j.f] = 1; toast('📨 ' + NPCDEF[F.own].n + ' vai te indicar para as outras fazendas da região.'); } }
+function jobDay() { const j = S.job; if (j && S.day > j.due) { const R0 = repS(); R0.trust[j.f] = Math.max(0, trust(j.f) - 5); R0.fail[j.f] = (R0.fail[j.f] || 0) + 1; remember(RFARMS[j.f].own, 'não terminou o serviço ' + j.n); toast('⌛ O prazo do serviço acabou: ' + j.n + '.'); S.job = null; }
+  if (S.reg && S.reg.visited && Math.random() < 0.35) { const x = pick(JOB_EXTRA); S.jobExtra = { id: x.id, f: x.f, day: S.day }; } }
+
+/* ---------- economia das 4 fazendas (simulação diária, com mudanças visíveis) ---------- */
+function rfarmS() { if (!S.rfarm) { S.rfarm = {}; for (const k in RFARMS) S.rfarm[k] = { money: RFARMS[k].money, staff: RFARMS[k].staff, built: [], log: [] }; } return S.rfarm; }
+function rfarmDay() { const R = rfarmS(), se = season();
+  for (const k in RFARMS) { const F = RFARMS[k], st = R[k], own = S.animals.filter(a => a.own === F.own), heads = own.length;
+    const inc = heads * (k === 'f4' ? 160 : k === 'f2' ? 70 : 45) * (se ? 0.85 : 1.05), cost = st.staff * F.wage / 7 + heads * (k === 'f4' ? 40 : 18) * (se ? 1.3 : 1) + (k === 'f4' ? 2500 : 0);
+    st.money = Math.round(st.money + inc - cost);
+    const cap = k === 'f4' ? 22 : k === 'f2' ? 20 : 16, r = Math.random(), arr = S.arroba || 300;
+    if (st.money > (k === 'f4' ? 200000 : 18000) && heads < cap && r < 0.3) { const a = rfarmSpawn(k); if (a) { st.money -= animalValue(a); rfNews(k, `${NPCDEF[F.own].n} comprou ${catName(a).toLowerCase()} ${breedOf(a).n}.`); } }
+    else if (heads > 6 && (arr > 330 || st.money < 3000) && r < 0.25) { const L = own.filter(a => !a.vip), a = L.length ? pick(L) : null; if (a) { S.animals = S.animals.filter(b => b !== a); st.money += animalValue(a); rfNews(k, `${F.n} vendeu ${a.n} (${breedOf(a).n}) — ${arr > 330 ? 'arroba boa' : 'apertou o caixa'}.`); } }
+    if (st.money > (k === 'f4' ? 400000 : 30000) && st.staff < (k === 'f4' ? 7 : 3) && r > 0.9) { st.staff++; st.money -= F.wage; rfNews(k, `${F.n} contratou mais um funcionário (agora são ${st.staff}).`); }
+    const nb = F.builds.find(b => !st.built.includes(b[0])); if (nb && st.money > nb[2] * 3 && r > 0.94) { st.built.push(nb[0]); st.money -= nb[2]; rfNews(k, `${F.n} construiu ${nb[1]}.`); }
+  } }
+function rfNews(k, t) { const st = rfarmS()[k]; st.log.unshift({ d: S.day, t }); if (st.log.length > 8) st.log.pop(); regionInit(); regionNews(t); }
+function rfarmSpawn(k) { const F = RFARMS[k], areas = AKEYS.filter(a => AREAS[a].reg === k && !['rd_curral', 'sc_manejo', 'mr_curral'].includes(a)); if (!areas.length) return null;
+  const pools = { f1: [['boi', ['peduro', 'nelore', 'mestico', 'guzera']], ['cavalo', ['nordestino', 'mm']], ['galinha', ['caipira', 'carijo']]], f2: [['boi', ['girolando', 'gir', 'nelore', 'senepol', 'angus', 'tabapua']]], f3: [['boi', ['mestico', 'girolando']], ['porco', ['piau', 'largewhite', 'moura']], ['cabra', ['moxoto', 'saanen', 'boer', 'nubiana']], ['galinha', ['caipira', 'indio']], ['cavalo', ['crioulo']]], f4: [['boi', ['nelore', 'brahman', 'angus', 'senepol']], ['cavalo', ['mm', 'qm', 'arabe', 'campolina']]] }[k];
+  const [sp, brs] = pick(pools), area = sp === 'porco' ? 'ps_chiq' : sp === 'cabra' ? 'ps_cabra' : sp === 'galinha' ? (k === 'f1' ? 'rd_galin' : 'ps_galin') : sp === 'cavalo' && k === 'f4' ? 'mr_pista' : pick(areas.filter(a => !/chiq|cabra|galin|pista/.test(a)));
+  const a = mkAnimal(sp, pick(brs), { own: F.own, age: rint(12, 40), gen: k === 'f4' ? rint(78, 95) : k === 'f2' ? rint(70, 90) : undefined }); const q = randIn(area, 1.5); a.x = q[0]; a.y = q[1]; a.area = area; if (k === 'f4') a.vip = 1; S.animals.push(a); return a; }
+function rfarmInit() { S.reg = S.reg || {}; if (S.reg.pop) return; S.reg.pop = 1; const n = { f1: 12, f2: 14, f3: 16, f4: 14 }; for (const k in n) for (let i = 0; i < n[k]; i++) rfarmSpawn(k); rfarmS(); }
+function rfarmHTML() { const R = rfarmS(); let h = '<p class="mut">As quatro fazendas da Região das Serras compram, vendem, contratam e constroem por conta própria.</p>';
+  for (const k in RFARMS) { const F = RFARMS[k], st = R[k], own = S.animals.filter(a => a.own === F.own), cnt = {}; own.forEach(a => cnt[a.sp] = (cnt[a.sp] || 0) + 1);
+    h += `<div class="card"><b>${F.n}</b> — ${F.type}<br><span class="mut">${NPCDEF[F.own].n} · ${Object.entries(cnt).map(([s, v]) => v + ' ' + SPN[s].toLowerCase()).join(', ')} · ${st.staff} funcionário(s) · caixa ${st.money > 100000 ? 'muito forte' : st.money > 30000 ? 'bom' : st.money > 8000 ? 'apertado' : 'no vermelho'}${st.built.length ? ' · construiu: ' + st.built.map(b => F.builds.find(x => x[0] === b)[1]).join(', ') : ''}<br>Sua confiança: ${trust(k)}/100 · ${esc(F.hist)}</span>${st.log.length ? '<br><span class="mut">' + st.log.slice(0, 3).map(l => 'Dia ' + l.d + ': ' + esc(l.t)).join('<br>') + '</span>' : ''}</div>`; }
+  return h; }
+
+/* ---------- conversas dos fazendeiros: lembram de você ---------- */
+function regionTalkExtra(id) { const d = NPCDEF[id]; if (!d || !d.reg) return null; const f = d.reg, R0 = repS(), t = trust(f), done = R0.done[f] || 0, fail = R0.fail[f] || 0, own = myAnimals().filter(a => !a.main).length, rank = S.rankI || 0;
+  const L = [];
+  if (fail && Math.random() < 0.5) L.push(id === 'otavio' ? 'Soube que você largou um serviço pela metade. Aqui isso não se repete.' : 'Ô, aquele serviço que ficou pela metade... da próxima vez avisa, viu?');
+  if (done >= 3) L.push(id === 'otavio' ? 'O Severino diz que você trabalha sem precisar ser vigiado. É raro.' : 'Você já fez ' + done + ' serviços aqui. Gente assim eu quero por perto.');
+  else if (done) L.push('Gostei do serviço da outra vez. Volta sempre.');
+  if (own >= 10) L.push('Ouvi dizer que sua criação já passa de ' + own + ' cabeças. Tá crescendo, hein?');
+  if (rank >= 1) L.push('Em Itarantim já falam do seu nome. ' + (id === 'otavio' ? 'Reputação se constrói devagar.' : 'Bonito de ver.'));
+  if (indicado() && f === 'f4') L.push(id === 'otavio' ? 'Recebi boas referências suas da região. Pode procurar o Severino.' : 'Seus patrões de antes falaram bem de você.');
+  if (id === 'otavio' && t >= 60) L.push('Você conquistou minha confiança. Isso vale mais que dinheiro aqui.');
+  if (id === 'valdomiro' && trust('f4') >= 30) L.push('Tá trabalhando lá no Otávio também? Cuidado pra não esquecer os amigos pequenos!');
+  if (id === 'caetano' && trust('f2') >= 30) L.push('A Dra. Helena falou bem de você. Ela não elogia ninguém!');
+  return L.length ? pick(L) : null; }
+function regionNpcHTML(id) { const d = NPCDEF[id]; if (!d || !d.reg) return ''; const f = d.reg, isBoss = RFARMS[f].own === id || (f === 'f4' && id === 'severino');
+  return `<div class="card">🧰 <b>Trabalho na ${RFARMS[f].n}</b><br><span class="mut">${isBoss ? 'Pergunte sobre vagas: o patrão mostra as funções, horários e salários.' : 'Quem contrata é ' + NPCDEF[f === 'f4' ? 'severino' : RFARMS[f].own].n + '.'}</span>${isBoss ? '<br>' + btn('Perguntar sobre vagas', 'jobAsk', f) : ''}</div>`; }
+A.jobAsk = f => { questEvent('jobAsk', f); if (f === 'f4' && repLv() < 1 && !indicado() && trust('f4') < 10) { M.txt = 'Por enquanto não tenho vaga para quem eu não conheço. Mostre serviço nas outras fazendas da serra e volte com uma indicação.'; renderModal(); return; } showModal('🧰 Vagas — ' + RFARMS[f].n, null, null, () => jobsHTML(f)); };
+
 const AUC_PEN = [100, 46, 105, 49];
 Object.assign(SPOTS, { tribuna: { p: [102.6, 50.5], via: [[102.6, 45.5], [102.6, 44]] }, lei1: { p: [99.2, 47.4], via: [[99.2, 45.5], [99.2, 44]] }, lei2: { p: [99.3, 49.6], via: [[98.6, 45.5], [98.6, 44]] }, lei3: { p: [100.6, 50.5], via: [[99, 50.5], [98.6, 45.5], [98.6, 44]] }, lei4: { p: [104.6, 50.5], via: [[106.2, 50.5], [106.2, 45.5], [106.2, 44]] }, lei5: { p: [106.2, 47.4], via: [[106.2, 45.5], [106.2, 44]] }, lei6: { p: [106.3, 49.6], via: [[106.6, 45.5], [106.6, 44]] }, lei7: { p: [108.2, 48.4], via: [[108.2, 45.5], [108.2, 44]] }, lei8: { p: [97.6, 48.4], via: [[97.6, 45.5], [97.6, 44]] } });
 const AUC_TYPES = {
@@ -7124,14 +7548,14 @@ function render(dt) {
   for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) { const i = gi(tx, ty); if (obj[i] === 1) { const isF = (x, y) => x >= 0 && y >= 0 && x < MW && y < MH && (obj[gi(x, y)] === 1 || obj[gi(x, y)] === 2); const st = fenceStyleAt(tx, ty), h = H2(tx, ty, 21), cond = h < .07 ? 1 : h < .2 ? 2 : 0; const l = isF(tx - 1, ty) ? 1 : 0, r = isF(tx + 1, ty) ? 1 : 0, u = isF(tx, ty - 1) ? 1 : 0, dn = isF(tx, ty + 1) ? 1 : 0, straight = (l && r && !u && !dn) || (u && dn && !l && !r); const c = fenceSpr(st, l, r, u, dn, cond, !straight || (tx + ty) % 2 === 0); add(ty * TS + 15, () => X.drawImage(c, tx * TS, ty * TS - 12)); } }
   for (const g of GATES) { const gx = g.t[0][0], gy = g.t[g.h ? 0 : 1][1]; if (gx < tx0 - 2 || gx > tx1 + 2 || gy < ty0 || gy > ty1 + 2) continue; add(g.h ? gy * TS + 14 : (gy + 1) * TS - 1, () => drawGate(g, X)); }
   const inV = (x, y, m) => x > cam.x - m && x < cam.x + vw + m && y > cam.y - 20 && y < cam.y + vh + m * 1.5;
-  for (const p of PROPS) { if (!inV(p.x, p.y, 50)) continue; const tree = TREES.has(p.t);
+  for (const p of PROPS) { if (!inV(p.x, p.y, p.t === 'piscina' || p.t === 'picadeiro' ? 160 : 50)) continue; if (p.rb && !rbuiltOn(p.rb)) continue; const rp = rpropSpr(p); if (rp) { add(p.y, () => X.drawImage(rp, Math.round(p.x - rp.width / 2), Math.round(p.y - rp.height))); continue; } const tree = TREES.has(p.t);
     add(p.y, () => { const c = propSpr(p.t, p.v, se); if (tree) { const s2 = sunDX(), rx = 15 + Math.abs(s2), off = cl(s2 * 2.4, -rx * 0.55, rx * 0.55); X.fillStyle = isNight() ? 'rgba(5,5,15,0.18)' : 'rgba(20,12,4,0.22)'; X.beginPath(); X.ellipse(p.x + off, p.y - 1, rx, 6, 0, 0, 7); X.fill(); X.fillStyle = isNight() ? 'rgba(5,5,15,0.22)' : 'rgba(20,12,4,0.3)'; X.beginPath(); X.ellipse(p.x, p.y, 7, 2.5, 0, 0, 7); X.fill(); /* sombra de contato no pé do tronco (sem ela a árvore parecia flutuar) */ const swy = Math.round(Math.sin(drawT * 1.3 * wind + p.x * 0.05) * 0.7 * wind); const hide = P.y < p.y && P.y > p.y - 58 && Math.abs(P.x - p.x) < 22; if (hide) X.globalAlpha = 0.45; X.drawImage(c, 0, 0, 64, 56, p.x - 32 + swy, p.y - 70, 64, 56); X.globalAlpha = 1; X.drawImage(c, 0, 56, 64, 16, p.x - 32, p.y - 14, 64, 16); } else { const bo = MOVE.pop && MOVE.pop.id === p.mid ? -Math.round(Math.sin(MOVE.pop.t / 0.4 * Math.PI) * 4) : 0; if (p.t === 'fogueira') drawFogueira(p, bo); else { const sw = FLORA_SHADOW[p.t]; if (sw) { X.fillStyle = isNight() ? 'rgba(5,5,15,0.18)' : 'rgba(20,12,4,0.24)'; X.beginPath(); X.ellipse(p.x, p.y, sw, 2.5, 0, 0, 7); X.fill(); } X.drawImage(c, p.x - 32, p.y - 70 + bo); } }
       if (p.t === 'churrasqueira' && S.fires.churr > 0) { X.fillStyle = `rgba(255,${120 + Math.floor(Math.sin(drawT * 8) * 30)},40,0.75)`; X.fillRect(p.x - 11, p.y - 15, 22, 5); X.fillStyle = 'rgba(255,200,90,0.5)'; for (let k = 0; k < 5; k++) X.fillRect(p.x - 10 + k * 5, p.y - 13 + ((Math.floor(drawT * 6) + k) % 2), 2, 1); for (let k = 0; k < 4; k++) { const t = (drawT * 0.5 + k / 4) % 1; X.fillStyle = `rgba(150,145,140,${0.45 * (1 - t)})`; const r = 2 + t * 4; X.fillRect(p.x + 6 - r / 2 + Math.sin(t * 6 + k) * 3 * t, p.y - 47 - t * 22, r, r); } if (grill.on) { X.fillStyle = grill.s[grill.side] > 1.25 ? '#3a1a0a' : grill.s[grill.side] > 0.95 ? '#8a3a1a' : '#c84a4a'; X.fillRect(p.x - 5, p.y - 17, 10, 3); } }
       if (p.t === 'coop' && S.eggs > 0) { X.fillStyle = '#f8f0e0'; for (let k = 0; k < Math.min(5, S.eggs); k++) X.fillRect(p.x - 10 + k * 4, p.y - 4, 2, 3); }
       if (p.t === 'forrageira' && S.mach && S.mach.busy) { if (Math.random() < 0.3) part(p.x + rnd(-6, 6), p.y - 20, 'dust', { vx: rnd(-10, 10), vy: -12, m: .5, c: '#e8d080', s: 1 }); }
     }); }
   for (const b of BLD) { const x0 = b.r[0] * TS, y1 = (b.r[3] + 1) * TS; if (x0 > cam.x + vw + 20 || (b.r[2] + 1) * TS < cam.x - 20 || y1 < cam.y - 10 || b.r[1] * TS - 40 > cam.y + vh) continue;
-    add(y1 - 2, () => { const hv = S.house === undefined ? 2 : S.house; const casa = b.id === 'casa', c = casa ? casaSpr(hv, isNight()) : bldSpr(b, isNight()); const s2 = sunDX(); X.fillStyle = isNight() ? 'rgba(5,5,15,0.2)' : 'rgba(20,12,4,0.25)'; X.fillRect(x0 + (s2 > 0 ? c.width - 8 : s2 * 2), y1 - 6, Math.abs(s2) * 2 + 4, 6); X.fillRect(x0 - 2, y1 - 2, c.width - 4, 4); X.drawImage(c, x0 - 4, casa ? y1 - c.height + 8 : b.r[1] * TS - b.top); }); }
+    add(y1 - 2, () => { const hv = S.house === undefined ? 2 : S.house; const casa = b.id === 'casa', rb = RBLD[b.art], c = casa ? casaSpr(hv, isNight()) : rb ? rbSpr(b.art, isNight()) : bldSpr(b, isNight()); const s2 = sunDX(); X.fillStyle = isNight() ? 'rgba(5,5,15,0.2)' : 'rgba(20,12,4,0.25)'; X.fillRect(x0 + (s2 > 0 ? c.width - 8 : s2 * 2), y1 - 6, Math.abs(s2) * 2 + 4, 6); X.fillRect(x0 - 2, y1 - 2, c.width - 4, 4); X.drawImage(c, rb ? x0 : x0 - 4, casa || rb ? y1 - c.height + 8 : b.r[1] * TS - b.top); }); }
   if (cam.y + vh > 88 * TS && cam.x < 34 * TS) POMAR_PLOTS.forEach((pl, i) => { if (!inV(pl.x, pl.y, 50)) return; const q = pomarS()[i];
     if (!q) { add(pl.y - 16, () => { X.fillStyle = 'rgba(70,46,26,0.55)'; X.beginPath(); X.ellipse(pl.x, pl.y - 2, 7, 3, 0, 0, 7); X.fill(); X.fillStyle = 'rgba(110,80,50,0.5)'; X.fillRect(pl.x - 4, pl.y - 4, 8, 1); }); return; }
     const F = FRUITS[q.k], st = fruitStage(q), fl = st === 2 && q.f > 0 && q.f < 0.35 ? 1 : 0, fr = st === 2 && q.f >= 0.35 ? (q.f >= 1 ? 1 : 0.5) : 0, dry = q.w <= 0 ? 1 : 0;
@@ -7209,7 +7633,9 @@ function lighting() {
 /* ---------- HUD e região ---------- */
 let hudT = 0, regT = 0, curReg = null, regHide = null;
 const WXIC = { sol: 'sun', nublado: 'cloud', chuva: 'rain', neblina: 'fog', vento: 'wind' };
-function regionAt(x, y) { const tx = x / TS, ty = y / TS; if (tx < 60) return ty < 21 && S.exp.norte ? ['Gleba do Mandacaru', 'FAZENDA BOA ESPERANÇA'] : ty > 67 && S.exp.sul ? ['Gleba do Açude', 'FAZENDA BOA ESPERANÇA'] : ['Fazenda Boa Esperança', 'SUA PROPRIEDADE']; if (tx > 66 && ty < 27) return ['Fazenda Campos', 'SR. FELIPE']; if (tx > 66 && ty > 62) return ['Fazenda Duarte', 'SR. RYAN']; if (tx >= 68 && ty >= 28 && ty <= 62) return ['Itarantim', 'CENTRO DA CIDADE']; return ['Estrada do Riacho', 'ITARANTIM · BAHIA']; }
+function regionAt(x, y) { const tx = x / TS, ty = y / TS;
+  if (tx >= 112) { if (tx < 118) return ['Serra do Leste', 'ESTRADA PARA A REGIÃO']; for (const k in RFARMS) { const r = RFARMS[k].rect; if (tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]) return [RFARMS[k].n, NPCDEF[RFARMS[k].own].n.toUpperCase()]; } return ['Região das Serras', 'ESTRADA DO LESTE']; }
+  if (tx < 60) return ty < 21 && S.exp.norte ? ['Gleba do Mandacaru', 'FAZENDA BOA ESPERANÇA'] : ty > 67 && S.exp.sul ? ['Gleba do Açude', 'FAZENDA BOA ESPERANÇA'] : ['Fazenda Boa Esperança', 'SUA PROPRIEDADE']; if (tx > 66 && ty < 27) return ['Fazenda Campos', 'SR. FELIPE']; if (tx > 66 && ty > 62) return ['Fazenda Duarte', 'SR. RYAN']; if (tx >= 68 && ty >= 28 && ty <= 62) return ['Itarantim', 'CENTRO DA CIDADE']; return ['Estrada do Riacho', 'ITARANTIM · BAHIA']; }
 function hud(dt) {
   if ((regT -= dt) < 0 && mode === 'play') { regT = 0.5; const r = regionAt(P.x, P.y); if (!curReg) curReg = r[0]; else if (r[0] !== curReg) { curReg = r[0]; const el = $('reg'); el.innerHTML = r[0] + '<small>' + r[1] + '</small>'; el.classList.add('on'); clearTimeout(regHide); regHide = setTimeout(() => el.classList.remove('on'), 2400); AU.jingle(); } }
   if ((hudT -= dt) > 0) return; hudT = 0.25;
@@ -7971,7 +8397,8 @@ function interactables(forTap) {
   for (const k of ['norte', 'sul']) { const s = EXP[k].sign, x = (s[0] - 1.6) * TS, y = s[1] * TS + 6; add({ k: 'sign', label: '🪧 ' + (S.exp[k] ? EXP[k].n : 'Terreno à venda'), x, y, r: 26, prio: 2, hit: [x - 12, y - 30, x + 12, y], fn: () => openSign(k) }); }
   for (const k in LOTS) { if ((LOTS[k].exp && !S.exp[LOTS[k].exp]) || !lotOwned(k)) continue; const r = LOTS[k].r, x = (r[0] + r[2] + 1) / 2 * TS, y = (r[3] + 1.4) * TS; add({ k: 'lot', label: '🏗️ Lote ' + k + (S.lots[k] ? ': ' + BUILD[S.lots[k].b].n : ''), x, y, r: 28, prio: 1, hit: S.lots[k] ? [r[0] * TS, r[1] * TS - 20, (r[2] + 1) * TS, (r[3] + 1) * TS] : null, fn: () => openLot(k) }); }
   if (foot) add({ k: 'cart', label: '🛒 Carroça', x: S.cart.x, y: S.cart.y, r: 28, prio: 2, hit: [S.cart.x - 18, S.cart.y - 22, S.cart.x + 18, S.cart.y + 4], fn: openCart });
-  storyInteractables(add); misInteractables(add); aucInteractables(add); rocaInteractables(add, foot); pomarInteractables(add, foot); bicoInteractables(add, foot);
+  storyInteractables(add); misInteractables(add); aucInteractables(add); rocaInteractables(add, foot); pomarInteractables(add, foot); bicoInteractables(add, foot); jobInteractables(add, foot);
+  if (Math.abs(P.y - 44 * TS) < 60) { if (Math.abs(P.x - 110.6 * TS) < 50) add({ k: 'viagem', label: '🛤️ Viajar para a Região das Serras', x: 110.8 * TS, y: 44 * TS, r: 40, prio: 6, hit: [109.5 * TS, 41.5 * TS, 112 * TS, 46 * TS], fn: () => travelAsk('go') }); if (Math.abs(P.x - 118.8 * TS) < 50) add({ k: 'viagem', label: '🛤️ Voltar para Itarantim', x: 118.8 * TS, y: 44 * TS, r: 40, prio: 6, hit: [117.5 * TS, 41.5 * TS, 120 * TS, 46 * TS], fn: () => travelAsk('back') }); }
   if (foot) { const e = objPos('esterqueira') || { x: 52.6 * TS, y: 94.8 * TS }, n = Math.floor(S.esterco || 0); add({ k: 'esterco', label: n ? '💩 Recolher esterco (' + n + ' saco' + (n > 1 ? 's' : '') + ')' : 'Esterqueira (vazia)', x: e.x, y: e.y + 6, r: 24, prio: 2, hit: [e.x - 18, e.y - 20, e.x + 18, e.y + 6], fn: () => n ? act('pickup', 1.2, { x: e.x, y: e.y }, collectManure) : say('A esterqueira enche com o esterco do chiqueiro e do aprisco, dia a dia.') }); }
   if (foot) { const ak = areaAt(P.x, P.y); if (ak && S.dirt[ak] > 20) add({ k: 'clean', label: '🧹 Limpar ' + AREAS[ak].n, x: P.x, y: P.y, r: 999, prio: -3, fn: () => cleanCurral(ak) }); }
   return L;
@@ -7995,7 +8422,7 @@ const STEP = 1 / 60; let acc = 0, lastT = 0, saveT = 0;
 function tick(dt) {
   drawT += dt;
   if (mode === 'play' && !paused) {
-    holdTick(); placeTick(dt); INV_CAP = invCapNow(); const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); updAuction(dt); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
+    holdTick(); placeTick(dt); INV_CAP = invCapNow(); const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
     { const h = P.mnt ? byId(P.mnt) : null; if (h && h._react && (h._react.t -= dt) <= 0) h._react = null; }
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);

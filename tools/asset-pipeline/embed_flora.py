@@ -1,16 +1,20 @@
-"""Embute tools/asset-pipeline/flora.js em web/index.html como `const FLORA = ...;` (substitui a versão anterior)."""
-import re, sys, pathlib
+"""Embute os módulos de arte em web/index.html (substitui a versão anterior de cada um).
+- tools/asset-pipeline/flora.js      -> const FLORA (árvores, plantas, frutíferas)
+- tools/asset-pipeline/region_art.js -> const RART  (prédios e objetos da Região das Serras)
+"""
+import pathlib
 root = pathlib.Path(__file__).resolve().parents[2]
-src = (root / 'tools/asset-pipeline/flora.js').read_text(encoding='utf-8')
-body = src[src.index('(() => {'):].rstrip().rstrip(';')
 html = (root / 'web/index.html').read_text(encoding='utf-8')
-begin, end = '/* FLORA:begin (gerado de tools/asset-pipeline/flora.js) */', '/* FLORA:end */'
-block = begin + '\nconst FLORA = ' + body + ';\n' + end
-if begin in html:
-    html = html[:html.index(begin)] + block + html[html.index(end) + len(end):]
-else:
-    anchor = '/* ============ CENÁRIO ============ */'
-    assert html.count(anchor) == 1
-    html = html.replace(anchor, anchor + '\n' + block)
+anchor = '/* ============ CENÁRIO ============ */'
+for name, fn in [('FLORA', 'flora.js'), ('RART', 'region_art.js')]:
+    src = (root / 'tools/asset-pipeline' / fn).read_text(encoding='utf-8')
+    body = src[src.index('(() => {'):].rstrip().rstrip(';')
+    begin, end = f'/* {name}:begin (gerado de tools/asset-pipeline/{fn}) */', f'/* {name}:end */'
+    block = begin + f'\nconst {name} = ' + body + ';\n' + end
+    if begin in html:
+        html = html[:html.index(begin)] + block + html[html.index(end) + len(end):]
+    else:
+        assert html.count(anchor) == 1
+        html = html.replace(anchor, anchor + '\n' + block)
+    print(name, 'embutido', len(body), 'bytes')
 (root / 'web/index.html').write_text(html, encoding='utf-8')
-print('FLORA embutida', len(body), 'bytes')
