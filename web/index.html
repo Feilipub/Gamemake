@@ -769,7 +769,14 @@ const BDEF = [
   { id: 'mercadinho', n: 'Mercadinho Itarantim', art: 'loja', r: [72, 51, 77, 57], door: 74.5, act: 'mercadinho', wall: '#f0d070', trim: '#3a6aa0', roof: '#b0502a', sign: 'cesta' },
   { id: 'bar', n: 'Bar da Zefa', art: 'loja', r: [93, 51, 97, 57], door: 95, act: 'bar', wall: '#e89048', trim: '#2a5a2a', roof: '#a8482a', sign: 'copo' },
   { id: 'acougue', n: 'Açougue do Tonho', art: 'loja', r: [99, 51, 103, 57], door: 101, act: 'acougue', wall: '#f0ece4', trim: '#c03030', roof: '#b0502a', sign: 'boi' },
-  { id: 'agro', n: 'Casa do Agro', art: 'loja', r: [105, 51, 110, 57], door: 107.5, act: 'agro', wall: '#7ab070', trim: '#f4f0e8', roof: '#8e9498', sign: 'folha' }
+  { id: 'agro', n: 'Casa do Agro', art: 'loja', r: [105, 51, 110, 57], door: 107.5, act: 'agro', wall: '#7ab070', trim: '#f4f0e8', roof: '#8e9498', sign: 'folha' },
+  // Rua Nova (expansão da cidade, ao norte da igreja)
+  { id: 'escola', n: 'Escola Municipal Tiãozinho Vaqueiro', art: 'loja', r: [66, 25, 72, 29], door: 69.5, act: 'npcHome:rita', wall: '#f0e8c8', trim: '#2f6f9f', roof: '#b0502a', sign: 'livro' },
+  { id: 'ferraria', n: 'Ferraria do Raimundo', art: 'loja', r: [74, 25, 78, 29], door: 76.5, act: 'npcHome:raimundo', wall: '#8a6a52', trim: '#3a3a3a', roof: '#6a6e72', sign: 'ferradura' },
+  { id: 'farmacia', n: 'Farmácia Santa Luzia', art: 'loja', r: [80, 25, 85, 29], door: 82.5, act: 'npcHome:elias', wall: '#e8f0f0', trim: '#2a8a5a', roof: '#a8482a', sign: 'cruz' },
+  { id: 'casaNena', n: 'Casa de Dona Nena', art: 'casa', r: [94, 25, 98, 29], door: 96.5, act: 'npcHome:nena', wall: '#d8a070', trim: '#f4f0e8', roof: '#a8482a' },
+  { id: 'casaZe', n: 'Casa do Zé Cantador', art: 'casa', r: [100, 25, 104, 29], door: 102.5, act: 'npcHome:ze', wall: '#a8c890', trim: '#6a3a1a', roof: '#b0502a' },
+  { id: 'casaLou', n: 'Casa do Lourival', art: 'casa', r: [106, 25, 110, 29], door: 108.5, act: 'npcHome:lourival', wall: '#e8c8a8', trim: '#2f6f9f', roof: '#a8482a' }
 ];
 /* ---------- geração ---------- */
 function fillR(x0, y0, x1, y1, t) { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (x >= 0 && y >= 0 && x < MW && y < MH) ground[gi(x, y)] = t; }
@@ -802,6 +809,7 @@ function genMap() {
   fillR(90, 2, 91, 27, G.DIRT); fillR(90, 62, 91, 88, G.DIRT); fillR(70, 45, 71, 58, G.DIRT);
   fillR(87, 12, 89, 13, G.DIRT); fillR(87, 74, 89, 75, G.DIRT); fillR(92, 12, 97, 12, G.DIRT); fillR(92, 74, 97, 74, G.DIRT);
   fillR(79, 46, 88, 57, G.PLAZA);
+  fillR(65, 30, 111, 33, G.WALK); fillR(65, 31, 111, 32, G.PAVE); // Rua Nova
   // pátio da sede e áreas de chão batido
   fillR(2, 29, 26, 31, G.FLOOR); fillR(12, 33, 19, 38, G.FLOOR); fillR(11, 32, 11, 42, G.DIRT); fillR(20, 29, 20, 42, G.DIRT); fillR(23, 28, 23, 42, G.DIRT);
   fillR(39, 31, 57, 31, G.DIRT); fillR(26, 31, 26, 42, G.DIRT);
@@ -863,7 +871,6 @@ function genMap() {
   for (let x = 72; x < 111; x += 5) if (curbOk(x, 45)) P('poste', x + 0.5, 45.35, 0);
   for (let x = 73; x < 111; x += 6) if (curbOk(x, 61)) P('poste', x + 0.5, 61.35, 0);
   P('mesabar', 93.4, 58.7, 0); P('mesabar', 96.7, 58.7, 0);
-  P('carroDeBoi', 61.8, 47.5, 0);
   // vegetação aleatória
   const occ = new Uint8Array(MW * MH);
   const reserved = (x, y) => {
@@ -906,7 +913,7 @@ function genMap() {
   // taboas e capim-d'água nas margens dos açudes
   for (let y = 1; y < MH - 1; y++) for (let x = 1; x < MW - 1; x++) { const i = gi(x, y); if (ground[i] !== G.SAND || obj[i]) continue; let w = 0; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (ground[gi(x + dx, y + dy)] === G.WATER) w++; if (w && R() < (pondT[gi(x, y)] || x < 60 ? 0.42 : 0.3)) PROPS.push({ t: 'taboa', x: (x + 0.5) * TS, y: (y + 0.9) * TS, v: Math.floor(R() * 4) }); }
   // embarcadouro: rampa de embarque no lado leste do curral
-  PROPS.push({ t: 'embarque', x: 50.4 * TS, y: 38.4 * TS, v: 0 }); for (let y = 37; y <= 38; y++) obj[gi(50, y)] = 3;
+  // (a rampa de embarque entre o Curral Principal e o Recebimento foi retirada: era uma parede no corredor; o embarque continua pela Ação no curral)
   // flores e moitas na borda leste
   for (let y = 0; y < MH; y += 3) { const x = 111; if (ground[gi(x, y)] === G.GRASS && !obj[gi(x, y)]) PROPS.push({ t: 'arbusto', x: (x + .5) * TS, y: (y + .8) * TS, v: y % 4 }); }
 }
@@ -965,8 +972,8 @@ function areaAt(x, y) { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); 
 function inArea(k, x, y) { const r = AREAS[k].r, tx = x / TS, ty = y / TS; return tx >= r[0] + 1 && tx < r[2] && ty >= r[1] + 1 && ty < r[3]; }
 function randIn(k, m) { const r = AREAS[k].r; m = m || 1.3; for (let i = 0; i < 30; i++) { const x = rnd(r[0] + m, r[2] - m + 1) * TS, y = rnd(r[1] + m, r[3] - m + 1) * TS; if (!hitAt(x, y, 5)) return [x, y]; } return [(r[0] + r[2]) / 2 * TS + 8, (r[1] + r[3]) / 2 * TS + 8]; }
 /* ---------- grafo de estradas (NPCs) ---------- */
-const RN = { fw: [1.5, 44.5], yard: [38.5, 44.5], fg: [59.5, 44], tw: [70.5, 44], cr: [90.5, 44], te: [110.5, 44], ca: [90.5, 12.5], ba: [90.5, 59.5], du: [90.5, 74.5], bw: [70.5, 59.5], be: [110.5, 59.5] };
-const RE = [['fw', 'yard'], ['yard', 'fg'], ['fg', 'tw'], ['tw', 'cr'], ['cr', 'te'], ['cr', 'ca'], ['cr', 'ba'], ['ba', 'du'], ['bw', 'ba'], ['ba', 'be'], ['tw', 'bw']];
+const RN = { fw: [1.5, 44.5], yard: [38.5, 44.5], fg: [59.5, 44], tw: [70.5, 44], cr: [90.5, 44], te: [110.5, 44], ca: [90.5, 12.5], ba: [90.5, 59.5], du: [90.5, 74.5], bw: [70.5, 59.5], be: [110.5, 59.5], nw: [65.5, 31.5], nc: [90.5, 31.5], ne: [110.5, 31.5] };
+const RE = [['fw', 'yard'], ['yard', 'fg'], ['fg', 'tw'], ['tw', 'cr'], ['cr', 'te'], ['cr', 'ca'], ['cr', 'ba'], ['ba', 'du'], ['bw', 'ba'], ['ba', 'be'], ['tw', 'bw'], ['nw', 'nc'], ['nc', 'ne'], ['nc', 'cr'], ['nc', 'ca']];
 // pontos nomeados (tiles) com acesso até a estrada
 const SPOTS = {
   campos_casa: { p: [97.5, 13.2], via: [[90.5, 12.5]] }, campos_pasto: { p: [80, 12.5], via: [[88, 12.5], [90.5, 12.5]] }, campos_curral: { p: [72, 8], via: [[80, 12.5], [88, 12.5], [90.5, 12.5]] },
@@ -979,7 +986,10 @@ const SPOTS = {
   praca1: { p: [82.5, 50], via: [[82.5, 45.5], [82.5, 44]] }, praca2: { p: [86, 54], via: [[86, 45.5], [86, 44]] }, praca3: { p: [81, 55.5], via: [[81, 45.5], [81, 44]] }, praca4: { p: [86.5, 48.5], via: [[86.5, 44]] },
   fazenda_porteira: { p: [57, 44], via: [] }, fazenda_varanda: { p: [11.5, 30.8], via: [[11.5, 44.5]] }, fazenda_churrasco: { p: [16, 36.2], via: [[11.5, 36.2], [11.5, 44.5]] },
   churras1: { p: [15, 36.4], via: [[11.5, 36.4], [11.5, 44.5]] }, churras2: { p: [18.5, 36.6], via: [[19.5, 36.6], [20.5, 44.5]] }, churras3: { p: [16.3, 38.8], via: [[16.3, 40], [11.5, 40], [11.5, 44.5]] },
-  estrada_leste: { p: [110.5, 44], via: [] }
+  estrada_leste: { p: [110.5, 44], via: [] },
+  escola: { p: [69.5, 30.6], via: [[69.5, 31.5]] }, ferraria: { p: [76.5, 30.6], via: [[76.5, 31.5]] }, farmacia: { p: [82.5, 30.6], via: [[82.5, 31.5]] },
+  nena: { p: [96.5, 30.6], via: [[96.5, 31.5]] }, ze: { p: [102.5, 30.6], via: [[102.5, 31.5]] }, lourival: { p: [108.5, 30.6], via: [[108.5, 31.5]] },
+  ruanova1: { p: [73, 33.2], via: [[73, 31.5]] }, ruanova2: { p: [88, 33.2], via: [[88, 31.5]] }
 };
 function segDist(p, a, b) { const vx = b[0] - a[0], vy = b[1] - a[1], L = vx * vx + vy * vy || 1; let t = ((p[0] - a[0]) * vx + (p[1] - a[1]) * vy) / L; t = cl(t, 0, 1); return [hyp(p[0] - a[0] - vx * t, p[1] - a[1] - vy * t), t]; }
 function roadPath(A, B) { // A,B: pontos (tiles) sobre estradas
@@ -1580,7 +1590,7 @@ function drawBldBase(g, b, w, h, top, night) {
     p(-1, wy - 10, w + 2, 12, wall); p(-1, wy - 10, w + 2, 2, trim); p(-1, wy - 1, w + 2, 2, trim);
     for (let x = 4; x < w - 4; x += 12) p(x, wy - 12, 4, 2, trim);
     const sw = Math.min(w - 10, 60); p(w / 2 - sw / 2, wy - 8, sw, 8, '#f4ecd8'); p(w / 2 - sw / 2, wy - 8, sw, 1, '#fffaf0');
-    const label = { banco: 'BANCO', martelo: 'PEDREIRO', cesta: 'MERCADO', copo: 'BAR', boi: 'AÇOUGUE', folha: 'AGRO' }[b.sign] || '';
+    const label = { banco: 'BANCO', martelo: 'PEDREIRO', cesta: 'MERCADO', copo: 'BAR', boi: 'AÇOUGUE', folha: 'AGRO', livro: 'ESCOLA', ferradura: 'FERRARIA', cruz: 'FARMACIA' }[b.sign] || '';
     txt(p, label, Math.round(w / 2 - label.length * 2), wy - 6, b.trim === '#f4f0e8' ? '#2a5a2a' : shade(trim, -.2));
     door(w / 2, 14, 20, b.sign === 'banco' ? '#3a4a5a' : '#7a4a22');
     if (b.sign === 'banco') { p(w / 2 - 7, h - 20, 14, 20, '#9ac0d8'); p(w / 2 - 7, h - 20, 14, 2, '#d0e8f0'); p(w / 2, h - 20, 1, 20, '#3a4a5a'); }
@@ -1588,6 +1598,9 @@ function drawBldBase(g, b, w, h, top, night) {
     if (b.sign === 'boi') { p(4, h - 12, w - 8, 1, '#c03030'); for (let x = 0; x < w; x += 4) p(x, h - 5, 2, 5, x % 8 ? '#f0ece4' : '#c03030'); }
     if (b.sign === 'copo') { p(-2, wy + 2, w + 4, 4, '#2a6a2a'); for (let x = -2; x < w + 2; x += 6) p(x, wy + 2, 3, 4, '#f4f0e8'); }
     if (b.sign === 'folha') { p(4, wy + 2, w - 8, 3, '#e8c040'); }
+    if (b.sign === 'livro') { p(w / 2 - 1, wy - 22, 2, 12, '#5a3a1a'); p(w / 2 + 1, wy - 22, 9, 6, '#2a8a3a'); p(w / 2 + 1, wy - 19, 9, 1, '#f0d040'); p(4, h - 13, 6, 8, '#7a4a22'); p(w - 10, h - 13, 6, 8, '#7a4a22'); }
+    if (b.sign === 'ferradura') { p(-2, wy + 2, w + 4, 3, '#3a3a3a'); p(w - 12, h - 10, 9, 5, '#4a4a4e'); p(w - 13, h - 11, 11, 2, '#6a6a70'); p(w - 9, h - 14, 2, 3, '#ff8a2a'); }
+    if (b.sign === 'cruz') { p(w - 14, wy - 14, 10, 10, '#f4f0e8'); p(w - 11, wy - 13, 4, 8, '#2a8a5a'); p(w - 13, wy - 11, 8, 4, '#2a8a5a'); }
     return;
   }
   if (art === 'deposito') { for (let y = wy + 2; y < h - 5; y += 3) for (let x = (y % 6 ? 0 : 3); x < w; x += 6) p(x, y, 5, 2, '#c87448'); door(w / 2, 14, 20, '#7a4a22'); p(w / 2 - 6, h - 27, 12, 4, '#f0e0b0'); txt(p, 'AL', w / 2 - 4, h - 26, '#7a3a1a'); return; }
@@ -3429,7 +3442,7 @@ function giveGift(id, it) {
 }
 function newQuest(id) {
   const pool = QUESTS[id]; if (!pool) return null; const q = Object.assign({}, pick(pool)); q.day = S.day; q.due = S.day + rint(3, 5);
-  if (q.k === 'fujao') { const a = mkAnimal(q.sp, q.sp === 'boi' ? 'nelore' : 'burro', { own: 'quest:' + id, age: 30, n: q.sp === 'boi' ? 'Fujona' : 'Teimoso' }); const spots = [[48, 22.5], [66, 30], [66, 58], [75, 63], [20, 41.5], [104, 26]]; const sp = pick(spots); a.x = sp[0] * TS; a.y = sp[1] * TS; S.animals.push(a); q.aid = a.id; }
+  if (q.k === 'fujao') { const a = mkAnimal(q.sp, q.sp === 'boi' ? 'nelore' : 'burro', { own: 'quest:' + id, age: 30, n: q.sp === 'boi' ? 'Fujona' : 'Teimoso' }); const spots = [[48, 22.5], [66, 33.4], [66, 58], [75, 63], [20, 41.5], [104, 21.5]]; const sp = pick(spots); a.x = sp[0] * TS; a.y = sp[1] * TS; S.animals.push(a); q.aid = a.id; }
   npcState(id).quest = q; return q;
 }
 function checkQuest(id) {
@@ -3562,7 +3575,7 @@ function dayTick() { storyCheck(); regionDay(); missionDay();
     if (m.sp === 'cavalo' && m._paiSp === 'jumento') { sp = 'burro'; br = 'burro'; }
     else if (m._paiBr && m._paiBr !== m.br && sp === 'boi') br = (m.br === 'nelore' && m._paiBr === 'gir') || (m.br === 'gir' && m._paiBr === 'nelore') ? 'mestico' : (Math.random() < .5 ? m.br : (m._paiBr || m.br));
     const gen = ((m.gen + (m._paiGen || m.gen)) / 2) + gauss() * 9;
-    const c = mkAnimal(sp, br, { age: 0, gen, mae: m.n, pai: m._paiN || '—', x: m.x + 8, y: m.y + 4, hap: 80, hp: 90 });
+    const c = mkAnimal(sp, br, { age: 0, gen, mae: m.n, pai: m._paiN || '—', x: m.x + 8, y: m.y + 4, hap: 80, hp: 90 }); c.mid = m.id;
     S.animals.push(c); if (sp === 'cabra' && Math.random() < 0.45) { const c2 = mkAnimal(sp, br, { age: 0, gen: gen + gauss() * 4, mae: m.n, pai: m._paiN || '—', x: m.x - 6, y: m.y + 5, hap: 80, hp: 90 }); S.animals.push(c2); toast('Gêmeos! Nasceu também ' + c2.n + '.'); } m.lact = 20; S.stats.born++; toast('🐣 Nasceu ' + catName(c).toLowerCase() + ': ' + c.n + ' (' + starStr(stars(c)) + ')');
   }
   // galinhas: pintinhos
@@ -3621,8 +3634,10 @@ function findWater(a) {
   return null;
 }
 function findFeed(a) { if (!a.area) return null; const ti = TROUGHS.findIndex((t, i) => t.a === a.area && t.k === 'racao' && S.tr[i] > 1); if (ti < 0) return null; const t = TROUGHS[ti]; return { x: (t.x + rnd(0.3, t.w - 0.3)) * TS, y: (t.y + 1.6) * TS, ti }; }
-function findGrass(a) {
-  let best = null, bv = -1; const tx = Math.floor(a.x / TS), ty = Math.floor(a.y / TS);
+function herdCenter(a) { let x = 0, y = 0, n = 0; for (const b of near(a.x, a.y, 200)) if (b !== a && b.sp === a.sp && b.own === a.own && !b._hid && (b.area || '') === (a.area || '')) { x += b.x; y += b.y; n++; } return n ? { x: x / n, y: y / n } : null; }
+function motherOf(a) { if (a.mid) { const m = byId(a.mid); if (m) return m; } if (!a.mae || a.mae === '—') return null; return S.animals.find(b => b.n === a.mae && b.sp === a.sp && b.own === a.own && b.sex === 'F') || null; }
+function findGrass(a, ox, oy) { // ox, oy: procura perto de outro ponto (ex.: centro do rebanho)
+  let best = null, bv = -1; const tx = Math.floor((ox !== undefined ? ox : a.x) / TS), ty = Math.floor((oy !== undefined ? oy : a.y) / TS);
   for (let i = 0; i < 8; i++) { const x = tx + rint(-5, 5), y = ty + rint(-5, 5); if (x < 0 || y < 0 || x >= MW || y >= MH) continue; const j = gi(x, y); if (obj[j] || ground[j] === G.WATER) continue; if (a.area && areaId[j] !== AKEYS.indexOf(a.area)) continue; if (!a.area && Math.abs(x - tx) + Math.abs(y - ty) > 4) continue; const v = (ground[j] === G.PAST ? grass[j] : (ground[j] === G.GRASS || ground[j] === G.DRY ? 60 : 0)) + rnd(0, 30); if (v > bv) { bv = v; best = [(x + .5) * TS, (y + .5) * TS]; } }
   return best;
 }
@@ -3635,12 +3650,24 @@ function decide(a) {
     a._hid = false; const t = findGrass(a) || [a.x + rnd(-20, 20), a.y + rnd(-20, 20)]; setGo(a, { x: t[0], y: t[1] }, 'graze', rnd(3, 7)); return;
   }
   if (a.sp === 'cao') return;
-  if (h >= 20.5 || h < 5) { a._st = 'rest'; a._t = rnd(30, 60); return; }
-  if (a.water < 40) { const w = findWater(a); if (w) return setGo(a, w, 'drink', 3); }
+  const herd = a.sp === 'boi' || a.sp === 'cabra', hc = herd ? herdCenter(a) : null, far = hc && hyp(hc.x - a.x, hc.y - a.y) > 56;
+  // noite: o rebanho deita junto (quem está longe vai para perto dos outros antes de deitar)
+  if (h >= 20.5 || h < 5) { if (far) return setGo(a, { x: hc.x + rnd(-18, 18), y: hc.y + rnd(-10, 10) }, 'rest', rnd(30, 60)); a._st = 'rest'; a._t = rnd(30, 60); return; }
+  // chuva forte e tempestade: procura abrigo debaixo de árvore
+  if (S.weather === 'tempestade' || (isRain() && Math.random() < 0.35)) { const s = findShade(a); if (s) return setGo(a, s, 'idle', rnd(12, 24)); }
+  // sede: no calor vai beber mais cedo; quando o líder vai ao cocho, o rebanho acompanha
+  const hot = h > 10 && h < 16 && !isRain();
+  if (a.water < (hot ? 55 : 40)) { const w = findWater(a); if (w) return setGo(a, w, 'drink', 3); }
+  if (herd && a.water < 78) { const l = herdLeader(a); if (l && l !== a && l._st === 'go' && l._then === 'drink') { const w = findWater(a); if (w) return setGo(a, w, 'drink', 3); } }
   if (a.food < 75) { const f = findFeed(a); if (f) return setGo(a, f, 'eat', 4); }
+  // filhote acompanha a mãe
+  if (a.age < 8) { const m = motherOf(a); if (m && !m._hid && hyp(m.x - a.x, m.y - a.y) > 30) return setGo(a, { x: m.x + rnd(-10, 10), y: m.y + rnd(4, 10) }, m._st === 'rest' ? 'rest' : 'graze', rnd(4, 8)); }
+  // barriga cheia: deita para ruminar
+  if (herd && a.food > 86 && Math.random() < 0.3) { a._st = 'rest'; a._t = rnd(14, 28); return; }
   if (h > 11 && h < 14.5 && S.weather === 'sol' && Math.random() < 0.45) { const s = findShade(a); if (s) return setGo(a, s, 'rest', rnd(15, 30)); }
   if (Math.random() < 0.12) { a._st = 'idle'; a._t = rnd(3, 8); return; }
-  const g = findGrass(a); if (g) return setGo(a, { x: g[0], y: g[1] }, 'graze', rnd(8, 18));
+  // pastejo em grupo: quem se afastou procura capim do lado do rebanho
+  const g = far ? findGrass(a, hc.x, hc.y) : findGrass(a); if (g) return setGo(a, { x: g[0], y: g[1] }, 'graze', rnd(8, 18));
   a._st = 'idle'; a._t = rnd(3, 6);
 }
 function animalSpeed(a) { return a.sp === 'galinha' ? 10 : a.sp === 'cao' ? 55 : a.sp === 'boi' ? 9 : 11; }
@@ -4686,9 +4713,9 @@ function updWeather(dt, gm) {
 // calor: os bichos bebem mais no sol forte da seca, à tarde
 function heatF() { if (!S) return 1; const h = hour(); return S.weather === 'sol' && h > 10 && h < 16 ? (season() ? 1.45 : 1.2) : isRain() ? 0.7 : 1; }
 // lama: o chão de terra fica pesado depois da chuva
-function mudAt(x, y) { if (!S || S.mud < 0.05) return 0; const g = gt(Math.floor(x / TS), Math.floor(y / TS)); return (g === G.DIRT || g === G.DRY || g === G.FLOOR || g === G.MUD) ? S.mud : 0; }
+function mudAt(x, y) { if (!S || !(S.mud >= 0.05)) return 0; const g = gt(Math.floor(x / TS), Math.floor(y / TS)); return (g === G.DIRT || g === G.DRY || g === G.FLOOR || g === G.MUD) ? S.mud : 0; }
 function drawMudTile(tx, ty, g) {
-  if (S.mud < 0.05 || !(g === G.DIRT || g === G.DRY || g === G.FLOOR)) return;
+  if (!(S.mud >= 0.05) || !(g === G.DIRT || g === G.DRY || g === G.FLOOR)) return; // !(>=) também barra S.mud indefinido (antes pintava o chão de escuro)
   X.fillStyle = `rgba(60,38,20,${0.24 * S.mud})`; X.fillRect(tx * TS, ty * TS, TS, TS);
   if (S.mud > 0.3 && H2(tx, ty, 41) < 0.16) { const px = tx * TS + 3 + Math.floor(H2(tx, ty, 42) * 6), py = ty * TS + 5 + Math.floor(H2(tx, ty, 43) * 6), w = 5 + Math.floor(S.mud * 5); X.fillStyle = `rgba(70,88,104,${0.55 * S.mud})`; X.fillRect(px, py, w, 3); X.fillRect(px + 1, py - 1, w - 2, 5); X.fillStyle = `rgba(190,215,235,${0.4 * S.mud})`; X.fillRect(px + 1, py, 2, 1); if (S.wx && S.wx.ri > 0.2 && Math.sin(drawT * 5 + tx) > 0.6) { X.fillStyle = 'rgba(220,235,250,0.7)'; X.fillRect(px + 2 + Math.floor(H2(tx, ty, Math.floor(drawT * 3)) * (w - 3)), py + 1, 1, 1); } }
 }
@@ -5133,7 +5160,7 @@ function menuTab(t) {
   if (t === 'peo') return workersTab();
   if (t === 'rel') {
     return '<p class="mut">A amizade cresce com conversas diárias, presentes, favores, música e churrascos.</p>' + Object.keys(NPCDEF).map(id => { const d = NPCDEF[id], s = npcState(id), e = npcs.find(n => n.id === id); const loc = e ? (e.hidden ? (e.act === 'missa' ? 'na missa' : 'em casa') : (SPOTS[e.spot] ? e.spot.replace('_', ' ') : '')) : '';
-      return `<div class="card"><div class="dlg"><div>${charImg(d.ap, 2)}</div><div style="flex:1"><b>${d.n}</b> <span class="mut">${d.role}${d.farm ? ' · ' + d.farm : ''}</span><br>${hrt(hearts(id))}<br><span class="mut">Agora: ${loc}${s.quest ? ' · 📜 favor pendente' : ''}</span>${s.mem.slice(0, 2).map(m => `<br><span class="mut">• Dia ${m.d}: ${esc(m.t)}</span>`).join('')}</div></div></div>`; }).join('') + `<div class="card"><b>${ic('heart', 14)} Confraternização</b><p>Convide os amigos (1+ coração) para um churrasco na sua fazenda às 18h.</p>${S.event ? `<p>Churrasco marcado para o dia ${S.event.day} com ${S.event.guests.map(g => NPCDEF[g].n).join(', ')}.</p>` : btn('Marcar churrasco', 'invite')}</div>`;
+      return `<div class="card"><div class="dlg"><div>${charImg(d.ap, 2)}</div><div style="flex:1"><b>${d.n}</b> <span class="mut">${d.role}${d.farm ? ' · ' + d.farm : ''}</span><br>${hrt(hearts(id))}<br><span class="mut">Agora: ${loc}${s.quest ? ' · 📜 favor pendente' : ''}</span>${NPC_LORE[id] ? `<br><span class="mut">${esc(NPC_LORE[id].split('. ')[0])}.</span>` : ''}${s.mem.slice(0, 2).map(m => `<br><span class="mut">• Dia ${m.d}: ${esc(m.t)}</span>`).join('')}</div></div></div>`; }).join('') + `<div class="card"><b>${ic('heart', 14)} Confraternização</b><p>Convide os amigos (1+ coração) para um churrasco na sua fazenda às 18h.</p>${S.event ? `<p>Churrasco marcado para o dia ${S.event.day} com ${S.event.guests.map(g => NPCDEF[g].n).join(', ')}.</p>` : btn('Marcar churrasco', 'invite')}</div>`;
   }
   if (t === 'cfg') return cfgHTML(true);
   return '';
@@ -5383,7 +5410,7 @@ function openNpc(id, text) {
     if (M.sub === 'gift') { const g = Object.keys(S.inv).filter(k => S.inv[k] > 0 && IT[k] && !['escova', 'violao', 'viola', 'lampiao', 'galaoV'].includes(k)); return `<h3>Presentear ${d.n}</h3><div class="grid">${g.map(k => `<div class="sl" data-a="gift" data-v="${k}">${iic(k, 26)}<small>${IT[k].n.split(' (')[0]}</small><b>${S.inv[k]}</b></div>`).join('') || '<p class="mut">Nada para dar.</p>'}</div>${btn('Voltar', 'npcBack')}`; }
     if (M.sub === 'trade') return tradeView(id);
     if (M.sub === 'haggle') return haggleView();
-    let h = `<div class="dlg"><div>${charImg(d.ap, 4)}</div><div style="flex:1"><b style="font-size:16px">${d.n}</b><br><span class="mut">${d.role}</span><br>${hrt(hearts(id))}<div class="txt" style="margin-top:6px">${esc(M.txt)}</div></div></div><p class="mut">${d.pers}</p>`;
+    let h = `<div class="dlg"><div>${charImg(d.ap, 4)}</div><div style="flex:1"><b style="font-size:16px">${d.n}</b><br><span class="mut">${d.role}</span><br>${hrt(hearts(id))}<div class="txt" style="margin-top:6px">${esc(M.txt)}</div></div></div><p class="mut">${d.pers}</p>${NPC_LORE[id] ? `<details class="card"><summary><b>📖 História</b></summary><p>${esc(NPC_LORE[id])}</p></details>` : ''}`;
     if (s.quest) h += `<div class="card">📜 <b>Favor:</b> ${esc(s.quest.t)}<br><span class="mut">Prazo: dia ${s.quest.due}</span></div>`;
     h += '<div class="row">' + btn('💬 Conversar', 'npcTalk') + btn('🎁 Presentear', 'npcGift', '', s.gift === S.day) + btn(s.quest ? '📜 Entregar favor' : '📜 Pedir favor', 'npcQuest') + (d.sells ? btn('🤝 Negociar animais', 'npcTrade') : '') + '</div>';
     for (const m of (S.missions || []).filter(m => m.giver === id && (m.st === 'offer' || m.st === 'active'))) h += misHTML(m, true);
@@ -6056,6 +6083,67 @@ Object.assign(NPCDEF, {
     sched: [[0, 'estrada_leste', 'home'], [12, 'tribuna', 'work'], [18.5, 'estrada_leste', 'home']], days: [6] }
 });
 NPC_LINES.dorival = { intro: 'Dorival, leiloeiro há quarenta anos. Quem dá mais?', t0: ['Sábado tem leilão, traga seus bichos!', 'Lance é compromisso, viu?'], t1: ['Animal bem cuidado vende sozinho.'], t2: ['Você tem olho bom pra gado.'], t3: ['Meu amigo de lance!'], rain: 'Leilão com chuva, lance molhado.', dry: 'Na seca o preço do boi magro cai.', night: 'Boa noite, até sábado.' };
+/* ---------- moradores da Rua Nova (expansão da cidade) ---------- */
+Object.assign(NPCDEF, {
+  rita: { n: 'Professora Rita', role: 'Professora da Escola Municipal', ap: { sex: 'F', skin: 4, hair: 5, hairC: 0, hat: 7, shirt: 3, shirtC: 4, pants: 4, pantsC: 2, boots: 0, acc: 5, scarfC: 0, orn: 'none' },
+    pers: 'Paciente, firme e cheia de planos. Sabe o nome de cada criança da cidade e dos pais delas também.', likes: ['cafe', 'canjica', 'leite'], loves: ['pamonha'], dislikes: ['carvao'],
+    sched: [[0, 'escola', 'home'], [6.8, 'escola', 'work'], [12, 'bar_mesa', 'eat'], [13, 'escola', 'work'], [17, 'praca1', 'chat'], [19, 'escola', 'home']] },
+  raimundo: { n: 'Seu Raimundo', role: 'Ferreiro', ap: { sex: 'M', skin: 5, hair: 3, hairC: 0, hat: 7, shirt: 1, shirtC: 5, pants: 1, pantsC: 3, boots: 0, acc: 0, scarfC: 3, orn: 'none' },
+    pers: 'Calado, braços de ferro e mãos cheias de calo. Quando abre a boca é pra dizer coisa certa.', likes: ['carvao', 'cafe', 'carnesol'], loves: ['assado'], dislikes: ['leite'],
+    sched: [[0, 'ferraria', 'home'], [6, 'ferraria', 'work'], [12, 'bar_mesa', 'eat'], [13, 'ferraria', 'work'], [17.5, 'ruanova2', 'chat'], [19.5, 'ferraria', 'home']] },
+  elias: { n: 'Seu Elias', role: 'Farmacêutico', ap: { sex: 'M', skin: 1, hair: 1, hairC: 6, hat: 7, shirt: 3, shirtC: 7, pants: 1, pantsC: 2, boots: 0, acc: 3, scarfC: 0, orn: 'none' },
+    pers: 'Educado e meticuloso. Anota tudo num caderninho e nunca esquece um aniversário.', likes: ['cafe', 'queijo'], loves: ['rapadura'], dislikes: ['lenha'],
+    sched: [[0, 'farmacia', 'home'], [7, 'farmacia', 'work'], [12, 'mercadinho', 'chat'], [13, 'farmacia', 'work'], [18, 'praca4', 'chat'], [20, 'farmacia', 'home']] },
+  nena: { n: 'Dona Nena', role: 'Rezadeira e raizeira', ap: { sex: 'F', skin: 6, hair: 7, hairC: 6, hat: 7, shirt: 4, shirtC: 5, pants: 4, pantsC: 3, boots: 2, acc: 4, scarfC: 4, orn: 'none' },
+    pers: 'Velha sábia da caatinga. Reza quebranto com raminho de arruda e conhece remédio de cada planta.', likes: ['rapadura', 'cafe', 'farinha'], loves: ['canjica'], dislikes: ['picanha'],
+    sched: [[0, 'nena', 'home'], [6, 'ruanova1', 'chat'], [9, 'mercadinho', 'chat'], [10.5, 'nena', 'work'], [15, 'igreja', 'chat'], [17, 'nena', 'home']] },
+  ze: { n: 'Zé Cantador', role: 'Repentista e violeiro', ap: { sex: 'M', skin: 3, hair: 2, hairC: 1, hat: 0, shirt: 0, shirtC: 6, pants: 3, pantsC: 0, boots: 2, acc: 1, scarfC: 2, orn: 'estrelas' },
+    pers: 'Boêmio, rápido no verso e de coração mole. Transforma qualquer acontecido em cantoria.', likes: ['cafe', 'linguica', 'milhoAssado'], loves: ['assado'], dislikes: ['ovo'],
+    sched: [[0, 'ze', 'home'], [9, 'ze', 'work'], [12.5, 'bar_mesa', 'eat'], [14, 'praca3', 'chat'], [17, 'praca1', 'chat'], [19, 'bar_mesa', 'chat'], [23, 'ze', 'home']] },
+  lourival: { n: 'Seu Lourival', role: 'Carteiro e sanfoneiro', ap: { sex: 'M', skin: 2, hair: 0, hairC: 2, hat: 5, shirt: 3, shirtC: 2, pants: 1, pantsC: 1, boots: 1, acc: 0, scarfC: 1, orn: 'none' },
+    pers: 'Conhece cada estrada do município de bicicleta. De dia entrega carta, de noite puxa o fole.', likes: ['cafe', 'pamonha', 'rapadura'], loves: ['queijo'], dislikes: ['carvao'],
+    sched: [[0, 'lourival', 'home'], [7, 'banco', 'work'], [8.5, 'fazenda_porteira', 'work'], [10, 'campos_casa', 'work'], [11.5, 'duarte_casa', 'work'], [13, 'bar_mesa', 'eat'], [14.5, 'praca2', 'chat'], [18.5, 'ruanova1', 'chat'], [20.5, 'lourival', 'home']] }
+});
+Object.assign(NPC_LINES, {
+  rita: { intro: 'Bom dia! Sou Rita, professora da escola. A escola tem o nome do seu avô, sabia?', t0: ['As crianças adoram quando um vaqueiro vem contar como é a lida.', 'Ler é como abrir porteira: a gente vê o mundo do outro lado.'], t1: ['Seu avô doou o terreno da escola. Disse que vaqueiro também tem que saber escrever o nome do boi.', 'Estou juntando livro usado pra biblioteca. Qualquer coisa serve.'], t2: ['Os meninos fizeram um desenho da sua fazenda. Ficou bonito!', 'Quando eu era menina, estudava debaixo de um pé de umbu.'], t3: ['Vou pôr seu nome no mural dos amigos da escola. Merece.'], rain: 'Dia de chuva a escola enche de lama, mas ninguém falta.', dry: 'Na seca, falta água até pra merenda. A gente se vira.', night: 'Corrigindo prova até tarde... boa noite!' },
+  raimundo: { intro: 'Raimundo. Ferreiro. Ferradura, cravo, porteira... o que for de ferro.', t0: ['Ferro quente não espera.', 'Cavalo sem ferradura em chão de pedra manca.'], t1: ['A dobradiça da porteira do seu curral fui eu que fiz, pro seu avô.', 'Meu pai era ferreiro, meu avô também. A bigorna é a mesma.'], t2: ['Aquele ferro T.S. do seu avô... fui eu que forjei. Cuide dele.'], t3: ['Pra você eu faço ferradura de graça. Mas não espalha.'], rain: 'Com chuva a forja custa a esquentar.', dry: 'Calor da forja e calor do sol. Haja água.', night: 'Brasa apagada. Amanhã cedo eu volto.' },
+  elias: { intro: 'Elias, da Farmácia Santa Luzia, às ordens. Remédio de gente e conselho de graça.', t0: ['Muito sol na cabeça dá insolação. Chapéu e água, sempre.', 'Anotei aqui: hoje é dia de São Benedito.'], t1: ['Vim de Salvador há trinta anos pra substituir um colega por um mês. Fiquei.', 'A Dona Nena e eu discordamos de quase tudo, mas nos respeitamos muito.'], t2: ['Seu avô comprava pastilha de hortelã toda sexta. Ainda guardo uma caixa pra ele.'], t3: ['Você é desses fregueses que a gente conta como amigo.'], rain: 'Chuva traz gripe. Chá de limão com mel.', dry: 'Na seca o povo desidrata. Beba água, meu filho.', night: 'Plantão? Bate na janela dos fundos.' },
+  nena: { intro: 'Chega, meu filho. Sou Nena. Rezo, benzo e ensino remédio do mato. Sente aqui.', t0: ['Chá de casca de aroeira cura ferida.', 'Mandacaru florou à noite? Chuva tá chegando.'], t1: ['Benzi seu avô de quebranto quando ele era menino. Chorava que só.', 'Juazeiro dá sombra, fruta e sabão. Planta abençoada.'], t2: ['Seu avô me trazia lenha toda semana sem eu pedir. Homem bom.'], t3: ['Vou te ensinar a reza do vaqueiro. Mas só pra você.'], rain: 'Chuva no sertão é Deus lembrando da gente.', dry: 'Na seca, palma e mandacaru salvam o gado. Plante.', night: 'Hora de rezar o terço e dormir cedo.' },
+  ze: { intro: 'Ô de casa! Zé Cantador, repentista! Me dê um mote que eu faço o verso!', t0: ['Vaqueiro que aboia bonito / tem o gado na mão / e o sertão no coração!', 'Viola sem corda é que nem boi sem chocalho.'], t1: ['Ganhei três cantorias em Vitória da Conquista. Perdi uma pro Bené, mas ele roubou.', 'Seu avô me pagava café pra eu cantar os versos dele de novo.'], t2: ['Fiz um repente sobre você: lá vem o neto do Tião, / com o chapéu do avô na mão...'], t3: ['Quando eu morrer, quero que você cante meus versos na fogueira.'], rain: 'Chuva no telhado é a melhor viola que tem.', dry: 'Na seca até o verso sai rachado.', night: 'Noite é hora de cantoria. Vem pro bar!' },
+  lourival: { intro: 'Lourival, dos Correios! Trouxe carta? Não? Então trouxe prosa.', t0: ['Hoje rodei trinta quilômetros de bicicleta.', 'Carta pro Seu Felipe, boleto pra Dona Zefa... a vida é isso.'], t1: ['Seu avô mandava carta todo mês pra família na capital. Eu levava com cuidado, que era letra de quem escreve pouco.', 'De noite eu toco sanfona no forró. Oito baixos, herança do meu pai.'], t2: ['Quando chegar carta sua, eu levo primeiro. Prioridade de amigo.'], t3: ['Toquei a música preferida do seu avô na festa. Lembrei de você.'], rain: 'Chuva molha carta. Ando com saco plástico.', dry: 'Poeira na estrada é que nem neblina.', night: 'Hora do fole! Hoje tem xote.' }
+});
+Object.assign(QUESTS, {
+  rita: [{ k: 'item', it: 'leite', n: 3, r: 90, t: 'A merenda de amanhã é mingau. Me traz 3 litros de leite?' }, { k: 'item', it: 'ovo', n: 6, r: 80, t: 'Vamos fazer bolo na escola. Arranja meia dúzia de ovos?' }],
+  raimundo: [{ k: 'item', it: 'carvao', n: 2, r: 110, t: 'A forja tá com fome. Me traz 2 sacos de carvão?' }, { k: 'item', it: 'lenha', n: 3, r: 70, t: 'Preciso de 3 feixes de lenha pra esquentar a bigorna.' }],
+  elias: [{ k: 'item', it: 'rapadura', n: 2, r: 70, t: 'Faço xarope com rapadura. Me traz duas?' }],
+  nena: [{ k: 'item', it: 'lenha', n: 2, r: 60, t: 'Meu fogão a lenha apagou. Traz 2 feixes, meu filho?' }, { k: 'item', it: 'farinha', n: 1, r: 50, t: 'Faltou farinha pro pirão. Me arranja um quilo?' }],
+  ze: [{ k: 'item', it: 'cafe', n: 2, r: 60, t: 'Sem café não sai verso. Traz 2 garrafas?' }],
+  lourival: [{ k: 'item', it: 'queijo', n: 1, r: 70, t: 'Prometi um queijo coalho pra minha irmã de Itapetinga. Me ajuda?' }]
+});
+/* ---------- a história de cada morador (aparece na conversa e em Relações) ---------- */
+const NPC_LORE = {
+  felipe: 'Nasceu na Fazenda Campos, que o pai abriu no braço. Foi amigo de Tiãozinho por mais de quarenta anos: tocaram boiada juntos até Vitória da Conquista e dividiram mais de uma seca. Quando o amigo partiu, foi ele quem cuidou da porteira até o neto chegar.',
+  ryan: 'Herdou da família Duarte o gosto por cavalo e burro de tropa. Saiu cedo pra estudar em Itapetinga, voltou com ideias novas e montou o melhor plantel de marchadores da região. Tiãozinho o via montar desde menino e dizia que ele tinha mão leve.',
+  zefa: 'Viúva desde moça, abriu o bar com a panela de cuscuz da mãe e uma mesa só. Hoje o Bar da Zefa é onde Itarantim se encontra: notícia, contrato de peão e fofoca passam primeiro pelo balcão dela.',
+  tonho: 'Filho de marchante, aprendeu a avaliar boi só de olhar. Foi peão do seu avô por dois anos antes de abrir o açougue, e até hoje paga um pouco mais pelo gado da Boa Esperança "por respeito".',
+  chico: 'Levantou metade das casas de Itarantim, inclusive a igreja reformada. Aprendeu o ofício com o pai, que fazia taipa. Diz que todo tijolo tem história porque ele lembra de quem pediu cada parede.',
+  lucia: 'Primeira mulher a gerenciar uma agência na região. Filha de pequenos produtores, sabe o peso de uma dívida na seca e por isso é rígida com prazo, mas nunca negou crédito a quem trabalha.',
+  joana: 'Formou-se em veterinária em Salvador e voltou pra terra natal. Atende na Casa do Agro de dia e corre as fazendas quando chamam. Sonha em abrir uma clínica só para animais de lida.',
+  dito: 'Começou vendendo rapadura na feira de cima de um jumento. Juntou cada centavo até abrir o Mercadinho. Reclama do preço de tudo, mas guarda fiado para quem passa aperto.',
+  padre: 'Chegou a Itarantim jovem, para ficar dois anos, e lá se vão trinta. Batizou metade da cidade e celebrou o casamento dos pais de muita gente. Guarda nos livros da paróquia a história de cada família, inclusive a de Tiãozinho.',
+  cida: 'Aprendeu a costurar com a avó, fazendo gibão de couro para vaqueiro. Hoje costura de tudo, de vestido de São João a roupa de missa. Foi ela quem fez o último gibão de Tiãozinho.',
+  bene: 'Foi o maior aboiador da caatinga por cinquenta anos. Correu vaquejada com seu avô e perdeu a conta de quantos bois os dois pegaram juntos no mato. Hoje vive dos causos, e cada um fica maior a cada vez que conta.',
+  abilio: 'Herdou terra e ampliou com o tino de negociante. Tem mais de mil cabeças de Nelore na Serra Azul e quer ser o maior criador do sudoeste baiano. Respeita quem cria bem, mesmo que seja pequeno.',
+  graca: 'Cria cavalos de marcha no Haras Lagoa Seca, fundado pela mãe. Já ganhou exposição em Feira de Santana e é exigente até com a ferradura. Para ela, cavalo bem tratado mostra o caráter do dono.',
+  prea: 'Vive no Sítio Umburana com a mulher, cinco filhos, as cabras e um jegue chamado Presidente. Ganhou o apelido porque na seca de 93 viveu dias comendo preá. Sonha com uma vaca de leite para os meninos.',
+  dorival: 'Leiloeiro há quarenta anos, conhece pela voz cada criador da região. Começou como menino de recado no recinto e herdou o martelo do antigo leiloeiro. Diz que já vendeu o mesmo boi três vezes na vida.',
+  rita: 'Filha de lavadeira, foi a primeira da família a terminar a escola. Voltou formada para ensinar na escola que leva o nome de Tiãozinho, que doou o terreno. Mora num quartinho nos fundos e cuida da horta da merenda.',
+  raimundo: 'Terceira geração de ferreiros em Itarantim. Forjou as dobradiças das porteiras de meia cidade e o ferro de marcar T.S. do seu avô. Perdeu a esposa cedo e fala mais com a bigorna do que com gente.',
+  elias: 'Farmacêutico de Salvador que veio cobrir férias de um colega por um mês e nunca mais foi embora. Anota a data de nascimento de cada freguês num caderno. Vive discutindo, com carinho, com a Dona Nena sobre chá e remédio.',
+  nena: 'Rezadeira e raizeira mais antiga da cidade, benzeu três gerações de Itarantim, inclusive o seu avô quando era menino. Conhece cada planta da caatinga e o que ela cura. Diz que a seca ensina a gente a guardar o que é importante.',
+  ze: 'Repentista criado nas feiras do sertão. Venceu cantorias em Vitória da Conquista e transforma qualquer acontecido em verso. Seu avô pagava café só para ouvir de novo o repente que Zé fez sobre a vaquejada de 1985.',
+  lourival: 'Carteiro há vinte e cinco anos, conhece cada estrada de terra do município de bicicleta. Por anos levou as cartas que Tiãozinho mandava para a família na capital, escritas devagar, com letra de quem aprendeu tarde. De noite troca a bolsa pela sanfona de oito baixos que herdou do pai.'
+};
 const AUC_PEN = [100, 46, 105, 49];
 Object.assign(SPOTS, { tribuna: { p: [102.6, 50.5], via: [[102.6, 45.5], [102.6, 44]] }, lei1: { p: [99.2, 47.4], via: [[99.2, 45.5], [99.2, 44]] }, lei2: { p: [99.3, 49.6], via: [[98.6, 45.5], [98.6, 44]] }, lei3: { p: [100.6, 50.5], via: [[99, 50.5], [98.6, 45.5], [98.6, 44]] }, lei4: { p: [104.6, 50.5], via: [[106.2, 50.5], [106.2, 45.5], [106.2, 44]] }, lei5: { p: [106.2, 47.4], via: [[106.2, 45.5], [106.2, 44]] }, lei6: { p: [106.3, 49.6], via: [[106.6, 45.5], [106.6, 44]] }, lei7: { p: [108.2, 48.4], via: [[108.2, 45.5], [108.2, 44]] }, lei8: { p: [97.6, 48.4], via: [[97.6, 45.5], [97.6, 44]] } });
 const AUC_TYPES = {
@@ -6556,7 +6644,7 @@ function cutscene(steps, end) { closeModal(); CS.on = true; CS.steps = steps; CS
 function startStep() {
   const s = CS.steps[CS.i]; if (!s) return endCS(); CS.t = 0;
   if (s.cam) { cam.fx = s.cam[0] * TS; cam.fy = s.cam[1] * TS; cam.spd = s.spd || 1.4; if (s.snap) cam.snap = true; }
-  if (s.z) cam.taz = s.z / (cam.uz || 1);
+  if (s.z) { cam.taz = s.z / (cam.uz || 1); if (s.snap) cam.az = cam.taz; }
   if (s.txt) sub(s.txt); else if (s.clr) hideSub();
   if (s.fade !== undefined) fadeTo(s.fade);
   if (s.fn) s.fn();
@@ -6594,8 +6682,10 @@ function csIntro() {
     { cam: [74, 45], spd: 0.45, d: 4.6, fn: () => csTitle('LIDA NO SERTÃO', 'Itarantim · Bahia') },
     { fn: () => csTitle(null), spd: 1.6, z: 1.05, txt: 'Itarantim, sudoeste da Bahia. Depois da ponte do riacho fica a terra que o avô deixou.', d: 6.2, upd: ride(r1, 1) },
     { spd: 1.6, txt: `<b>${nm}</b> veio conhecer a Fazenda Boa Esperança, herança de seu avô <b>Tiãozinho</b>.`, d: 8, upd: ride(r2, 1) },
-    { cam: [6, 50.6], z: 1.65, spd: 1.3, txt: 'No pasto, os dois bois pé-duro que ficaram: <b>Malhado</b> e <b>Fumaça</b>.', d: 4.6, fn: () => { setTimeout(() => bois[0] && AU.moo(bois[0].x, bois[0].y, 0.95), 600); setTimeout(() => bois[1] && AU.moo(bois[1].x, bois[1].y, 1.08), 2200); } },
-    { cam: [10.5, 33], z: 1.7, spd: 1.7, txt: 'Na varanda do rancho, Caramelo, o cão do avô, levanta a cabeça.', d: 3.4, fn: () => { if (dog) dog._pose = 'sit'; } },
+    { fade: 1, d: 0.45 },
+    { fade: 0, snap: 1, cam: [6, 50.6], z: 1.65, spd: 1.3, txt: 'No pasto, os dois bois pé-duro que ficaram: <b>Malhado</b> e <b>Fumaça</b>.', d: 4.6, fn: () => { setTimeout(() => bois[0] && AU.moo(bois[0].x, bois[0].y, 0.95), 600); setTimeout(() => bois[1] && AU.moo(bois[1].x, bois[1].y, 1.08), 2200); } },
+    { fade: 1, d: 0.45 },
+    { fade: 0, snap: 1, cam: [10.5, 33], z: 1.7, spd: 1.7, txt: 'No alpendre da casa, Caramelo, o cão do avô, levanta a cabeça.', d: 3.4, fn: () => { if (dog) dog._pose = 'sit'; } },
     { d: 2.2, clr: 1, fn: () => { if (dog) { dog._pose = 'run'; AU.bark(dog.x, dog.y); } }, upd: (dt, u) => { if (!dog) return; const k = easeIO(u); dog.x = lerp(7.6 * TS, ex + 8, k); dog.y = lerp(29.9 * TS, ey + 14, k); dog.f = 1; if (u >= 1) dog._pose = 'sit'; } },
     { d: 1.0, fn: () => { P.dir = 3; if (h) { h.f = 1; act('dismount', 0.85, h, () => { P.mnt = null; P.x = ex; P.y = ey; h._st = 'idle'; h._t = 30; }, { ex, ey, keep: 1, zoom: false }); AU.saddleCreak(); } }, upd: dt => { if (P._act) updAct(dt); } },
     { cam: [12.8, 36], z: 2.1, spd: 1.4, d: 3.4, fn: () => { P._act = null; P.mnt = null; P.x = ex; P.y = ey; fel.pose = 'walk'; fel._dist = fel._dist || 0; }, upd: (dt, u) => { const k = Math.min(1, u * 1.15), nx = lerp(19.5 * TS, fx, k), ny = lerp(39.6 * TS, ey, Math.min(1, k * 1.6)); fel._dist += hyp(nx - fel.x, ny - fel.y); fel.dir = Math.abs(nx - fel.x) > Math.abs(ny - fel.y) ? 2 : 1; fel.x = nx; fel.y = ny; if (k >= 1) { fel.pose = 'idle'; fel.dir = 2; } } },
@@ -6603,9 +6693,12 @@ function csIntro() {
     say1('felipe', FEL_LINES[1]),
     say1('felipe', FEL_LINES[2]),
     say1('me', 'Pode deixar, Seu Felipe. Vou cuidar de tudo do jeito que ele cuidava.'),
-    { cam: [5.6, 28.4], z: 2.6, spd: 1.2, txt: 'No esteio da varanda, o chapéu de couro de Tiãozinho continua no prego, como se ele fosse voltar a qualquer hora.', d: 5 },
-    { cam: [43.4, 42.2], z: 2.6, spd: 1.1, txt: 'Na porteira do curral, as iniciais que ele mesmo entalhou: <b>T.S.</b> Cada canto desta terra guarda uma lembrança dele.', d: 5.6 },
-    { cam: [13, 35.5], z: 1.3, spd: 0.9, txt: 'A história de Tiãozinho continua agora com você.', d: 4.6 },
+    { fade: 1, d: 0.45 },
+    { fade: 0, snap: 1, cam: [5.6, 28.4], z: 2.6, spd: 1.2, txt: 'No esteio do alpendre, o chapéu de couro de Tiãozinho continua no prego, como se ele fosse voltar a qualquer hora.', d: 5 },
+    { fade: 1, d: 0.45 },
+    { fade: 0, snap: 1, cam: [43.4, 42.2], z: 2.6, spd: 1.1, txt: 'Na porteira do curral, as iniciais que ele mesmo entalhou: <b>T.S.</b> Cada canto desta terra guarda uma lembrança dele.', d: 5.6 },
+    { fade: 1, d: 0.45 },
+    { fade: 0, snap: 1, cam: [13, 35.5], z: 1.3, spd: 0.9, txt: 'A história de Tiãozinho continua agora com você.', d: 4.6 },
     { fn: () => { final(); fel.cs = false; S.min = Math.max(S.min, 6 * 60 + 15); S.story.intro = 1; addFr('felipe', 30); npcState('felipe').met = 1; remember('felipe', 'recebeu você na chegada'); }, clr: 1, d: 0.2 }
   ];
   steps.forEach(st => { const u0 = st.upd; st.upd = (dt, u) => { S.min = Math.min(S.min + dt * 1.1, 6 * 60 + 40); if (u0) u0(dt, u); }; });
