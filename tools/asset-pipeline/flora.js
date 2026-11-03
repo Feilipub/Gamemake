@@ -35,6 +35,8 @@
     }
     if (o.fruit) for (let i = 0; i < o.fruit; i++) { const c = cl[i % cl.length], a = H(i, s, 11) * 6.28, d = H(i, s, 12) * c.r * .7, fx = Math.round(c.x + Math.cos(a) * d), fy = Math.round(c.y + Math.sin(a) * d * .7 + 2), fs = o.fs || 2; P(fx, fy, fs, fs, o.fruitC); P(fx, fy, 1, 1, shade(o.fruitC, .4)); }
   }
+  // altura do tronco: sobe até o meio do tufo central mais baixo, para nunca sobrar vão entre tronco e folhas
+  const reach = (cl, bx) => { bx = bx === undefined ? BX : bx; let y = -1; for (const c of cl) if (Math.abs(c.x - bx) < c.r * .8) y = Math.max(y, c.y); return y < 0 ? 0 : BY - y + 2; };
   const M = (cl, f) => f ? cl.map(c => Object.assign({}, c, { x: 64 - c.x })) : cl; // espelha a variação
   const GREEN = { forest: ['#1a3618', '#2c5626', '#3f7834', '#5e9846'], dark: ['#163a18', '#245824', '#367632', '#509440'], olive: ['#2c4e20', '#467a30', '#64983e', '#8ab854'], light: ['#2e5a26', '#4a8a38', '#6aac4c', '#96cc6c'] };
   const DRY = ['#5a5a44', '#7a7a5c', '#9a9676', '#bab496'];
@@ -42,35 +44,35 @@
     const f = v & 1, s = v * 31 + t.length * 7, sc = .9 + (v % 4) * .05, L = f ? -1 : 1;
     const C = (x, y, r, ry) => ({ x: 32 + (x - 32) * sc, y: 70 - (70 - y) * sc, r: r * sc, ry: (ry || r) * sc });
     switch (t) {
-      case 'mata1': { const top = trunk(P, BX, BY, 30 * sc, 6, 3, 3 * L, '#4a3a2a', s); const cl = M([C(32, 24, 15, 11), C(19, 30, 11, 8), C(45, 29, 11, 8), C(31, 14, 10, 8)], f);
+      case 'mata1': { const cl = M([C(32, 24, 15, 11), C(19, 30, 11, 8), C(45, 29, 11, 8), C(31, 14, 10, 8)], f), top = trunk(P, BX, BY, Math.max(30 * sc, reach(cl)), 6, 3, 3 * L, '#4a3a2a', s);
         for (const c of cl) branch(P, top[0], top[1] + 6, c.x, c.y + 3, 2, '#4a3a2a'); canopy(P, cl, GREEN.forest, { seed: s }); return; }
-      case 'mata2': { const top = trunk(P, BX, BY, 24 * sc, 5, 3, -2 * L, '#5a4632', s); const cl = M([C(23, 32, 12, 9), C(41, 26, 13, 10), C(33, 17, 9, 7)], f);
+      case 'mata2': { const cl = M([C(23, 32, 12, 9), C(41, 26, 13, 10), C(33, 17, 9, 7)], f), top = trunk(P, BX, BY, Math.max(24 * sc, reach(cl)), 5, 3, -2 * L, '#5a4632', s);
         for (const c of cl) branch(P, top[0], top[1] + 4, c.x, c.y + 3, 2, '#5a4632'); canopy(P, cl, ['#1c3a1a', '#2e5c2e', '#42803a', '#62a04c'], { seed: s }); return; }
-      case 'umbu': { const bark = se ? '#8a8272' : '#6a5a48', top = trunk(P, BX, BY, 13 * sc, 8, 5, 2 * L, bark, s); const cl = M([C(32, 37, 23, 10), C(15, 41, 10, 7), C(49, 41, 10, 7), C(30, 30, 13, 8)], f);
+      case 'umbu': { const bark = se ? '#8a8272' : '#6a5a48', cl = M([C(32, 37, 23, 10), C(15, 41, 10, 7), C(49, 41, 10, 7), C(30, 30, 13, 8)], f), top = trunk(P, BX, BY, Math.max(13 * sc, reach(cl) - 4), 8, 5, 2 * L, bark, s);
         for (const c of cl) branch(P, top[0], top[1] + 2, c.x, c.y + 2, 3, bark);
         if (se) { twigs(P, cl, bark, s); canopy(P, cl, DRY, { seed: s, dens: .32 }); } else canopy(P, cl, GREEN.olive, { seed: s, fruit: 5, fruitC: '#c8c060' }); return; }
-      case 'juazeiro': { trunk(P, BX - 3, BY, 15 * sc, 5, 3, -3, '#5a4434', s); const top = trunk(P, BX + 2, BY, 17 * sc, 5, 3, 3, '#5a4434', s + 1); const cl = M([C(32, 31, 18, 14), C(20, 38, 10, 8), C(44, 37, 10, 8), C(32, 20, 11, 8)], f);
+      case 'juazeiro': { const cl = M([C(32, 31, 18, 14), C(20, 38, 10, 8), C(44, 37, 10, 8), C(32, 20, 11, 8)], f), hh = reach(cl); trunk(P, BX - 3, BY, Math.max(15 * sc, hh - 3), 5, 3, -3, '#5a4434', s); trunk(P, BX + 2, BY, Math.max(17 * sc, hh), 5, 3, 3, '#5a4434', s + 1);
         canopy(P, cl, GREEN.dark, { seed: s, fruit: se ? 6 : 0, fruitC: '#d8b040' }); return; }
-      case 'manga': { const top = trunk(P, BX, BY, 15 * sc, 8, 5, 0, '#5a3e2a', s); const cl = M([C(32, 31, 24, 17), C(32, 18, 14, 9), C(15, 38, 10, 8), C(49, 38, 10, 8)], f);
+      case 'manga': { const cl = M([C(32, 31, 24, 17), C(32, 18, 14, 9), C(15, 38, 10, 8), C(49, 38, 10, 8)], f); trunk(P, BX, BY, Math.max(15 * sc, reach(cl)), 8, 5, 0, '#5a3e2a', s); for (const [dx, dy] of [[-12, 14], [12, 14]]) branch(P, BX, BY - 18, BX + dx, BY - 18 - dy, 3, '#5a3e2a');
         canopy(P, cl, ['#143a18', '#225824', '#327630', '#4a943c'], { seed: s, fruit: 9, fruitC: '#e8a030' }); return; }
-      case 'caju': { const top = trunk(P, BX - 4 * L, BY, 13 * sc, 7, 4, 10 * L, '#6a4a30', s); branch(P, BX - 3 * L, BY - 6, BX - 16 * L, BY - 16, 3, '#6a4a30'); const cl = M([C(25, 41, 14, 9), C(43, 36, 12, 9), C(34, 29, 10, 7), C(15, 45, 8, 6)], f);
+      case 'caju': { const cl = M([C(25, 41, 14, 9), C(43, 36, 12, 9), C(34, 29, 10, 7), C(15, 45, 8, 6)], f); trunk(P, BX - 4 * L, BY, Math.max(13 * sc, reach(cl, BX + 2 * L)), 7, 4, 10 * L, '#6a4a30', s); branch(P, BX - 3 * L, BY - 6, BX - 16 * L, BY - 20, 3, '#6a4a30');
         canopy(P, cl, GREEN.light, { seed: s, fruit: 7, fruitC: se ? '#e8c030' : '#e04a2a' }); return; }
-      case 'inga': { const top = trunk(P, BX, BY, 17 * sc, 7, 4, 2 * L, '#5e4a3a', s); const cl = M([C(32, 31, 27, 11), C(21, 24, 12, 7), C(44, 24, 12, 7)], f);
+      case 'inga': { const cl = M([C(32, 31, 27, 11), C(21, 24, 12, 7), C(44, 24, 12, 7)], f), top = trunk(P, BX, BY, Math.max(17 * sc, reach(cl)), 7, 4, 2 * L, '#5e4a3a', s);
         for (const c of cl) branch(P, top[0], top[1] + 3, c.x, c.y + 3, 2, '#5e4a3a'); canopy(P, cl, GREEN.light, { seed: s, fruit: 4, fruitC: '#8aa040', fs: 1 }); return; }
-      case 'ipe': { const bark = '#6a5a4a', top = trunk(P, BX, BY, 27 * sc, 5, 2, 2 * L, bark, s); const cl = M([C(32, 21, 14, 10), C(23, 27, 9, 6), C(42, 26, 9, 6)], f);
+      case 'ipe': { const bark = '#6a5a4a', cl = M([C(32, 21, 14, 10), C(23, 27, 9, 6), C(42, 26, 9, 6)], f), top = trunk(P, BX, BY, Math.max(27 * sc, reach(cl)), 5, 2, 2 * L, bark, s);
         for (const c of cl) branch(P, top[0], top[1] + 3, c.x, c.y + 2, 2, bark);
         if (se) { twigs(P, cl, bark, s); canopy(P, cl, ['#b08a10', '#e0b818', '#f4d030', '#fff07a'], { seed: s, dens: .8, jag: .5 }); } else canopy(P, cl, ['#2a5226', '#3f7a34', '#5a9a44', '#7ab858'], { seed: s }); return; }
       case 'barriguda': { const bark = '#7a8a6a'; for (let y = 0; y < 32 * sc; y++) { const t = y / (32 * sc), w = Math.round(4 + 10 * Math.sin(Math.min(1, t * 1.25) * Math.PI) * (1 - t * .3)); const x = BX - (w >> 1);
           P(x, BY - y, w, 1, y % 5 ? bark : shade(bark, -.1)); P(x, BY - y, 1, 1, shade(bark, .3)); P(x + w - 1, BY - y, 1, 1, shade(bark, -.3)); if (y % 7 === 3) P(x + 2, BY - y, 1, 1, '#4a5a3a'); }
-        const ty = BY - 32 * sc, cl = M([C(32, 17, 15, 8), C(21, 21, 8, 5), C(44, 20, 8, 5)], f); for (const c of cl) branch(P, BX, ty + 2, c.x, c.y + 2, 2, bark);
+        const ty = BY - 32 * sc, cl = M([C(32, 17, 15, 8), C(21, 21, 8, 5), C(44, 20, 8, 5)], f); trunk(P, BX, ty + 1, Math.max(0, ty - (BY - reach(cl))), 4, 3, 0, bark, s); for (const c of cl) branch(P, BX, ty + 2, c.x, c.y + 2, 2, bark);
         if (se) { twigs(P, cl, bark, s); canopy(P, cl, DRY, { seed: s, dens: .25, fruit: 14, fruitC: '#ea8cb4' }); } else canopy(P, cl, GREEN.olive, { seed: s }); return; }
-      case 'catingueira': { const bark = se ? '#8a8478' : '#6a5a46'; const tops = [trunk(P, BX - 3, BY, 18 * sc, 3, 2, -7, bark, s), trunk(P, BX + 2, BY, 21 * sc, 3, 2, 6, bark, s + 1), trunk(P, BX, BY, 15 * sc, 3, 2, 1, bark, s + 2)];
-        const cl = M([C(22, 34, 11, 8), C(40, 31, 12, 8), C(32, 25, 10, 7)], f); cl.forEach((c, i) => branch(P, tops[i % 3][0], tops[i % 3][1] + 2, c.x, c.y + 2, 1, bark));
+      case 'catingueira': { const bark = se ? '#8a8478' : '#6a5a46'; const cl = M([C(22, 34, 11, 8), C(40, 31, 12, 8), C(32, 25, 10, 7)], f), hh = reach(cl);
+        const tops = [trunk(P, BX - 3, BY, Math.max(18 * sc, hh - 6), 3, 2, -7, bark, s), trunk(P, BX + 2, BY, Math.max(21 * sc, hh - 4), 3, 2, 6, bark, s + 1), trunk(P, BX, BY, Math.max(15 * sc, hh), 3, 2, 1, bark, s + 2)]; cl.forEach((c, i) => branch(P, tops[i % 3][0], tops[i % 3][1] + 2, c.x, c.y + 2, 1, bark));
         if (se) { twigs(P, cl, bark, s); canopy(P, cl, DRY, { seed: s, dens: .18 }); } else canopy(P, cl, ['#36662a', '#548c3a', '#76ac4c', '#a0cc6a'], { seed: s, jag: .45, fruit: 6, fruitC: '#f0d040', fs: 1 }); return; }
-      case 'angico': { const bark = '#5a4a3c', top = trunk(P, BX, BY, 30 * sc, 5, 3, 2 * L, bark, s); const cl = M([C(32, 17, 27, 7), C(20, 21, 11, 5), C(44, 20, 11, 5)], f);
+      case 'angico': { const bark = '#5a4a3c', cl = M([C(32, 17, 27, 7), C(20, 21, 11, 5), C(44, 20, 11, 5)], f), top = trunk(P, BX, BY, Math.max(30 * sc, reach(cl)), 5, 3, 2 * L, bark, s);
         for (const c of cl) branch(P, top[0], top[1] + 3, c.x, c.y + 2, 2, bark);
         if (se) { twigs(P, cl, bark, s); canopy(P, cl, DRY, { seed: s, dens: .3, jag: .5 }); } else canopy(P, cl, ['#2c5428', '#467a36', '#64a048', '#8cc262'], { seed: s, jag: .55 }); return; }
-      case 'aroeira': { const bark = '#4a3a30', top = trunk(P, BX, BY, 18 * sc, 6, 3, -2 * L, bark, s); const cl = M([C(32, 29, 18, 13), C(21, 36, 9, 8), C(43, 35, 9, 8)], f);
+      case 'aroeira': { const bark = '#4a3a30', cl = M([C(32, 29, 18, 13), C(21, 36, 9, 8), C(43, 35, 9, 8)], f), top = trunk(P, BX, BY, Math.max(18 * sc, reach(cl)), 6, 3, -2 * L, bark, s);
         canopy(P, cl, se ? ['#28401e', '#3e5a2c', '#56763a', '#70904a'] : ['#1c3c1c', '#2e582a', '#447838', '#62964a'], { seed: s, fruit: 12, fruitC: '#d02a2a', fs: 1 }); return; }
       case 'jurema': { const bark = '#3a3028'; for (let k = 0; k < 4; k++) branch(P, BX + (k - 1.5) * 2, BY, BX + (k - 1.5) * 9, BY - 16 - (k % 2) * 4, 2, bark);
         const cl = M([C(23, 51, 10, 7), C(41, 49, 11, 8), C(32, 43, 9, 6)], f);
