@@ -41,10 +41,9 @@ jobs:
         run: bash tools/android/prepare_web.sh
 
       - name: Gerar o APK
-        env:
-          APP_VERSION_CODE: ${{ 100 + github.run_number }}
-          APP_VERSION_NAME: 3.3.${{ github.run_number }}
         run: |
+          export APP_VERSION_CODE=$((100 + ${{ github.run_number }}))
+          export APP_VERSION_NAME="3.3.${{ github.run_number }}"
           gradle -p android-app assembleRelease --no-daemon
           mkdir -p build/android
           cp android-app/app/build/outputs/apk/release/app-release.apk build/android/LidaNoSertao.apk
