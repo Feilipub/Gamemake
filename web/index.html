@@ -134,6 +134,33 @@ body.sheet .pad,body.sheet #joy{opacity:0;pointer-events:none}
 #rf.on canvas{opacity:1;transform:none}#rf.on .n{opacity:1;letter-spacing:.32em}#rf.on .p{opacity:.9}
 #rf .line{width:0;height:2px;background:linear-gradient(90deg,transparent,#c89a50,transparent);transition:width 2.4s ease .9s}
 #rf.on .line{width:min(60vmin,300px)}
+/* mochila por espaços, barra rápida e baús */
+.bagg{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:4px 0}
+@media (min-width:560px){.bagg{grid-template-columns:repeat(12,1fr)}}
+.isl{position:relative;aspect-ratio:1;min-width:0;background:linear-gradient(#ecd6a8,#d6b984);border:2px solid #5a3418;box-shadow:inset 0 2px 0 #fff3cf,inset 0 -2px 0 #b08650;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.isl.ihb{background:linear-gradient(#f6e2b2,#e2c38c)}
+.isl.ihb::after{content:'';position:absolute;left:3px;right:3px;top:2px;height:2px;background:rgba(122,74,30,.25)}
+.isl.cur{border-color:#c8901c}
+.isl.on{outline:3px solid #fff8d0;box-shadow:0 0 0 5px #d89020,inset 0 2px 0 #fff3cf;z-index:2}
+.isl.dim{opacity:.3}
+.isl.over{border-color:#b03020;background:linear-gradient(#f0c8b0,#d8a888)}
+.isl b{position:absolute;right:2px;bottom:0;font-size:10px;color:#fffbe8;text-shadow:1px 1px 0 #2a1608,-1px 0 0 #2a1608,0 -1px 0 #2a1608}
+.isl img,.hbs img{pointer-events:none}
+.isl.ghost{position:fixed;z-index:99;width:40px;height:40px;pointer-events:none;opacity:.92;transform:scale(1.15)}
+.chestg .isl{background:linear-gradient(#d8b07a,#b88a56);box-shadow:inset 0 2px 0 #f0d4a0,inset 0 -2px 0 #8a5e30}
+.ifilt{display:flex;flex-wrap:wrap;gap:3px;margin:4px 0}.ifilt button{font-size:11px;padding:3px 7px}.ifilt button.on{background:linear-gradient(#fbe08a 0 50%,#f0c04a 50%)}
+.iinfo{margin-top:6px;padding:8px;background:linear-gradient(#f8ecd0,#ecdab4);border:3px solid #5a3418;box-shadow:inset 0 2px 0 #fff8e4}
+.iinfo .qty b{min-width:30px;text-align:center}
+.eqg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.eq{background:linear-gradient(#f2e2c0,#e2cc9e);border:2px solid #5a3418;padding:4px 6px;font-size:11px;display:flex;flex-direction:column;min-width:0}.eq b{font-size:12px;overflow-wrap:anywhere}
+.warn{color:#a02818;font-weight:700}.small{font-size:11px}
+#hotbar{position:absolute;z-index:5;left:50%;transform:translateX(-50%);bottom:calc(62px + var(--sab));display:flex;gap:2px;padding:3px;background:linear-gradient(rgba(74,44,24,.94),rgba(42,22,11,.94));border:3px solid var(--ink);box-shadow:inset 0 2px 0 #7e4624,0 3px 0 rgba(0,0,0,.35)}
+.hbs{position:relative;width:min(7.2vw,38px);height:min(7.2vw,38px);background:linear-gradient(#ecd6a8,#d2b47e);border:2px solid #5a3418;box-shadow:inset 0 2px 0 #fff3cf;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.hbs.on{outline:3px solid #ffe060;transform:translateY(-3px);z-index:1}
+.hbs i{position:absolute;left:2px;top:0;font-size:8px;font-style:normal;color:#7a4a20}
+.hbs b{position:absolute;right:1px;bottom:-1px;font-size:9px;color:#fffbe8;text-shadow:1px 1px 0 #2a1608,-1px 0 0 #2a1608}
+body:not(.lan) #joy{bottom:calc(110px + var(--sab))}body:not(.lan) .pad{bottom:calc(108px + var(--sab))}
+body.lan #hotbar{bottom:calc(6px + var(--sab))}
+body.cs #hotbar,body.ovl #hotbar{display:none!important}
 /* título e menu */
 #title{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;padding:calc(6% + var(--sat)) 16px calc(5% + var(--sab));pointer-events:none}
 #title > *{pointer-events:auto}
@@ -490,6 +517,7 @@ function itemIconURL(id) {
     case 'vacina': p(1, 5, 7, 2, '#e8eef4'); p(2, 5, 4, 2, '#4ac0d0'); p(8, 5, 1, 2, '#888'); p(9, 6, 3, 1, '#b0b0b0'); p(0, 4, 1, 4, '#888'); break;
     case 'remedio': p(3, 2, 6, 9, '#f4f0e8'); p(3, 2, 6, 2, '#c03030'); p(5, 6, 2, 3, '#c03030'); p(4, 7, 4, 1, '#c03030'); break;
     case 'escova': p(1, 3, 10, 3, '#b07a40'); p(1, 6, 10, 3, '#3a2410'); for (let x = 1; x < 11; x += 2) p(x, 9, 1, 1, '#3a2410'); break;
+    case 'bau': p(1, 3, 10, 8, '#7a4c28'); p(1, 3, 10, 1, '#b07a44'); p(1, 5, 10, 1, '#3a2414'); p(2, 3, 1, 8, '#9aa0a6'); p(9, 3, 1, 8, '#9aa0a6'); p(5, 5, 2, 2, '#e0b040'); p(1, 10, 10, 1, '#3a2414'); break;
     case 'alforje': p(1, 3, 10, 8, '#7a4a1c'); p(1, 3, 10, 2, '#a06a30'); p(5, 5, 2, 2, '#e0c060'); p(2, 1, 8, 2, '#5a3412'); break;
     case 'lampiao': p(4, 0, 4, 1, '#3a3a3a'); p(3, 1, 6, 2, '#5a5a5a'); p(3, 3, 6, 6, '#f8d870'); p(5, 4, 2, 3, '#fff4c0'); p(2, 9, 8, 2, '#5a5a5a'); break;
     case 'violao': case 'viola': { const b = id === 'viola' ? '#7a3e1a' : '#d0904c'; p(1, 6, 6, 5, b); p(2, 5, 4, 1, b); p(3, 8, 2, 1, '#2a1608'); for (let i = 0; i < 5; i++) p(6 + i, 5 - i, 1, 1, '#5a3418'); p(10, 0, 2, 2, '#3a2410'); break; }
@@ -719,6 +747,7 @@ const IT = {
   milhoAssado: { i: '', n: 'Milho assado', kg: 0.3, p: 6, en: 6, fo: 16, d: 'Espiga assada na brasa, das barracas de festa e feira.', c: 'comida' },
   canjica: { i: '', n: 'Canjica (copo)', kg: 0.3, p: 7, en: 8, fo: 14, d: 'Doce de milho com leite e canela, de São João.', c: 'comida' },
   pamonha: { i: '', n: 'Pamonha', kg: 0.3, p: 6, en: 6, fo: 18, d: 'Feita de milho verde ralado, cozida na palha.', c: 'comida' },
+  bau: { i: '📦', n: 'Baú de madeira', kg: 8, p: 180, d: 'Baú de tábua com cintas de ferro (24 espaços). Coloque na fazenda: selecione na barra rápida e toque de novo, ou use "Colocar no chão" na mochila.', c: 'equip' },
   ferroTS: { i: '', n: 'Ferro de marcar T.S.', kg: 2, p: 0, d: 'O ferro de marcar do avô Tiãozinho, com as letras T.S. Lembrança de família — não se vende.', c: 'ferr' },
   facao: { i: '', n: 'Facão', kg: 1, p: 65, d: 'Ferramenta do vaqueiro para abrir caminho e espantar bichos que chegam perto. Equipe e use o botão de arma (tecla G).', c: 'ferr' },
   espingarda: { i: '', n: 'Espingarda de caça (fictícia)', kg: 3, p: 1800, d: 'Arma fictícia do jogo, para tiros de advertência: o estrondo afugenta predadores como a onça-parda. Assusta também o gado e os cavalos.', c: 'ferr' },
@@ -4040,12 +4069,68 @@ function pay(v, desc) {
 }
 function receive(v, desc, to) { v = Math.round(v * 100) / 100; if (to === 'cash') { S.cash += v; ledger(desc, v, 'cx'); } else { S.acct += v; ledger(desc, v, 'cc'); } S.stats.earned += v; AU.coin(); }
 /* ---------- inventário ---------- */
-const INV_BASE = 30; let INV_CAP = 30; // o jegue e a mula com alforje carregam mais
-function invCapNow() { const h = P && P.mnt && S ? byId(P.mnt) : null; return INV_BASE + (h ? (h.sp === 'jumento' ? 25 : h.sp === 'burro' ? 15 : 0) : 0); }
-function invKg() { let k = 0; for (const i in S.inv) if (IT[i]) k += IT[i].kg * S.inv[i]; return Math.round(k * 10) / 10; }
-function addInv(id, n, force) { n = n || 1; if (!force && IT[id] && invKg() + IT[id].kg * n > INV_CAP + 0.01) { say('Mochila pesada demais (' + INV_CAP + ' kg). Use a carroça ou o depósito.'); return false; } S.inv[id] = (S.inv[id] || 0) + n; return true; }
-function useInv(id, n) { n = n || 1; if ((S.inv[id] || 0) < n) return false; S.inv[id] -= n; if (!S.inv[id]) delete S.inv[id]; return true; }
+/* ---------- inventário por espaços (mochila 12/24/36, pilhas, barra rápida e baús) ----------
+   S.inv continua sendo o total de cada item (todos os sistemas do jogo leem e gastam por ele); S.bag guarda
+   em que espaço está cada pilha. bagSync() mantém os dois iguais: quem soma ou tira do total muda as pilhas
+   na ordem do jogador (completa pilhas abertas, depois espaços vazios; tira das últimas pilhas primeiro).
+   O que não couber (ex.: presente de missão com a mochila cheia) fica em "Excesso" — nada some. */
+const BAG_SIZES = [12, 24, 36];
+const ICAT = { ferr: 'Ferramentas', muda: 'Agricultura', fruta: 'Produtos agrícolas', trato: 'Pecuária', vet: 'Pecuária', comida: 'Alimentos', carne: 'Produtos de origem animal', prod: 'Produtos de origem animal', equip: 'Equipamentos', musica: 'Itens especiais', mat: 'Materiais de construção', rec: 'Recursos naturais' };
+const IFILT = [['all', 'Tudo'], ['ferr', 'Ferramentas'], ['agri', 'Agricultura'], ['pec', 'Pecuária'], ['ali', 'Alimentos'], ['prod', 'Produtos'], ['esp', 'Especiais']];
+const IFILT_OF = { ferr: 'ferr', muda: 'agri', fruta: 'agri', trato: 'pec', vet: 'pec', comida: 'ali', carne: 'prod', prod: 'prod', equip: 'esp', musica: 'esp', mat: 'esp', rec: 'esp' };
+function itCat(id) { const it = IT[id]; return it && it.c ? it.c : 'outro'; }
+function stackMax(id) { const c = itCat(id); return c === 'ferr' || c === 'equip' || c === 'musica' ? 1 : c === 'trato' ? 20 : c === 'vet' || c === 'muda' || c === 'carne' ? 20 : c === 'comida' ? 30 : 50; }
+const noDiscard = id => !IT[id] || IT[id].p === 0; // herança de família (ferro T.S. etc.)
+function bagInit() {
+  if (S.bag && Array.isArray(S.bag.slots)) { while (S.bag.slots.length < S.bag.cap) S.bag.slots.push(null); S.bag.over = S.bag.over || []; return; }
+  S.bag = { cap: 12, slots: Array(12).fill(null), sel: 0, over: [] };
+  // save antigo: mochila por peso. Se não couber em 12 espaços, o jogador ganha a mochila maior (nada se perde)
+  let need = 0; for (const k in S.inv) if (IT[k] && S.inv[k] > 0) need += Math.ceil(S.inv[k] / stackMax(k));
+  const cap = BAG_SIZES.find(c => c >= need) || 36; S.bag.cap = cap; S.bag.slots = Array(cap).fill(null);
+  bagSync();
+}
+function bagTotals() { const T = {}; for (const s of S.bag.slots) if (s) T[s.id] = (T[s.id] || 0) + s.n; for (const s of S.bag.over) T[s.id] = (T[s.id] || 0) + s.n; return T; }
+function bagSync() {
+  if (!S || !S.inv) return; if (!S.bag) return bagInit();
+  const B = S.bag, T = bagTotals(), ids = new Set([...Object.keys(T), ...Object.keys(S.inv)]);
+  for (const id of ids) {
+    if (!IT[id]) continue; const want = Math.max(0, S.inv[id] || 0), have = T[id] || 0; if (Math.abs(want - have) < 1e-6) continue;
+    if (want > have) { let r = want - have; const mx = stackMax(id);
+      for (const s of B.slots) if (r > 0 && s && s.id === id && s.n < mx) { const k = Math.min(r, mx - s.n); s.n += k; r -= k; }
+      for (let i = 0; i < B.slots.length && r > 0; i++) if (!B.slots[i]) { const k = Math.min(r, mx); B.slots[i] = { id, n: k }; r -= k; }
+      while (r > 0) { const k = Math.min(r, mx); B.over.push({ id, n: k }); r -= k; }
+    } else { let r = have - want;
+      for (let i = B.over.length - 1; i >= 0 && r > 0; i--) { const s = B.over[i]; if (s.id !== id) continue; const k = Math.min(r, s.n); s.n -= k; r -= k; if (s.n <= 1e-6) B.over.splice(i, 1); }
+      for (let i = B.slots.length - 1; i >= 0 && r > 0; i--) { const s = B.slots[i]; if (!s || s.id !== id) continue; const k = Math.min(r, s.n); s.n -= k; r -= k; if (s.n <= 1e-6) B.slots[i] = null; } }
+  }
+  // excesso entra quando abrir espaço
+  for (let i = 0; i < B.slots.length && B.over.length; i++) if (!B.slots[i]) B.slots[i] = B.over.shift();
+}
+function bagCommit() { const T = bagTotals(); for (const k in S.inv) if (IT[k] && !T[k]) delete S.inv[k]; for (const k in T) S.inv[k] = T[k]; } // depois de mexer nas pilhas à mão
+function invRoom(id) { if (!S.bag) bagInit(); const mx = stackMax(id); if (S.bag.over.length) return 0; let r = 0; for (const s of S.bag.slots) r += !s ? mx : s.id === id ? Math.max(0, mx - s.n) : 0; return r; }
+function addInv(id, n, force) {
+  n = n || 1; if (!S.bag) bagInit();
+  if (!force && IT[id] && invRoom(id) + 1e-6 < n) { say('Mochila cheia (' + S.bag.cap + ' espaços). Guarde coisas num baú ou compre uma mochila maior na Casa do Agro.'); return false; }
+  S.inv[id] = (S.inv[id] || 0) + n; bagSync(); return true;
+}
+function useInv(id, n) { n = n || 1; if ((S.inv[id] || 0) < n - 1e-6) return false; S.inv[id] -= n; if (S.inv[id] <= 1e-6) delete S.inv[id]; bagSync(); return true; }
 const has = (id, n) => (S.inv[id] || 0) >= (n || 1);
+function invKg() { let k = 0; for (const i in S.inv) if (IT[i]) k += IT[i].kg * S.inv[i]; return Math.round(k * 10) / 10; }
+function bagSort(slots) { // junta pilhas iguais e ordena por categoria e nome
+  const T = {}; for (const s of slots) if (s) T[s.id] = (T[s.id] || 0) + s.n;
+  const ids = Object.keys(T).sort((a, b) => (Object.keys(ICAT).indexOf(itCat(a)) - Object.keys(ICAT).indexOf(itCat(b))) || IT[a].n.localeCompare(IT[b].n));
+  const out = []; for (const id of ids) { let r = T[id]; const mx = stackMax(id); while (r > 1e-6) { const k = Math.min(r, mx); out.push({ id, n: k }); r -= k; } }
+  for (let i = 0; i < slots.length; i++) slots[i] = out[i] || null; return out.length - slots.length; // >0: sobrou (não deve acontecer)
+}
+// baús: S.chests = [{ id, name, cat, x, y, cap, slots }]; o da casa ('casa') é fixo
+function chestInit() {
+  S.chests = S.chests || [];
+  if (!S.chests.find(c => c.id === 'casa')) { const c = { id: 'casa', name: 'Baú da casa', cat: '', cap: 36, slots: Array(36).fill(null) }; S.chests.push(c);
+    if (S.chest) { for (const k in S.chest) if (IT[k] && S.chest[k] > 0) chestAdd(c, k, S.chest[k]); S.chest = {}; } }
+  for (const c of S.chests) { while (c.slots.length < c.cap) c.slots.push(null); if (c.x !== undefined) obj[gi(Math.floor(c.x / TS), Math.floor(c.y / TS))] = 3; }
+}
+function chestAdd(c, id, n) { const mx = stackMax(id); let r = n; for (const s of c.slots) if (r > 0 && s && s.id === id && s.n < mx) { const k = Math.min(r, mx - s.n); s.n += k; r -= k; } for (let i = 0; i < c.slots.length && r > 0; i++) if (!c.slots[i]) { const k = Math.min(r, mx); c.slots[i] = { id, n: k }; r -= k; } return n - r; }
+function chestRoom(c, id) { const mx = stackMax(id); let r = 0; for (const s of c.slots) r += !s ? mx : s.id === id ? Math.max(0, mx - s.n) : 0; return r; }
 function depCap() { return 2000 + Object.values(S.lots).filter(l => l && l.done && l.b === 'silo').length * 3000; }
 const KG_ITEMS = ['racao', 'milho', 'sal', 'fPalma', 'fMandacaru', 'fManicoba', 'racaoPorco', 'esterco']; // guardados no depósito por peso
 function depKg() { return KG_ITEMS.reduce((t, k) => t + (S.dep[k] || 0), 0); }
@@ -5931,7 +6016,7 @@ function renderModal() {
   $('mtt').textContent = noEmo(tt); $('mic').innerHTML = M.icon ? ic(M.icon, 22) : (cur && cur[2] ? ic(cur[2], 22) : '');
   $('mc').innerHTML = emoHTML(M.fn(M.tab)); $('mn').scrollTop = st;
 }
-function closeModal() { if (S && P) fixRefs(); if (!M.open) return; M.open = false; if (M.qdl && M.qdl.fin) { const f = M.qdl.fin; M.qdl = null; setTimeout(f, 0); } const mn = $('mn'); mn.classList.remove('on'); mn.style.display = 'none'; setTimeout(() => S && typeof qHud === 'function' && qHud(), 30); paused = mode !== 'play' && mode !== 'cs' && mode !== 'film' ? true : false; if (mode === 'play') paused = false; AU.whoosh(false); }
+function closeModal() { M.chest = null; M.ctap = false; M.isel = null; if (S && P) fixRefs(); if (!M.open) return; M.open = false; if (M.qdl && M.qdl.fin) { const f = M.qdl.fin; M.qdl = null; setTimeout(f, 0); } const mn = $('mn'); mn.classList.remove('on'); mn.style.display = 'none'; setTimeout(() => S && typeof qHud === 'function' && qHud(), 30); paused = mode !== 'play' && mode !== 'cs' && mode !== 'film' ? true : false; if (mode === 'play') paused = false; AU.whoosh(false); }
 A.tab = v => { M.tab = v; M.sel = null; M.sub = null; renderModal(); $('mn').scrollTop = 0; AU.click(); };
 const btn = (l, a, v, dis, cls) => `<button data-a="${a}" data-v="${v === undefined ? '' : esc(v)}" ${dis ? 'disabled' : ''} ${cls ? `class="${cls}"` : ''}>${l}</button>`;
 const ibtn = (icn, l, a, v, dis) => `<button data-a="${a}" data-v="${v === undefined ? '' : esc(v)}" ${dis ? 'disabled' : ''}>${ic(icn, 18)}<span>${l}</span></button>`;
@@ -5989,21 +6074,125 @@ function charImg(ap, sc, dir, pose) { if (dir !== undefined || pose) return sprH
 
 /* ---------- inventário ---------- */
 const fmtQ = n => Math.round(n * 100) / 100;
-function bagHTML() {
-  const ids = Object.keys(S.inv).filter(k => S.inv[k] > 0.001 && IT[k]);
-  let h = `<div class="row sp"><span>Peso: <b>${invKg()}</b> / ${INV_CAP} kg</span>${bar(invKg() / INV_CAP * 100, 'y')}</div>`;
-  h += `<div class="row sp mut"><span>${ic('coin', 14)} Carteira: ${fmt2(S.cash)}</span><span>${ic('bank', 14)} Conta: ${fmt(S.acct)}</span></div>`;
-  h += '<div class="grid">' + ids.map(k => `<div class="sl ${M.sel === k ? 'card sel' : ''}" data-a="bagSel" data-v="${k}">${iic(k, 28)}<small>${IT[k].n.split(' (')[0]}</small><b>${fmtQ(S.inv[k])}</b></div>`).join('') + '</div>';
-  if (!ids.length) h += '<p class="mut">Mochila vazia.</p>';
-  if (M.sel && S.inv[M.sel]) { const it = IT[M.sel]; h += `<div class="card"><div class="row">${iic(M.sel, 32)}<b>${it.n}</b></div><p>${it.d}</p><p class="mut">${it.kg} kg cada · valor ref. ${fmt2(it.p)}</p><div class="row">`;
-    if (it.en || it.fo) h += btn('Comer / Beber', 'eat', M.sel);
-    if (M.sel === 'violao' || M.sel === 'viola') h += '<span class="mut">Toque perto de uma fogueira acesa.</span>';
-    if (M.sel === 'facao' || M.sel === 'espingarda') h += weaponOf() === M.sel ? '<span class="mut">Equipado (botão Arma ou tecla G).</span>' : btn('Equipar', 'equip', M.sel);
-    h += btn('Descartar 1', 'drop', M.sel) + '</div></div>'; }
-  h += `<h3>Equipamentos</h3><p>Selas: ${S.saddles.map(s => SADDLES.find(q => q.id === s).n).join(', ')}</p><p class="mut">Ovos no ninho: ${S.eggs} · Leite no tanque: ${S.milk} L · Carroça: ${Math.round(cartKg())} / ${CART_CAP} kg · Baú: ${Object.keys(S.chest).filter(k => S.chest[k] > 0).length} tipo(s)</p>`;
+function openBag() { M.chest = null; M.ctap = false; showModal('Mochila', null, null, bagHTML, 'bag'); }
+/* ---------- tela da mochila, barra rápida e baús ---------- */
+// referência de espaço: 'b:3' mochila, 'o:0' excesso, 'c:<id>:5' baú
+function slotRef(ref) { const p = ref.split(':'); if (p[0] === 'b') return [S.bag.slots, +p[1]]; if (p[0] === 'o') return [S.bag.over, +p[1]]; const c = S.chests.find(q => q.id === p[1]); return c ? [c.slots, +p[2]] : [null, 0]; }
+function slotMove(a, b, qty) { // arrastar/soltar: move, junta pilhas iguais ou troca
+  if (a === b) return; const [A0, ia] = slotRef(a), [B0, ib] = slotRef(b); if (!A0 || !B0 || b[0] === 'o') return; const s = A0[ia]; if (!s) return;
+  const n = Math.min(s.n, qty || s.n), t = B0[ib];
+  if (!t) { if (n >= s.n) { B0[ib] = s; A0[ia] = null; } else { B0[ib] = { id: s.id, n }; s.n -= n; } }
+  else if (t.id === s.id) { const k = Math.min(n, stackMax(s.id) - t.n); if (k <= 0) return; t.n += k; s.n -= k; if (s.n <= 1e-6) A0[ia] = null; }
+  else { if (n < s.n) return; B0[ib] = s; A0[ia] = t; }
+  if (a[0] === 'o') S.bag.over = S.bag.over.filter(Boolean);
+  bagCommit(); AU.click();
+}
+function slotHTML(ref, s, extra) {
+  const sel = M.isel === ref, f = M.ifilt && M.ifilt !== 'all' && s && IFILT_OF[itCat(s.id)] !== M.ifilt;
+  return `<div class="isl${sel ? ' on' : ''}${f ? ' dim' : ''}${extra || ''}" data-sl="${ref}">${s ? iic(s.id, 26) + (s.n !== 1 ? `<b>${fmtQ(s.n)}</b>` : '') : ''}</div>`;
+}
+function itemInfoHTML(ref) {
+  const [A0, i] = slotRef(ref), s = A0 && A0[i]; if (!s) return '';
+  const it = IT[s.id], q = Math.min(s.n, Math.max(1, M.iq || 1)), inBag = ref[0] !== 'c';
+  let h = `<div class="iinfo"><div class="row">${iic(s.id, 34)}<div style="flex:1"><b>${it.n}</b><br><span class="mut">${ICAT[itCat(s.id)] || 'Diversos'} · pilha até ${stackMax(s.id)} · ref. ${fmt2(it.p)}</span></div></div><p>${it.d || ''}</p>`;
+  if (s.n > 1) h += `<div class="row qty"><span class="mut">Quantidade</span>${btn('−', 'iq', '-')}<b>${fmtQ(q)}</b>${btn('+', 'iq', '+')}${btn('Tudo', 'iq', 'all')}</div>`;
+  h += '<div class="row">';
+  if (inBag && (it.en || it.fo)) h += btn('Comer / Beber', 'eat', s.id);
+  if (inBag && (s.id === 'facao' || s.id === 'espingarda')) h += weaponOf() === s.id ? '<span class="mut">Equipado (Arma / G)</span>' : btn('Equipar', 'equip', s.id);
+  if (inBag && s.id === 'bau') h += btn('Colocar no chão', 'placeChest');
+  if (s.n > 1) h += btn('Dividir', 'iSplit', ref);
+  if (M.chest && inBag) h += btn('→ Baú', 'iToChest', ref); if (ref[0] === 'c') h += btn('→ Mochila', 'iToBag', ref);
+  if (!noDiscard(s.id)) h += btn(M.iconf === ref ? 'Confirmar descarte' : 'Descartar', 'iDrop', ref); else h += '<span class="mut">Lembrança de família: não se descarta.</span>';
+  return h + '</div></div>';
+}
+function bagGridHTML() {
+  const B = S.bag; let h = `<div class="ifilt">${IFILT.map(([k, n]) => `<button data-a="ifilt" data-v="${k}" class="${(M.ifilt || 'all') === k ? 'on' : ''}">${n}</button>`).join('')}</div>`;
+  h += '<div class="bagg">' + B.slots.map((s, i) => slotHTML('b:' + i, s, i < 12 ? ' ihb' + (i === B.sel ? ' cur' : '') : '')).join('') + '</div>';
+  if (B.over.length) h += `<p class="warn">Excesso (não coube na mochila — guarde num baú ou descarte):</p><div class="bagg">${B.over.map((s, i) => slotHTML('o:' + i, s, ' over')).join('')}</div>`;
   return h;
 }
-function openBag() { showModal('Mochila', null, null, bagHTML, 'bag'); }
+function bagHTML() {
+  bagSync(); const B = S.bag, used = B.slots.filter(Boolean).length;
+  let h = `<div class="row sp"><span>${ic('bag', 16)} <b>${used}</b> / ${B.cap} espaços ${B.cap < 36 ? `<span class="mut">· mochila maior na Casa do Agro</span>` : ''}</span><span class="mut">${ic('coin', 14)} ${fmt2(S.cash)} · ${ic('bank', 14)} ${fmt(S.acct)}</span></div>`;
+  h += `<p class="mut small">A primeira fileira é a barra rápida. Arraste para trocar de lugar, ou toque num item e depois no espaço de destino.</p>`;
+  h += bagGridHTML();
+  h += `<div class="row">${btn('Organizar', 'iSort')}${M.isel ? btn('Soltar seleção', 'iDesel') : ''}</div>`;
+  if (M.isel) h += itemInfoHTML(M.isel);
+  const ap = S.cf.ap, W2 = weaponOf();
+  const eq = [['hat', 'Chapéu', HATS[ap.hat] ? HATS[ap.hat].n : '—'], ['shirt', 'Camisa', SHIRTS[ap.shirt] || '—'], ['boot', 'Calça', PANTS[ap.pants] || '—'], ['boot', 'Botas', BOOTS[ap.boots] || '—'], ['star', 'Acessório', ACCS[ap.acc || 0] || '—'], ['lasso', 'Especial', W2 ? IT[W2].n + ' (arma)' : has('lampiao') ? 'Lampião (ilumina à noite)' : '—']];
+  h += `<h3>Equipamentos</h3><div class="eqg">${eq.map(([i2, k, v]) => `<div class="eq"><span class="mut">${k}</span><b>${esc(v)}</b></div>`).join('')}</div><div class="row">${btn('Trocar roupa (guarda-roupa)', 'wardrobe')}</div>`;
+  h += `<p class="mut">Selas: ${S.saddles.map(s => SADDLES.find(q => q.id === s).n).join(', ')} · Ovos no ninho: ${S.eggs} · Leite no tanque: ${S.milk} L · Carroça: ${Math.round(cartKg())} / ${CART_CAP} kg</p>`;
+  return h;
+}
+A.ifilt = v => { M.ifilt = v; renderModal(); };
+A.iDesel = () => { M.isel = null; M.iconf = null; renderModal(); };
+A.iq = v => { const [A0, i] = slotRef(M.isel || ''), s = A0 && A0[i]; if (!s) return; const q = M.iq || 1; M.iq = v === 'all' ? s.n : v === '+' ? Math.min(s.n, q + 1) : Math.max(1, q - 1); renderModal(); };
+A.iSort = () => { bagSort(S.bag.slots); bagCommit(); M.isel = null; AU.click(); renderModal(); };
+A.iSplit = ref => { const [A0, i] = slotRef(ref), s = A0 && A0[i]; if (!s || s.n < 2) return; const e = A0.indexOf(null); if (e < 0) return say('Sem espaço vazio para dividir.'); const k = M.iq && M.iq < s.n ? M.iq : Math.floor(s.n / 2); A0[e] = { id: s.id, n: k }; s.n -= k; bagCommit(); M.isel = null; M.iq = 1; AU.click(); renderModal(); };
+A.iDrop = ref => { const [A0, i] = slotRef(ref), s = A0 && A0[i]; if (!s || noDiscard(s.id)) return; if ((itCat(s.id) === 'ferr' || s.n > 1) && M.iconf !== ref) { M.iconf = ref; say(itCat(s.id) === 'ferr' ? 'É uma ferramenta: toque de novo em Confirmar para jogar fora.' : 'Toque em Confirmar para descartar.'); return renderModal(); }
+  const k = Math.min(s.n, M.iq || s.n); s.n -= k; if (s.n <= 1e-6) A0[i] = null; if (ref[0] === 'o') S.bag.over = S.bag.over.filter(Boolean); bagCommit(); M.iconf = null; M.isel = null; M.iq = 1; toast('Descartou ' + fmtQ(k) + 'x ' + IT[s.id].n); renderModal(); };
+A.wardrobe = () => { closeModal(); openSetup(true); };
+// toques e arrastar nos espaços (mouse e tela de toque)
+const IDRAG = { ref: null, x: 0, y: 0, on: false, ghost: null };
+document.addEventListener('pointerdown', e => { const el = e.target.closest && e.target.closest('.isl[data-sl]'); if (!el) return; IDRAG.ref = el.dataset.sl; IDRAG.x = e.clientX; IDRAG.y = e.clientY; IDRAG.on = false; });
+document.addEventListener('pointermove', e => { if (!IDRAG.ref) return; if (!IDRAG.on && Math.hypot(e.clientX - IDRAG.x, e.clientY - IDRAG.y) > 8) { const [A0, i] = slotRef(IDRAG.ref); if (!A0 || !A0[i]) { IDRAG.ref = null; return; } IDRAG.on = true; const g = document.createElement('div'); g.className = 'isl ghost'; g.innerHTML = iic(A0[i].id, 26); document.body.appendChild(g); IDRAG.ghost = g; }
+  if (IDRAG.on && IDRAG.ghost) { IDRAG.ghost.style.left = (e.clientX - 20) + 'px'; IDRAG.ghost.style.top = (e.clientY - 20) + 'px'; } });
+document.addEventListener('pointerup', e => { const ref = IDRAG.ref; if (!ref) return; IDRAG.ref = null; if (IDRAG.ghost) { IDRAG.ghost.remove(); IDRAG.ghost = null; }
+  if (IDRAG.on) { const el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest && el.closest('.isl[data-sl]'); if (t && t.dataset.sl !== ref) { slotMove(ref, t.dataset.sl); M.isel = null; } if (M.open) renderModal(); return; }
+  if (ref.startsWith('h:')) return; // barra rápida tem tratamento próprio
+  // toque simples: no baú, toque leva a pilha para o outro lado; na mochila, seleciona e depois escolhe o destino
+  if (M.chest && !M.isel && M.ctap) { const [A0, i] = slotRef(ref); if (A0 && A0[i]) { if (ref[0] === 'c') A.iToBag(ref); else A.iToChest(ref); return; } }
+  if (M.isel && M.isel !== ref) { const [A0, i] = slotRef(M.isel), [B0, j] = slotRef(ref); if (A0 && A0[i]) { slotMove(M.isel, ref, M.iq && M.iq < A0[i].n ? M.iq : 0); M.isel = null; M.iq = 1; renderModal(); return; } }
+  const [A0, i] = slotRef(ref); M.isel = M.isel === ref || !(A0 && A0[i]) ? null : ref; M.iq = 1; M.iconf = null; renderModal(); });
+// ---- baús ----
+function chestSpr() { return cached('bau2', 18, 16, g => { const p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+  p(1, 4, 16, 11, '#6a4224'); p(1, 4, 16, 1, '#a8703c'); p(2, 6, 14, 1, '#8a5630'); p(2, 10, 14, 1, '#8a5630'); p(1, 1, 16, 4, '#7a4c28'); p(2, 1, 14, 1, '#b88048'); p(1, 4, 16, 1, '#3a2414');
+  p(3, 1, 2, 14, '#5a5e64'); p(13, 1, 2, 14, '#5a5e64'); p(3, 1, 1, 14, '#9aa0a6'); p(13, 1, 1, 14, '#9aa0a6'); p(8, 4, 2, 3, '#e0b040'); p(8, 6, 2, 1, '#8a6420'); p(1, 14, 16, 1, '#3a2414'); }); }
+function chestAt(x, y, r) { return (S.chests || []).find(c => c.x !== undefined && hyp(c.x - x, c.y - y) < (r || 22)); }
+function openChestUI(c) {
+  M.chest = c.id; M.isel = null; M.ctap = true;
+  showModal('📦 ' + c.name, null, null, () => {
+    const cc = S.chests.find(q => q.id === M.chest); if (!cc) return '';
+    let h = `<div class="row"><input id="chn" maxlength="22" value="${esc(cc.name)}" style="flex:1"><input id="chc" maxlength="16" placeholder="categoria" value="${esc(cc.cat || '')}" style="width:34%"></div>`;
+    h += `<p class="mut small">Toque numa pilha para passar de um lado para o outro. Arraste para escolher o espaço. ${cc.slots.filter(Boolean).length}/${cc.cap} espaços usados.</p>`;
+    h += `<h3>Baú</h3><div class="bagg chestg">${cc.slots.map((s, i) => slotHTML('c:' + cc.id + ':' + i, s)).join('')}</div>`;
+    h += `<div class="row">${btn('Guardar iguais', 'cStack')}${btn('Guardar tudo', 'cAll')}${btn('Pegar tudo', 'cTake')}${btn('Organizar baú', 'cSort')}${cc.id !== 'casa' && !cc.slots.some(Boolean) ? btn('Recolher baú', 'cPick') : ''}</div>`;
+    h += `<h3>Mochila (${S.bag.slots.filter(Boolean).length}/${S.bag.cap})</h3>` + bagGridHTML();
+    if (M.isel) h += itemInfoHTML(M.isel);
+    return h; });
+}
+const curChest = () => S.chests.find(q => q.id === M.chest);
+A.iToChest = ref => { const c = curChest(), [A0, i] = slotRef(ref), s = A0 && A0[i]; if (!c || !s) return; const k = chestAdd(c, s.id, Math.min(s.n, M.isel === ref && M.iq > 1 ? M.iq : s.n)); if (!k) return say('Baú cheio.'); s.n -= k; if (s.n <= 1e-6) A0[i] = null; if (ref[0] === 'o') S.bag.over = S.bag.over.filter(Boolean); bagCommit(); M.isel = null; AU.click(); renderModal(); };
+A.iToBag = ref => { const [A0, i] = slotRef(ref), s = A0 && A0[i]; if (!s) return; const k = Math.min(s.n, invRoom(s.id), M.isel === ref && M.iq > 1 ? M.iq : s.n); if (k <= 0) return say('Mochila cheia.'); s.n -= k; if (s.n <= 1e-6) A0[i] = null; addInv(s.id, k, true); M.isel = null; AU.pickup(); renderModal(); };
+A.cStack = () => { const c = curChest(); if (!c) return; const ids = new Set(c.slots.filter(Boolean).map(s => s.id)); S.bag.slots.forEach((s, i) => { if (s && ids.has(s.id) && i >= 0) { const k = chestAdd(c, s.id, s.n); s.n -= k; if (s.n <= 1e-6) S.bag.slots[i] = null; } }); bagCommit(); AU.click(); renderModal(); };
+A.cAll = () => { const c = curChest(); if (!c) return; [...S.bag.slots.map((s, i) => ['b', i, s]), ...S.bag.over.map((s, i) => ['o', i, s])].forEach(([k0, i, s]) => { if (!s || noDiscard(s.id) || itCat(s.id) === 'ferr') return; const k = chestAdd(c, s.id, s.n); s.n -= k; if (s.n <= 1e-6) (k0 === 'b' ? S.bag.slots : S.bag.over)[i] = null; }); S.bag.over = S.bag.over.filter(Boolean); bagCommit(); toast('Guardou tudo (ferramentas ficaram na mochila).'); renderModal(); };
+A.cTake = () => { const c = curChest(); if (!c) return; c.slots.forEach((s, i) => { if (!s) return; const k = Math.min(s.n, invRoom(s.id)); if (k > 0) { s.n -= k; addInv(s.id, k, true); } if (s.n <= 1e-6) c.slots[i] = null; }); AU.pickup(); renderModal(); };
+A.cSort = () => { const c = curChest(); if (c) { bagSort(c.slots); renderModal(); } };
+A.cPick = () => { const c = curChest(); if (!c || c.id === 'casa' || c.slots.some(Boolean)) return; obj[gi(Math.floor(c.x / TS), Math.floor(c.y / TS))] = 0; S.chests = S.chests.filter(q => q !== c); addInv('bau', 1, true); closeModal(); toast('Baú recolhido para a mochila.'); };
+document.addEventListener('change', e => { const c = M.chest && curChest(); if (!c) return; if (e.target.id === 'chn') c.name = e.target.value.trim() || 'Baú'; if (e.target.id === 'chc') c.cat = e.target.value.trim(); });
+A.placeChest = () => { closeModal(); placeChest(); };
+function placeChest() {
+  if (!has('bau')) return; const d = [[0, 1], [0, -1], [-1, 0], [1, 0]][P.dir || 0], tx = Math.floor(P.x / TS) + d[0], ty = Math.floor(P.y / TS) + d[1], i = gi(tx, ty), g = gt(tx, ty);
+  if (tx < 0 || ty < 0 || tx >= MW || ty >= MH || obj[i] || [G.WATER, G.PAVE, G.WALK, G.PLAZA, G.BRIDGE].includes(g) || BLD.some(b => tx >= b.r[0] && tx <= b.r[2] && ty >= b.r[1] && ty <= b.r[3])) return say('Não dá para colocar o baú aí. Fique de frente para um chão livre.');
+  if (tx >= 58) return say('Baús só podem ficar na sua fazenda.');
+  useInv('bau'); const c = { id: 'b' + Date.now().toString(36), name: 'Baú ' + (S.chests.length), cat: '', x: (tx + 0.5) * TS, y: (ty + 0.7) * TS, cap: 24, slots: Array(24).fill(null) }; S.chests.push(c); obj[i] = 3; AU.hammer && AU.hammer(); toast('📦 Baú colocado. Toque nele para guardar coisas.');
+}
+// ---- barra rápida (12 espaços, sempre visível no jogo) ----
+let hbSig = '';
+function hotbarUpdate() {
+  let el = document.getElementById('hotbar'); if (!el) { el = document.createElement('div'); el.id = 'hotbar'; $('wrap').appendChild(el);
+    el.addEventListener('pointerup', e => { const s = e.target.closest('[data-hb]'); if (!s) return; e.stopPropagation(); const i = +s.dataset.hb; if (S.bag.sel === i) useSelected(); else hbSelect(i); }); }
+  const show = mode === 'play' && !M.open && S && S.bag; el.style.display = show ? '' : 'none'; if (!show) return;
+  const B = S.bag, sig = B.sel + '|' + B.slots.slice(0, 12).map(s => s ? s.id + s.n : '').join(','); if (sig === hbSig) return; hbSig = sig;
+  el.innerHTML = B.slots.slice(0, 12).map((s, i) => `<div class="hbs${i === B.sel ? ' on' : ''}" data-hb="${i}"><i>${i < 9 ? i + 1 : i === 9 ? 0 : ''}</i>${s ? iic(s.id, 22) + (s.n !== 1 ? `<b>${fmtQ(s.n)}</b>` : '') : ''}</div>`).join('');
+}
+function hbSelect(i) { S.bag.sel = (i + 12) % 12; hbSig = ''; const s = S.bag.slots[S.bag.sel]; if (s) say(IT[s.id].n + (s.n > 1 ? ' (' + fmtQ(s.n) + ')' : '') + ' — toque de novo para usar', 1400); AU.click(); }
+function useSelected() { const s = S.bag.slots[S.bag.sel]; if (!s) return; const it = IT[s.id];
+  if (it.en || it.fo) return A.eat(s.id);
+  if (s.id === 'facao' || s.id === 'espingarda') { S.weapon = s.id; return toast(it.n + ' equipado (botão Arma).'); }
+  if (s.id === 'bau') return placeChest();
+  M.isel = 'b:' + S.bag.sel; openBag(); }
+
 A.bagSel = v => { M.sel = v; renderModal(); AU.click(); };
 A.eat = v => { const it = IT[v]; if (!has(v)) return; closeModal(); act('eat', 0.9, null, () => { useInv(v); P.en = cl(P.en + (it.en || 0), 0, 100); P.fo = cl(P.fo + (it.fo || 0), 0, 100); AU.munch(); toast(`+${it.en || 0} energia · +${it.fo || 0} fome`); }, { zoom: 1.2 }); };
 A.drop = v => { useInv(v); renderModal(); };
@@ -6341,7 +6530,7 @@ function shopCart() { return hyp(S.cart.x - P.x, S.cart.y - P.y) < 110 || P.cart
 function buyItem(id, n, dest) {
   const it = IT[id], cost = it.p * n * priceMul();
   if (dest === 'cart' && cartKg() + it.kg * n > CART_CAP) return say('A carroça não comporta tanto peso.');
-  if (dest === 'inv' && invKg() + it.kg * n > INV_CAP) return say('Mochila pesada demais. Use a carroça ou a entrega.');
+  if (dest === 'inv' && invRoom(id) < n) return say('Mochila cheia. Use a carroça, a entrega ou guarde coisas num baú.');
   if (dest === 'frete') { const fee = 60; if (!pay(cost + fee, 'Compra de ' + n + 'x ' + it.n + ' + frete')) return; S.fretePend = S.fretePend || {}; const kg = KG_ITEMS.includes(id) ? it.kg * n : n; S.fretePend[id] = (S.fretePend[id] || 0) + kg; S.frete = true; toast('🚚 Entrega no depósito amanhã às 6h'); return; }
   if (!pay(cost, 'Compra de ' + n + 'x ' + it.n)) return;
   if (dest === 'cart') S.cart.cargo[id] = (S.cart.cargo[id] || 0) + n; else addInv(id, n, true);
@@ -6415,7 +6604,7 @@ A.pomarFert = v => { const i = +v, pl = POMAR_PLOTS[i]; if (!has('esterco')) ret
 A.pomarPrune = v => { const i = +v, pl = POMAR_PLOTS[i]; closeModal(); act('pickup', 1.8, { x: pl.x, y: pl.y }, () => { pomarS()[i].poda = 1; toast('✂️ Podada: a próxima colheita rende mais.'); }); };
 A.pomarRemove = v => { const i = +v; pomarS()[i] = null; pomarApplyObj(); closeModal(); toast('A cova ficou livre.'); };
 A.pomarHarvest = v => { const i = +v, pl = POMAR_PLOTS[i], q = pomarS()[i]; if (!q || q.f < 1) return; closeModal(); act('pickup', 1.6, { x: pl.x, y: pl.y }, () => { const F = FRUITS[q.k], it = F.item; let n = pomarYield(i), bag = 0, dep = 0;
-  while (n > 0 && invKg() + IT[it].kg <= INV_CAP + 0.01) { S.inv[it] = (S.inv[it] || 0) + 1; n--; bag++; } dep = n; if (dep) S.dep[it] = (S.dep[it] || 0) + dep;
+  { const k = Math.min(n, invRoom(it)); if (k > 0) { addInv(it, k, true); n -= k; bag += k; } } dep = n; if (dep) S.dep[it] = (S.dep[it] || 0) + dep;
   q.f = 0; q.poda = 0; S.stats.fruits = (S.stats.fruits || 0) + bag + dep; P.en = Math.max(0, P.en - 3); toast('🧺 ' + (bag + dep) + ' ' + IT[it].n.split(' (')[0].toLowerCase() + (dep ? ' (' + dep + ' foram para o depósito)' : '')); questEvent('harvest', q.k, bag + dep); questEvent('produce', 'fruta');
   S.firsts = S.firsts || {}; if (!S.firsts.colheita) { S.firsts.colheita = 1; setTimeout(() => typeof csPrimeiraColheita === 'function' && csPrimeiraColheita(F), 500); } }); };
 A.irrigBuy = () => { if (S.irrig) return; if (!pay(2800 * priceMul(), 'Irrigação por gotejamento do pomar')) return; S.irrig = 1; questEvent('water', 'pomar'); toast('💧 Irrigação instalada: as árvores do pomar recebem água todo dia (gasta água do reservatório).'); renderModal(); };
@@ -6627,7 +6816,7 @@ function prodHTML() {
 const AGRO_ITEMS = {
   nut: ['racao', 'racaoPorco', 'milho', 'farelo', 'suplemento', 'sal', 'racaoCao'],
   vet: ['vacina', 'remedio', 'vermifugo', 'carrapaticida', 'cicatrizante'],
-  fer: ['regador', 'enxada', 'tesoura', 'galaoV', 'galao', 'escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho', 'lenha', 'carvao'],
+  fer: ['regador', 'enxada', 'tesoura', 'galaoV', 'galao', 'escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho', 'lenha', 'carvao', 'bau'],
   cer: ['kitCocho', 'kitBoia']
 };
 const AGRO_BUYS = { esterco: 8, leiteCabra: 5.5, fPalma: 9, fMandacaru: 8, fManicoba: 11 }; // o que a loja compra do produtor (R$ por unidade)
@@ -6680,12 +6869,14 @@ function openAgro() { agroRestock(); showModal('🌿 Casa do Agro', [['ani', 'An
   if (t === 'mud') h += typeof FRUITS !== 'undefined' ? '<p class="mut">Mudas para o Pomar (na Gleba do Pomar, ao sul da fazenda). Cada espécie tem seu tempo, sua água e sua época de fruta.</p>' + Object.keys(FRUITS).map(k => agroRow(FRUITS[k].muda)).join('') : '<p>Mudas chegam em breve.</p>';
   if (t === 'cer') h += '<p class="mut">Kits instalados pela equipe da loja no piquete que você escolher. Arame, madeira e tijolo são com o Mestre Chico (Pedreiro).</p>' + AGRO_ITEMS.cer.map(id => `<div class="card"><b>${IT[id].n}</b> — ${fmt(agroPrice(id))}<p class="mut">${IT[id].d}</p><div class="row" style="flex-wrap:wrap">${myAreas().filter(k => TROUGHS.some(tr => tr.a === k && tr.k === (id === 'kitBoia' ? 'agua' : 'racao')) && !((S[id === 'kitBoia' ? 'boia' : 'trBoost'] || {})[k])).map(k => btn(AREAS[k].n, 'agroKit', id + '|' + k, !canPay(agroPrice(id)) || !(S.agro.inv[id] > 0))).join('') || '<span class="mut">Instalado em todos.</span>'}</div></div>`).join('');
   if (t === 'cer') h += `<div class="card"><b>Irrigação por gotejamento do pomar</b> — ${fmt(2800 * priceMul())}<p class="mut">Mangueiras e gotejadores em todas as covas do pomar: as árvores recebem água todo dia, puxada do reservatório.</p>${S.irrig ? '✅ Instalada' : btn('Instalar', 'irrigBuy', '', !canPay(2800 * priceMul()))}</div>`;
-  if (t === 'sel') { h += SADDLES.filter(s => s.p).map(s => `<div class="card"><b>${s.n}</b> — ${fmt(s.p)}<p class="mut">${s.d}</p>${S.saddles.includes(s.id) ? '✅ Você já tem' : btn('Comprar', 'buySad', s.id)}</div>`).join(''); }
+  if (t === 'sel') { h += `<h3>Mochilas</h3>` + [[24, 'Mochila de couro', 1800, 'Couro curtido com fivelas: 24 espaços.'], [36, 'Bornal de vaqueiro', 6500, 'Bornal grande de couro cru, costurado à mão: 36 espaços.']].map(([cap, n, pr, d]) => `<div class="card"><div class="row sp">${iic('alforje', 26)}<span style="flex:1"><b>${n}</b> — ${fmt(pr)}<br><span class="mut">${d}</span></span></div>${S.bag.cap >= cap ? '✅ Você já tem' : S.bag.cap < cap - 12 ? '<span class="mut">Compre antes a anterior.</span>' : btn('Comprar', 'bagUp', cap)}</div>`).join('') + '<h3>Selas</h3>';
+    h += SADDLES.filter(s => s.p).map(s => `<div class="card"><b>${s.n}</b> — ${fmt(s.p)}<p class="mut">${s.d}</p>${S.saddles.includes(s.id) ? '✅ Você já tem' : btn('Comprar', 'buySad', s.id)}</div>`).join(''); }
   if (t === 'ven') h += '<p class="mut">A Casa do Agro compra produtos da fazenda.</p>' + Object.keys(AGRO_BUYS).map(id => `<div class="card"><div class="row sp">${iic(id, 24)}<span style="flex:1">${IT[id].n}<br><span class="mut">Mochila: ${S.inv[id] || 0}</span></span><b>${fmt2(AGRO_BUYS[id])}</b></div>${btn('Vender 1', 'agroSell', id + '|1', !has(id))}${btn('Vender tudo', 'agroSell', id + '|all', !has(id))}</div>`).join('');
   return h; }); }
+A.bagUp = v => { const cap = +v, pr = cap === 24 ? 1800 : 6500; if (S.bag.cap >= cap || S.bag.cap < cap - 12) return; if (!pay(pr, 'Mochila de ' + cap + ' espaços')) return; S.bag.cap = cap; while (S.bag.slots.length < cap) S.bag.slots.push(null); bagSync(); toast('🎒 Mochila nova: ' + cap + ' espaços!'); AU.coin(); renderModal(); };
 A.agroSp = v => { M.agroSp = v; renderModal(); };
 A.agroItem = v => { const [id, n0, dest] = v.split('|'), n = +n0, it = IT[id], q = S.agro.inv[id] || 0; if (q < n) return say('Estoque insuficiente.'); const cost = agroPrice(id) * n + (dest === 'dep' ? 15 : 0);
-  if (dest === 'inv' && invKg() + it.kg * n > INV_CAP + 0.01) return say('Mochila pesada demais. Mande para o depósito ou use a carroça.');
+  if (dest === 'inv' && invRoom(id) < n) return say('Mochila cheia. Mande para o depósito ou use a carroça.');
   if (dest === 'cart' && cartKg() + it.kg * n > CART_CAP) return say('A carroça não comporta tanto peso.');
   if (dest === 'dep' && KG_ITEMS.includes(id) && depKg() + it.kg * n > depCap()) return say('Depósito cheio! Construa um Silo.');
   if (!pay(cost, 'Casa do Agro: ' + n + 'x ' + it.n)) return; S.agro.inv[id] = q - n;
@@ -6788,7 +6979,7 @@ A.calendar = () => openCalendar();
 A.legado = () => showModal('Legado de Tiãozinho', null, null, legadoHTML, 'book');
 A.wardrobe = () => { closeModal(); openSetup(true); };
 A.coffee = () => { S.flags.coffee = S.day; P.en = cl(P.en + 12, 0, 100); toast('☕ Café coado na hora!'); renderModal(); };
-function collectManure() { let n = Math.floor(S.esterco || 0), bag = 0, dep = 0; if (n) questEvent('produce', 'esterco'); while (n > 0 && invKg() + 20 <= INV_CAP + 0.01) { S.inv.esterco = (S.inv.esterco || 0) + 1; n--; bag++; } while (n > 0 && depKg() + 20 <= depCap()) { S.dep.esterco = (S.dep.esterco || 0) + 20; n--; dep++; } S.esterco = n + ((S.esterco || 0) % 1); if (!bag && !dep) return say('Mochila e depósito cheios.'); P.en = Math.max(0, P.en - 3); toast('💩 Esterco: ' + (bag ? bag + ' saco(s) na mochila' : '') + (bag && dep ? ', ' : '') + (dep ? dep + ' no depósito' : '')); }
+function collectManure() { let n = Math.floor(S.esterco || 0), bag = 0, dep = 0; if (n) questEvent('produce', 'esterco'); { const k = Math.min(n, invRoom('esterco')); if (k > 0) { addInv('esterco', k, true); n -= k; bag += k; } } while (n > 0 && depKg() + 20 <= depCap()) { S.dep.esterco = (S.dep.esterco || 0) + 20; n--; dep++; } S.esterco = n + ((S.esterco || 0) % 1); if (!bag && !dep) return say('Mochila e depósito cheios.'); P.en = Math.max(0, P.en - 3); toast('💩 Esterco: ' + (bag ? bag + ' saco(s) na mochila' : '') + (bag && dep ? ', ' : '') + (dep ? dep + ' no depósito' : '')); }
 /* ---------- roça de forragem ---------- */
 function rocaS() { if (!Array.isArray(S.roca)) S.roca = []; while (S.roca.length < ROCA_PLOTS.length) S.roca.push({ c: ROCA_PLOTS[S.roca.length].c, d: null }); return S.roca; }
 function rocaAge(i) { const q = rocaS()[i]; return q.d == null ? -1 : Math.max(0, S.day - q.d); }
@@ -6799,7 +6990,7 @@ function rocaInteractables(add, foot) { if (!foot) return; ROCA_PLOTS.forEach((p
 function openRocaPlant(i) { showModal('🌱 Roça de forragem', null, null, () => '<p class="mut">Plantas nativas que o gado come. Plante, espere os dias e colha em feixes de 10 kg para os cochos de trato. Depois do corte, rebrota.</p>' + Object.keys(CROPS).map(k => { const C = CROPS[k]; return `<div class="card"><b>${C.n}</b> — muda ${fmt(C.p)}<p class="mut">${C.d}<br>Pronta em ${C.grow} dias · ${C.feixes} feixes por colheita · rebrota em ${C.regrow} dias.</p>${btn('Plantar ' + C.n.toLowerCase(), 'rocaPlant', i + '|' + k, !canPay(C.p))}</div>`; }).join('')); }
 A.rocaPlant = v => { const [i, k] = v.split('|'), C = CROPS[k], pl = ROCA_PLOTS[+i]; if (!canPay(C.p)) return say('A muda custa ' + fmt(C.p) + '.'); closeModal(); act('pickup', 1.4, { x: pl.x, y: pl.y }, () => { if (!pay(C.p, 'Muda: ' + C.n)) return; const q = rocaS()[+i]; q.c = k; q.d = S.day; P.en = Math.max(0, P.en - 3); toast('🌱 ' + C.n + ' plantada. Pronta em ' + C.grow + ' dias.'); }); };
 function rocaHarvest(i) { const q = rocaS()[i], C = CROPS[q.c]; if (rocaStage(i) !== 3) return; let n = q.left || C.feixes, bag = 0, dep = 0;
-  while (n > 0 && invKg() + IT[C.item].kg <= INV_CAP + 0.01) { S.inv[C.item] = (S.inv[C.item] || 0) + 1; n--; bag++; }
+  { const k = Math.min(n, invRoom(C.item)); if (k > 0) { addInv(C.item, k, true); n -= k; bag += k; } }
   while (n > 0 && depKg() + IT[C.item].kg <= depCap()) { S.dep[C.item] = (S.dep[C.item] || 0) + IT[C.item].kg; n--; dep++; }
   if (!bag && !dep) return say('Mochila e depósito cheios. Esvazie antes de colher.');
   if (n > 0) q.left = n; else { delete q.left; q.d = S.day - (C.grow - C.regrow); }
@@ -6849,7 +7040,7 @@ function openLot(k) { showModal('Lote ' + k, null, null, () => {
   return h; }); }
 A.tronVac = () => { const c = myAnimals('boi').filter(a => a.area === 'curral'); if (!useInv('vacina', c.length)) return; c.forEach(a => a.vacc = S.day + 28); toast('💉 ' + c.length + ' animais vacinados.'); P.en = Math.max(0, P.en - 5); renderModal(); };
 A.tronCure = () => { const c = myAnimals('boi').filter(a => a.area === 'curral' && a.sick); let n = 0; for (const a of c) { if (!useInv('remedio')) break; a.sick = 0; a.hp = cl(a.hp + 25, 0, 100); n++; } toast('💊 ' + n + ' tratado(s).'); renderModal(); };
-A.milk = () => { const n = Math.min(S.milk, Math.floor((INV_CAP - invKg()) / IT.leite.kg)); if (n <= 0) return say('Mochila cheia.'); addInv('leite', n, true); S.milk -= n; toast('🥛 +' + n + ' L de leite'); renderModal(); };
+A.milk = () => { const n = Math.min(S.milk, Math.floor(invRoom('leite'))); if (n <= 0) return say('Mochila cheia.'); addInv('leite', n, true); S.milk -= n; toast('🥛 +' + n + ' L de leite'); renderModal(); };
 function openSign(k) { showModal('🪧 ' + EXP[k].n, null, null, () => S.exp[k] ? '<p>Terra sua, registrada no cartório de Itarantim.</p>' : `<p>${EXP[k].d}</p><p>Preço: <b>${fmt(EXP[k].p)}</b></p><div class="row">${btn('Comprar à vista', 'buyExp', k)}${btn('Financiar no banco (20%)', 'finExp', k)}</div>`); }
 function openCart() {
   showModal('🛒 Carroça', null, null, () => {
@@ -6925,11 +7116,7 @@ function updInst(dt) {
 }
 function stopInst() { inst.on = false; $('inp').style.display = 'none'; document.body.classList.remove('in'); delete S.cf.ap.tool; let n = 0; for (const id in inst.listen) if (inst.listen[id] > 6) { const s = npcState(id); if (s.music !== S.day) { s.music = S.day; addFr(id, Math.min(40, 10 + inst.listen[id])); remember(id, 'música: ouviu você tocar ' + (inst.kind === 'viola' ? 'viola' : 'violão')); n++; } } if (n) toast('🎶 ' + n + ' pessoa(s) gostaram da sua música! Amizade +'); }
 /* ---------- baú e forrageira ---------- */
-function openChest() { if (memOk('foto')) { memFind('foto'); return; } showModal('📦 Baú da fazenda', null, null, () => {
-  const inv = Object.keys(S.inv).filter(k => S.inv[k] > 0.001 && IT[k]), ch = Object.keys(S.chest).filter(k => S.chest[k] > 0.001 && IT[k]);
-  return `<p class="mut">Guarde o que quiser — o baú não tem limite de peso.</p><h3>Mochila (${invKg()}/${INV_CAP} kg) → baú</h3><div class="grid">${inv.map(k => `<div class="sl" data-a="chPut" data-v="${k}">${iic(k, 26)}<small>${IT[k].n.split(' (')[0]}</small><b>${fmtQ(S.inv[k])}</b></div>`).join('') || '<span class="mut">vazia</span>'}</div><h3>Baú → mochila</h3><div class="grid">${ch.map(k => `<div class="sl" data-a="chGet" data-v="${k}">${iic(k, 26)}<small>${IT[k].n.split(' (')[0]}</small><b>${fmtQ(S.chest[k])}</b></div>`).join('') || '<span class="mut">vazio</span>'}</div>`; }); }
-A.chPut = k => { const n = Math.min(1, S.inv[k]); if (!useInv(k, n)) return; S.chest[k] = (S.chest[k] || 0) + n; AU.click(); renderModal(); };
-A.chGet = k => { const n = Math.min(1, S.chest[k]); if (!addInv(k, n)) return; S.chest[k] -= n; if (S.chest[k] < 0.001) delete S.chest[k]; AU.pickup(); renderModal(); };
+function openChest() { if (memOk('foto')) { memFind('foto'); return; } chestInit(); openChestUI(S.chests.find(c => c.id === 'casa')); }
 function machState() { const m = S.mach; if (!m) return null; const left = (m.end - (S.day * 1440 + S.min)); return left <= 0 ? 'done' : left; }
 function openMachine() { showModal('⚙ Forrageira (triturador)', null, null, () => {
   const st = machState();
@@ -7975,6 +8162,7 @@ function render(dt) {
     if (!l) add(y0 + 4, () => { X.fillStyle = '#8a5a2a'; [[x0 + 2, y0 + 2], [x0 + 108, y0 + 2], [x0 + 2, y1 - 4], [x0 + 108, y1 - 4]].forEach(([x, y]) => { X.fillRect(x, y - 6, 2, 7); X.fillStyle = '#e04a2a'; X.fillRect(x - 1, y - 7, 4, 2); X.fillStyle = '#8a5a2a'; }); X.fillStyle = 'rgba(240,220,160,0.5)'; X.fillRect(x0 + 3, y0 + 1, 106, 1); X.fillRect(x0 + 3, y1 - 5, 106, 1); X.fillStyle = '#e8dcc0'; X.fillRect(x0 + 48, y1 - 14, 16, 9); X.fillStyle = '#6a4422'; X.fillRect(x0 + 55, y1 - 6, 2, 6); txt((x, y, w, h, c) => { X.fillStyle = c; X.fillRect(x, y, w, h); }, k, x0 + 54, y1 - 12, '#7a3a1a'); });
     else { const stg = l.done ? 3 : l.prog < 0.3 ? 0 : l.prog < 0.65 ? 1 : 2; add(y1 - 4, () => X.drawImage(consSpr(l.b, stg), x0 - 4, y0 - 20));
       if (!l.done && hour() >= 7 && hour() < 17 && !isRain()) BUILDER_AP.forEach((ap, i) => { const bx = x0 + 20 + i * 70, by = y1 + 4; add(by, () => drawPerson(ap, bx, by, i ? 2 : 3, Math.floor(drawT * 3 + i) % 2, 'hammer')); if (Math.random() < dt * 1.2) { AU.hammer(bx, by); dust(bx + (i ? -10 : 10), by - 6, 1, '#b8a888'); } }); } }
+  for (const c of (S.chests || [])) if (c.x !== undefined && inV(c.x, c.y, 30)) add(c.y + 3, () => { X.fillStyle = 'rgba(20,12,4,0.3)'; X.fillRect(c.x - 8, c.y + 2, 17, 2); X.drawImage(chestSpr(), Math.round(c.x - 9), Math.round(c.y - 13)); });
   TROUGHS.forEach((t, i) => { const x = t.x * TS, y = t.y * TS; if (!inV(x, y, 40)) return; add(y + 15, () => X.drawImage(troughSpr(t, S.tr[i] / trCap(i)), x - 2, y - 2)); });
   for (const a of S.animals) { if (a.id === P.mnt || a._wr || !inV(a.x, a.y, 40)) continue; add(iy(a), () => drawAnimal(a)); }
   aucDrawLot(add); drawCSX(add);
@@ -8162,9 +8350,9 @@ const FILM = {
           OP.post.call(this, Math.round(vw * 0.92), vh + 2, Math.round(vh * 0.16), '#3a2618', '#a8784a');
         },
         cue: [[0.4, () => sub(`<b>${nm}</b> chega à Fazenda Boa Esperança, herança do avô <b>Tiãozinho</b>.`)], [3.8, () => AU.creak && AU.creak()]] },
-      { d: 8, z: 2, // 3. o alpendre e o cão do avô
+      { d: 8, world: 1, // 3. o alpendre e o cão do avô
         draw: (t, u) => this.porch(t, u, 'dog'), cue: [[0.4, () => sub(`No alpendre, <b>${dn}</b>, o cão do seu avô, levanta a cabeça... e reconhece a família.`)], [2.4, () => this.dog && AU.bark(P.x, P.y)], [5.5, () => this.dog && AU.bark(P.x, P.y)]] },
-      { d: 0, talk: 1, z: 2, draw: (t, u) => this.porch(t, u, 'talk') }, // 4. Seu Felipe (falas com retrato)
+      { d: 0, talk: 1, world: 1, draw: (t, u) => this.porch(t, u, 'talk') }, // 4. Seu Felipe (falas com retrato)
       { d: 6, // 5. o chapéu no prego
         draw: (t, u) => this.hatShot(t, u), cue: [[0.3, () => sub('No esteio do alpendre, o chapéu de couro de Tiãozinho continua no prego, como se ele fosse voltar a qualquer hora.')]] },
       { d: 6, // 6. as iniciais entalhadas
@@ -8179,32 +8367,19 @@ const FILM = {
         cue: [[0.4, () => sub('A história de Tiãozinho continua agora com você.')]] }
     ];
   },
-  porch(t, u, mode) { // fachada do alpendre (fundo parado guardado em cache) e, por cima, o vaqueiro, o cão e o Seu Felipe
-    const { vw, vh } = this, fy = Math.round(vh * (vh > vw ? 0.74 : 0.6));
-    this.g.drawImage(this.memo('porch', vw, vh, () => this.porchBg()), 0, 0);
-    this.porchActors(t, u, mode, fy);
-  },
-  porchBg() {
-    const { vw, vh } = this, fy = Math.round(vh * (vh > vw ? 0.74 : 0.6)), g = this.g;
-    this.P(0, 0, vw, vh, '#c88a54'); // telhado/sombra no alto
-    for (let y = 0; y < fy; y++) this.P(0, y, vw, 1, y < vh * 0.16 ? (y % 4 < 2 ? '#a8502c' : '#8a3c22') : y < vh * 0.19 ? '#5a2a18' : '#efe2c4');
-    for (let y = Math.round(vh * 0.16); y > 0; y -= 4) for (let x = (y % 8 ? 0 : 4); x < vw; x += 8) this.P(x, y, 1, 3, '#6a2c18');
-    this.P(0, fy - 6, vw, 6, '#c08a5a'); this.P(0, fy - 6, vw, 1, '#d8a878'); // barrado
-    const dx = Math.round(vw * 0.5), dh = Math.min(44, Math.round(fy - vh * 0.19 - 10)); this.P(dx - 11, fy - 6 - dh, 22, dh, '#2e5a86'); this.P(dx - 9, fy - 4 - dh, 8, dh - 4, '#3e72a4'); this.P(dx + 1, fy - 4 - dh, 8, dh - 4, '#3e72a4'); this.P(dx - 12, fy - 7 - dh, 24, 2, '#e8dcc0'); this.P(dx + 5, fy - 6 - Math.round(dh * 0.5), 2, 2, '#e0b040');
-    for (const wx of [dx - 46, dx + 30]) { const wy = fy - 6 - dh + 2; this.P(wx, wy, 16, 20, '#e8dcc0'); this.P(wx + 1, wy + 1, 14, 18, '#2a4e74'); this.P(wx + 7, wy + 1, 1, 18, '#e8dcc0'); this.P(wx + 1, wy + 1, 14, 1, '#4a7aa8'); }
-    for (const ex of [Math.round(vw * 0.08), Math.round(vw * 0.92)]) { this.P(ex - 3, vh * 0.18, 6, fy - vh * 0.18, '#6a4428'); this.P(ex - 3, vh * 0.18, 2, fy - vh * 0.18, '#9a6a40'); }
-    // chapéu de couro no prego do esteio esquerdo
-    const hx = Math.round(vw * 0.08), hyy = Math.round(vh * 0.36); this.P(hx - 1, hyy - 2, 2, 2, '#3a3a3a'); this.miniHat(hx, hyy + 7, 0.3);
-    // banco de madeira e chão de tijolo
-    this.P(dx + 30, fy - 12, 26, 3, '#8a5a34'); this.P(dx + 32, fy - 9, 2, 9, '#5a3a20'); this.P(dx + 52, fy - 9, 2, 9, '#5a3a20');
-    for (let y = fy; y < vh; y++) for (let x = 0; x < vw; x++) { const row = Math.floor((y - fy) / 4), b = ((x + (row % 2) * 6) % 12 === 0) || (y - fy) % 4 === 0; if (b || x === 0) this.P(x, y, 1, 1, b ? '#8a4a2a' : (row % 2 ? '#b0643a' : '#a85c34')); }
-    for (let x = 0; x < vw; x += 1) if (((y => y)(0) + x) % 12 < 11) this.P(x, fy, 1, 1, '#6a3a20');
-    // luz do sol entrando de lado
-    g.globalCompositeOperation = 'soft-light'; g.fillStyle = 'rgba(255,170,80,0.35)'; g.beginPath(); g.moveTo(vw * 0.55, 0); g.lineTo(vw, 0); g.lineTo(vw, vh); g.lineTo(vw * 0.25, vh); g.fill(); g.globalCompositeOperation = 'source-over';
+  porch(t, u, mode) { // a casa sede como ela é no mapa: mesmo chão, mesmo desenho e mesma escala dos personagens
+    const { vw, vh } = this, g = this.g, hb = BLD.find(q => q.id === 'casa'), doorX = ((hb.door !== undefined ? hb.door : 7) + 0.5) * TS, y1 = (hb.r[3] + 1) * TS;
+    const ox = Math.round(doorX - vw / 2), oy = Math.round(y1 - vh * (vh > vw ? 0.6 : 0.45));
+    GR.ensure(season(), ox, oy, vw, vh, 0); g.fillStyle = '#4a6a2a'; g.fillRect(0, 0, vw, vh); g.drawImage(groundC, ox, oy, vw, vh, 0, 0, vw, vh);
+    const hv = S.house === undefined ? 2 : S.house, c = casaSpr(hv, false), x0 = hb.r[0] * TS;
+    g.fillStyle = 'rgba(20,12,4,0.25)'; g.fillRect(x0 - 2 - ox, y1 - 2 - oy, c.width - 4, 4);
+    g.drawImage(c, x0 - 4 - ox, y1 - c.height + 8 - oy);
+    for (const pr of PROPS) { if (Math.abs(pr.x - doorX) > vw * 0.7 || pr.y < oy || pr.y > oy + vh + 40) continue; const sp = propSpr(pr.t, pr.v, season()); if (sp) g.drawImage(sp, Math.round(pr.x - 32 - ox), Math.round(pr.y - 70 - oy)); }
+    this.dX = Math.round(doorX - ox); this.porchActors(t, u, mode, Math.round(y1 - oy + 12));
   },
   porchActors(t, u, mode, fy) {
     const { vw } = this;
-    const px0 = Math.round(vw * 0.3), dogHome = Math.round(vw * 0.8);
+    const px0 = Math.round(this.dX - 34), dogHome = Math.round(this.dX + 26);
     if (mode === 'dog') {
       // o vaqueiro chega a pé; o cão deitado levanta, late, corre e senta ao lado dele abanando o rabo
       const px = lerp(-14, px0, Math.min(1, u / 0.45)), pw = u < 0.45, pfr = Math.floor(t * 9) % 8; this.walker(px, fy + 6, 3, pw ? pfr : 0, pw ? 'walk' : 'idle');
@@ -8213,7 +8388,7 @@ const FILM = {
       this.dogAt(dxp, fy + 7, an, fr, flip);
     } else {
       this.walker(px0, fy + 6, 3, 0, 'idle'); this.dogAt(px0 + 18, fy + 7, 'sit', Math.floor(t * 4), true);
-      const fel = this.fel, fx = Math.round(vw * 0.68), talk = this.dl >= 0 && this.dl < 3 && (t * 3) % 1 < 0.6; if (fel) this.walker(fx, fy + 6, 2, talk ? 1 : 0, this.dl === 0 && t < 1.4 ? 'wave' : 'idle', fel.d ? fel.d.ap : NPCDEF.felipe.ap);
+      const fel = this.fel, fx = Math.round(this.dX + 30), talk = this.dl >= 0 && this.dl < 3 && (t * 3) % 1 < 0.6; if (fel) this.walker(fx, fy + 6, 2, talk ? 1 : 0, this.dl === 0 && t < 1.4 ? 'wave' : 'idle', fel.d ? fel.d.ap : NPCDEF.felipe.ap);
     }
   },
   miniHat(x, y, s) { // chapéu de couro de vaqueiro visto de frente: aba quebrada para cima em meia-lua, copa baixa, estrelas e costura
@@ -8279,7 +8454,7 @@ const FILM = {
     if (this.t >= s.d) this.next();
   },
   render() {
-    const s = this.list && this.list[this.i]; if (!s) return; this.ensure(s.z ? (H > W ? s.z : Math.max(1, s.z - 0.5)) : 1); const g = this.g;
+    const s = this.list && this.list[this.i]; if (!s) return; this.ensure(s.world ? Math.max(1, Math.round(SCL()) / Math.max(2, Math.round(Math.min(W, H * 1.6) / 260))) : s.z ? (H > W ? s.z : Math.max(1, s.z - 0.5)) : 1); const g = this.g;
     g.clearRect(0, 0, this.vw, this.vh); s.draw(this.t, s.d ? Math.min(1, this.t / s.d) : 0);
     for (const d of this.dust) { g.fillStyle = `rgba(220,190,140,${Math.min(0.4, d.l * 0.35)})`; g.beginPath(); g.arc(d.x, d.y, d.r, 0, 7); g.fill(); }
     X.setTransform(1, 0, 0, 1, 0, 0); X.imageSmoothingEnabled = false; X.drawImage(this.cv, 0, 0, this.vw * this.ps, this.vh * this.ps);
@@ -8662,7 +8837,7 @@ function newGame(cf) {
 }
 function startPlay(intro) {
   document.body.classList.remove('ttl'); $('title').style.display = 'none'; $('setup').style.display = 'none';
-  mode = 'play'; paused = false; resize(); AU.init(); cam.snap = true; cam.taz = 1; cam.az = 1; cam.uz = SET.uz || 1.3; cam.z = cam.uz; cam.free = false; cam.fx = cam.fy = null; curReg = null; closeSheet();
+  bagInit(); chestInit(); mode = 'play'; paused = false; resize(); AU.init(); cam.snap = true; cam.taz = 1; cam.az = 1; cam.uz = SET.uz || 1.3; cam.z = cam.uz; cam.free = false; cam.fx = cam.fy = null; curReg = null; closeSheet();
   if (intro || (S.story && !S.story.intro)) { MUS.setScene('cutscene', 2.5); csIntro(); } else { MUS.setScene('game', 2.5); say('Bem-vindo de volta, ' + S.cf.name + '! ' + WEEK[wday()] + ', dia ' + S.day + '.', 4000); }
   OP.orientHint();
 }
@@ -8997,6 +9172,7 @@ addEventListener('keydown', e => {
   if (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); doAction(); }
   if (e.code === 'KeyV' && !e.repeat) holdKey();
   if (e.code === 'KeyQ') doAboio(); if (e.code === 'KeyF') doLasso(); if (e.code === 'KeyR') mountToggle();
+  { const dg = /^Digit([0-9])$/.exec(e.code); if (dg && S.bag) { const n = +dg[1]; hbSelect(n === 0 ? 9 : n - 1); } } if (e.code === 'KeyC' && S.bag) useSelected();
   if (e.code === 'KeyI') openBag(); if (e.code === 'KeyM') openMenu(); if (e.code === 'KeyG') attack();
   if (e.code === 'Equal' || e.code === 'NumpadAdd') zoomAt(cam.uz * 1.12, W / 2, H / 2); if (e.code === 'Minus' || e.code === 'NumpadSubtract') zoomAt(cam.uz / 1.12, W / 2, H / 2);
 });
@@ -9058,7 +9234,7 @@ function ptrEnd(e) {
   if (pinch && PTR.size < 2) { pinch = null; cam.free = false; cam.ret = 1; saveSet(); }
 }
 C.addEventListener('pointerup', ptrEnd); C.addEventListener('pointercancel', ptrEnd);
-C.addEventListener('wheel', e => { e.preventDefault(); if (mode !== 'play' && mode !== 'cs') return; const [x, y] = cxy(e); zoomAt(cam.uz * (e.deltaY < 0 ? 1.1 : 1 / 1.1), x, y); cam.hold = 0.7; cam.ret = 1; clearTimeout(zoomAt._t); zoomAt._t = setTimeout(saveSet, 500); }, { passive: false });
+C.addEventListener('wheel', e => { e.preventDefault(); if (mode !== 'play' && mode !== 'cs') return; if (mode === 'play' && !e.ctrlKey && S && S.bag) { hbSelect(S.bag.sel + (e.deltaY > 0 ? 1 : -1)); return; } /* roda escolhe na barra rápida; Ctrl + roda (ou + e -) dá zoom */ const [x, y] = cxy(e); zoomAt(cam.uz * (e.deltaY < 0 ? 1.1 : 1 / 1.1), x, y); cam.hold = 0.7; cam.ret = 1; clearTimeout(zoomAt._t); zoomAt._t = setTimeout(saveSet, 500); }, { passive: false });
 function handleTap(cx, cy) {
   if (VQ.on) return;
   if (mode !== 'play' || M.open || P._act || inst.on || grill.on) return;
@@ -9131,6 +9307,7 @@ function computeCtx() {
   let best = null, bs = 1e9; const C2 = (score, label, fn, x, y) => { if (score < bs) { bs = score; best = { label, fn, x, y }; } };
   if (P.cart) { C2(0, '🛒 Carroça', openCart, S.cart.x, S.cart.y - 30); P._ctx = best; return; }
   for (const e of npcs) { if (e.hidden) continue; const d = hyp(e.x - P.x, e.y - P.y); if (d < 26) { const ev = S.event && S.event.day === S.day && e.act === 'festa' && has('assado') && npcState(e.id).served !== S.day; C2(d - 14, ev ? '🍽️ Servir ' + e.d.n.split(' ').pop() : '💬 ' + e.d.n, () => ev ? serve(e.id) : openNpc(e.id), e.x, e.y - 34); } }
+  { const ch = chestAt(P.x, P.y, 24); if (ch) C2(hyp(ch.x - P.x, ch.y - P.y) - 6, '📦 ' + ch.name, () => openChestUI(ch), ch.x, ch.y - 16); }
   for (const o of interactables(false)) { const d = o.k === 'clean' ? 30 : hyp(o.x - P.x, o.y - P.y); if (d < o.r) C2(d - o.prio * 4, o.label, o.fn, o.k === 'clean' ? undefined : o.x, o.k === 'clean' ? undefined : o.y - 22); }
   if (!P.mnt) for (const a of near(P.x, P.y, 22)) { if (a.own !== 'player' || a._hid || S.cart.hitch === a.id) continue; const d = hyp(a.x - P.x, a.y - P.y); C2(d + 2, (a.sp === 'cao' ? '🐕 ' : a.sp === 'galinha' ? '🐔 ' : a.sp === 'boi' ? '🐄 ' : '🐴 ') + a.n, () => openSheet(a), a.x, a.y - 30); }
   P._ctx = best;
@@ -9138,14 +9315,14 @@ function computeCtx() {
 function doAction() { if (VQ.on) return vaqAction(); if (mode !== 'play' || M.open || P._act) return; if (inst.on) return stopInst(); computeCtx(); if (P._ctx) { P._ctx.fn(); buzz(6); } }
 function serve(id) { if (!useInv('assado')) return; const s = npcState(id); s.served = S.day; const q = S.flags.grillQ || 1; addFr(id, 30 + q * 10); remember(id, 'churrasco na sua fazenda'); const e = npcs.find(n => n.id === id); heart(e.x, e.y - 36); heart(e.x + 6, e.y - 30); AU.chime(); toast('🍽️ ' + NPCDEF[id].n + ': "Que churrasco! Tá de parabéns!"'); }
 function collectEggs() { if (S.eggs) questEvent('produce', 'ovos'); if (!S.eggs) return say('Nenhum ovo no ninho agora. As galinhas botam pela manhã quando o cocho tem milho.'); const n = S.eggs; addInv('ovo', n, true); S.eggs = 0; S.stats.eggs += n; AU.cluck(7 * TS, 35 * TS); AU.pickup(); part(P.x, P.y - 30, 'img', { img: imgOf('ovo'), vx: 0, vy: -18, m: 1 }); toast('🥚 +' + n + ' ovos'); }
-function fillGallons() { questEvent('fillGallon'); const n = S.inv.galaoV || 0; if (!n) return; if (S.res < 2) return say('O reservatório está seco! Espere a chuva ou construa um Poço Artesiano.'); let k = n; if (invKg() + n * 19 > INV_CAP) { k = Math.floor((INV_CAP - invKg()) / 19); if (k <= 0) return say('Mochila pesada demais para galões cheios.'); } useInv('galaoV', k); addInv('galao', k, true); S.res -= k * 0.6; AU.splash(); AU.pickup(); toast('💧 ' + k + ' galão(ões) cheio(s)'); }
+function fillGallons() { questEvent('fillGallon'); const n = S.inv.galaoV || 0; if (!n) return; if (S.res < 2) return say('O reservatório está seco! Espere a chuva ou construa um Poço Artesiano.'); let k = n; useInv('galaoV', k); addInv('galao', k, true); S.res -= k * 0.6; AU.splash(); AU.pickup(); toast('💧 ' + k + ' galão(ões) cheio(s)'); }
 const imgCache = {}; function imgOf(id) { if (!imgCache[id]) { const i = new Image(); i.src = itemIconURL(id); imgCache[id] = i; } return imgCache[id]; }
 /* ---------- laço principal: passo fixo de 60 Hz + interpolação ---------- */
 const STEP = 1 / 60; let acc = 0, lastT = 0, saveT = 0;
 function tick(dt) {
   drawT += dt;
   if (mode === 'play' && !paused) {
-    holdTick(); placeTick(dt); INV_CAP = invCapNow(); const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
+    holdTick(); placeTick(dt); bagSync(); const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
     { const h = P.mnt ? byId(P.mnt) : null; if (h && h._react && (h._react.t -= dt) <= 0) h._react = null; }
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);
@@ -9169,6 +9346,7 @@ function loop(ts) {
     ALPHA = cl(acc / STEP, 0, 1);
     if (mode === 'film') FILM.render(); else if (OPMODES[mode]) OP.render(); else { camUpdate(dt); render(dt); }
     if (mode === 'play' || mode === 'cs') { hud(dt); updSheet(dt); AU.ambient(dt); }
+    if (S) hotbarUpdate();
     MUS.update(dt);
     if ($('setup').style.display !== 'none') drawPreview(dt);
   } catch (err) { console.error(err); }
