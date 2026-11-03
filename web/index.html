@@ -186,7 +186,7 @@ kbd{display:inline-block;min-width:20px;text-align:center;padding:0 4px;border:2
 #sub{position:absolute;left:5%;right:5%;bottom:11%;z-index:25;text-align:center;color:#fff0c4;font:700 15px 'Pixelify Sans',Georgia,serif;background:rgba(20,10,5,.9);border:3px solid var(--leather);padding:8px 12px;text-shadow:0 2px 0 var(--ink);display:none;line-height:1.35;max-width:680px;margin:0 auto}
 #sub b{color:var(--gold)}
 #sub.dl{display:flex;gap:10px;align-items:center;text-align:left;font-weight:400;font-size:15px}
-#sub.dl .pt{flex:none;width:58px;height:58px;display:flex;align-items:center;justify-content:center;background:rgba(255,236,190,.08);border:2px solid var(--leather);overflow:hidden}
+#sub.dl .pt{flex:none;width:64px;height:64px;display:flex;align-items:center;justify-content:center;background:rgba(255,236,190,.08);border:2px solid var(--leather);overflow:hidden}
 #sub.dl .pt img,#sub.dl .pt canvas{image-rendering:pixelated;max-width:100%;max-height:100%}
 #sub.dl b{display:block;font-weight:700;margin-bottom:2px}
 #hDayC{cursor:pointer}
@@ -222,6 +222,10 @@ body.ttl #hud,body.ttl #bar,body.ttl #joy,body.ttl .pad{display:none!important}
 #setup label{display:block;font-weight:700;margin:10px 0 3px;color:var(--gold);font-size:13px}
 #setup input{width:100%}
 #pv{width:100%;height:170px;border:4px solid var(--ink);display:block;background:#6a8a3a}
+.edcat{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}.edcat button{padding:6px 9px;font-size:12px}.edcat .rnd{margin-left:auto}
+.thg{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:5px;margin:4px 0}.thg button{display:flex;flex-direction:column;align-items:center;padding:3px 2px;font-size:10px;line-height:1.1}.thg button small{display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60px}
+.pport{display:flex;gap:10px;align-items:center;margin:6px 0;padding:6px;border:3px solid var(--ink);background:linear-gradient(#f4e2b8,#e2c890)}
+.dogg{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:5px}.dogg button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 3px;font-size:11px;min-height:82px}.dogg small{font-size:9px;opacity:.85}
 .sw2{display:grid;grid-template-columns:1fr;gap:10px;max-width:980px;margin:0 auto}
 body.lan .sw2{grid-template-columns:minmax(260px,42%) 1fr;align-items:start}
 body.lan .sw2 .pvbox{position:sticky;top:0}
@@ -544,14 +548,21 @@ function drawLogo() {
 
 /* ============ DADOS ============ */
 const SKINS = ['#f6dcc0', '#eac09a', '#d6a078', '#b47a50', '#8e5a36', '#6a4026', '#4a2a18'];
-const HAIRS = ['Curto', 'Raspado', 'Cacheado', 'Black Power', 'Longo', 'Rabo de Cavalo', 'Trança', 'Coque'];
+const HAIRS = ['Curto', 'Raspado', 'Cacheado', 'Crespo (black power)', 'Longo', 'Rabo de cavalo', 'Trança', 'Coque', 'Médio', 'Ondulado', 'Topete', 'Sertanejo (costeletas)', 'Careca'];
+const BEARDS = ['Sem barba', 'Barba curta', 'Barba média', 'Barba cheia', 'Barba comprida', 'Barba cerrada', 'Cavanhaque', 'Bigode tradicional', 'Bigode grosso', 'Bigode e cavanhaque'];
+const FACES = ['Oval', 'Redondo', 'Quadrado', 'Fino', 'Largo'], EYESH = ['Amendoados', 'Redondos', 'Puxados', 'Caídos', 'Grandes'], EYECN = ['Castanho-escuro', 'Castanho', 'Castanho-claro', 'Mel', 'Verde', 'Azul', 'Cinza', 'Preto'];
+const BROWS = ['Retas', 'Grossas', 'Arqueadas', 'Finas', 'Angulosas'], NOSES = ['Reto', 'Largo', 'Fino', 'Arrebitado', 'Adunco'], MOUTHS = ['Fina', 'Cheia', 'Larga', 'Pequena', 'Marcada'], EXPRS = ['Neutro', 'Sorriso', 'Sério', 'Surpreso', 'Bravo'], BODIES = ['Normal', 'Forte', 'Magro'], AGES = ['Jovem', 'Adulto', 'Maduro'];
+// equipamentos e visual das montarias (desenhados pelo esqueleto RIG)
+const COLLARS = ['', '#c03030', '#2f5f9f', '#3a8a3a', '#e8a020', '#5a3418'], COLLARN = ['Sem coleira', 'Vermelha', 'Azul', 'Verde', 'Laranja', 'Couro'];
+const TACK = { mane: ['Natural', 'Tosada (curta)', 'Comprida', 'Trançada'], tail: ['Natural', 'Trançada'], pad: ['#a83a2a', '#2f5f8f', '#3a6a3a', '#d8c8a0', '#2a2a2a', '#7a4a8a'], padN: ['Vermelha', 'Azul', 'Verde', 'Creme', 'Preta', 'Roxa'], padPat: ['Lisa', 'Listrada', 'Xadrez', 'Bordada'],
+  bridle: ['#5a3418', '#1e1a18', '#b8a070', '#c03030', '#2f5f9f'], bridleN: ['Couro marrom', 'Couro preto', 'Corda trançada', 'Nylon vermelho', 'Nylon azul'], breast: ['Sem peitoral', 'Peitoral de couro'], shoe: ['Sem ferradura', 'Ferradura de aço', 'Ferradura de latão'] };
 const HAIRC = ['#16100c', '#3a2414', '#6a3c1c', '#a6622c', '#d8b06a', '#8c8c8c', '#ece8e0', '#7a2618'];
 const HATS = [
   { id: 'couro', n: 'Chapéu de Couro', c: '#8a5226' }, { id: 'palha', n: 'Chapéu de Palha', c: '#e0c47a' },
   { id: 'feltro', n: 'Feltro Sertanejo', c: '#3e2c22' }, { id: 'pantaneiro', n: 'Chapéu Pantaneiro', c: '#c8b088' },
   { id: 'rodeio', n: 'Chapéu de Rodeio', c: '#e8dcc0' }, { id: 'bone', n: 'Boné', c: '#2e5a9a' },
   { id: 'boina', n: 'Boina', c: '#2a2a30' }, { id: 'none', n: 'Sem Chapéu' }];
-const SHIRTS = ['Camisa Xadrez', 'Camiseta', 'Gibão de Couro', 'Camisa de Botão', 'Bata Bordada'];
+const SHIRTS = ['Camisa Xadrez', 'Camiseta', 'Gibão de Couro', 'Camisa de Botão', 'Bata Bordada', 'Jaqueta Jeans', 'Colete de Couro', 'Camisa de Trabalho'];
 const SHIRTC = ['#b03a30', '#3a64a0', '#4c7a46', '#e8e2d0', '#7c4624', '#d0902c', '#6a3a7a', '#2a2a2a'];
 const PANTS = ['Jeans', 'Calça de Brim', 'Bombacha', 'Perneira de Couro', 'Saia Longa'];
 const PANTSC = ['#34507a', '#5a4a36', '#2a2a2a', '#7a6a4a', '#8a3a2a', '#e0d8c4'];
@@ -647,9 +658,12 @@ const DOGS = {
   terrier: { n: 'Terrier Brasileiro', c: '#f2eee6', s: '#c8c0b2', l: '#ffffff', gen: [50, 88], herd: 0.6, guard: 0.9, track: 1.0, temp: ['agitado', 'esperto'], d: 'Pequeno, ágil e atento; bom para afastar bichos miúdos do terreiro.' },
   rastreador: { n: 'Rastreador Brasileiro', c: '#f0ebe0', s: '#c8bca8', l: '#ffffff', gen: [52, 86], herd: 0.65, guard: 0.7, track: 1.4, temp: ['dócil', 'farejador'], d: 'Farejador de orelhas compridas: acha animal fujão e rastro no mato.' },
   mantiqueira: { n: 'Pastor da Mantiqueira', c: '#2a2420', s: '#1a1614', l: '#b8702e', gen: [55, 90], herd: 1.35, guard: 0.9, track: 0.8, temp: ['trabalhador', 'atento'], d: 'Cão boiadeiro brasileiro de orelhas eretas: o melhor para tocar e juntar gado.' },
-  collie: { n: 'Border Collie', c: '#1e1c1a', s: '#0c0b0a', l: '#f2f0ea', gen: [55, 90], herd: 1.2, guard: 0.6, track: 0.7, old: 1, d: 'Inteligente, ótimo tocador de gado.' },
-  boiadeiro: { n: 'Boiadeiro Australiano', c: '#6a7a8a', s: '#3e4a56', l: '#c88a50', gen: [55, 90], herd: 1.2, guard: 0.8, track: 0.7, old: 1, d: 'Nascido para a lida com o gado.' },
-  ovelheiro: { n: 'Ovelheiro Gaúcho', c: '#2a2420', s: '#141110', l: '#efe8dc', gen: [50, 86], herd: 1.1, guard: 0.7, track: 0.7, old: 1, d: 'Pastor do pampa, incansável.' }
+  collie: { n: 'Border Collie', c: '#1e1c1a', s: '#0c0b0a', l: '#f2f0ea', gen: [55, 90], herd: 1.2, guard: 0.6, track: 0.7, temp: ['esperto', 'trabalhador'], d: 'Inteligente, ótimo tocador de gado.' },
+  boiadeiro: { n: 'Boiadeiro Australiano', c: '#6a7a8a', s: '#3e4a56', l: '#c88a50', gen: [55, 90], herd: 1.2, guard: 0.8, track: 0.7, temp: ['trabalhador', 'atento'], d: 'Nascido para a lida com o gado.' },
+  pastorAlemao: { n: 'Pastor Alemão', c: '#c08a48', s: '#2a2420', l: '#d8a868', gen: [55, 90], herd: 1.0, guard: 1.25, track: 1.1, big: 1, temp: ['protetor', 'atento'], nm: 'Rex', d: 'Raça alemã de trabalho: inteligente, leal e fácil de treinar. Bom guarda e aprende a tocar o gado.' },
+  rottweiler: { n: 'Rottweiler', c: '#1e1a18', s: '#0c0a09', l: '#a8642c', gen: [55, 88], herd: 0.9, guard: 1.35, track: 0.7, big: 1, temp: ['protetor', 'calmo'], nm: 'Tufão', d: 'Descende de cães de boiadeiros alemães: forte, calmo e protetor com a família e a criação.' },
+  labrador: { n: 'Labrador', c: '#e0c080', s: '#c0a060', l: '#f0d8a0', gen: [55, 90], herd: 0.5, guard: 0.5, track: 1.25, temp: ['amigo', 'dócil'], nm: 'Mel', d: 'Dócil e brincalhão, ótimo farejador; adora água e é paciente com crianças.' },
+  ovelheiro: { n: 'Ovelheiro Gaúcho', c: '#2a2420', s: '#141110', l: '#efe8dc', gen: [50, 86], herd: 1.1, guard: 0.7, track: 0.7, temp: ['trabalhador', 'dócil'], d: 'Pastor do pampa, incansável.' }
 };
 const GOATS = {
   moxoto: { n: 'Moxotó', c: '#ece2c8', s: '#c8bca0', l: '#fff8e8', gen: [45, 80], milk: 0.6, meat: 1, rust: 1.2, d: 'Raça naturalizada do Nordeste, pelagem clara com listras escuras; muito rústica.' },
@@ -1552,6 +1566,182 @@ function dogSpr(a, pose, fr) {
   });
 }
 /* ============ CENÁRIO ============ */
+/* PORT:begin (gerado de tools/asset-pipeline/portrait.js) */
+const PORT = (() => {
+  const EYEC = ['#4a2c1a', '#6a4024', '#8a5a2e', '#a87a2c', '#4c8a3e', '#3a78c0', '#7a8a96', '#2a1a12'];
+  // rampa de cor: luz quente, sombra puxada para o vinho (evita o cinza "sujo" de escurecer para o preto)
+  const ramp = c => [mix(c, '#fff4d8', 0.3), c, mix(c, '#7a2a30', 0.26), mix(c, '#5a1a24', 0.44), mix(c, '#2a0c10', 0.72)];
+  const W = 64;
+  function draw(ap) {
+    const [cv, g] = mkC(W, W);
+    const P = (x, y, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), 1, 1); };
+    const R = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), w, h); };
+    const H = (x, y, s) => { let h = (x | 0) * 374761393 + (y | 0) * 668265263 + (s | 0) * 1442695041; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+    const mk = f => { const m = new Uint8Array(W * W); for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) if (f(x, y)) m[y * W + x] = 1; return m; };
+    const at = (m, x, y) => x >= 0 && y >= 0 && x < W && y < W && m[y * W + x] === 1;
+    // pinta uma máscara em faixas: t = posição entre a borda iluminada (cima-esquerda) e a da sombra; contorno no próprio material
+    function cel(m, C, o) {
+      o = o || {}; const lx = o.lx !== undefined ? o.lx : -0.85, ly = o.ly !== undefined ? o.ly : -0.6, th = o.th || [0.17, 0.6, 0.84];
+      for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+        if (!m[y * W + x]) continue;
+        let a = 0; while (a < 48 && at(m, Math.round(x - lx * (a + 1)), Math.round(y - ly * (a + 1)))) a++;
+        let b = 0; while (b < 48 && at(m, Math.round(x + lx * (b + 1)), Math.round(y + ly * (b + 1)))) b++;
+        const t = (b + 0.5) / (a + b + 1) + (o.bias || 0);
+        let k = t < th[0] ? 0 : t < th[1] ? 1 : t < th[2] ? 2 : 3; if (o.noHi && k === 0) k = 1;
+        P(x, y, o.fn ? o.fn(x, y, k, C) : C[k]);
+      }
+      if (o.line !== false) for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) if (m[y * W + x] && (!at(m, x + 1, y) || !at(m, x - 1, y) || !at(m, x, y + 1) || !at(m, x, y - 1))) P(x, y, C[4]);
+    }
+    const fem = ap.sex === 'F', age = ap.age || 0, ex = ap.expr || 0;
+    const sk = SKINS[ap.skin || 0], S = ramp(sk);
+    const hc = HAIRC[ap.hairC || 0], HC = ramp(hc), bc = HAIRC[ap.beardC !== undefined ? ap.beardC : (ap.hairC || 0)], BC = ramp(bc);
+    const hat = HATS[ap.hat] && HATS[ap.hat].id !== 'none' ? HATS[ap.hat] : null, hair = ap.hair || 0, body = ap.body || 0;
+    // ---- geometria da cabeça (grande, ocupando o quadro) ----
+    const face = ap.face || 0, FP = [[15.5, 2.3, 20], [16.5, 2.8, 19], [16.5, 4.2, 19.5], [14.5, 2.0, 20.5], [17.5, 3.2, 19]][face];
+    const rx = FP[0], nJ = FP[1], ryB = FP[2], cx = 32, cy = 27, ryT = 19;
+    const inHead = (x, y) => { const dx = Math.abs(x + 0.5 - cx) / rx; if (y + 0.5 <= cy) { const dy = (y + 0.5 - cy) / ryT; return dx * dx + dy * dy <= 1; } const dy = (y + 0.5 - cy) / ryB; return dy <= 1 && Math.pow(dx, nJ) + dy * dy <= 1; };
+    const head = mk(inHead), chinY = Math.round(cy + ryB);
+    const brimY = cy - 8; // linha da aba do chapéu
+    const hairFn = (x, y, k, C) => (Math.round(x * 0.9 + Math.sin(y * 0.5) * 1.4) % 5 === 0) && k === 1 ? C[2] : C[k]; // mechas
+    const curlFn = (x, y, k, C) => (H(x >> 1, y >> 1, 4) < 0.2 && k < 3 ? C[k + 1] : C[k]);
+    // ---- cabelo de trás ----
+    if (hair === 3) cel(mk((x, y) => Math.hypot((x + 0.5 - cx) / (rx + 9), (y + 0.5 - (cy - 5)) / (ryT + 5)) < 1 - H(x >> 1, y >> 1, 3) * 0.07), HC, { fn: curlFn });
+    if (hair === 4 || hair === 9) cel(mk((x, y) => y > cy - 10 && y < (hair === 4 ? 60 : 54) && Math.abs(x + 0.5 - cx) < rx + 4 + (hair === 9 ? Math.sin(y * 0.55) * 1.2 : 0) + Math.max(0, y - cy - 10) * 0.12), HC, { fn: hairFn });
+    if (hair === 5 && !hat) cel(mk((x, y) => Math.hypot((x + 0.5 - (cx + rx + 2)) / 4, (y + 0.5 - (cy + 6)) / 13) < 1), HC, { fn: hairFn });
+    // ---- orelhas ----
+    for (const s of [-1, 1]) cel(mk((x, y) => Math.hypot((x + 0.5 - (cx + s * (rx - 1))) / 3.4, (y + 0.5 - (cy + 4)) / 4.4) < 1), s < 0 ? [S[1], S[1], S[1], S[2], S[3]] : [S[2], S[2], S[2], S[3], S[3]], {});
+    for (const s of [-1, 1]) R(cx + s * (rx + 0.8) - (s < 0 ? 1 : 0), cy + 3, 1, 3, S[3]);
+    // ---- pescoço ----
+    const neckW = [6, 7.5, 5.5][body];
+    const neck = mk((x, y) => y >= cy + 8 && y < 56 && Math.abs(x + 0.5 - cx) < neckW + Math.max(0, y - 50) * 0.8);
+    cel(neck, S, { bias: 0.25 });
+    for (let x = cx - neckW; x < cx + neckW; x++) for (let y = chinY - 1; y < chinY + 3; y++) if (at(neck, x, y)) P(x, y, S[3]); // sombra do queixo
+    // ---- roupa (ombros) ----
+    const shirt = ap.shirt || 0, sc0 = shirt === 4 ? '#f2ecdc' : SHIRTC[ap.shirtC || 0], SC = ramp(sc0);
+    const sw = [0, 3, -3][body], vDepth = shirt === 1 || shirt === 7 ? 3 : shirt === 4 ? 5 : 6;
+    const torso = mk((x, y) => { if (y < 51) return false; const t = y - 51, hw = Math.min(29 + sw, 9 + Math.sqrt(t) * 7.4 + sw * 0.6), d = Math.abs(x + 0.5 - cx); if (d > hw) return false; if (t < vDepth && d < (vDepth - t) * 0.9 + 1.5) return false; return true; });
+    const LEA = ramp('#8a5228'), JEA = ramp('#4a6ea0'), VEST = ramp('#6a4428');
+    cel(torso, SC, { lx: -0.7, ly: -0.4, fn: (x, y, k, C) => {
+      const d = x + 0.5 - cx;
+      if (shirt === 0) { const a = ((x + 64) % 6) < 2, b = (y % 6) < 2; return a && b ? C[Math.min(4, k + 2)] : a || b ? C[Math.min(3, k + 1)] : C[k]; }
+      if (shirt === 2) return Math.abs(d) > 4 ? LEA[k] : C[k];
+      if (shirt === 5) return Math.abs(d) > 3 ? JEA[k] : C[k];
+      if (shirt === 6) return Math.abs(d) > 5 ? VEST[k] : C[k];
+      return C[k]; } });
+    // detalhes da roupa
+    if (shirt === 0 || shirt === 3 || shirt === 7) for (let k = 0; k < 5; k++) { P(cx - 7 + k * 0.6, 49 + k, SC[0]); P(cx + 6 - k * 0.6, 49 + k, SC[0]); P(cx - 8 + k * 0.6, 49 + k, SC[4]); P(cx + 7 - k * 0.6, 49 + k, SC[4]); }
+    if (shirt === 3 || shirt === 7) for (let y = 56; y < 64; y += 3) { P(cx, y, SC[4]); P(cx, y - 1, SC[0]); }
+    if (shirt === 7) { R(cx - 13, 56, 6, 1, SC[4]); R(cx + 8, 56, 6, 1, SC[4]); R(cx - 13, 57, 6, 4, SC[2]); R(cx + 8, 57, 6, 4, SC[2]); }
+    if (shirt === 2) { for (let y = 51; y < 64; y += 2) { P(cx - 6, y, '#e8c088'); P(cx + 6, y, '#e8c088'); } for (let x = cx - 20; x < cx + 21; x += 3) P(x, 61, '#e8c088'); }
+    if (shirt === 4) for (let x = cx - 10; x <= cx + 10; x++) { const yy = 49 + Math.round(Math.abs(x - cx) * -0.35 + 6); P(x, yy, (x % 3) ? SHIRTC[ap.shirtC || 0] : '#e0b030'); if (x % 4 === 0) P(x, yy + 1, '#d04040'); }
+    if (shirt === 5) { for (let y = 50; y < 64; y += 4) { P(cx - 4, y, '#e0b860'); P(cx + 4, y, '#e0b860'); } for (const s of [-1, 1]) for (let k = 0; k < 6; k++) P(cx + s * (4 + k), 50 + k, JEA[4]); }
+    if (shirt === 6) for (let y = 52; y < 64; y += 4) P(cx + 6, y, '#e0b860');
+    // ---- cabeça ----
+    cel(head, S, { th: [0.16, 0.62, 0.9] });
+    if (fem || age === 0) { g.fillStyle = 'rgba(236,96,110,0.32)'; g.fillRect(cx - 10, cy + 7, 4, 2); g.fillRect(cx + 7, cy + 7, 4, 2); }
+    R(cx - 2, chinY - 3, 5, 1, S[0]);
+    if (ap.freck) for (let k = 0; k < 12; k++) P(cx - 9 + (k * 7) % 19, cy + 5 + (k * 3) % 4, S[3]);
+    // ---- olhos (grandes, íris colorida, brilho) ----
+    const eS = ap.eyes || 0, ew = eS === 4 || fem ? 6 : 5;
+    let eh = [4, 5, 3, 4, 5][eS] + (fem ? 1 : 0); if (ex === 3) eh += 1; if (ex === 1) eh = Math.max(2, eh - 1);
+    const ey = cy + 2 - Math.floor(eh / 2), ic = EYEC[ap.eyeC !== undefined ? ap.eyeC : 1], IC = ramp(ic), lid = '#2a1218';
+    for (const s of [-1, 1]) {
+      const x0 = s < 0 ? cx - 3 - ew : cx + 3;
+      R(x0, ey, ew, eh, '#fbf6ee'); R(x0, ey + eh - 1, ew, 1, '#e4d8d0');
+      const iw = ew >= 6 ? 4 : 3, ix = s < 0 ? x0 + ew - iw - 1 : x0 + 1;
+      for (let yy = 0; yy < eh; yy++) for (let xx = 0; xx < iw; xx++) P(ix + xx, ey + yy, yy === 0 ? IC[3] : yy === eh - 1 ? IC[0] : IC[1]);
+      if (eh >= 3) { R(ix + 1, ey + 1, iw - 2 + (iw === 3 ? 0 : 0), Math.min(2, eh - 2), '#140a0c'); }
+      P(ix, ey + (eh >= 3 ? 1 : 0), '#ffffff'); // brilho
+      R(x0 - (s < 0 ? 1 : 0), ey - 1, ew + 1, 1, lid); P(s < 0 ? x0 - 1 : x0 + ew, ey, lid); // pálpebra e canto externo
+      if (eS === 3) P(s < 0 ? x0 - 1 : x0 + ew, ey + 1, lid);
+      if (eS === 2) P(s < 0 ? x0 : x0 + ew - 1, ey - 2, lid);
+      if (fem) { P(s < 0 ? x0 - 2 : x0 + ew + 1, ey - 2, lid); P(s < 0 ? x0 - 1 : x0 + ew, ey - 1, lid); }
+      if (ex === 4) { P(s < 0 ? x0 + ew - 1 : x0, ey, lid); P(s < 0 ? x0 + ew - 2 : x0 + 1, ey, lid); }
+      R(x0, ey + eh, ew, 1, ex === 1 ? S[3] : S[2]);
+      if (age === 2) { P(s < 0 ? x0 - 2 : x0 + ew + 1, ey + 1, S[3]); P(s < 0 ? x0 - 2 : x0 + ew + 1, ey + 3, S[3]); }
+    }
+    // ---- sobrancelhas ----
+    const bS = ap.brows || 0, brc = (hair === 12 || hair === 1) ? BC[2] : HC[3], bth = bS === 1 || bS === 4 ? 2 : bS === 3 ? 1 : (fem ? 1 : 2), by0 = ey - 3 - (ex === 3 ? 1 : 0);
+    for (const s of [-1, 1]) for (let i = 0; i < ew + 1; i++) {
+      const x = s < 0 ? cx - 3 - i : cx + 2 + i; let yy = by0;
+      if (bS === 2 && i > 0 && i < ew) yy -= 1; if (bS === 4 && i < 2) yy += 1; if (ex === 4 && i < 2) yy += 1; if (ex === 2 && i < 1) yy += 1; if (ex === 3 && i > 1) yy -= 1;
+      R(x, yy - (bth - 1), 1, bth, brc);
+    }
+    // ---- nariz ----
+    const nS = ap.nose || 0, nyT = cy + 10, nW = [1, 2, 1, 1, 1][nS];
+    for (let y = cy + 4; y < nyT; y++) P(cx + 1, y, S[2]);
+    if (nS === 4) P(cx + 2, cy + 6, S[2]);
+    P(cx - nW, nyT, S[3]); P(cx + nW + 1, nyT, S[3]); R(cx - nW + 1, nyT, nW * 2, 1, S[2]); P(cx, nyT - 1, S[0]);
+    if (nS === 3) P(cx, nyT - 2, S[0]);
+    // ---- boca ----
+    const mS = ap.mouth || 0, MW = [5, 6, 8, 4, 7][mS], my = cy + 14, ml = fem ? '#8a2a3a' : S[4], lipL = fem ? '#d8707e' : S[0], mx0 = cx - (MW >> 1);
+    if (ex === 3) { R(cx - 1, my - 1, 3, 3, '#4a1420'); R(cx - 1, my - 2, 3, 1, ml); R(cx - 1, my + 2, 3, 1, lipL); }
+    else if (ex === 1) { for (let i = 0; i < MW; i++) { const e = i === 0 || i === MW - 1; P(mx0 + i, my - (e ? 1 : 0), ml); } if (MW >= 5) R(mx0 + 1, my + 1, MW - 2, 1, '#f8f2ea'); R(mx0 + 1, my + (MW >= 5 ? 2 : 1), MW - 2, 1, lipL); }
+    else { for (let i = 0; i < MW; i++) { const e = i === 0 || i === MW - 1; P(mx0 + i, my + ((ex === 4 || ex === 2) && e ? 1 : 0), ml); } if (mS === 1 || mS === 4 || fem) R(mx0 + 1, my + 1, MW - 2, 1, lipL); }
+    if (mS === 4 || age === 2) { P(cx - (MW >> 1) - 2, my - 2, S[2]); P(cx + (MW >> 1) + 2, my - 2, S[2]); }
+    if (age === 2) { R(cx - 4, cy - 6, 3, 1, S[2]); R(cx + 2, cy - 6, 3, 1, S[2]); }
+    // ---- barba e bigode ----
+    const bd = ap.beard || 0, mouthBox = (x, y) => Math.abs(x + 0.5 - cx) <= (MW >> 1) + 1 && y >= my - 1 && y <= my + 1;
+    if (bd === 1 || bd === 5) for (let y = cy + 6; y <= chinY + 1; y++) for (let x = cx - rx; x <= cx + rx; x++) { if (!at(head, x, y)) continue; const low = y >= my - 2 || Math.abs(x - cx) > rx - 4; if (!low || mouthBox(x, y)) continue; if (H(x, y, 21) < (bd === 5 ? 0.7 : 0.4)) P(x, y, mix(S[2], BC[2], bd === 5 ? 0.7 : 0.5)); }
+    const fullB = bd === 2 || bd === 3 || bd === 4;
+    if (fullB) { const ext = bd === 2 ? 1 : bd === 3 ? 3 : 9;
+      cel(mk((x, y) => { const d = Math.abs(x + 0.5 - cx); if (y > chinY + ext) return false; if (y > chinY - 1) return d < (rx * 0.7) * (1 - (y - chinY + 1) / (ext + 2)) + 2; if (y < cy + 2) return false; if (!at(head, x, y) && !(y > cy + 2 && d < rx + 1)) return false; if (mouthBox(x, y)) return false; return d > rx - (bd === 2 ? 3 : 4) || y >= my - 1; }), BC, { fn: (x, y, k, C) => (H(x, y, 23) < 0.2 && k < 3 ? C[k + 1] : C[k]) }); }
+    if (bd === 6 || bd === 9) cel(mk((x, y) => y > my + 2 && y <= chinY + 2 && Math.abs(x + 0.5 - cx) < 3.2 - Math.max(0, y - chinY + 1) * 0.9), BC, {});
+    if (fullB || bd >= 7) { const mw = bd === 8 ? 6 : 5, th = bd === 8 ? 3 : 2;
+      cel(mk((x, y) => { const d = Math.abs(x + 0.5 - cx); return d < mw && y >= my - 1 - th && y < my - 1 + (d > mw - 2 ? 2 : 0); }), BC, { th: [0.25, 0.6, 0.85] }); }
+    // ---- cabelo da frente ----
+    const capMask = (low, fr) => mk((x, y) => {
+      const d = Math.hypot((x + 0.5 - cx) / (rx + 1.8), (y + 0.5 - (cy - 1)) / (ryT + 1.8)); if (d > 1) return false;
+      if (hat && y < brimY - 1) return false;
+      if (!at(head, x, y)) return hat ? y < brimY + 2 : (y < Math.min(low, cy - 2) || (low > cy + 4 && y < low));
+      return y < fr(x);
+    });
+    const fringe = (base, amp, per, side) => x => base + Math.round((Math.abs(((x + 64) % per) - per / 2) / (per / 2)) * amp) + (side ? Math.round((x - cx) * side) : 0);
+    const hairOpts = { fn: hairFn, th: [0.2, 0.6, 0.86] };
+    if (hair === 0) cel(capMask(cy + 1, fringe(cy - 9, 2, 5, -0.12)), HC, hairOpts);
+    else if (hair === 1) { const m = capMask(cy - 1, () => cy - 10); for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) if (m[y * W + x] && H(x, y, 31) < 0.6) P(x, y, mix(S[2], HC[2], 0.7)); }
+    else if (hair === 2) { const m = capMask(cy + 2, fringe(cy - 8, 3, 4)); const extra = mk((x, y) => { for (let k = 0; k < 13; k++) { const a = Math.PI * 1.05 + k / 12 * Math.PI * 0.9, px = cx + Math.cos(a) * (rx + 1.5), py = cy - 2 + Math.sin(a) * (ryT + 1.5); if (hat && py < brimY) continue; if (Math.hypot(x + 0.5 - px, y + 0.5 - py) < 3) return true; } return false; }); for (let i = 0; i < m.length; i++) if (extra[i] && !(head[i] && Math.floor(i / W) > cy - 8)) m[i] = 1; cel(m, HC, { fn: (x, y, k, C) => (H(x >> 1, y >> 1, 5) < 0.25 && k < 3 ? C[k + 1] : C[k]), th: [0.22, 0.6, 0.86] }); }
+    else if (hair === 3) cel(mk((x, y) => at(head, x, y) && y < cy - 9 + Math.round(Math.sin(x * 1.3) * 0.8) && !(hat && y < brimY - 1)), HC, { fn: curlFn });
+    else if (hair === 4 || hair === 8 || hair === 9) { const part = x => cy - 9 + Math.round(Math.abs(x + 0.5 - (cx - 3)) * 0.18); cel(capMask(cy + 2, x => (Math.abs(x - cx) > rx - 3 ? cy + 6 : part(x))), HC, hairOpts);
+      const low = hair === 8 ? cy + 12 : hair === 9 ? 56 : 62; for (const s of [-1, 1]) cel(mk((x, y) => { const xo = cx + s * (rx - 0.5) + (hair === 9 ? Math.sin(y * 0.55) : 0); return y > cy - 4 && y < low && Math.abs(x + 0.5 - xo) < 2.6 + Math.max(0, y - cy - 6) * 0.08; }), HC, hairOpts); }
+    else if (hair === 5 || hair === 6 || hair === 7) { cel(capMask(cy + 1, x => cy - 9 + Math.round(Math.abs(x + 0.5 - cx) * 0.08)), HC, hairOpts);
+      if (hair === 6) cel(mk((x, y) => { if (y < cy + 4 || y > 61) return false; const seg = Math.floor((y - cy - 4) / 3), xo = cx + rx - 1 + (seg % 2 ? 1 : 0); return Math.abs(x + 0.5 - xo) < 2.4 - (y > 58 ? 1 : 0); }), HC, { th: [0.3, 0.6, 0.85] });
+      if (hair === 7 && !hat) cel(mk((x, y) => Math.hypot(x + 0.5 - cx, y + 0.5 - (cy - ryT - 2)) < 5.2), HC, hairOpts); }
+    else if (hair === 10) { cel(capMask(cy + 1, fringe(cy - 9, 1, 6)), HC, hairOpts); if (!hat) cel(mk((x, y) => Math.hypot((x + 0.5 - (cx - 3)) / 10, (y + 0.5 - (cy - ryT + 1)) / 5.5) < 1 && y < cy - ryT + 3), HC, hairOpts); }
+    else if (hair === 11) { cel(capMask(cy + 1, fringe(cy - 9, 1, 7, 0.05)), HC, hairOpts); for (const s of [-1, 1]) cel(mk((x, y) => at(head, x, y) && y >= cy - 6 && y < cy + 7 && Math.abs(x + 0.5 - (cx + s * (rx - 1.6))) < 1.8 - Math.max(0, y - cy) * 0.12), [HC[1], HC[1], HC[2], HC[2], HC[3]], {}); }
+    else if (hair === 12) { for (const s of [-1, 1]) cel(mk((x, y) => y >= cy - 4 && y < cy + 3 && Math.abs(x + 0.5 - (cx + s * (rx + 0.2))) < 1.8), HC, {}); if (!hat) { R(cx - 6, cy - ryT + 3, 3, 1, S[0]); P(cx - 7, cy - ryT + 4, S[0]); } }
+    // ---- óculos, lenço e colar ----
+    if (ap.acc === 5) { for (const s of [-1, 1]) { const x0 = s < 0 ? cx - 4 - ew : cx + 2; g.fillStyle = 'rgba(150,190,230,0.25)'; g.fillRect(x0 + 1, ey - 1, ew + 1, eh + 2); R(x0, ey - 2, ew + 3, 1, '#2a1a1a'); R(x0, ey + eh + 1, ew + 3, 1, '#2a1a1a'); R(x0, ey - 2, 1, eh + 4, '#2a1a1a'); R(x0 + ew + 2, ey - 2, 1, eh + 4, '#2a1a1a'); P(x0 + 1, ey - 1, '#ffffff'); } R(cx - 2, ey - 1, 4, 1, '#2a1a1a'); }
+    if (ap.acc === 1) { const SF = ramp(SCARFC[ap.scarfC || 0]); cel(mk((x, y) => { const d = Math.abs(x + 0.5 - cx); return (y >= 48 && y < 52 && d < 10 - (y - 48)) || (y >= 50 && y < 60 && d < 5 - (y - 50) * 0.5); }), SF, {}); R(cx - 1, 50, 3, 2, SF[3]); }
+    if (ap.acc === 4) for (let x = cx - 8; x <= cx + 8; x++) { const yy = 50 + Math.round(Math.cos((x - cx) / 8 * 1.4) * 4); P(x, yy, x % 2 ? '#7a2a14' : '#e8c880'); }
+    // ---- chapéu ----
+    if (hat) {
+      const id = hat.id, HT = ramp(hat.c), O = ORN[ap.orn || 'none'] || ORN.none;
+      for (let y = brimY + 1; y < brimY + 4; y++) for (let x = 0; x < W; x++) if (at(head, x, y)) { g.fillStyle = 'rgba(60,16,40,0.32)'; g.fillRect(x, y, 1, 1); } // sombra da aba na testa
+      const weave = id === 'palha', wfn = (x, y, k, C) => (weave && ((x + y) % 3 === 0 || (x - y + 64) % 4 === 0) && k < 3 ? C[k + 1] : C[k]);
+      if (id === 'couro') { // chapéu de couro de vaqueiro: aba quebrada para cima em meia-lua, estrelas e costura
+        cel(mk((x, y) => { const dx = (x + 0.5 - cx) / (rx + 7), dy = (y + 0.5 - (brimY + 2)) / 16; return dx * dx + dy * dy < 1 && y <= brimY + 2; }), HT, {});
+        cel(mk((x, y) => { const dx = (x + 0.5 - cx) / (rx - 1), dy = (y + 0.5 - (brimY - 1)) / 11; return dx * dx + dy * dy < 1 && y <= brimY; }), HT, {});
+        for (let x = cx - rx - 4; x <= cx + rx + 4; x += 3) { const yy = brimY + 2 - Math.round(Math.sqrt(Math.max(0, 1 - ((x - cx) / (rx + 7)) ** 2)) * 14); P(x, yy + 2, '#e8c890'); }
+        for (const x of [-7, 0, 7]) { R(cx + x, brimY - 9 - (x ? 0 : 1), 1, 3, '#f0d878'); R(cx + x - 1, brimY - 8 - (x ? 0 : 1), 3, 1, '#f0d878'); }
+        R(cx - rx - 2, brimY + 1, rx * 2 + 5, 2, HT[3]); R(cx - rx - 2, brimY + 1, rx * 2 + 5, 1, HT[4]);
+        for (const s of [-1, 1]) for (let y = brimY + 3; y < chinY - 2; y++) P(cx + s * (rx - 1 - (y - brimY) * 0.12), y, '#3a1a10'); // barbicacho
+      } else {
+        const brimW = id === 'bone' || id === 'boina' ? 0 : rx + (id === 'palha' ? 11 : id === 'pantaneiro' ? 10 : 8);
+        if (brimW) cel(mk((x, y) => { const dx = (x + 0.5 - cx) / brimW, curl = id === 'rodeio' ? Math.pow(Math.abs(dx), 3) * 4 : id === 'palha' ? -Math.pow(Math.abs(dx), 2) * 1.5 : Math.pow(Math.abs(dx), 2) * 1.5; const yc = brimY + 1 - curl; return Math.abs(dx) < 1 && y >= yc - 1.6 && y <= yc + 1.6 + (1 - Math.abs(dx)) * 1.2; }), HT, { fn: wfn, lx: 0, ly: -1 });
+        if (id === 'bone') { cel(mk((x, y) => { const dx = (x + 0.5 - cx) / (rx + 1.5), dy = (y + 0.5 - brimY) / 10; return dx * dx + dy * dy < 1 && y <= brimY + 1; }), HT, {}); cel(mk((x, y) => { const dx = (x + 0.5 - (cx - 2)) / 15; return Math.abs(dx) < 1 && y >= brimY + 1 && y <= brimY + 3 - Math.abs(dx) * 1.5; }), HT, { lx: 0, ly: -1 }); P(cx, brimY - 10, HT[3]); }
+        else if (id === 'boina') cel(mk((x, y) => { const dx = (x + 0.5 - (cx + 2)) / (rx + 4), dy = (y + 0.5 - (brimY - 2)) / 6; return dx * dx + dy * dy < 1; }), HT, {});
+        else { const ch = id === 'palha' ? 9 : 11, pinch = id !== 'palha'; cel(mk((x, y) => { const t = (brimY - y) / ch; if (t < 0 || t > 1) return false; const w = rx - 1.5 - t * 2.5 - (pinch && t > 0.75 ? (t - 0.75) * 8 : 0); return Math.abs(x + 0.5 - cx) < w && !(pinch && t > 0.88 && Math.abs(x + 0.5 - cx) < 3); }), HT, { fn: wfn });
+          const band = O.band || ['#4a2a14']; for (let x = Math.round(cx - rx + 2); x <= cx + rx - 2; x++) { P(x, brimY - 2, band[(x + 64) % band.length]); P(x, brimY - 1, shade(band[(x + 64) % band.length], -0.2)); }
+          if (O.feather) { R(cx + 8, brimY - 11, 2, 9, '#f4f0e4'); R(cx + 9, brimY - 11, 1, 9, '#c8bca8'); }
+          if (O.stars) for (const x of [-5, 5]) { R(cx + x, brimY - 6, 1, 3, '#f0d878'); R(cx + x - 1, brimY - 5, 3, 1, '#f0d878'); } }
+      }
+    }
+    return cv;
+  }
+  return { draw, EYEC };
+})();
+/* PORT:end */
 /* RART:begin (gerado de tools/asset-pipeline/region_art.js) */
 const RART = (() => {
   const mk = (w, h) => { const [c, g] = mkC(w, h); const p = (x, y, ww, hh, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), ww, hh); }; return [c, g, p]; };
@@ -2334,7 +2524,7 @@ function grassTile(lvl, v, fr, se) {
 }
 
 /* ============ PIXEL ART: PERSONAGENS (máquina de poses, 8 quadros) ============ */
-function apKey(a) { return [a.sex, a.skin, a.hair, a.hairC, a.hat, a.shirt, a.shirtC, a.pants, a.pantsC, a.boots, a.acc, a.scarfC, a.orn || 'none', a.tool || ''].join(','); }
+function apKey(a) { return [a.sex, a.skin, a.hair, a.hairC, a.hat, a.shirt, a.shirtC, a.pants, a.pantsC, a.boots, a.acc, a.scarfC, a.orn || 'none', a.tool || '', a.beard || 0, a.beardC === undefined ? '' : a.beardC, a.eyeC === undefined ? '' : a.eyeC, a.gloves || 0, a.belt || 0].join(','); }
 function charSpr(ap, dir, fr, pose) {
   const d = dir === 2 ? 3 : dir;
   return cached('C' + apKey(ap) + '|' + d + '|' + fr + '|' + pose, 24, 34, g => drawChar(g, ap, d, fr, pose));
@@ -2366,7 +2556,9 @@ function poseQ(pose, fr) {
   else Q.arms = pose; // hammer, brush, feed, sweep, carry, grill
   return Q;
 }
-function drawChar(g, ap, dir, fr, pose) {
+function drawChar(g, ap0, dir, fr, pose) {
+  // estilos novos (cabelos 8–12, roupas 5–7) usam o desenho do estilo-base mais próximo, com cores e detalhes próprios
+  const ap = Object.assign({}, ap0); if (ap.hair > 7) { ap._h = ap.hair; ap.hair = { 8: 0, 9: 4, 10: 0, 11: 0, 12: 1 }[ap.hair]; } if (ap.shirt > 4) { ap._s = ap.shirt; ap.shirt = ap.shirt === 7 ? 3 : 2; }
   const OX = 4, OY = 5;
   const p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(OX + x, OY + y, w, h); };
   const clr = (x, y, w, h) => g.clearRect(OX + x, OY + y, w, h);
@@ -2374,12 +2566,12 @@ function drawChar(g, ap, dir, fr, pose) {
   const fem = ap.sex === 'F', sk = SKINS[ap.skin], skD = shade(sk, -.18), hc = HAIRC[ap.hairC], hD = shade(hc, -.3), hL = shade(hc, .28);
   const shc = ap.shirt === 4 ? '#f0eadc' : SHIRTC[ap.shirtC], shD = shade(shc, -.25), shL = shade(shc, .18);
   const pc = PANTSC[ap.pantsC], pD = shade(pc, -.25), pL = shade(pc, .14);
-  const lea = '#8a5226', leD = '#5e3416', leL = '#c08450';
+  const lea = ap._s === 5 ? '#3e5e8c' : ap._s === 6 ? '#6a4a2c' : '#8a5226', leD = shade(lea, -.3), leL = shade(lea, .3), bcol = HAIRC[ap.beardC !== undefined ? ap.beardC : ap.hairC], bcD = shade(bcol, -.25), ecol = (typeof PORT !== 'undefined' ? PORT.EYEC : [])[ap.eyeC === undefined ? 0 : ap.eyeC] || '#24140c';
   const bc = ap.boots === 2 ? '#9a6630' : ap.boots === 3 ? '#7a4422' : '#4a2c16', bD = shade(bc, -.3), bL = shade(bc, .2);
   const H = HATS[ap.hat] || HATS[7], hatC = H.c || '#000', hatD = shade(hatC, -.28), hatL = shade(hatC, .22);
   const O = ORN[ap.orn || 'none'] || ORN.none, eye = '#24140c', sc = SCARFC[ap.scarfC];
   const by = Q.by, side = dir === 3, lean = side ? Q.lean : 0;
-  const sleeve = ap.shirt === 2 ? lea : shc, short = ap.shirt === 1;
+  const sleeve = ap.shirt === 2 && ap._s !== 6 ? lea : shc, short = ap.shirt === 1;
   const RIB = ['#e03030', '#30a040', '#2050c0', '#f0d020'];
   /* ---------- pernas ---------- */
   function bootF(x, y, lift) { // bota vista de frente/costas
@@ -2452,7 +2644,7 @@ function drawChar(g, ap, dir, fr, pose) {
     if (O.horn && dir !== 0) { if (dir === 1) { p(3, y0 - 1, 10, 1, '#5a3a1a'); p(2, y0 + 2, 3, 2, '#e8dcb8'); p(1, y0 + 3, 2, 2, '#f4ecd0'); } else p(3 + lean, y0, 2, 5, '#e8dcb8'); }
   }
   /* ---------- braços ---------- */
-  function hand(x, y) { p(x, y, 2, 2, sk); }
+  function hand(x, y) { p(x, y, 2, 2, ap.gloves ? '#9a6a3a' : sk); if (ap.gloves) p(x, y, 1, 1, '#b8885a'); }
   function armsFB() {
     const y0 = 10 + by;
     switch (Q.arms) {
@@ -2502,7 +2694,14 @@ function drawChar(g, ap, dir, fr, pose) {
     else { p(sx, y0, 2, 4, sleeve); p(sx + Math.sign(sw), y0 + 3, 2, 2, sleeve); hand(sx + sw, y0 + 5); }
   }
   /* ---------- cabeça ---------- */
-  const eyes = (x1, x2, y) => { if (Q.blink) { p(x1, y + 1, 1, 1, skD); if (x2 !== null) p(x2, y + 1, 1, 1, skD); return; } p(x1, y, 1, 2, eye); p(x1, y, 1, 1, '#ffffff'); if (x2 !== null) { p(x2, y, 1, 2, eye); p(x2, y, 1, 1, '#ffffff'); } };
+  const eyes = (x1, x2, y) => { if (Q.blink) { p(x1, y + 1, 1, 1, skD); if (x2 !== null) p(x2, y + 1, 1, 1, skD); return; } p(x1, y, 1, 2, ecol); p(x1, y, 1, 1, '#ffffff'); if (x2 !== null) { p(x2, y, 1, 2, ecol); p(x2, y, 1, 1, '#ffffff'); } };
+  // barba e bigode (estilos 1–9: curta, média, cheia, comprida, cerrada, cavanhaque, bigode, bigodão, bigode e cavanhaque)
+  function beardFront(y) { const b = ap.beard || 0; if (!b) return; const st = mix(bcol, sk, .45);
+    if (b === 1 || b === 5) { p(5, 8 + y, 6, 1, b === 5 ? bcD : st); p(4, 7 + y, 1, 1, st); p(11, 7 + y, 1, 1, st); if (b === 5) { p(5, 7 + y, 1, 1, st); p(10, 7 + y, 1, 1, st); } }
+    if (b >= 2 && b <= 4) { p(4, 6 + y, 1, 2, bcol); p(11, 6 + y, 1, 2, bcol); p(5, 7 + y, 2, 1, bcol); p(9, 7 + y, 2, 1, bcol); p(5, 8 + y, 6, 1, bcol); if (b >= 3) { p(6, 9 + y, 4, 1, bcD); p(3, 5 + y, 1, 2, bcol); p(12, 5 + y, 1, 2, bcol); } if (b === 4) { p(7, 10 + y, 2, 2, bcD); p(6, 10 + y, 1, 1, bcol); } }
+    if (b === 6 || b === 9) { p(7, 8 + y, 2, 2, bcol); }
+    if (b >= 2 && b !== 5 && b !== 6 || b === 9) { p(6, 6 + y, 4, 1, bcol); if (b === 8) { p(5, 6 + y, 1, 2, bcD); p(10, 6 + y, 1, 2, bcD); } } }
+  function beardSide(y, lx) { const b = ap.beard || 0; if (!b) return; const st = mix(bcol, sk, .45); if (b === 1 || b === 5) p(8 + lx, 8 + y, 4, 1, b === 5 ? bcD : st); if (b >= 2 && b <= 4) { p(8 + lx, 7 + y, 4, 2, bcol); p(7 + lx, 6 + y, 1, 2, bcol); if (b >= 3) p(9 + lx, 9 + y, 3, 1, bcD); if (b === 4) p(10 + lx, 10 + y, 2, 2, bcD); } if (b === 6 || b === 9) p(10 + lx, 8 + y, 2, 2, bcol); if (b >= 2 && b !== 5 && b !== 6 || b === 9) p(10 + lx, 6 + y, 2, 1, bcol); }
   function headFront() {
     const y = by; p(7, 9 + y, 2, 1, skD);
     if (ap.hair === 4 || ap.hair === 3) p(3, 4 + y, 10, ap.hair === 4 ? 9 : 3, hD);
@@ -2511,6 +2710,7 @@ function drawChar(g, ap, dir, fr, pose) {
     if (fem) { if (!Q.blink) { p(5, 5 + y, 1, 1, eye); p(10, 5 + y, 1, 1, eye); } p(7, 7 + y, 2, 1, Q.arms === 'eat' && fr ? '#7a2a2a' : '#c0505a'); }
     else { p(6, 4 + y, 1, 1, hD); p(9, 4 + y, 1, 1, hD); p(7, 7 + y, 2, 1, Q.arms === 'eat' && fr ? '#5a2a1a' : shade(sk, -.25)); }
     if (Q.run) p(7, 7 + y, 2, 1, '#5a2a1a');
+    beardFront(y);
     if (ap.acc === 5) { p(5, 5 + y, 6, 1, '#1a1a1a'); p(5, 6 + y, 2, 1, '#2a2a3a'); p(9, 6 + y, 2, 1, '#2a2a3a'); }
     hairFront(y);
     if (ap.acc === 1) { p(6, 9 + y, 4, 1, sc); p(7, 10 + y, 2, 1, sc); p(7 + (Q.mv ? Q.sway : 0), 11 + y, 1, 1, shade(sc, -.2)); }
@@ -2550,6 +2750,7 @@ function drawChar(g, ap, dir, fr, pose) {
     eyes(10 + lx, null, 5 + y);
     if (fem) { if (!Q.blink) p(11 + lx, 4 + y, 1, 1, eye); p(11 + lx, 7 + y, 1, 1, '#c0505a'); } else { p(10 + lx, 4 + y, 2, 1, hD); p(11 + lx, 7 + y, 1, 1, shade(sk, -.25)); }
     p(7 + lx, 5 + y, 1, 2, skD);
+    beardSide(y, lx);
     if (ap.acc === 5) { p(9 + lx, 5 + y, 3, 1, '#1a1a1a'); p(7 + lx, 5 + y, 2, 1, '#1a1a1a'); }
     if (s === 1) p(5 + lx, 2 + y, 5, 2, mix(hc, sk, .45));
     else if (s === 3) { for (let r = -3; r <= 6; r++) { const w = Math.round(Math.sqrt(Math.max(0, 30 - (r - 1) * (r - 1)))); p(7 - w + lx, r + y, Math.min(w * 2, 12 - (7 - w)), 1, hc); } p(9 + lx, 4 + y, 3, 4, sk); eyes(10 + lx, null, 5 + y); }
@@ -2757,6 +2958,14 @@ const RIG = (() => {
     rastreadorAzul: { n: 'Azul mosqueado', b: '#8a96a6', m: '#2a2e36', mz: '#c8b8a0', pat: 'ticked', patC: '#3a4250', tan: '#b8743a' },
     mantiqueira: { n: 'Preto e castanho', b: '#2a2420', m: '#1a1614', mz: '#a8642c', pat: 'blacktan', patC: '#b8702e' },
     mantiqueiraFulvo: { n: 'Fulvo', b: '#b8823e', m: '#8a5a24', mz: '#2a2420' },
+    heelerAzul: { n: 'Azul mosqueado (blue heeler)', b: '#6a7a8a', m: '#2a2e36', mz: '#c8b8a0', pat: 'ticked', patC: '#3a4250', tan: '#b8743a' },
+    heelerVermelho: { n: 'Vermelho mosqueado', b: '#a85a3a', m: '#6a3220', mz: '#e8c8a8', pat: 'ticked', patC: '#e0b090', tan: '#c88a5a' },
+    pastorSela: { n: 'Capa preta (sela) e castanho', b: '#c08a48', m: '#2a2420', mz: '#1e1612', pat: 'hound', patC: '#262220', tan: '#b07a3a', mask: 1 },
+    pastorPreto: { n: 'Preto', b: '#25211f', m: '#141110', mz: '#141110' },
+    rottweiler: { n: 'Preto e castanho', b: '#1e1a18', m: '#0c0a09', mz: '#a8642c', pat: 'blacktan', patC: '#a8642c' },
+    labAmarelo: { n: 'Amarelo', b: '#e0c080', m: '#c8a060', mz: '#3a2a20' }, labPreto: { n: 'Preto', b: '#1e1a18', m: '#0c0a09', mz: '#1a1616' }, labChocolate: { n: 'Chocolate', b: '#5a3a24', m: '#3a2416', mz: '#2a1a12' },
+    collieBP: { n: 'Preto e branco', b: '#1e1c1a', m: '#0c0b0a', mz: '#f2efe8', pat: 'blacktan', patC: '#f2efe8' },
+    collieMerle: { n: 'Azul merle', b: '#8a96a6', m: '#2a2e36', mz: '#f2efe8', pat: 'ticked', patC: '#2a2e36', tan: '#f2efe8' },
     // fauna
     veado: { n: '', b: '#8a6846', m: '#5a4430', mz: '#2a2420', belly: '#d8c4a4' },
     raposa: { n: '', b: '#8a8070', m: '#2a2622', mz: '#2a2622', belly: '#c8bca8', leg: '#3a3430', pat: 'grizzle', patC: '#5a524a' },
@@ -2821,8 +3030,11 @@ const RIG = (() => {
     caramelo: { t: 'canino', H: 12.5, L: 14, D: 6.2, earT: 'semi', ear: 2.8, tailT: 'curl', tailL: 6, coats: ['caramelo'] },
     mantiqueira: { t: 'canino', H: 13.5, L: 14.6, D: 6.6, earT: 'erect', ear: 3.2, snout: 2.8, muzzle: 1.05, tailT: 'bushy', tailL: 8, tailW: 1.5, rough: 1, coats: ['mantiqueira', 'mantiqueiraFulvo'] },
     // cães antigos (saves) — mantidos com anatomia própria
-    collie: { t: 'canino', H: 12, L: 14, D: 6, earT: 'semi', ear: 2.6, tailT: 'bushy', tailL: 8, tailW: 1.5, rough: 1, coats: ['mantiqueira'] },
-    boiadeiro: { t: 'canino', H: 12.5, L: 13.5, D: 6.4, earT: 'erect', ear: 3, tailT: 'saber', tailL: 7, coats: ['rastreadorAzul'] },
+    collie: { t: 'canino', H: 12, L: 14, D: 6, earT: 'semi', ear: 2.6, tailT: 'bushy', tailL: 8, tailW: 1.5, rough: 1, coats: ['collieBP', 'collieMerle'] },
+    boiadeiro: { t: 'canino', H: 12.5, L: 13.5, D: 6.4, earT: 'erect', ear: 3, tailT: 'saber', tailL: 7, coats: ['heelerAzul', 'heelerVermelho'] },
+    pastorAlemao: { t: 'canino', H: 14.5, L: 16.5, D: 7, legT: 0.85, neckL: 4.8, headL: 6.2, jowl: 2, muzzle: 1.1, snout: 3, earT: 'erect', ear: 3.8, earW: 1.4, tailT: 'bushy', tailL: 9, tailW: 1.5, coats: ['pastorSela', 'pastorPreto'] },
+    rottweiler: { t: 'canino', H: 14, L: 15.5, D: 7.8, legT: 0.95, neckL: 4.2, neckW: 2.8, headL: 5.8, jowl: 2.8, muzzle: 1.6, snout: 2.2, earT: 'drop', ear: 2.4, earW: 1.4, tailT: 'saber', tailL: 3.5, tailW: 1.1, jowls: 1, coats: ['rottweiler'] },
+    labrador: { t: 'canino', H: 13.5, L: 15.5, D: 7.4, legT: 0.85, neckL: 4.2, neckW: 2.6, headL: 5.8, jowl: 2.4, muzzle: 1.4, snout: 2.6, earT: 'drop', ear: 3.2, earW: 1.5, tailT: 'saber', tailL: 7.5, tailW: 1.5, coats: ['labAmarelo', 'labPreto', 'labChocolate'] },
     ovelheiro: { t: 'canino', H: 13, L: 14.5, D: 6.4, earT: 'semi', ear: 2.8, tailT: 'bushy', tailL: 8, tailW: 1.5, rough: 1, coats: ['terrier'] },
     // fauna
     veado: { t: 'cervo', horn: 'espeto', hornL: 2.6, coats: ['veado'] },
@@ -2997,6 +3209,7 @@ const RIG = (() => {
         const ang2 = lie ? 0 : lf; for (let y = hy0; y < hy0 + Math.max(2, Math.round(2 * K)); y++) for (let x = hx0; x < hx0 + hw; x++) mSet(x + (ang2 > 0.5 && y === hy0 ? 0 : 0), y);
         const hc = C(bov || cpr || cer ? '#2a2420' : sockOf(i) ? '#9a8a72' : '#2e2622'); paint(T(hc), 3, { fn: s.stripes ? (x) => (x % 2 ? C('#3a3028') : C('#c8b89a')) : null });
         if (bov || cpr || cer) dot(hx0 + Math.floor(hw / 2), hy0 + 1, C('#141110'));
+        if (eq && o.shoe && !lie) for (let x = hx0; x < hx0 + hw; x++) dotIf(x, hy0 + Math.max(2, Math.round(2 * K)) - 1, C(o.shoe === 2 ? '#d0a850' : '#c8ccd4'));
       }
     }
     // ---------- cauda ----------
@@ -3021,7 +3234,8 @@ const RIG = (() => {
         p = add(p, [-Math.cos(dir) * seg, Math.sin(dir) * seg]); pts.push(p);
       }
       let rads;
-      if (TL === 'horse') rads = pts.map((_, i) => { const t = i / n; return (0.6 + s.tailW * (0.3 + 0.62 * t) * (1 - Math.pow(t, 5))) * K; });
+      if (TL === 'horse' && o.tail === 1) rads = pts.map((_, i) => Math.max(0.55, 1.15 - i * 0.07) * K);
+      else if (TL === 'horse') rads = pts.map((_, i) => { const t = i / n; return (0.6 + s.tailW * (0.3 + 0.62 * t) * (1 - Math.pow(t, 5))) * K; });
       else if (TL === 'mule') rads = pts.map((_, i) => (0.65 + (i / n) * s.tailW * 0.65) * K);
       else if (TL === 'tuft') rads = pts.map((_, i) => (i >= n - 1 ? 1.25 : 0.55) * K);
       else if (TT === 'bushy' || TT === 'brush') rads = pts.map((_, i) => (0.6 + Math.sin(i / n * Math.PI * 0.9) * s.tailW) * K);
@@ -3141,13 +3355,17 @@ const RIG = (() => {
       mClear(); const N = crest.length - 1, fl = Q.flow || 0;
       for (let i = 1; i < N; i++) {
         const p = crest[i], t = i / N; let h;
-        if (s.maneT === 'roach') h = sc(np, -s.maneL * K);
-        else { const wv = Math.sin(t * 8 + (Q.tailWave || 0) * 6.28 + f) * fl, hang = add(sc(np, s.maneL * 0.85 * (1 - fl * 0.6)), [-s.maneL * 0.25, s.maneL * 0.3 * (1 - fl)]); h = add(sc(hang, K), [(-fl * 2.6 + wv * 0.5) * K, (-fl * 0.9 + wv * 0.8) * K]); }
+        const mst = o.mane || 0;
+        if (s.maneT === 'roach' || mst === 1) h = sc(np, -s.maneL * K * (mst === 1 ? 0.55 : 1));
+        else if (mst === 3) { if (i % 2) continue; h = sc(np, s.maneL * 0.5 * K); }
+        else { const wv = Math.sin(t * 8 + (Q.tailWave || 0) * 6.28 + f) * fl, hang = add(sc(np, s.maneL * 0.85 * (1 - fl * 0.6)), [-s.maneL * 0.25, s.maneL * 0.3 * (1 - fl)]); h = add(sc(hang, K), [(-fl * 2.6 + wv * 0.5) * K, (-fl * 0.9 + wv * 0.8) * K]); if (mst === 2) h = sc(h, 1.6); }
         limb(p[0], p[1], p[0] + h[0], p[1] + h[1], Math.max(2, Math.round(s.mane * K * 1.3)), 1);
       }
       const fl0 = PH(0.1 * K, 0.5 * K); limb(fl0[0], fl0[1], fl0[0] + fd[0] * 2.4 * K + 0.6, fl0[1] + fd[1] * 2.4 * K, 2, 1);
       paint(maneT, 1, { sh2: false, fn: (x, y, c, t) => (hsh(x, y, 5) < 0.22 ? t.s : c) });
+      if ((o.mane || 0) === 3) for (let i = 2; i < N; i += 2) { const q = crest[i]; dot(q[0] + np[0] * 1.2, q[1] + np[1] * 1.2, C(o.bridle || '#c03030')); } // laços da trança
     }
+    if (can && o.collar) { const cp = add(nb, sc(nd, nl * 0.25)), cw = (s.neckW || 2.2) * K * 1.05; mClear(); limb(cp[0] - np[0] * cw, cp[1] - np[1] * cw, cp[0] + np[0] * cw, cp[1] + np[1] * cw, 2, 2); paint(tn(o.collar), 2, {}); dot(cp[0] + np[0] * cw * 0.9, cp[1] + np[1] * cw * 0.9 + 1, C('#e8c860')); }
     if (s.rough && can) { const p0 = P_(L * 0.3, -H * 0.85); mClear(); for (let k = 0; k < 5; k++) { const p = add(p0, [k * -0.8, k * 0.5]); dot(p[0], p[1], bodyT.s); } }
     // ---------- pernas de perto ----------
     drawLeg(2, 0); drawLeg(0, 0);
@@ -3157,7 +3375,7 @@ const RIG = (() => {
     if (o.saddle && eq && !lie) {
       const sd = o.saddle, sc0 = C(sd.c || '#7a4a22');
       mClear(); poly([P_(L * 0.25, -H - 0.3), P_(-L * 0.12, -H * 0.965 - 0.3), P_(-L * 0.13, -H + D * 0.4), P_(L * 0.24, -H + D * 0.42)]);
-      paint(T(o.pad || '#a83a2a'), 1, { fn: (x, y, c) => (Math.abs(y - (P_(0, -H + D * 0.41)[1])) < 0.6 ? C('#e0c050') : c) });
+      paint(T(o.pad || '#a83a2a'), 1, { fn: (x, y, c) => { if (Math.abs(y - (P_(0, -H + D * 0.41)[1])) < 0.6) return C('#e0c050'); const pp = o.padPat || 0; if (pp === 1 && (x >> 1) % 2) return mul(c, 0.78); if (pp === 2 && ((x >> 1) + (y >> 1)) % 2) return mul(c, 0.8); if (pp === 3 && (x + y * 2) % 5 === 0) return C('#f0d070'); return c; } });
       const s0 = P_(L * 0.21, -H - 0.3), s1 = P_(-L * 0.09, -H * 0.965 - 0.5);
       mClear(); poly([add(s0, [1 * K, -1.8 * K]), add(s0, [0.8, 1]), add(s1, [0, 1]), add(s1, [-1.2 * K, -2.4 * K]), add(lerpP(s0, s1, 0.5), [0, -0.4])]); paint(T(sc0), 1, {});
       if (sd.id === 'basto') { const m0 = lerpP(s0, s1, 0.5); mClear(); ell(m0[0], m0[1] - 0.8, L * 0.15, 1.4 * K); paint(tn('#efe6d6'), 1, { fn: (x, y, c) => hsh(x, y, 4) < 0.3 ? C('#d4c8b4') : c }); }
@@ -3165,9 +3383,10 @@ const RIG = (() => {
       const g0 = P_(L * 0.12, -H + D * 0.38), g1 = P_(L * 0.15, -leg - 0.5); mClear(); limb(g0[0], g0[1], g1[0], g1[1], 2, 2); paint(tn('#3a2410'), 0, {});
       const st0 = P_(L * 0.05, -H + D * 0.3), st1 = add(st0, [0.6, D * 0.62]); mClear(); limb(st0[0], st0[1], st1[0], st1[1], 1, 1); paint(tn('#2a1a0c'), 0, {}); mClear(); ell(st1[0], st1[1] + 0.8, 1.3, 0.9); paint(tn('#a8a8b0'), 3, {});
       const b0 = PH(0.9 * K, -0.5 * K), b1 = PH(1.4 * K, -J * 0.9), b2 = PH(HL * 0.62, J * 0.25), b3 = PH(HL * 0.72, -M * 0.95), bit = PH(HL - 0.7 * K, -M * 0.35);
-      [[b0, b1], [b2, b3]].forEach(([p0, p1]) => { for (let k = 0; k <= 5; k++) { const p = lerpP(p0, p1, k / 5); dotIf(p[0], p[1], C('#3a2410')); } });
+      const brC = C(o.bridle || '#3a2410'); [[b0, b1], [b2, b3]].forEach(([p0, p1]) => { for (let k = 0; k <= 5; k++) { const p = lerpP(p0, p1, k / 5); dotIf(p[0], p[1], brC); } });
       dot(bit[0], bit[1], C('#c8c8d0'));
-      const rein = add(s0, [1.5 * K, -0.6 * K]); for (let k = 1; k < 12; k++) { const p = lerpP(bit, rein, k / 12); dot(p[0], p[1] + Math.sin(k / 12 * Math.PI) * 1.4 * K, C('#3a2410')); }
+      const rein = add(s0, [1.5 * K, -0.6 * K]); for (let k = 1; k < 12; k++) { const p = lerpP(bit, rein, k / 12); dot(p[0], p[1] + Math.sin(k / 12 * Math.PI) * 1.4 * K, brC); }
+      if (o.breast) { const n0 = P_(L * 0.24, -H + D * 0.15), n1 = P_(L * 0.44, -H * 0.72), n2 = P_(L * 0.13, -H + D * 0.42); mClear(); limb(n0[0], n0[1], n1[0], n1[1], 2, 2); limb(n1[0], n1[1], n2[0], n2[1], 2, 1); paint(tn(o.bridle && o.bridle !== '#b8a070' ? o.bridle : '#6a3e1e'), 1, {}); dot(n1[0], n1[1], C('#d8d8e0')); } // peitoral
       seat = add(lerpP(s0, s1, 0.55), [0, -1.4 * K]);
     }
     if (o.harness && eq && !lie) { // peitoral, coalheira e barrigueira de tração
@@ -3356,7 +3575,7 @@ const RIG = (() => {
   const CACHE = new Map();
   function get(br, coat, view, a, f, o) {
     o = o || {}; const s = spec(br), co = COATS[coat] || COATS[(s.coats || ['castanho'])[0]];
-    const key = br + '|' + coat + '|' + view + '|' + a + '|' + f + '|' + (o.k || 1) + '|' + (o.marks || 0) + '|' + (o.seed || 0) + '|' + (o.sex || '') + (o.adult ? 1 : 0) + '|' + (o.saddle ? o.saddle.id : '') + (o.pack ? 'p' + (o.load ? 1 : 0) : '') + (o.harness ? 'h' : '');
+    const key = br + '|' + coat + '|' + view + '|' + a + '|' + f + '|' + (o.k || 1) + '|' + (o.marks || 0) + '|' + (o.seed || 0) + '|' + (o.sex || '') + (o.adult ? 1 : 0) + '|' + (o.saddle ? o.saddle.id : '') + (o.pack ? 'p' + (o.load ? 1 : 0) : '') + (o.harness ? 'h' : '') + '|' + (o.mane || 0) + (o.tail || 0) + (o.pad || '') + (o.padPat || 0) + (o.bridle || '') + (o.breast || 0) + (o.shoe || 0) + (o.collar || '');
     let r = CACHE.get(key); if (r) return r;
     if (CACHE.size > 2200) { let n = 0; for (const k of CACHE.keys()) { CACHE.delete(k); if (++n > 600) break; } }
     r = view === 'side' ? sideView(s, co, a, f, o) : fbView(s, co, a, f, o, view === 'back');
@@ -3804,7 +4023,7 @@ const hearts = id => Math.floor(npcState(id).fr / 100);
 function remember(id, t) { const m = npcState(id).mem; m.unshift({ d: S.day, t }); if (m.length > 10) m.length = 10; }
 function addFr(id, v) { const s = npcState(id); s.fr = cl(s.fr + v, 0, 1000); }
 function initNpcs() {
-  npcs.length = 0;
+  npcs.length = 0; applyFaces();
   for (const id in NPCDEF) { const d = NPCDEF[id]; const ent = { id, d, x: 0, y: 0, dir: 0, fr: 0, ph: 0, path: [], spot: null, act: 'idle', hidden: false, emote: null, et: 0, wt: 0, pose: 'idle', target: null }; npcs.push(ent); placeNpc(ent); }
 }
 function schedFor(e) {
@@ -5598,8 +5817,50 @@ function animalCanvas(a) {
   if (RIGSP[a.sp]) { const k = rigK(a), r = RIG.get(rigBreed(a), rigCoat(a), 'side', 'idle', 0, rigOpts(a, k)); return trimC(r.b); }
   return chickenSpr(a, 'idle', 0);
 }
-function animalImg(a, sc) { const c = animalCanvas(a); return sprHTML(c, sc || 2, 'an|' + a.sp + a.br + rigCoat(a) + (a.mk || 0) + a.sex + (RIGSP[a.sp] ? rigK(a) : a.age >= 6) + (a.saddle || '') + (a.travel ? 't' : '') + a.id % 97); }
-function charImg(ap, sc, dir, pose) { return sprHTML(charSpr(ap, dir || 0, 0, pose || 'idle'), sc || 2, 'ch|' + apKey(ap) + (dir || 0) + (pose || '')); }
+function animalImg(a, sc) { const c = animalCanvas(a); return sprHTML(c, sc || 2, 'an|' + a.sp + a.br + rigCoat(a) + (a.mk || 0) + a.sex + (RIGSP[a.sp] ? rigK(a) : a.age >= 6) + (a.saddle || '') + (a.travel ? 't' : '') + a.id % 97 + JSON.stringify(a.tack || '') + (a.collar || '')); }
+/* ---------- rostos dos moradores (retratos): cada um com traços próprios ---------- */
+// face, eyes, eyeC, brows, nose, mouth, expr, hair (0..12), hairC, beard (0..9), beardC, age, freck, body
+const NPC_FACE = {
+  felipe: { face: 2, eyes: 0, eyeC: 1, brows: 1, nose: 0, mouth: 0, expr: 1, hair: 11, hairC: 5, beard: 7, beardC: 5, age: 2 },
+  ryan: { face: 0, eyes: 1, eyeC: 4, brows: 2, nose: 2, mouth: 1, expr: 1, hair: 10, beard: 6, beardC: 2, age: 0 },
+  zefa: { face: 1, eyes: 4, eyeC: 0, brows: 2, nose: 3, mouth: 1, expr: 1, hair: 7, age: 1 },
+  tonho: { face: 4, eyes: 3, eyeC: 7, brows: 1, nose: 1, mouth: 2, expr: 2, hair: 12, beard: 8, beardC: 0, body: 1 },
+  chico: { face: 2, eyes: 2, eyeC: 1, brows: 4, nose: 4, mouth: 4, expr: 1, hair: 11, beard: 1, beardC: 0 },
+  lucia: { face: 3, eyes: 0, eyeC: 2, brows: 3, nose: 2, mouth: 0, expr: 2, hair: 8, acc: 5 },
+  joana: { face: 0, eyes: 4, eyeC: 4, brows: 2, nose: 3, mouth: 1, expr: 1, hair: 5, freck: 1, age: 0 },
+  dito: { face: 1, eyes: 3, eyeC: 1, brows: 1, nose: 1, mouth: 3, expr: 0, hair: 12, hairC: 5, beard: 7, beardC: 5, age: 2, body: 1 },
+  padre: { face: 3, eyes: 0, eyeC: 6, brows: 3, nose: 2, mouth: 0, expr: 1, hair: 0, hairC: 5, acc: 5, age: 2 },
+  cida: { face: 1, eyes: 4, eyeC: 0, brows: 2, nose: 1, mouth: 1, expr: 1, hair: 2, age: 1 },
+  bene: { face: 3, eyes: 3, eyeC: 6, brows: 1, nose: 4, mouth: 0, expr: 1, hair: 11, hairC: 6, beard: 8, beardC: 6, age: 2, body: 2 },
+  abilio: { face: 4, eyes: 2, eyeC: 1, brows: 1, nose: 1, mouth: 2, expr: 2, hair: 11, hairC: 5, beard: 7, beardC: 5, age: 2, body: 1 },
+  graca: { face: 3, eyes: 0, eyeC: 4, brows: 2, nose: 2, mouth: 0, expr: 0, hair: 7, hairC: 5, age: 2 },
+  prea: { face: 3, eyes: 3, eyeC: 1, brows: 0, nose: 4, mouth: 3, expr: 1, hair: 1, beard: 5, beardC: 0, body: 2 },
+  dorival: { face: 1, eyes: 1, eyeC: 0, brows: 1, nose: 1, mouth: 2, expr: 1, hair: 12, beard: 8, beardC: 1, age: 2, body: 1 },
+  rita: { face: 0, eyes: 4, eyeC: 0, brows: 2, nose: 1, mouth: 1, expr: 1, hair: 3 },
+  raimundo: { face: 2, eyes: 2, eyeC: 7, brows: 1, nose: 1, mouth: 4, expr: 2, hair: 1, beard: 3, beardC: 0, body: 1 },
+  elias: { face: 3, eyes: 0, eyeC: 5, brows: 3, nose: 2, mouth: 3, expr: 1, hair: 8, hairC: 5, acc: 5, age: 2 },
+  nena: { face: 1, eyes: 3, eyeC: 0, brows: 3, nose: 3, mouth: 0, expr: 1, hair: 7, hairC: 6, age: 2 },
+  ze: { face: 0, eyes: 1, eyeC: 2, brows: 2, nose: 0, mouth: 2, expr: 1, hair: 9, beard: 5, beardC: 1 },
+  lourival: { face: 0, eyes: 0, eyeC: 1, brows: 0, nose: 0, mouth: 1, expr: 1, hair: 0, beard: 7, beardC: 1 },
+  valdomiro: { face: 2, eyes: 3, eyeC: 1, brows: 1, nose: 4, mouth: 0, expr: 2, hair: 11, hairC: 5, beard: 7, beardC: 5, age: 2 },
+  toinho: { face: 1, eyes: 1, eyeC: 0, brows: 0, nose: 3, mouth: 1, expr: 1, hair: 2, age: 0 },
+  helena: { face: 3, eyes: 0, eyeC: 5, brows: 3, nose: 2, mouth: 0, expr: 0, hair: 9, hairC: 4, acc: 5 },
+  marta: { face: 0, eyes: 4, eyeC: 0, brows: 2, nose: 1, mouth: 1, expr: 1, hair: 6 },
+  caetano: { face: 4, eyes: 0, eyeC: 1, brows: 1, nose: 1, mouth: 2, expr: 1, hair: 0, beard: 2, beardC: 1, body: 1 },
+  jonas: { face: 0, eyes: 1, eyeC: 2, brows: 2, nose: 2, mouth: 1, expr: 1, hair: 10, age: 0 },
+  otavio: { face: 2, eyes: 2, eyeC: 6, brows: 4, nose: 2, mouth: 0, expr: 2, hair: 11, hairC: 5, beard: 1, beardC: 5, age: 2 },
+  severino: { face: 4, eyes: 3, eyeC: 7, brows: 1, nose: 1, mouth: 4, expr: 2, hair: 12, beard: 8, beardC: 0, body: 1 },
+  dalva: { face: 3, eyes: 0, eyeC: 7, brows: 4, nose: 2, mouth: 0, expr: 2, hair: 5 },
+  bruno: { face: 0, eyes: 0, eyeC: 1, brows: 0, nose: 0, mouth: 0, expr: 0, hair: 1, age: 0, body: 1 }
+};
+// quem não tem rosto definido (peões, visitantes) ganha traços fixos sorteados pelo nome/aparência
+function faceDefaults(ap) { if (ap.face !== undefined) return ap; const k = apKey(ap); let h = 0; for (const ch of k) h = (h * 31 + ch.charCodeAt(0)) | 0; const r = i => ((h >>> (i * 3)) & 7);
+  return Object.assign({ face: r(0) % 5, eyes: r(1) % 5, eyeC: r(2) % 8, brows: r(3) % 5, nose: r(4) % 5, mouth: r(5) % 5, expr: r(6) % 2, beard: ap.sex === 'F' ? 0 : [0, 0, 1, 2, 5, 6, 7, 3][r(7)], beardC: ap.hairC }, ap); }
+function applyFaces() { for (const id in NPC_FACE) if (NPCDEF[id]) Object.assign(NPCDEF[id].ap, NPC_FACE[id]); }
+const PORTC = new Map();
+function portraitCanvas(ap) { const a = faceDefaults(ap), k = 'pt' + apKey(a) + [a.face, a.eyes, a.eyeC, a.brows, a.nose, a.mouth, a.expr, a.beard, a.beardC, a.age, a.freck, a.body].join(','); let c = PORTC.get(k); if (!c) { c = PORT.draw(a); PORTC.set(k, c); if (PORTC.size > 300) PORTC.delete(PORTC.keys().next().value); } return [c, k]; }
+function charImg(ap, sc, dir, pose) { if (dir !== undefined || pose) return sprHTML(charSpr(ap, dir || 0, 0, pose || 'idle'), sc || 2, 'ch|' + apKey(ap) + (dir || 0) + (pose || '')); const [c, k] = portraitCanvas(ap); const z = sc >= 4 ? 2 : sc >= 2 ? 1 : 0.75; return sprHTML(c, z, k); } // retrato (o boneco do mapa usa charSpr)
+
 /* ---------- inventário ---------- */
 const fmtQ = n => Math.round(n * 100) / 100;
 function bagHTML() {
@@ -5824,6 +6085,8 @@ function sheetActions(a) {
   if (isH || a.sp === 'jumento') { L.push(['boot', a._st === 'follow' ? 'Parar de seguir' : 'Me seguir', 'follow']); L.push(['pin', a._st === 'stay' ? 'Liberar' : 'Ficar aqui', 'stay']); }
   if (a.sp === 'galinha') L.push(['egg', 'Recolher ovos (' + S.eggs + ')', 'eggs', !S.eggs]);
   if (a.sp === 'cao') { const c = a._cmd || 'seguir'; L.push(['cow', 'Juntar o gado', 'cmdjuntar', c === 'juntar']); L.push(['lasso', 'Tocar o gado', 'cmdtocar', c === 'tocar']); L.push(['pin', 'Ficar', 'cmdficar', c === 'ficar']); L.push(['boot', 'Seguir', 'cmdseguir', c === 'seguir']); L.push(['call', 'Chamar', 'call']); L.push(['ball', 'Brincar', 'play']); L.push(['book', 'Treinar', 'train']); }
+  if (isH || a.sp === 'jumento') L.push(['brush', 'Visual e equipamentos', 'tackEdit']);
+  if (a.sp === 'cao') L.push(['heart', 'Coleira', 'collarEdit']);
   if (isH) L.push(['bag', 'Preparar viagem', 'travel', !a.saddle || !has('alforje') || a.travel]);
   if (a.sp === 'jumento' || a.sp === 'burro') L.push(['farm', 'Atrelar carroça', 'hitch', S.cart.hitch === a.id]);
   if (big && nearPost(a) >= 0) L.push(['pin', a._st === 'tied' ? 'Desamarrar' : 'Amarrar', a._st === 'tied' ? 'untie' : 'tie']);
@@ -5878,6 +6141,8 @@ A.sa = k => {
     case 'verm': return doAnimal(a, 'exam', 1.2, () => { if (!useInv('vermifugo')) return; a.verm = S.day + 30; a.hp = cl(a.hp + 8, 0, 100); hist(a, 'Vermifugado'); toast('💊 ' + a.n + ' vermifugado (30 dias).'); });
     case 'carrap': return doAnimal(a, 'water', 1.6, () => { if (!useInv('carrapaticida', 0.25)) return; a.carrap = S.day + 14; a.hap = cl(a.hap + 8, 0, 100); a.hp = cl(a.hp + 4, 0, 100); hist(a, 'Banho carrapaticida'); AU.splash(); });
     case 'cicat': return doAnimal(a, 'exam', 1.2, () => { if (!useInv('cicatrizante')) return; a.hp = cl(a.hp + 25, 0, 100); hist(a, 'Ferimento tratado'); });
+    case 'tackEdit': closeSheet(); return openTack(a);
+    case 'collarEdit': closeSheet(); return showModal('Coleira de ' + a.n, null, null, () => `<div class="row">${animalImg(a, 3)}</div>` + COLLARN.map((n, i) => btn(((a.collar || 0) === i ? '● ' : '') + n, 'collarSet', a.id + '|' + i)).join(''));
     case 'milkGoat': return doAnimal(a, 'feed', 2.0, () => { if (a.milkD === S.day) return; const L2 = Math.max(0.5, Math.round(((GOATS[a.br] || {}).milk || 0.6) * 2.2 * (a.hap / 100 + 0.3) * (a.food > 40 ? 1 : 0.6) * 2) / 2); a.milkD = S.day; addInv('leiteCabra', L2, true); questEvent('produce', 'leiteCabra'); bond(a, 2); hist(a, 'Ordenhada: ' + L2 + ' L'); toast('🥛 ' + a.n + ': ' + L2 + ' L de leite de cabra.'); S.stats.milkG = (S.stats.milkG || 0) + L2; });
     case 'water': return doAnimal(a, 'water', 1.4, () => { if (!useInv('galao')) return; questEvent('water', 'animal'); addInv('galaoV', 1, true); a.water = 100; a.hap = cl(a.hap + 2, 0, 100); if (a.sp === 'galinha') { const i = trIdx('galin', 'agua'); if (i >= 0) S.tr[i] = trCap(i); } hist(a, 'Bebeu água do galão'); AU.splash(); });
     case 'pet': return doAnimal(a, 'pet', 1.0, () => { questEvent('pet', a.sp); if (a.petD !== S.day) { a.petD = S.day; a.hap = cl(a.hap + 5, 0, 100); a.care = cl(a.care + 2, 0, 100); bond(a, 5); AU.chime(); } heart(a.x, a.y - 22); sound(); });
@@ -7424,7 +7689,7 @@ function rigAnim(a, br, k) {
 }
 function rigOpts(a, k) {
   const sd = a.saddle ? SADDLES.find(s => s.id === a.saddle) : null;
-  return { k, seed: a.id % 97 + 1, marks: a.mk === undefined ? ((a.id * 2654435761) >>> 0) % 64 * (a.id % 3 === 0 ? 0 : 1) : a.mk, sex: a.sex, adult: (a.age || 0) >= (MATURE[a.sp] || 20) * 0.75, saddle: sd ? { id: sd.id, c: sd.c } : null, pack: !!a.travel && (a.sp === 'burro' || a.sp === 'jumento'), load: a.travel ? 1 : 0, harness: S && S.cart && S.cart.hitch === a.id };
+  return Object.assign(a.tack && (a.sp === 'cavalo' || a.sp === 'burro' || a.sp === 'jumento') ? tackOpts(a.tack) : {}, a.sp === 'cao' && a.collar ? { collar: COLLARS[a.collar] } : {}, { k, seed: a.id % 97 + 1, marks: a.mk === undefined ? ((a.id * 2654435761) >>> 0) % 64 * (a.id % 3 === 0 ? 0 : 1) : a.mk, sex: a.sex, adult: (a.age || 0) >= (MATURE[a.sp] || 20) * 0.75, saddle: sd ? { id: sd.id, c: sd.c } : null, pack: !!a.travel && (a.sp === 'burro' || a.sp === 'jumento'), load: a.travel ? 1 : 0, harness: S && S.cart && S.cart.hitch === a.id });
 }
 function rigFrame(a, view, an, fr) { const br = rigBreed(a), k = rigK(a); return RIG.get(br, rigCoat(a), view, an, fr, rigOpts(a, k)); }
 function animalDraw(a) { // [canvas, ox, oy, escala, sombra, rig, vista]
@@ -7918,25 +8183,44 @@ const mtSp = mt => mt === 'muar' ? 'burro' : mt === 'jegue' ? 'jumento' : 'caval
 const mtTab = mt => mt === 'muar' ? MULES : mt === 'jegue' ? DONKEYS : HORSES;
 function defaultCF() {
   const st = 4; const pre = STATES[st][3];
-  return { name: 'Zé do Gado', st, sk: Object.assign({}, STATES[st][6]), mt: 'cavalo', hn: 'Trovão', hbr: 'mm', coat: RIG.BR.mm.coats[0], mk: 5, hsex: 'M', sd: 0, aj: 2, ap: { sex: 'M', skin: 2, hair: 0, hairC: 1, hat: pre.hat, shirt: pre.shirt, shirtC: pre.shirtC, pants: pre.pants, pantsC: pre.pantsC, boots: pre.boots, acc: pre.acc, scarfC: pre.scarfC, orn: STATES[st][4] } };
+  return { name: 'Zé do Gado', st, sk: Object.assign({}, STATES[st][6]), mt: 'cavalo', hn: 'Trovão', hbr: 'mm', coat: RIG.BR.mm.coats[0], mk: 5, hsex: 'M', sd: 0, aj: 2, ap: { sex: 'M', skin: 2, hair: 0, hairC: 1, hat: pre.hat, shirt: pre.shirt, shirtC: pre.shirtC, pants: pre.pants, pantsC: pre.pantsC, boots: pre.boots, acc: pre.acc, scarfC: pre.scarfC, orn: STATES[st][4], face: 0, eyes: 0, eyeC: 1, brows: 0, nose: 0, mouth: 0, expr: 1, beard: 0, beardC: 1, body: 0, age: 1, gloves: 0 }, tack: { mane: 0, tail: 0, pad: 0, padPat: 0, bridle: 0, breast: 0, shoe: 1 }, dog: { br: 'caramelo', n: 'Caramelo', collar: 0 } };
 }
 function openSetup(edit) {
   setupEdit = !!edit; setStep = 0; CF = edit ? JSON.parse(JSON.stringify(S.cf)) : defaultCF(); if (edit) { CF.ap = Object.assign({}, S.cf.ap); delete CF.ap.tool; }
   if (!edit) mode = 'setup'; else paused = true;
   $('setup').style.display = 'block'; $('setup').scrollTop = 0; document.body.classList.add('ovl'); renderSetup();
 }
+let setCat = 'rosto';
+// miniaturas: o retrato do próprio personagem com aquela opção aplicada
+function thumbs(key, names, cur, extra) { return `<div class="thg">${names.map((n, i) => { const t = Object.assign({}, CF.ap, extra || {}, { [key]: i }); return `<button data-s="${key}" data-v="${i}" class="${i === (cur || 0) ? 'on' : ''}">${charImg(t, 1)}<small>${n}</small></button>`; }).join('')}</div>`; }
+function editorHTML(a) { const cats = [['rosto', 'Rosto'], ['olhos', 'Olhos'], ['nb', 'Nariz e boca'], ['cabelo', 'Cabelo'], ['barba', 'Barba'], ['det', 'Detalhes']];
+  let h = `<div class="edcat">${cats.map(([k, n]) => `<button data-s="cat" data-v="${k}" class="${setCat === k ? 'on' : ''}">${n}</button>`).join('')}<button data-s="rand" class="rnd">🎲 Sortear</button></div>`;
+  const noHat = { hat: 7 };
+  if (setCat === 'rosto') h += `<label>Sexo</label><div class="ch"><button data-s="sex" data-v="M" class="${a.sex === 'M' ? 'on' : ''}">Homem</button><button data-s="sex" data-v="F" class="${a.sex === 'F' ? 'on' : ''}">Mulher</button></div><label>Tom de pele</label>` + chips('skin', SKINS, a.skin, 1) + '<label>Formato do rosto</label>' + thumbs('face', FACES, a.face, noHat) + '<label>Tipo de corpo</label>' + chips('body', BODIES, a.body || 0) + '<label>Idade aparente</label>' + chips('age', AGES, a.age === undefined ? 1 : a.age);
+  if (setCat === 'olhos') h += '<label>Formato dos olhos</label>' + thumbs('eyes', EYESH, a.eyes, noHat) + '<label>Cor dos olhos</label>' + chips('eyeC', PORT.EYEC, a.eyeC === undefined ? 1 : a.eyeC, 1) + `<div class="desc">${EYECN[a.eyeC === undefined ? 1 : a.eyeC]}</div><label>Sobrancelhas</label>` + thumbs('brows', BROWS, a.brows, noHat);
+  if (setCat === 'nb') h += '<label>Nariz</label>' + thumbs('nose', NOSES, a.nose, noHat) + '<label>Boca</label>' + thumbs('mouth', MOUTHS, a.mouth, noHat) + '<label>Expressão</label>' + thumbs('expr', EXPRS, a.expr, noHat);
+  if (setCat === 'cabelo') h += '<label>Estilo</label>' + thumbs('hair', HAIRS, a.hair, noHat) + '<label>Cor do cabelo</label>' + chips('hairC', HAIRC, a.hairC, 1);
+  if (setCat === 'barba') h += '<label>Barba e bigode</label>' + thumbs('beard', BEARDS, a.beard, noHat) + '<label>Cor da barba</label>' + chips('beardC', HAIRC, a.beardC === undefined ? a.hairC : a.beardC, 1) + '<div class="desc">A cor da barba é independente da cor do cabelo.</div>';
+  if (setCat === 'det') h += '<label>Sardas</label>' + chips('freck', ['Sem sardas', 'Com sardas'], a.freck ? 1 : 0) + '<label>Luvas de couro</label>' + chips('gloves', ['Sem luvas', 'Com luvas'], a.gloves ? 1 : 0) + '<label>Óculos e acessório</label>' + chips('acc', ACCS, a.acc) + '<div class="desc">Chapéu, roupas, botas e lenço ficam na próxima etapa.</div>';
+  return h; }
+function randomLook() { const a = CF.ap, F = a.sex === 'F', r = n => Math.floor(Math.random() * n); Object.assign(a, { skin: r(SKINS.length), face: r(5), eyes: r(5), eyeC: r(8), brows: r(5), nose: r(5), mouth: r(5), expr: r(2), hair: F ? pick([2, 3, 4, 5, 6, 7, 8, 9]) : pick([0, 1, 2, 3, 8, 10, 11, 12]), hairC: r(8), beard: F ? 0 : pick([0, 0, 1, 2, 3, 5, 6, 7, 8, 9]), body: r(3), age: r(3), freck: Math.random() < 0.2 ? 1 : 0 }); a.beardC = Math.random() < 0.7 ? a.hairC : r(8); }
+function tackHTML(t, pre) { return '<h3 style="margin:12px 0 2px">Equipamentos e visual da montaria</h3><label>Crina</label>' + chips(pre + 'mane', TACK.mane, t.mane || 0) + '<label>Cauda</label>' + chips(pre + 'tail', TACK.tail, t.tail || 0) + '<label>Manta (cor)</label>' + chips(pre + 'pad', TACK.pad, t.pad || 0, 1) + '<label>Manta (estampa)</label>' + chips(pre + 'padPat', TACK.padPat, t.padPat || 0) + '<label>Cabresto e rédeas</label>' + chips(pre + 'bridle', TACK.bridleN, t.bridle || 0) + '<label>Peitoral</label>' + chips(pre + 'breast', TACK.breast, t.breast || 0) + '<label>Ferraduras</label>' + chips(pre + 'shoe', TACK.shoe, t.shoe === undefined ? 1 : t.shoe); }
+function openTack(a) { M.tack = a.id; showModal('Visual e equipamentos — ' + a.n, null, null, () => { const t = a.tack = a.tack || {}; const row = (f, names, sw) => `<label>${{ mane: 'Crina', tail: 'Cauda', pad: 'Manta (cor)', padPat: 'Manta (estampa)', bridle: 'Cabresto e rédeas', breast: 'Peitoral', shoe: 'Ferraduras' }[f]}</label><div class="ch">${names.map((n, i) => `<button data-a="tackSet" data-v="${a.id}|${f}|${i}" class="${(t[f] === undefined ? (f === 'shoe' ? 1 : 0) : t[f]) === i ? 'on' : ''} ${sw ? 'sw' : ''}" style="${sw ? 'background:' + n + '!important' : ''}">${sw ? '' : n}</button>`).join('')}</div>`;
+  return `<div class="row" style="justify-content:center">${animalImg(a, 4)}</div><p class="mut">Raça, nome, pelagem, vínculo e atributos não mudam. O visual aparece no animal em todas as animações.</p>` + row('mane', TACK.mane) + row('tail', TACK.tail) + row('pad', TACK.pad, 1) + row('padPat', TACK.padPat) + row('bridle', TACK.bridleN) + row('breast', TACK.breast) + row('shoe', TACK.shoe); }); }
+A.tackSet = v => { const [id, f, i] = v.split('|'), a = byId(+id); if (!a) return; a.tack = a.tack || {}; a.tack[f] = +i; imgURL.forEach((_, k) => { if (k.startsWith('an|')) imgURL.delete(k); }); renderModal(); };
+A.collarSet = v => { const [id, i] = v.split('|'), a = byId(+id); if (!a) return; a.collar = +i; imgURL.forEach((_, k) => { if (k.startsWith('an|')) imgURL.delete(k); }); renderModal(); };
+function tackOpts(t) { t = t || {}; return { pad: TACK.pad[t.pad || 0], padPat: t.padPat || 0, mane: t.mane || 0, tail: t.tail || 0, bridle: TACK.bridle[t.bridle || 0], breast: t.breast || 0, shoe: t.shoe === undefined ? 1 : t.shoe }; }
 function chips(key, list, cur, sw) { return `<div class="ch">${list.map((v, i) => `<button data-s="${key}" data-v="${i}" class="${i === cur ? 'on' : ''} ${sw ? 'sw' : ''}" style="${sw ? 'background:' + v + '!important' : ''}" ${sw ? 'aria-label="cor ' + (i + 1) + '"' : ''}>${sw ? '' : v}</button>`).join('')}</div>`; }
 function mountData() { return mtTab(CF.mt)[CF.hbr]; }
 function statBar(n, v, mx) { return `<span>${n}</span><i><b style="width:${Math.round(cl(v / mx, 0.05, 1) * 100)}%"></b></i>`; }
 function renderSetup() {
   const a = CF.ap, st = STATES[CF.st];
-  const STEPS = setupEdit ? ['Aparência', 'Roupa'] : ['Vaqueiro', 'Origem e roupa', 'Montaria', 'Começar'];
-  let h = `<div class="sw2"><div class="pvbox"><h2>${ic(setupEdit ? 'brush' : 'hat', 20)} ${setupEdit ? 'Guarda-roupa' : 'Novo vaqueiro'}</h2><canvas id="pv" width="360" height="170"></canvas>
+  const STEPS = setupEdit ? ['Aparência', 'Roupa'] : ['Vaqueiro', 'Origem e roupa', 'Montaria', 'Seu cão', 'Começar'];
+  let h = `<div class="sw2"><div class="pvbox"><h2>${ic(setupEdit ? 'brush' : 'hat', 20)} ${setupEdit ? 'Guarda-roupa' : 'Novo vaqueiro'}</h2>${setStep < 2 || setupEdit ? `<div class="pport">${charImg(a, 4)}<div><b>${esc(CF.name || '')}</b><br><span class="mut">${FACES[a.face || 0]} · olhos ${EYECN[a.eyeC === undefined ? 1 : a.eyeC].toLowerCase()} · ${HAIRS[a.hair].toLowerCase()}${a.beard ? ' · ' + BEARDS[a.beard].toLowerCase() : ''}</span></div></div>` : ''}<canvas id="pv" width="360" height="170"></canvas>
     <div class="steps">${STEPS.map((n, i) => `<button data-s="step" data-v="${i}" class="${i === setStep ? 'on' : ''}">${i + 1}. ${n}</button>`).join('')}</div></div><div>`;
   if (setStep === 0) {
     if (!setupEdit) h += `<label>Nome do vaqueiro</label><input id="pn" maxlength="16" value="${esc(CF.name)}">`;
-    h += `<label>Sexo</label><div class="ch"><button data-s="sex" data-v="M" class="${a.sex === 'M' ? 'on' : ''}">Homem</button><button data-s="sex" data-v="F" class="${a.sex === 'F' ? 'on' : ''}">Mulher</button></div>`;
-    h += '<label>Pele</label>' + chips('skin', SKINS, a.skin, 1) + '<label>Cabelo</label>' + chips('hair', HAIRS, a.hair) + '<label>Cor do cabelo</label>' + chips('hairC', HAIRC, a.hairC, 1);
+    h += editorHTML(a);
   } else if (setStep === 1) {
     if (!setupEdit) {
       h += `<label>Estado de origem</label><div class="ch">${STATES.map((s, i) => `<button data-s="st" data-v="${i}" class="${i === CF.st ? 'on' : ''}" title="${s[1]}">${s[0]}</button>`).join('')}</div>`;
@@ -7958,6 +8242,16 @@ function renderSetup() {
     h += `<label>Nome da montaria</label><input id="hn" maxlength="14" value="${esc(CF.hn)}">`;
     h += '<label>Sela</label>' + chips('sd', SADDLES.map(s => s.n), CF.sd) + `<div class="desc">${SADDLES[CF.sd].d}</div>`;
     h += '<label>Estímulo</label>' + chips('aj', STIM.map(s => s.n), CF.aj) + `<div class="desc">${STIM[CF.aj].d}</div>`;
+    h += tackHTML(CF.tack || {}, 'tk_');
+  } else if (setStep === 3) {
+    const D0 = CF.dog = CF.dog || { br: 'none', n: '', collar: 1, cc: 1 };
+    h += `<div class="desc">O Caramelo, vira-lata do seu avô, já espera na fazenda. Você pode trazer também <b>o seu próprio cão</b>, de qualquer raça.</div><label>Coleira do Caramelo</label>` + chips('dg_cc', COLLARN, D0.cc || 0);
+    h += '<label>Seu cão</label><div class="dogg">' + [['none', null], ...Object.keys(DOGS).map(k => [k, DOGS[k]])].map(([k, B]) => { const on = D0.br === k; if (!B) return `<button data-s="dg_br" data-v="none" class="${on ? 'on' : ''}"><b>Só o Caramelo</b><small>Sem cão extra</small></button>`;
+      const sp = RIG.spec(k), porte = sp.H >= 15 ? 'grande' : sp.H >= 12.5 ? 'médio' : 'pequeno', r = RIG.get(k, RIG.BR[k].coats[0], 'side', 'idle', 0, { k: 1, seed: 3, adult: 1, sex: 'M' });
+      return `<button data-s="dg_br" data-v="${k}" class="${on ? 'on' : ''}">${sprHTML(trimC(r.b), 2, 'dg|' + k)}<b>${B.n}</b><small>porte ${porte} · ${(B.temp || []).join(', ')}</small></button>`; }).join('') + '</div>';
+    if (D0.br !== 'none' && DOGS[D0.br]) { const B = DOGS[D0.br], cs = RIG.BR[D0.br].coats;
+      h += `<div class="desc"><b>${B.n}</b> — ${B.d}<div class="stat">${statBar('Toca gado', B.herd, 1.4)}${statBar('Guarda', B.guard, 1.4)}${statBar('Faro', B.track, 1.4)}</div></div>`;
+      h += `<label>Nome</label><input id="dn" maxlength="14" value="${esc(D0.n || B.nm || 'Bob')}"><label>Pelagem</label><div class="ch">${cs.map((c, i) => `<button data-s="dg_coat" data-v="${i}" class="${(D0.coat || 0) === i ? 'on' : ''}">${RIG.COATS[c].n}</button>`).join('')}</div><label>Coleira</label>` + chips('dg_collar', COLLARN, D0.collar || 0); }
   } else {
     const B = mountData();
     h += `<div class="desc" style="font-size:13px"><b>${esc(CF.name)}</b>, vindo(a) de <b>${st[1]}</b>.<br>Montaria: <b>${esc(CF.hn)}</b> — ${B.n}, ${RIG.COATS[CF.coat].n.toLowerCase()}${CF.mt === 'cavalo' ? (CF.hsex === 'F' ? ', égua' : ', garanhão') : ''}.<br><br>Você começa pequeno em Itarantim: um rancho simples, poucos piquetes, <b>dois bois Pé-Duro</b> e pouco dinheiro. O resto, a lida constrói.</div>`;
@@ -7971,7 +8265,7 @@ function renderSetup() {
   const sc = $('setup').scrollTop; $('setup').innerHTML = h; $('setup').scrollTop = sc;
   const pv = $('pv'); if (pv) { const r = pv.getBoundingClientRect(); pv.width = Math.max(240, Math.round(r.width / 2)); pv.height = Math.max(110, Math.round(r.height / 2)); }
 }
-$('setup').addEventListener('input', e => { if (e.target.id === 'pn') CF.name = e.target.value.trim() || 'Zé do Gado'; if (e.target.id === 'hn') CF.hn = e.target.value.trim() || 'Trovão'; });
+$('setup').addEventListener('input', e => { if (e.target.id === 'dn' && CF.dog) CF.dog.n = e.target.value.trim(); if (e.target.id === 'pn') CF.name = e.target.value.trim() || 'Zé do Gado'; if (e.target.id === 'hn') CF.hn = e.target.value.trim() || 'Trovão'; });
 $('setup').addEventListener('click', e => {
   const b = e.target.closest('[data-s]'); if (!b) return; const k = b.dataset.s, v = b.dataset.v; AU.init(); AU.click();
   if (k === 'go') return setupEdit ? finishWardrobe() : newGame(CF);
@@ -7979,6 +8273,10 @@ $('setup').addEventListener('click', e => {
   if (k === 'next') { setStep++; $('setup').scrollTop = 0; return renderSetup(); }
   if (k === 'prev') { setStep--; $('setup').scrollTop = 0; return renderSetup(); }
   if (k === 'step') { setStep = +v; $('setup').scrollTop = 0; return renderSetup(); }
+  if (k === 'cat') { setCat = v; return renderSetup(); }
+  if (k === 'rand') { randomLook(); return renderSetup(); }
+  if (k.startsWith('tk_')) { CF.tack = CF.tack || {}; CF.tack[k.slice(3)] = +v; return renderSetup(); }
+  if (k.startsWith('dg_')) { CF.dog = CF.dog || { br: 'caramelo', n: 'Caramelo', collar: 0 }; const f = k.slice(3); CF.dog[f] = f === 'br' ? v : +v; if (f === 'br') { CF.dog.n = v !== 'none' && DOGS[v] ? (DOGS[v].nm || 'Bob') : ''; CF.dog.coat = 0; } return renderSetup(); }
   if (k === 'st') { CF.st = +v; const p = STATES[CF.st][3]; Object.assign(CF.ap, { hat: p.hat, shirt: p.shirt, shirtC: p.shirtC, pants: p.pants, pantsC: p.pantsC, boots: p.boots, acc: p.acc, scarfC: p.scarfC, orn: STATES[CF.st][4] }); CF.sk = Object.assign({}, STATES[CF.st][6]); }
   else if (k === 'sex' || k === 'orn') CF.ap[k] = v;
   else if (k === 'mt') { CF.mt = v; CF.hbr = MOUNT_BREEDS[v][0]; CF.hsex = v === 'muar' ? 'F' : v === 'jegue' ? 'M' : CF.hsex; CF.coat = RIG.BR[rigBreedKey(mtSp(v), CF.hbr, CF.hsex)].coats[0]; if (v !== 'cavalo') CF.mk = 0; }
@@ -7999,6 +8297,8 @@ function drawPreview(dt) {
   const put = (cv, x, y, sc, flip) => { g.save(); if (flip) { g.translate(Math.round(x + cv.width * sc), Math.round(y)); g.scale(-1, 1); g.drawImage(cv, 0, 0, cv.width * sc, cv.height * sc); } else g.drawImage(cv, Math.round(x), Math.round(y), cv.width * sc, cv.height * sc); g.restore(); };
   const sh = (x, rw) => { g.fillStyle = 'rgba(40,20,10,0.25)'; g.beginPath(); g.ellipse(x, gy + 1, rw, rw * 0.3, 0, 0, 7); g.fill(); };
   const sc = Math.max(2, Math.floor(h / 60));
+  if (!setupEdit && setStep === 3) { const D0 = CF.dog || {}, br = D0.br && D0.br !== 'none' ? D0.br : 'caramelo', coat = RIG.BR[br].coats[D0.coat || 0] || RIG.BR[br].coats[0], cyc = pvT % 9, an = cyc < 2.5 ? 'idle' : cyc < 5 ? 'walk' : cyc < 7 ? 'trot' : 'sit', nf = RIG.frames(an) || 1, fr = Math.floor(pvT * (an === 'walk' ? 9 : 12)) % nf;
+    const k2 = Math.max(2, Math.min(4, h / 40)), r = RIG.get(br, coat, 'side', an, fr, { k: 1, seed: 3, adult: 1, sex: 'M', collar: COLLARS[br === 'caramelo' && D0.br === 'none' ? D0.cc || 0 : D0.collar || 0] }); sh(w * 0.5, 10 * k2); put(r.b, w * 0.5 - r.ox * k2, gy - r.oy * k2, k2); return; }
   if (setupEdit || setStep < 2) {
     sh(w * 0.22, 9 * sc / 2); put(charSpr(ap, 0, (pvT % 3.7) < 0.13 ? 3 : Math.floor(pvT / 0.55) % 3, 'idle'), w * 0.22 - 12 * sc, gy - 30 * sc, sc);
     sh(w * 0.5, 9 * sc / 2); put(charSpr(ap, 3, Math.floor(pvT * 9) % 8, 'walk'), w * 0.5 - 12 * sc, gy - 30 * sc, sc);
@@ -8008,7 +8308,7 @@ function drawPreview(dt) {
   // montaria: alterna entre parado, passo, trote e galope; e o vaqueiro montado
   const sp = mtSp(CF.mt), br = rigBreedKey(sp, CF.hbr, CF.hsex), cyc = pvT % 12, ph = cyc < 2.5 ? 'idle' : cyc < 5.5 ? 'walk' : cyc < 8.5 ? 'trot' : 'gallop';
   const nf = RIG.frames(ph), rate = ph === 'idle' ? 1.2 : ph === 'walk' ? 9 : ph === 'trot' ? 11 : 13; let fr = Math.floor(pvT * rate) % nf; if (ph === 'idle') { const t = pvT % 4; fr = t < 3 ? 0 : t < 3.4 ? 1 : 3; }
-  const sd = SADDLES[CF.sd]; const o = { k: 1, seed: 7, marks: CF.mk, sex: CF.hsex, adult: 1, saddle: { id: sd.id, c: sd.c } };
+  const sd = SADDLES[CF.sd]; const o = Object.assign({ k: 1, seed: 7, marks: CF.mk, sex: CF.hsex, adult: 1, saddle: { id: sd.id, c: sd.c } }, tackOpts(CF.tack));
   const k2 = Math.max(1.5, Math.min(3, h / 64));
   const r = RIG.get(br, CF.coat, 'side', ph, fr, o); const mx = w * (w > h * 1.9 ? 0.32 : 0.36);
   sh(mx, 14 * k2); put(r.b, mx - r.ox * k2, gy - r.oy * k2, k2);
@@ -8028,10 +8328,11 @@ function newGame(cf) {
   startSmall(); applyLand(); applyObjs();
   const put = (a, k) => { const p = randIn(k); a.x = p[0]; a.y = p[1]; S.animals.push(a); return a; };
   const sp = mtSp(cf.mt);
-  const h = mkAnimal(sp, cf.hbr, { sex: cf.hsex, n: cf.hn, main: true, age: 40, gen: rnd(62, 78), hap: 85, saddle: S.saddleSel, cond: 60, coat: cf.coat, mk: cf.mt === 'cavalo' ? cf.mk : 0, aff: 60 }); h.x = 12.5 * TS + 10; h.y = 31 * TS; S.animals.push(h);
+  const h = mkAnimal(sp, cf.hbr, { sex: cf.hsex, n: cf.hn, main: true, age: 40, gen: rnd(62, 78), hap: 85, saddle: S.saddleSel, cond: 60, coat: cf.coat, mk: cf.mt === 'cavalo' ? cf.mk : 0, aff: 60 }); h.tack = Object.assign({}, cf.tack || {}); h.x = 12.5 * TS + 10; h.y = 31 * TS; S.animals.push(h);
   // dois bois Pé-Duro
   const bois = [put(mkAnimal('boi', 'peduro', { sex: 'M', age: 34, n: 'Malhado', coat: 'peVermelho' }), 'p1'), put(mkAnimal('boi', 'peduro', { sex: 'M', age: 30, n: 'Fumaça', coat: 'amarelo' }), 'p1')];
-  const dog = mkAnimal('cao', 'caramelo', { n: 'Caramelo', sex: 'M', age: 30, skills: ['Boiadeiro'] }); dog.x = 14 * TS; dog.y = 32 * TS; S.animals.push(dog);
+  const dog = mkAnimal('cao', 'caramelo', { n: 'Caramelo', sex: 'M', age: 30, skills: ['Boiadeiro'] }); dog.x = 14 * TS; dog.y = 32 * TS; S.animals.push(dog); if (cf.dog) dog.collar = cf.dog.cc || 0;
+  if (cf.dog && cf.dog.br && cf.dog.br !== 'none' && DOGS[cf.dog.br]) { const d2 = mkAnimal('cao', cf.dog.br, { n: cf.dog.n || DOGS[cf.dog.br].nm || 'Bob', sex: 'M', age: 20 }); d2.coat = RIG.BR[cf.dog.br].coats[cf.dog.coat || 0]; d2.collar = cf.dog.collar || 0; d2.x = 15 * TS; d2.y = 32.5 * TS; S.animals.push(d2); }
   for (let i = 0; i < 5; i++) put(mkAnimal('boi', pick(['nelore', 'nelore', 'guzera', 'gir', 'tabapua']), { own: 'felipe' }), 'campos');
   for (let i = 0; i < 3; i++) put(mkAnimal('cavalo', pick(['mm', 'qm', 'campolina', 'crioulo', 'arabe']), { own: 'ryan' }), 'duarte');
   put(mkAnimal('jumento', 'pega', { own: 'ryan' }), 'duarte'); put(mkAnimal('burro', 'burro', { own: 'ryan', sex: 'M' }), 'duarte');
