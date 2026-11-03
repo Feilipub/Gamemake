@@ -13,9 +13,10 @@ func _init() -> void:
 	var failed := 0
 	for path in files:
 		var script := load(path) as GDScript
-		if script == null:
-			print("ERRO ao carregar ", path)
+		if script == null or not script.can_instantiate():
+			print("  FALHOU  ", path.get_file(), " :: não compila")
 			failed += 1
+			total += 1
 			continue
 		var suite: Object = script.new()
 		for m in script.get_script_method_list():

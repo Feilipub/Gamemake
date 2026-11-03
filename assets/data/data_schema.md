@@ -26,7 +26,7 @@ Cada `obj`:
 
 | Chave | Significado |
 |---|---|
-| `t` | Caminho da textura (`res://assets/art/world/obj/...png`). Prédios também têm `..._n.png` (noite, janelas acesas). |
+| `t` | Caminho da textura (`res://assets/art/world/objects/...png`). Prédios também têm `..._n.png` (noite, janelas acesas). |
 | `x`, `y` | Canto superior esquerdo onde a textura é desenhada (pixels de mundo). |
 | `s` | Linha de ordenação (o "pé" do objeto): quem tem `s` maior fica na frente. |
 | `k` | Tipo: `fence`, `trough`, `prop`, `tree`, `bld`. |

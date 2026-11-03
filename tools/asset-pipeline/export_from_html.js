@@ -3,7 +3,7 @@
 // O protótipo desenha toda a pixel art por código. Em vez de redesenhar à mão,
 // rodamos os próprios geradores no Chromium (Playwright) e salvamos PNGs + JSON:
 //   assets/art/world/ground_s0.png, ground_s1.png   chão das duas estações (águas/seca)
-//   assets/art/world/obj/*.png                       cercas, porteiras, props e prédios
+//   assets/art/world/objects/*.png                       cercas, porteiras, props e prédios
 //   assets/art/chars/*.png                           tiras de animação (frames lado a lado)
 //   assets/data/world_map.json                           grade de colisão, objetos e pontos
 //   assets/data/art_sprites.json                         metadados de cada tira (tamanho, frames, âncora)
@@ -16,7 +16,7 @@ const path = require('path');
 const html = path.resolve(process.argv[2] || 'prototypes/html-v3.2/index.html');
 const root = path.resolve(process.argv[3] || '.');
 const P = (...p) => path.join(root, ...p);
-for (const d of ['assets/art/world/obj', 'assets/art/chars', 'assets/data']) fs.mkdirSync(P(d), { recursive: true });
+for (const d of ['assets/art/world/objects', 'assets/art/chars', 'assets/data']) fs.mkdirSync(P(d), { recursive: true });
 const savePng = (rel, dataUrl) => fs.writeFileSync(P(rel), Buffer.from(dataUrl.split(',')[1], 'base64'));
 
 // Código executado DENTRO do jogo (acesso às funções internas via __lida.ev).
@@ -49,7 +49,7 @@ const HELPERS = `window.__exp = {
       for (const a of [0, 0.34, 0.67, 1]) { g.anim = a; X.setTransform(1, 0, 0, 1, -x0, -y0); X.clearRect(x0, y0, w, hh); drawGate(g, X); X.setTransform(1, 0, 0, 1, 0, 0); const d = X.getImageData(0, 0, w, hh); const [c, gg] = mkC(w, hh); gg.putImageData(d, 0, 0); cs.push(c); }
       g.anim = anim0; const st = this.strip(cs); const key = 'gate_' + gi2; tex[key] = st.url;
       const ar = g.a && AREAS[g.a];
-      gates.push({ id: gi2, t: 'res://assets/art/world/obj/' + key + '.png', fw: st.fw, fh: st.fh, n: st.n, x: x0, y: y0, s: g.h ? Math.max(...ys) * TS + 14 : (Math.max(...ys) + 1) * TS - 1, tiles: g.t, h: !!g.h, area: g.a || null, parcel: ar && ar.parcel ? ar.parcel : null, open: !!g.open }); });
+      gates.push({ id: gi2, t: 'res://assets/art/world/objects/' + key + '.png', fw: st.fw, fh: st.fh, n: st.n, x: x0, y: y0, s: g.h ? Math.max(...ys) * TS + 14 : (Math.max(...ys) + 1) * TS - 1, tiles: g.t, h: !!g.h, area: g.a || null, parcel: ar && ar.parcel ? ar.parcel : null, open: !!g.open }); });
     const areas = {}; for (const k of AKEYS) { const a = AREAS[k]; areas[k] = { n: a.n, k: a.k, r: a.r, parcel: a.parcel || null, gates: a.gates || (a.gate !== undefined ? [a.gate] : []) }; }
     const troughs = TROUGHS.map(t => ({ a: t.a, k: t.k, x: t.x, y: t.y, w: t.w, cap: t.cap }));
     return { TS, MW, MH, solid, water, tex, inst, gates, areas, troughs, spawn: window.__layoutSpawn || (() => { const q = newState().p; return { x: q.x, y: q.y }; })(), herd: S.animals.filter(a => a.own === 'player' && a.sp === 'boi').map(a => ({ x: a.x, y: a.y, sex: a.sex, n: a.n })) };
@@ -95,9 +95,9 @@ const HELPERS = `window.__exp = {
   for (const se of [0, 1]) savePng(`assets/art/world/ground_s${se}.png`, await ev(`__exp.ground(${se})`));
   // mundo
   const W = await ev('__exp.world()');
-  for (const [k, u] of Object.entries(W.tex)) savePng('assets/art/world/obj/' + k + '.png', u);
+  for (const [k, u] of Object.entries(W.tex)) savePng('assets/art/world/objects/' + k + '.png', u);
   const world = { schema_version: 2, tile_size: W.TS, map_width: W.MW, map_height: W.MH, solid: W.solid, water: W.water, spawn: W.spawn, herd: W.herd, areas: W.areas, gates: W.gates, troughs: W.troughs, markers,
-    objects: W.inst.map(o => Object.assign({}, o, { t: 'res://assets/art/world/obj/' + o.t + '.png' })) };
+    objects: W.inst.map(o => Object.assign({}, o, { t: 'res://assets/art/world/objects/' + o.t + '.png' })) };
   fs.writeFileSync(P('assets/data/world_map.json'), JSON.stringify(world));
 
   // vaqueiro padrão (dir: 0 frente, 1 costas, 3 lado direito; esquerda = espelho)
