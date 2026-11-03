@@ -69,6 +69,9 @@ dist/
 !**/.godot/global_script_class_cache.cfg
 *.translation
 export_presets.cfg
+# Lida no Sertão versiona o preset Android: ele NÃO guarda senha de keystore
+# (o build lê GODOT_ANDROID_KEYSTORE_* de variáveis de ambiente). Nunca coloque senhas nele.
+!/export_presets.cfg
 # Uncomment if using Godot:
 # *.import
 
