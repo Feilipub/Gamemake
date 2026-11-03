@@ -131,6 +131,17 @@ galinheiro e as glebas norte e sul continuam **compráveis**, com as porteiras t
   uma obra de lote.
 - A cocheira é só abrigo e **não** dá os bônus da Estrebaria.
 
+**H. Roça de forragem [NOVO — pedido da RF Games, 03/11/2026]**
+- Cercado de varas a nordeste do corredor, com porteira para o corredor.
+- 18 leiras em 3 fileiras: **palma forrageira**, **mandacaru sem espinho** e **maniçoba**.
+- Planta-se com Ação. Cada planta cresce pelos dias do jogo, e a colheita guarda forragem em kg; a planta rebrota
+  (dados em `assets/data/farm_crops.json`).
+- A forragem vai para os **cochos de comida**, que agora existem em todos os piquetes, e o gado vai comer lá.
+- Plantar ainda é gratuito: a loja de mudas entra com a economia.
+
+**Estilo das cercas [NOVO]:** arame farpado em mourões roliços nos pastos; tábuas de aroeira nos currais e no haras;
+varas de faxina com cipó no quintal, no galinheiro, nos cavalos e na roça.
+
 **G. Mata dos fundos e glebas.** Ficam como no original (trilha, clareiras, riacho, fauna, sino da Estrela;
 Mandacaru ao norte; açude ao sul).
 

@@ -7,6 +7,7 @@ var world: Dictionary = {}
 var sprites: Dictionary = {}
 var tuning: Dictionary = {}
 var parcels: Dictionary = {}
+var crops: Dictionary = {}
 
 var _tex_cache: Dictionary = {}
 var _frames_cache: Dictionary = {}
@@ -17,6 +18,8 @@ func _ready() -> void:
 	sprites = load_json("res://assets/data/art_sprites.json")
 	tuning = load_json("res://assets/data/game_tuning.json")
 	parcels = load_json("res://assets/data/farm_parcels.json")
+	crops = load_json("res://assets/data/farm_crops.json")
+	crops.erase("_comment")
 
 
 ## Lê um arquivo JSON e devolve o dicionário (vazio em caso de erro).

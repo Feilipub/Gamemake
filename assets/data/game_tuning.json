@@ -51,7 +51,9 @@
     "half_size": [
       6,
       3
-    ]
+    ],
+    "feed_reach": 12,
+    "eat_kg_per_sec": 0.5
   },
   "time": {
     "day_length_sec": 300,
@@ -76,5 +78,9 @@
     "radius": 26,
     "gate_anim_speed": 2.5,
     "gate_body_margin": 5
+  },
+  "farming": {
+    "plant_free": true,
+    "_note": "Sem economia ainda: plantar é gratuito até a loja de mudas ser portada (ver production/paridade_html.md)."
   }
 }

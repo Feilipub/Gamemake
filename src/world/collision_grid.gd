@@ -60,7 +60,11 @@ func box_hits(pos: Vector2, half: Vector2) -> bool:
 
 
 ## Move a caixa por `delta`, eixo X e depois Y; devolve a nova posição.
+## Se a caixa já começa sobreposta a um sólido (nasceu ou carregou encostada em algo), o movimento
+## é livre até ela se soltar — senão passos menores que a sobreposição a prenderiam para sempre.
 func move(pos: Vector2, delta: Vector2, half: Vector2) -> Vector2:
+	if box_hits(pos, half):
+		return pos + delta
 	var p := pos
 	if delta.x != 0.0:
 		var nx := Vector2(p.x + delta.x, p.y)

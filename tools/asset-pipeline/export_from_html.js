@@ -23,7 +23,7 @@ const savePng = (rel, dataUrl) => fs.writeFileSync(P(rel), Buffer.from(dataUrl.s
 const HELPERS = `window.__exp = {
   url(c) { return c.toDataURL('image/png'); },
   strip(cs) { const fw = Math.max(...cs.map(c => c.width)), fh = Math.max(...cs.map(c => c.height)); const [c, g] = mkC(fw * cs.length, fh); cs.forEach((k, i) => g.drawImage(k, i * fw, 0)); return { url: c.toDataURL('image/png'), fw, fh, n: cs.length }; },
-  ground(se) { buildGround(se); if (window.__groundPost) __groundPost(se); const [c, g] = mkC(WPX, HPX); g.drawImage(groundC, 0, 0);
+  ground(se) { buildGround(se); if (window.__groundPost) __groundPost(se); if (window.__art && window.__layout) for (const pl of (__layout.plots || [])) gg.drawImage(__art.bed(), pl.x * TS, pl.y * TS + 1); const [c, g] = mkC(WPX, HPX); g.drawImage(groundC, 0, 0);
     for (let cy = 0; cy * GCS < MH; cy++) for (let cx = 0; cx * GCS < MW; cx++) { const ch = grassChunk(cx, cy, se); if (ch && ch.any) g.drawImage(ch.l[0], cx * GCS * TS, cy * GCS * TS - 4); }
     return c.toDataURL('image/png'); },
   world() {
@@ -32,16 +32,25 @@ const HELPERS = `window.__exp = {
     GATES.forEach((g, k) => { g.anim = anim0[k]; });
     const water = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) water.push(ground[gi(tx, ty)] === G.WATER ? 1 : 0);
     const tex = {}, inst = []; const reg = (key, mk) => { if (!tex[key]) tex[key] = this.url(mk()); return key; };
+    const FS = (window.__layout && __layout.fence_styles) || {};
+    const onEdge = (r, x, y) => x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3] && (x === r[0] || x === r[2] || y === r[1] || y === r[3]);
+    const brStyle = (x, y) => { let best = null;
+      for (const k of AKEYS) { const a = AREAS[k]; if (!onEdge(a.r, x, y)) continue; if ((FS.aroeira_kinds || []).includes(a.k) || (FS.aroeira_keys || []).includes(k)) return 'aroeira'; if ((FS.varas_keys || []).includes(k)) best = 'varas'; }
+      for (const r of (FS.aroeira_rects || [])) if (onEdge(r, x, y)) return 'aroeira';
+      return best || 'arame'; };
     for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) { const i = gi(tx, ty); if (obj[i] !== 1) continue;
       const isF = (x, y) => x >= 0 && y >= 0 && x < MW && y < MH && (obj[gi(x, y)] === 1 || obj[gi(x, y)] === 2);
       const st = fenceStyleAt(tx, ty), h = H2(tx, ty, 21), cond = h < .07 ? 1 : h < .2 ? 2 : 0; const l = isF(tx - 1, ty) ? 1 : 0, r = isF(tx + 1, ty) ? 1 : 0, u = isF(tx, ty - 1) ? 1 : 0, dn = isF(tx, ty + 1) ? 1 : 0, straight = (l && r && !u && !dn) || (u && dn && !l && !r), pst = !straight || (tx + ty) % 2 === 0;
-      const key = 'fence_' + st + '_' + l + r + u + dn + '_' + cond + (pst ? 'p' : '');
-      inst.push({ t: reg(key, () => fenceSpr(st, l, r, u, dn, cond, pst)), x: tx * TS, y: ty * TS - 12, s: ty * TS + 15, k: 'fence' }); }
+      let key, mk;
+      if (window.__art) { const bs = brStyle(tx, ty), post = bs === 'aroeira' ? true : bs === 'varas' ? ((tx + ty) % 3 === 0 || !straight) : pst, seed = (tx * 7 + ty * 13) % 5;
+        key = 'fbr_' + bs + '_' + l + r + u + dn + '_' + cond + (post ? 'p' : '') + '_' + seed; mk = () => __art.fence(bs, l, r, u, dn, cond, post, seed); }
+      else { key = 'fence_' + st + '_' + l + r + u + dn + '_' + cond + (pst ? 'p' : ''); mk = () => fenceSpr(st, l, r, u, dn, cond, pst); }
+      inst.push({ t: reg(key, mk), x: tx * TS, y: ty * TS - 12, s: ty * TS + 15, k: 'fence' }); }
     for (const p of PROPS) { const key = 'prop_' + p.t + '_' + p.v; inst.push({ t: reg(key, () => propSpr(p.t, p.v, 0)), x: p.x - 32, y: p.y - 70, s: p.y, k: TREES.has(p.t) ? 'tree' : 'prop', px: p.x, py: p.y }); }
-    for (const b of BLD) { const x0 = b.r[0] * TS, y1 = (b.r[3] + 1) * TS; const mk = n => () => (b.id === 'casa' && S.house === 0 && typeof ranchoSpr === 'function' ? ranchoSpr(b, n) : bldSpr(b, n));
+    for (const b of BLD) { const x0 = b.r[0] * TS, y1 = (b.r[3] + 1) * TS; if (b.id === 'casa' && window.__art) b.top = 60; const mk = n => () => (b.id === 'casa' && window.__art ? __art.house(n) : b.id === 'casa' && S.house === 0 && typeof ranchoSpr === 'function' ? ranchoSpr(b, n) : bldSpr(b, n));
       const key = 'bld_' + b.id; reg(key, mk(false)); reg(key + '_n', mk(true)); inst.push({ t: key, x: x0 - 4, y: b.r[1] * TS - b.top, s: y1 - 2, k: 'bld', id: b.id, w: (b.r[2] - b.r[0] + 1) * TS }); }
     // cochos (nível de 85%)
-    TROUGHS.forEach((t, k) => { const key = 'trough_' + t.k + '_' + t.w; inst.push({ t: reg(key, () => troughSpr(t, 0.85)), x: t.x * TS - 2, y: t.y * TS - 2, s: t.y * TS + 15, k: 'trough', ti: k }); });
+    const troughTex = {}; TROUGHS.forEach(t => { const key = 'trough_' + t.k + '_' + t.w; if (!troughTex[key]) { const st = this.strip([0, 0.5, 1].map(q => troughSpr(t, q))); tex[key] = st.url; troughTex[key] = { t: 'res://assets/art/world/objects/' + key + '.png', fw: st.fw, fh: st.fh, n: st.n }; } });
     // porteiras: 4 quadros (fechada → aberta) capturados do canvas principal; os tiles vão à parte
     const gates = [];
     GATES.forEach((g, gi2) => { const xs = g.t.map(q => q[0]), ys = g.t.map(q => q[1]); const x0 = Math.min(...xs) * TS - 32, y0 = Math.min(...ys) * TS - 32, w = (Math.max(...xs) - Math.min(...xs) + 1) * TS + 64, hh = (Math.max(...ys) - Math.min(...ys) + 1) * TS + 48;
@@ -51,7 +60,7 @@ const HELPERS = `window.__exp = {
       const ar = g.a && AREAS[g.a];
       gates.push({ id: gi2, t: 'res://assets/art/world/objects/' + key + '.png', fw: st.fw, fh: st.fh, n: st.n, x: x0, y: y0, s: g.h ? Math.max(...ys) * TS + 14 : (Math.max(...ys) + 1) * TS - 1, tiles: g.t, h: !!g.h, area: g.a || null, parcel: ar && ar.parcel ? ar.parcel : null, open: !!g.open }); });
     const areas = {}; for (const k of AKEYS) { const a = AREAS[k]; areas[k] = { n: a.n, k: a.k, r: a.r, parcel: a.parcel || null, gates: a.gates || (a.gate !== undefined ? [a.gate] : []) }; }
-    const troughs = TROUGHS.map(t => ({ a: t.a, k: t.k, x: t.x, y: t.y, w: t.w, cap: t.cap }));
+    const troughs = TROUGHS.map(t => Object.assign({ a: t.a, k: t.k, x: t.x, y: t.y, w: t.w, cap: t.cap, px: t.x * TS - 2, py: t.y * TS - 2, s: t.y * TS + 15 }, troughTex['trough_' + t.k + '_' + t.w]));
     return { TS, MW, MH, solid, water, tex, inst, gates, areas, troughs, spawn: window.__layoutSpawn || (() => { const q = newState().p; return { x: q.x, y: q.y }; })(), herd: S.animals.filter(a => a.own === 'player' && a.sp === 'boi').map(a => ({ x: a.x, y: a.y, sex: a.sex, n: a.n })) };
   },
   char(ap, pose, dir, n) { const cs = []; for (let f = 0; f < n; f++) cs.push(charSpr(ap, dir, f, pose)); return this.strip(cs); },
@@ -81,6 +90,8 @@ const HELPERS = `window.__exp = {
   const layout = JSON.parse(fs.readFileSync(layoutPath, 'utf8'));
   await ev(require('./apply_layout.js'));
   await ev(require('./ground_post.js'));
+  await ev(require('./art_extras.js'));
+  await ev('window.__layout = ' + JSON.stringify(layout) + '; true');
   console.log('layout:', JSON.stringify(await ev('__applyLayout(' + JSON.stringify(layout) + ')')));
   await ev('window.__layoutSpawn = { x: ' + layout.spawn[0] + ' * TS, y: ' + layout.spawn[1] + ' * TS }; true');
   const markers = layout.markers || {};
@@ -96,7 +107,7 @@ const HELPERS = `window.__exp = {
   // mundo
   const W = await ev('__exp.world()');
   for (const [k, u] of Object.entries(W.tex)) savePng('assets/art/world/objects/' + k + '.png', u);
-  const world = { schema_version: 2, tile_size: W.TS, map_width: W.MW, map_height: W.MH, solid: W.solid, water: W.water, spawn: W.spawn, herd: W.herd, areas: W.areas, gates: W.gates, troughs: W.troughs, markers,
+  const world = { schema_version: 3, plots: layout.plots || [], tile_size: W.TS, map_width: W.MW, map_height: W.MH, solid: W.solid, water: W.water, spawn: W.spawn, herd: W.herd, areas: W.areas, gates: W.gates, troughs: W.troughs, markers,
     objects: W.inst.map(o => Object.assign({}, o, { t: 'res://assets/art/world/objects/' + o.t + '.png' })) };
   fs.writeFileSync(P('assets/data/world_map.json'), JSON.stringify(world));
 
@@ -109,6 +120,8 @@ const HELPERS = `window.__exp = {
   for (const an of ['idle', 'walk', 'trot', 'gallop']) for (const d of [0, 1, 3]) putStrip(`mounted_${an}_${d}`, await ev(`__exp.mounted(${H}, ${AP}, ${d}, '${an}')`));
   for (const an of ['idle', 'walk', 'trot', 'gallop', 'eat']) for (const v of ['side', 'front', 'back']) putStrip(`horse_${an}_${v}`, await ev(`__exp.rig(${H}, '${v}', '${an}')`));
 
+  // roça de forragem: 4 estágios de cada planta
+  for (const k of ['palma', 'mandacaru', 'manicoba']) putStrip('crop_' + k, await ev(`(() => { const s = __exp.strip([0, 1, 2, 3].map(i => __art.crop('${k}', i))); s.ox = 12; s.oy = 31; return s; })()`));
   // gado Pé-Duro (vaca e touro)
   for (const [sex, id] of [['F', 11], ['M', 12]]) { const A = `({ id: ${id}, sp: 'boi', br: 'peduro', sex: '${sex}', age: 40 })`;
     for (const an of ['idle', 'walk', 'trot', 'gallop', 'eat', 'lie']) for (const v of ['side', 'front', 'back']) putStrip(`peduro${sex}_${an}_${v}`, await ev(`__exp.rig(${A}, '${v}', '${an}')`)); }

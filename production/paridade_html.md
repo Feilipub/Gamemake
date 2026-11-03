@@ -61,6 +61,12 @@ Pedido da RF Games (03/11/2026): **nada pode faltar no APK**, inclusive o menu i
 - [ ] Churrasco com convidados; música na fogueira (viola/violão)
 - [ ] Região: fazendas distantes simuladas e notícias
 
+## Novos (pedidos da RF Games, não existiam no HTML)
+- [x] Casa da fazenda redesenhada: taipa caiada, alpendre com esteios, telhado colonial de telha capa-canal (dia e noite) — `production/qa/evidence/fase4-casa-*.png`
+- [x] Cercas brasileiras: arame farpado em mourões roliços (pastos), tábuas de aroeira (currais), varas de faxina com cipó (quintal, galinheiro, cavalos, roça) — `fase4-cercas.png`
+- [x] Roça de forragem: palma forrageira, mandacaru sem espinho e maniçoba; plantar, crescer pelos dias, colher (rebrota) — `fase4-roca-*.png`
+- [x] Cochos de comida nos piquetes; pôr forragem no cocho; o gado vai até o cocho e come — `fase4-cocho-gado-comendo.png`
+
 ## Sistema
 - [x] Trilhas INTRO e GAME1/GAME2 com transição — fatia 1
 - [x] Salvamento automático com cópia de segurança — fatia 1 (falta: 3 espaços e todos os dados)

@@ -76,16 +76,6 @@
    "t": "DIRT",
    "r": [
     40,
-    29,
-    58,
-    29
-   ],
-   "_": "frente dos lotes"
-  },
-  {
-   "t": "DIRT",
-   "r": [
-    40,
     42,
     58,
     42
@@ -431,6 +421,29 @@
     ]
    ],
    "parcel": "leste"
+  },
+  "roca": {
+   "n": "Roça de forragem",
+   "k": "roca",
+   "r": [
+    40,
+    23,
+    58,
+    29
+   ],
+   "fill": "FLOOR",
+   "gates": [
+    [
+     [
+      40,
+      25
+     ],
+     [
+      40,
+      26
+     ]
+    ]
+   ]
   }
  },
  "openings": [
@@ -689,6 +702,38 @@
    "y": 62,
    "w": 2,
    "cap": 120
+  },
+  {
+   "a": "p1",
+   "k": "racao",
+   "x": 2,
+   "y": 47,
+   "w": 2,
+   "cap": 150
+  },
+  {
+   "a": "p2",
+   "k": "racao",
+   "x": 11,
+   "y": 47,
+   "w": 2,
+   "cap": 150
+  },
+  {
+   "a": "p3",
+   "k": "racao",
+   "x": 20,
+   "y": 47,
+   "w": 2,
+   "cap": 150
+  },
+  {
+   "a": "p4",
+   "k": "racao",
+   "x": 29,
+   "y": 47,
+   "w": 2,
+   "cap": 150
   }
  ],
  "buildings": [
@@ -1035,6 +1080,10 @@
   "galpao": [
    20.0,
    28.3
+  ],
+  "roca_porteira": [
+   40,
+   25.5
   ]
  },
  "solid_tiles": [
@@ -1054,5 +1103,156 @@
    6,
    33
   ]
- ]
+ ],
+ "plots": [
+  {
+   "id": 0,
+   "crop": "palma",
+   "x": 41,
+   "y": 24,
+   "w": 2
+  },
+  {
+   "id": 1,
+   "crop": "palma",
+   "x": 44,
+   "y": 24,
+   "w": 2
+  },
+  {
+   "id": 2,
+   "crop": "palma",
+   "x": 47,
+   "y": 24,
+   "w": 2
+  },
+  {
+   "id": 3,
+   "crop": "palma",
+   "x": 50,
+   "y": 24,
+   "w": 2
+  },
+  {
+   "id": 4,
+   "crop": "palma",
+   "x": 53,
+   "y": 24,
+   "w": 2
+  },
+  {
+   "id": 5,
+   "crop": "palma",
+   "x": 56,
+   "y": 24,
+   "w": 2
+  },
+  {
+   "id": 6,
+   "crop": "mandacaru",
+   "x": 41,
+   "y": 26,
+   "w": 2
+  },
+  {
+   "id": 7,
+   "crop": "mandacaru",
+   "x": 44,
+   "y": 26,
+   "w": 2
+  },
+  {
+   "id": 8,
+   "crop": "mandacaru",
+   "x": 47,
+   "y": 26,
+   "w": 2
+  },
+  {
+   "id": 9,
+   "crop": "mandacaru",
+   "x": 50,
+   "y": 26,
+   "w": 2
+  },
+  {
+   "id": 10,
+   "crop": "mandacaru",
+   "x": 53,
+   "y": 26,
+   "w": 2
+  },
+  {
+   "id": 11,
+   "crop": "mandacaru",
+   "x": 56,
+   "y": 26,
+   "w": 2
+  },
+  {
+   "id": 12,
+   "crop": "manicoba",
+   "x": 41,
+   "y": 28,
+   "w": 2
+  },
+  {
+   "id": 13,
+   "crop": "manicoba",
+   "x": 44,
+   "y": 28,
+   "w": 2
+  },
+  {
+   "id": 14,
+   "crop": "manicoba",
+   "x": 47,
+   "y": 28,
+   "w": 2
+  },
+  {
+   "id": 15,
+   "crop": "manicoba",
+   "x": 50,
+   "y": 28,
+   "w": 2
+  },
+  {
+   "id": 16,
+   "crop": "manicoba",
+   "x": 53,
+   "y": 28,
+   "w": 2
+  },
+  {
+   "id": 17,
+   "crop": "manicoba",
+   "x": 56,
+   "y": 28,
+   "w": 2
+  }
+ ],
+ "fence_styles": {
+  "aroeira_kinds": [
+   "curral",
+   "pen",
+   "conf"
+  ],
+  "aroeira_keys": [
+   "haras"
+  ],
+  "varas_keys": [
+   "galin",
+   "cavalos",
+   "roca"
+  ],
+  "aroeira_rects": [
+   [
+    100,
+    46,
+    105,
+    49
+   ]
+  ]
+ }
 }

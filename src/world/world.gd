@@ -13,6 +13,12 @@ var horse: Horse
 var cows: Array[Cow] = []
 var gates: Array[Gate] = []
 var owned_parcels: Dictionary = {}
+var troughs: Array[Trough] = []
+var plots: Array[Plot] = []
+## Forragem colhida na roça e guardada (kg).
+var forage_kg := 0
+var _areas: Dictionary = {}
+var _last_day := -1
 var aboio_left := 0.0
 var playing := false
 
@@ -76,6 +82,19 @@ func build() -> void:
 		g.setup(gd, grid, ts, parcel != null and not owned_parcels.has(parcel), label)
 		gates.append(g)
 
+	_areas = areas
+	for td: Dictionary in w.get("troughs", []):
+		var t := Trough.new()
+		_ysort.add_child(t)
+		t.setup(td, ts, float(td.cap) * (0.8 if td.k == "agua" else 0.0))
+		troughs.append(t)
+	var crops: Dictionary = GameData.crops
+	for pd: Dictionary in w.get("plots", []):
+		var pl := Plot.new()
+		_ysort.add_child(pl)
+		pl.setup(pd, crops.get(pd.crop, {}), ts)
+		plots.append(pl)
+
 	var spawn := Vector2(float(w.spawn.x), float(w.spawn.y))
 	horse = Horse.new()
 	horse.position = spawn + Vector2(24, 2)
@@ -124,15 +143,32 @@ func set_playing(on: bool) -> void:
 		_camera.reset_smoothing()
 
 
-## Interação mais próxima do vaqueiro (por enquanto: porteiras). null se nada ao alcance.
-func nearest_interactable() -> Gate:
-	var best: Gate = null
-	var bd := float(_tuning.interaction.radius)
+## Interações ao alcance do vaqueiro: porteiras, leiras da roça e cochos de comida.
+## Cada uma é {pos, label, fn}; o botão Ação faz a mais próxima.
+func _interactions() -> Array:
+	var out := []
+	var r := float(_tuning.interaction.radius)
 	for g in gates:
-		var d := g.center().distance_to(player.position)
+		if g.center().distance_to(player.position) < r:
+			out.append({"pos": g.center(), "label": g.action_label(), "fn": _use_gate.bind(g)})
+	for pl in plots:
+		if pl.center().distance_to(player.position) < r:
+			out.append({"pos": pl.center(), "label": _plot_label(pl), "fn": _use_plot.bind(pl)})
+	for t in troughs:
+		if t.kind == "racao" and t.center().distance_to(player.position) < r:
+			var lbl := "Pôr forragem no cocho (%d kg)" % forage_kg if forage_kg > 0 else "Cocho: %d de %d kg" % [roundi(t.level), roundi(t.capacity)]
+			out.append({"pos": t.center(), "label": lbl, "fn": _use_trough.bind(t)})
+	return out
+
+
+func _nearest() -> Dictionary:
+	var best := {}
+	var bd := INF
+	for it: Dictionary in _interactions():
+		var d: float = (it.pos as Vector2).distance_to(player.position)
 		if d < bd:
 			bd = d
-			best = g
+			best = it
 	return best
 
 
@@ -140,17 +176,20 @@ func nearest_interactable() -> Gate:
 func interaction_label() -> String:
 	if not playing:
 		return ""
-	var g := nearest_interactable()
-	return g.action_label() if g != null else ""
+	var it := _nearest()
+	return String(it.label) if not it.is_empty() else ""
 
 
 ## Faz a interação mais próxima (chamado pelo botão Ação).
 func interact() -> void:
 	if not playing:
 		return
-	var g := nearest_interactable()
-	if g == null:
-		return
+	var it := _nearest()
+	if not it.is_empty():
+		(it.fn as Callable).call()
+
+
+func _use_gate(g: Gate) -> void:
 	if g.state.locked:
 		var info: Dictionary = GameData.parcels.get(g.parcel, {})
 		message.emit("Porteira travada: %s ainda não é seu (R$ %s)." % [info.get("name", "esse terreno"), _money(int(info.get("price", 0)))])
@@ -159,6 +198,69 @@ func interact() -> void:
 		message.emit("Tem bicho ou gente na porteira. Espere passar para fechar.")
 		return
 	g.toggle()
+
+
+func _plot_label(pl: Plot) -> String:
+	var d := clock.day
+	if pl.logic.is_empty():
+		return "Plantar " + pl.crop_name
+	if pl.logic.is_ready(d):
+		return "Colher %s (+%d kg)" % [pl.crop_name, int(GameData.crops[pl.logic.crop].yield_kg)]
+	var n := pl.logic.days_left(d)
+	return "%s crescendo · falta%s %d dia%s" % [pl.crop_name, "" if n == 1 else "m", n, "" if n == 1 else "s"]
+
+
+func _use_plot(pl: Plot) -> void:
+	var d := clock.day
+	if pl.logic.is_empty():
+		pl.logic.plant(d)
+		message.emit("Plantou %s. Fica pronta em %d dias." % [pl.crop_name, int(GameData.crops[pl.logic.crop].grow_days)])
+	elif pl.logic.is_ready(d):
+		var kg := pl.logic.harvest(d)
+		forage_kg += kg
+		message.emit("Colheu %d kg de %s. Leve ao cocho para o gado." % [kg, pl.crop_name.to_lower()])
+	else:
+		message.emit(_plot_label(pl) + ".")
+	pl.refresh(d)
+
+
+func _use_trough(t: Trough) -> void:
+	if forage_kg <= 0:
+		message.emit("Sem forragem guardada. Colha palma, mandacaru ou maniçoba na roça.")
+		return
+	var put := t.add(float(forage_kg))
+	if put <= 0.0:
+		message.emit("O cocho já está cheio.")
+		return
+	forage_kg -= roundi(put)
+	message.emit("Pôs %d kg de forragem no cocho." % roundi(put))
+
+
+## Área (chave) que contém o ponto, ou "".
+func area_at(p: Vector2) -> String:
+	var ts := float(GameData.world.tile_size)
+	var tx := p.x / ts
+	var ty := p.y / ts
+	for k: String in _areas:
+		var r: Array = _areas[k].r
+		if tx > float(r[0]) + 1.0 and tx < float(r[2]) and ty > float(r[1]) + 1.0 and ty < float(r[3]):
+			return k
+	return ""
+
+
+func _food_for(c: Cow) -> Trough:
+	var a := area_at(c.position)
+	if a == "":
+		return null
+	var best: Trough = null
+	var bd := INF
+	for t in troughs:
+		if t.area_key == a and t.has_food():
+			var d := t.center().distance_to(c.position)
+			if d < bd:
+				bd = d
+				best = t
+	return best
 
 
 ## Compra um terreno: destrava as porteiras dele.
@@ -195,7 +297,13 @@ func to_save() -> Dictionary:
 	var gate_open := []
 	for g in gates:
 		gate_open.append(g.state.open)
-	return {"v": 2, "day": clock.day, "minute": clock.minute, "player": player.to_save(),
+	var plot_s := []
+	for pl in plots:
+		plot_s.append(pl.logic.planted_day)
+	var tr_s := []
+	for t in troughs:
+		tr_s.append(t.level)
+	return {"v": 3, "forage": forage_kg, "plots": plot_s, "troughs": tr_s, "day": clock.day, "minute": clock.minute, "player": player.to_save(),
 		"horse": {"x": horse.position.x, "y": horse.position.y}, "herd": herd,
 		"gates": gate_open, "parcels": owned_parcels.keys()}
 
@@ -217,6 +325,15 @@ func from_save(d: Dictionary) -> void:
 		if bool(go[i]) != gates[i].state.open:
 			gates[i].state.open = bool(go[i])
 			gates[i].state.anim = 1.0 if gates[i].state.open else 0.0
+	forage_kg = int(d.get("forage", 0))
+	var ps: Array = d.get("plots", [])
+	for i in mini(ps.size(), plots.size()):
+		plots[i].logic.planted_day = int(ps[i])
+		plots[i].refresh(clock.day)
+	var ts_: Array = d.get("troughs", [])
+	for i in mini(ts_.size(), troughs.size()):
+		troughs[i].level = 0.0
+		troughs[i].add(float(ts_[i]))
 	var herd: Array = d.get("herd", [])
 	for i in mini(herd.size(), cows.size()):
 		cows[i].position = Vector2(float(herd[i].x), float(herd[i].y))
@@ -243,7 +360,15 @@ func _physics_process(dt: float) -> void:
 			if o != c and o.position.distance_to(c.position) < nr:
 				_neighbors.append(o.position)
 		_ctx.neighbors = _neighbors
+		var food := _food_for(c)
+		_ctx.food_pos = food.center() if food != null else null
 		c.think(dt, _ctx)
+		if food != null and c.brain.state == HerdBrain.State.FEED and c.position.distance_to(food.center()) < float(_tuning.cattle.feed_reach) + 6.0:
+			food.eat(float(_tuning.cattle.eat_kg_per_sec) * dt)
+	if clock.day != _last_day:
+		_last_day = clock.day
+		for pl in plots:
+			pl.refresh(clock.day)
 
 
 func _process(dt: float) -> void:
@@ -288,6 +413,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			if _pinch_d > 0.0:
 				_zoom_by(d / _pinch_d)
 			_pinch_d = d
+
+
+## Define o zoom da câmera (limitado por camera.zoom_min / zoom_max).
+func set_zoom(z: float) -> void:
+	var cam: Dictionary = _tuning.camera
+	z = clampf(z, float(cam.zoom_min), float(cam.zoom_max))
+	_camera.zoom = Vector2(z, z)
 
 
 func _zoom_by(f: float) -> void:

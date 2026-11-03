@@ -63,3 +63,21 @@ func test_routine_is_deterministic_with_same_seed() -> void:
 	var vb := b.step(0.1, Vector2.ZERO, ctx, _rng())
 	assert_eq(a.state, b.state)
 	assert_eq(va, vb)
+
+
+func test_food_in_trough_draws_cow_and_it_stops_to_eat() -> void:
+	var b := HerdBrain.new(CFG)
+	var far := {"player_pos": Vector2(1000, 1000), "food_pos": Vector2(200, 100)}
+	var v := b.step(0.1, Vector2(100, 100), far, _rng())
+	assert_eq(b.state, HerdBrain.State.FEED)
+	assert_true(v.x > 0.0, "anda até o cocho")
+	var v2 := b.step(0.1, Vector2(195, 100), far, _rng())
+	assert_eq(b.state, HerdBrain.State.FEED)
+	assert_near(v2.length(), 0.0, 0.001, "parado comendo")
+
+
+func test_rider_pressure_beats_feeding() -> void:
+	var b := HerdBrain.new(CFG)
+	var ctx := {"player_pos": Vector2(185, 100), "food_pos": Vector2(200, 100)}
+	b.step(0.1, Vector2(195, 100), ctx, _rng())
+	assert_eq(b.state, HerdBrain.State.FLEE, "o cavaleiro em cima espanta do cocho")

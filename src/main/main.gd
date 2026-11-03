@@ -5,9 +5,14 @@ extends Node
 ##   --scene=world      pula o título e entra no jogo
 ##   --minute=1260      horário inicial (minutos do dia)
 ##   --at=x,y           posição inicial do vaqueiro (pixels de mundo)
+##   --day=8            dia do jogo
+##   --forage=40        forragem guardada (kg)
+##   --plant=palma      planta todas as leiras desse tipo no dia 1 (ou "all")
+##   --zoom=1.5         zoom da câmera (fotos)
 ##   --mounted          começa montado
 ##   --touch            mostra os controles de toque no PC
 ##   --move=x,y         segura o movimento nessa direção (ex.: 1,0)
+##   --move-for=1.5     solta o movimento depois de N segundos
 ##   --run              segura Correr
 ##   --aboio            chama o gado no início
 ##   --wait=3           segundos até a captura
@@ -82,6 +87,16 @@ func _apply_debug_args() -> void:
 		world.player.position = Vector2(float(q[0]), float(q[1]))
 		world.horse.position = world.player.position + Vector2(20, 0)
 		world.set_playing(true)
+	if _args.has("zoom"):
+		world.set_zoom(float(_args.zoom))
+	if _args.has("plant"):
+		for pl in world.plots:
+			if _args.plant == "all" or pl.logic.crop == _args.plant:
+				pl.logic.plant(1)
+	if _args.has("day"):
+		world.clock.day = int(_args.day)
+	if _args.has("forage"):
+		world.forage_kg = int(_args.forage)
 	if _args.has("minute"):
 		world.clock.minute = float(_args.minute)
 	if _args.has("mounted"):
@@ -98,6 +113,10 @@ func _apply_debug_args() -> void:
 		if v.x < 0.0: Input.action_press(&"move_left", -v.x)
 		if v.y > 0.0: Input.action_press(&"move_down", v.y)
 		if v.y < 0.0: Input.action_press(&"move_up", -v.y)
+	if _args.has("move-for"):
+		get_tree().create_timer(float(_args["move-for"])).timeout.connect(func() -> void:
+			for act: StringName in [&"move_left", &"move_right", &"move_up", &"move_down"]:
+				Input.action_release(act))
 	if _args.has("run"):
 		Input.action_press(&"run")
 	if _args.has("aboio"):
@@ -112,6 +131,9 @@ func _capture() -> void:
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	img.save_png(path)
 	print("captura salva: ", path)
+	for c in world.cows:
+		print("boi ", c.cow_name, " ", c.position, " estado ", HerdBrain.State.keys()[c.brain.state], " área ", world.area_at(c.position))
+	print("vaqueiro em ", world.player.position, " · forragem ", world.forage_kg, " · cochos ", world.troughs.map(func(t: Trough) -> int: return roundi(t.level)))
 	get_tree().quit()
 
 

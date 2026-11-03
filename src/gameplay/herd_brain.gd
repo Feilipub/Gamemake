@@ -8,6 +8,7 @@ extends RefCounted
 ##   CALM    aboio ativo e vaqueiro já perto (para e espera, sem fugir)
 ##   FLEE    sem aboio e vaqueiro dentro do raio de pressão (maior quanto mais rápido ele vem)
 ##           -> é assim que se "toca" o gado: a pressão do cavalo empurra o rebanho
+##   FEED    há comida no cocho da área (ctx.food_pos): vai até o cocho e come parado
 ##   GRAZE / IDLE / WANDER  rotina livre, sorteada por graze_chance / idle_chance a cada
 ##           state_min_sec..state_max_sec; vaguear puxa levemente para o centro do grupo.
 ## Em todos os estados soma-se a separação dos vizinhos (não se empilham).
@@ -16,7 +17,7 @@ extends RefCounted
 ##   var brain := HerdBrain.new(GameData.tuning.cattle)
 ##   var vel := brain.step(delta, position, ctx, rng)
 
-enum State { IDLE, GRAZE, WANDER, FOLLOW, CALM, FLEE }
+enum State { IDLE, GRAZE, WANDER, FOLLOW, CALM, FLEE, FEED }
 
 var state: State = State.IDLE
 var _cfg: Dictionary
@@ -30,7 +31,8 @@ func _init(cfg: Dictionary) -> void:
 
 ## Velocidade desejada (px/s).
 ## ctx: player_pos (Vector2), player_speed (float), aboio_left (float, s),
-##      neighbors (Array[Vector2], posições dos outros animais).
+##      neighbors (Array[Vector2], posições dos outros animais),
+##      food_pos (Vector2 opcional: cocho com comida na mesma área).
 func step(dt: float, pos: Vector2, ctx: Dictionary, rng: RandomNumberGenerator) -> Vector2:
 	var walk := float(_cfg.walk_speed)
 	var to_p: Vector2 = ctx.player_pos - pos
@@ -51,8 +53,16 @@ func step(dt: float, pos: Vector2, ctx: Dictionary, rng: RandomNumberGenerator) 
 		state = State.FLEE
 		var k := 1.0 - d / flee_r
 		vel = -to_p / d * lerpf(walk, float(_cfg.flee_speed), k)
+	elif ctx.get("food_pos") is Vector2:
+		state = State.FEED
+		var to_f: Vector2 = ctx.food_pos - pos
+		var reach := float(_cfg.get("feed_reach", 12.0))
+		if to_f.length() > reach:
+			vel = to_f.normalized() * walk
 	else:
 		_timer -= dt
+		if state == State.FEED:
+			_timer = 0.0
 		if state == State.FOLLOW or state == State.FLEE or state == State.CALM or _timer <= 0.0:
 			_pick_routine(rng)
 		if state == State.WANDER:

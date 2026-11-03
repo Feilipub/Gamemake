@@ -9,6 +9,7 @@ var _stamina: ProgressBar
 var _msg: Label
 var _msg_t := 0.0
 var _hint: Label
+var _forage: Label
 var _stick: VirtualStick
 var _buttons: Array[TouchScreenButton] = []
 var _root: Control
@@ -38,6 +39,9 @@ func setup(world: World, force_touch: bool) -> void:
 	_stamina.show_percentage = false
 	_stamina.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(_stamina)
+	_forage = Label.new()
+	_forage.add_theme_color_override("font_color", Color("#b8e08a"))
+	row.add_child(_forage)
 
 	_msg = Label.new()
 	_msg.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -82,6 +86,8 @@ func _process(dt: float) -> void:
 	_stamina.visible = _world.player.mounted
 	_stamina.max_value = float(GameData.tuning.mount.stamina_max)
 	_stamina.value = _world.player.stamina
+	_forage.visible = _world.forage_kg > 0
+	_forage.text = "Forragem %d kg" % _world.forage_kg
 	_msg_t -= dt
 	_msg.modulate.a = clampf(_msg_t * 2.0, 0.0, 1.0)
 	var lbl := _world.interaction_label()

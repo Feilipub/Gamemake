@@ -62,6 +62,6 @@ func _animate(v: Vector2) -> void:
 		an = "trot"
 	elif spd > 2.0:
 		an = "walk"
-	elif brain.state == HerdBrain.State.GRAZE:
+	elif brain.state == HerdBrain.State.GRAZE or brain.state == HerdBrain.State.FEED:
 		an = "eat"
 	_sprite.show_anim(StringName("%s_%s" % [an, _view]), _flip, clampf(spd / maxf(float(_cfg.walk_speed), 1.0), 0.6, 1.6) if an != "idle" and an != "eat" else 1.0)

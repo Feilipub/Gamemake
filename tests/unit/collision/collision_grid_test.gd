@@ -53,3 +53,14 @@ func test_set_blocked_opens_and_closes_a_passage() -> void:
 	assert_true(g.is_blocked_tile(2, 0), "fechou de novo")
 	g.set_blocked(99, 99, true)
 	assert_true(g.is_blocked_tile(99, 99), "fora do mapa continua bloqueado e não quebra")
+
+
+func test_body_already_overlapping_solid_can_walk_out() -> void:
+	# Regressão: o vaqueiro nascia com a caixa 1–2 px dentro de um cocho (tile sólido). Cada passo
+	# (menor que a sobreposição) era recusado e ele ficava preso para sempre.
+	var b := PackedByteArray([1, 0, 0, 0])  # 1 coluna x 4 linhas: só a linha 0 é sólida
+	var g := CollisionGrid.new(b, 1, 4, 16.0)
+	var p := Vector2(8, 17.5)  # caixa y 15–20: invade 1 px a linha 0
+	for i in 10:
+		p = g.move(p, Vector2(0, 0.5), Vector2(3, 2.5))
+	assert_true(p.y > 18.0, "anda para longe do sólido em passos pequenos (y=%s)" % p.y)

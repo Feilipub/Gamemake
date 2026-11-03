@@ -1,0 +1,6 @@
+{
+  "_comment": "Roça de forragem (sistema novo, pedido da RF Games em 03/11/2026; não existia no HTML v3.2). Dias = dias do jogo. yield_kg = forragem colhida por leira. regrow_days = dias para rebrotar depois da colheita (plantas perenes: colhe-se a parte de cima e a planta fica). feed_value = quanto 1 kg sacia em relação à ração (1.0).",
+  "palma": {"name": "Palma forrageira", "grow_days": 6, "regrow_days": 4, "yield_kg": 40, "feed_value": 0.6, "desc": "Cacto de raquetes, a reserva verde do sertão na seca. Exótica naturalizada, cultivada em todo o semiárido."},
+  "mandacaru": {"name": "Mandacaru sem espinho", "grow_days": 8, "regrow_days": 5, "yield_kg": 30, "feed_value": 0.7, "desc": "Cacto nativo da Caatinga. Picado (ou sem espinhos), alimenta o gado quando o pasto acaba."},
+  "manicoba": {"name": "Maniçoba", "grow_days": 5, "regrow_days": 3, "yield_kg": 25, "feed_value": 0.9, "desc": "Arbusto nativo do semiárido; as folhas viram feno e silagem de boa proteína."}
+}
