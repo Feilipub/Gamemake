@@ -359,7 +359,7 @@ const EMO_IC = { '🐄': 'cow', '🐕': 'dog', '🐎': 'horse', '🐴': 'horse',
 const noEmo = t => String(t).replace(EMO_RE, '').replace(/^\s+/, '');
 function emoHTML(h) { return String(h).replace(/✅|✔️?/gu, '<b style="color:#2a7a2a">✓</b>').replace(/⭐/gu, '★').replace(/⚠️?/gu, '<b style="color:#b02020">!</b>').replace(EMO_RE, m => { const k = m.trim().replace(/\uFE0F/g, ''); return EMO_IC[k] && typeof ic === 'function' ? ic(EMO_IC[k], 14) + ' ' : ''; }); }
 function say(t, ms) { const m = $('msg'); t = noEmo(t); m.textContent = t; m.classList.add('on'); msgT = ms || 3500; }
-function toast(t) { const d = document.createElement('div'); d.textContent = noEmo(t).replace(/^\s*([!✓])?/, '$1'); $('toast').appendChild(d); setTimeout(() => d.remove(), 2700); }
+function toast(t) { const box = $('toast'), d = document.createElement('div'); d.textContent = noEmo(t).replace(/^\s*([!✓])?/, '$1'); box.appendChild(d); while (box.children.length > 4) box.firstChild.remove(); setTimeout(() => d.remove(), 2700); } // no máximo 4 avisos na tela
 const shownTips = {};
 function tip(k, t) { if (S && S.flags['tip_' + k]) return; if (S) S.flags['tip_' + k] = 1; say(t, 6500); }
 
@@ -3810,11 +3810,11 @@ function dayTick() { storyCheck(); regionDay(); missionDay();
     if (a.sp === 'boi') {
       const eat = cl(a.dayFood / 100, 0, 1.2);
       let gain = (B.gain || 1) * (0.25 + 0.55 * eat) * (a.ration ? 1.45 : 1) * (a.area === 'conf' && built('cocho') ? 1.25 : 1) * (0.8 + a.gen / 250) * (a.hp / 100) * (1 + skill('pec') * 0.05) * (a.skills.includes('Ganho de Peso') ? 1.15 : 1) * (se && !a.ration ? 0.7 : 1);
-      if (a.age < 12) gain *= 1.6;
+      if (a.age < 12) gain *= 1.6; if (a.stress > 40) gain *= 0.8;
       if (a.food < 15) gain = -2.5;
       const cap = a.sex === 'M' ? 900 : 560; a.wt = Math.round(cl(a.wt + gain * 2.2, 30, cap) * 10) / 10;
     }
-    if (a.sp === 'porco') { const eat = cl(a.dayFood / 100, 0, 1.2), z = (PIGS[a.br] || {}).size || 1; let g = ((PIGS[a.br] || {}).gain || 1) * (0.3 + 0.7 * eat) * (a.ration ? 1.4 : 1) * (a.age < 14 ? 1 : 0.25) * (0.8 + a.gen / 250) * (a.hp / 100) * 7; if (a.food < 15) g = -1.5; a.wt = Math.round(cl(a.wt + g, 1.5, (a.sex === 'M' ? 170 : 155) * z) * 10) / 10; }
+    if (a.sp === 'porco') { const eat = cl(a.dayFood / 100, 0, 1.2), z = (PIGS[a.br] || {}).size || 1; let g = ((PIGS[a.br] || {}).gain || 1) * (0.3 + 0.7 * eat) * (a.ration ? 1.4 : 1) * (a.age < 14 ? 1 : 0.25) * (0.8 + a.gen / 250) * (a.hp / 100) * 7; if (a.stress > 40) g *= 0.8; if (a.food < 15) g = -1.5; a.wt = Math.round(cl(a.wt + g, 1.5, (a.sex === 'M' ? 170 : 155) * z) * 10) / 10; }
     a.cond = cl(a.cond + (a._ran || 0) / 400 - 0.4, 0, 100); a._ran = 0;
     a.dayFood = 0; a.ration = 0;
     if (a.lact > 0) a.lact--;
@@ -3843,7 +3843,7 @@ function dayTick() { storyCheck(); regionDay(); missionDay();
   // galinhas: pintinhos
   const hens = S.animals.filter(a => a.sp === 'galinha' && a.own === 'player'), cap = 10 + (built('galinheiro') ? 12 : 0);
   if (hens.some(h => h.sex === 'M') && hens.length < cap) for (const h of hens) if (h.sex === 'F' && h.skills.includes('Choca') && Math.random() < 0.08) { const c = mkAnimal('galinha', h.br, { age: 0, mae: h.n, x: h.x, y: h.y }); S.animals.push(c); toast('🐤 Nasceu um pintinho!'); break; }
-  pomarDay();
+  pomarDay(); crowdDay();
   // esterco: chiqueiro e aprisco enchem a esterqueira (sacos de 20 kg)
   { const pg = S.animals.filter(a => a.own === 'player' && a.sp === 'porco' && a.area === 'chiq').length, gt2 = S.animals.filter(a => a.own === 'player' && a.sp === 'cabra' && a.area === 'aprisco').length; S.esterco = Math.min(40, (S.esterco || 0) + pg * 0.35 + gt2 * 0.12); if (pg) S.dirt.chiq = cl((S.dirt.chiq || 0) + pg * 2, 0, 100); }
   // pastos: dias de descanso
@@ -3857,17 +3857,45 @@ function dayTick() { storyCheck(); regionDay(); missionDay();
   if (S.day % 7 === 1) payWorkers();
   if (S.day % 3 === 0) genCandidates();
   // NPCs: estoque de animais e favores vencidos
-  restockNpc('felipe', 'campos', 'boi', ['nelore', 'nelore', 'guzera', 'gir', 'tabapua']);
+  merchWeek(); restockNpc('felipe', 'campos', 'boi', ['nelore', 'nelore', 'guzera', 'gir', 'tabapua']);
   restockNpc('ryan', 'duarte', null, null);
   for (const id in S.npcs) { const s = S.npcs[id], q = s.quest; if (q && q.due < S.day) { s.quest = null; addFr(id, -30); remember(id, 'ficou chateado: favor não cumprido'); if (q.aid) S.animals = S.animals.filter(a => a.id !== q.aid); toast('😕 ' + NPCDEF[id].n + ' ficou chateado(a): favor não cumprido.'); } }
   if (S.event && S.event.day < S.day) S.event = null;
   P.en = cl(P.en, 0, 100);
 }
+/* ============ COMERCIANTES: rodízio de raças por estratégia (semanal) ============ */
+// Cada comerciante escolhe a raça-foco da semana pesando: preferência própria, demanda regional, estação,
+// orçamento, o que vendeu bem (histórico) e novidade. O estoque de animais dele passa a seguir o foco.
+const MERCH = {
+  felipe: { sp: 'boi', farm: 'campos', area: 'campos', brs: ['nelore', 'guzera', 'tabapua', 'gir', 'brahman', 'angus', 'senepol', 'girolando'], pref: { nelore: 1.15, guzera: 1.1, tabapua: 1.05, gir: 0.95, brahman: 1, angus: 0.8, senepol: 0.85, girolando: 0.8 }, style: 'tradicional: aposta no que conhece e só muda com bom motivo', stick: 1.06 },
+  ryan: { sp: 'equino', farm: 'duarte', area: 'duarte', brs: ['mm', 'qm', 'campolina', 'crioulo', 'pampa', 'nordestino', 'arabe', 'paint', 'appaloosa'], pref: { mm: 1.2, qm: 1.25, campolina: 1.05, crioulo: 0.95, pampa: 1, nordestino: 0.9, arabe: 0.85, paint: 1, appaloosa: 0.9 }, style: 'negociante: gosta de novidade e segue a vaquejada', stick: 1.05 }
+};
+function merchS(id) { S.merch = S.merch || {}; if (!S.merch[id]) S.merch[id] = { focus: MERCH[id].brs[0], since: 0, sold: {}, why: 'É o que ele sempre criou.', wk: -1 }; return S.merch[id]; }
+function merchSeasonF(id, br) { const se = season(), B = MERCH[id].sp === 'boi' ? CATTLE[br] : HORSES[br]; if (!B) return 1; if (MERCH[id].sp === 'boi') return se ? ((B.rust || 1) >= 1 ? 1.15 : 0.85) : ((B.gain || 1) > 1.08 ? 1.12 : 1); return se ? (B.rec > 20 ? 1.1 : 0.95) : (B.ac > 2.5 ? 1.1 : 1); }
+function merchWeek() {
+  const wk = typeof agroWeek === 'function' ? agroWeek() : Math.floor(S.day / 7); regionInit();
+  for (const id in MERCH) { const M0 = MERCH[id], st = merchS(id); if (st.wk === wk) continue; st.wk = wk;
+    const F = FARMS[M0.farm], money = S.region.farms[M0.farm] ? S.region.farms[M0.farm].money : 20000, dem = S.region.demand[M0.sp === 'boi' ? 'boi' : 'cavalo'] || 1;
+    const BD = S.region.bdem = S.region.bdem || {}; for (const br of M0.brs) BD[br] = cl((BD[br] || 1) + (Math.random() - 0.5) * 0.16 - ((BD[br] || 1) - 1) * 0.2, 0.75, 1.3); // procura por raça na região (sobe e desce)
+    let best = null, bs = -1, why = '';
+    for (const br of M0.brs) { const cost = M0.sp === 'boi' ? (CATTLE[br].p || 1) : (HORSES[br].cost / 20); if (cost > 1.25 && money < 30000) continue; // sem caixa para genética cara
+      const sold = st.sold[br] || 0, sc = M0.pref[br] * dem * merchSeasonF(id, br) * (1 + Math.min(0.6, sold * 0.2)) * (br === st.focus ? M0.stick : 1) * (0.9 + Math.random() * 0.25) * (br !== st.focus && wk - st.since >= 2 ? 1.2 : 1) * BD[br];
+      if (sc > bs) { bs = sc; best = br; why = sold >= 2 ? 'vendeu bem para você e a procura continua' : BD[br] > 1.15 ? 'a procura por essa raça subiu na região' : merchSeasonF(id, br) > 1.05 ? (season() ? 'aguenta melhor a seca' : 'engorda rápido nas águas') : br === st.focus ? 'continua dando resultado' : dem > 1.08 ? 'a região está procurando' : 'quer variar o plantel'; } }
+    if (best && best !== st.focus) { st.focus = best; st.since = wk; st.why = why; const nm = M0.sp === 'boi' ? CATTLE[best].n : HORSES[best].n; regionNews(`${NPCDEF[id].n} agora está trazendo ${nm}: ${why}.`); remember(id, 'passou a trabalhar com ' + nm); }
+    else if (best) st.why = why;
+    // troca parte do estoque pela raça-foco (vende um antigo, traz um novo)
+    const own = S.animals.filter(a => a.own === id && !a.mis), off = own.filter(a => a.br !== st.focus);
+    if (off.length > 2 && own.length >= 4 && Math.random() < 0.6) { const a = pick(off); S.animals = S.animals.filter(b => b !== a); }
+    if (S.animals.filter(a => a.own === id).length < 7) { const sp = M0.sp === 'boi' ? 'boi' : 'cavalo', a = mkAnimal(sp, st.focus, { own: id, age: rint(14, 40) }), q = randIn(M0.area); a.x = q[0]; a.y = q[1]; S.animals.push(a); }
+  }
+}
 function restockNpc(id, area, sp, brs) {
   const own = S.animals.filter(a => a.own === id);
   if (own.length >= 6) return;
   let a;
-  if (sp === 'boi') a = mkAnimal('boi', pick(brs), { own: id, age: rint(14, 40) });
+  const fc = S.merch && S.merch[id] ? S.merch[id].focus : null;
+  if (sp === 'boi') a = mkAnimal('boi', fc && Math.random() < 0.7 ? fc : pick(brs), { own: id, age: rint(14, 40) });
+  else if (fc && HORSES[fc] && Math.random() < 0.6) a = mkAnimal('cavalo', fc, { own: id });
   else { const r = Math.random(); a = r < .55 ? mkAnimal('cavalo', pick(Object.keys(HORSES)), { own: id }) : r < .8 ? mkAnimal('jumento', pick(Object.keys(DONKEYS)), { own: id }) : mkAnimal('burro', pick(Object.keys(MULES)), { own: id, sex: 'M' }); }
   const p = randIn(area); a.x = p[0]; a.y = p[1]; S.animals.push(a);
 }
@@ -3919,6 +3947,7 @@ function decide(a) {
   const herd = a.sp === 'boi' || a.sp === 'cabra', hc = herd ? herdCenter(a) : null, far = hc && hyp(hc.x - a.x, hc.y - a.y) > 56;
   // noite: o rebanho deita junto (quem está longe vai para perto dos outros antes de deitar)
   if (h >= 20.5 || h < 5) { if (far) return setGo(a, { x: hc.x + rnd(-18, 18), y: hc.y + rnd(-10, 10) }, 'rest', rnd(30, 60)); a._st = 'rest'; a._t = rnd(30, 60); return; }
+  if ((a.sp === 'cabra' && a.area === 'aprisco') || (a.sp === 'porco' && a.area === 'chiq')) { const hot = h > 11 && h < 15 && !isRain(); if (hot || h >= 19.5 || h < 5.5 || isRain()) { if (Math.random() < 0.6) { const sh = a.sp === 'cabra' ? [53 + Math.random() * 3, 104.3] : [44.5 + Math.random() * 4, 98.3]; return setGo(a, { x: sh[0] * TS, y: sh[1] * TS }, 'rest', rnd(15, 40)); } } }
   if (a.sp === 'porco') { if ((h > 10.5 && h < 16 && !isRain() && Math.random() < 0.5) || (a.food > 85 && Math.random() < 0.4)) { const m = findMud(a); if (m) return setGo(a, m, 'rest', rnd(14, 26)); } if (Math.random() < 0.35) { const t2 = [a.x + rnd(-30, 30), a.y + rnd(-20, 20)]; if (!a.area || areaAt(t2[0], t2[1]) === a.area) return setGo(a, { x: t2[0], y: t2[1] }, 'graze', rnd(4, 9)); } } // fuçar
   // chuva forte e tempestade: procura abrigo debaixo de árvore
   if (S.weather === 'tempestade' || (isRain() && Math.random() < 0.35)) { const s = findShade(a); if (s) return setGo(a, s, 'idle', rnd(12, 24)); }
@@ -3927,6 +3956,10 @@ function decide(a) {
   if (a.water < (hot ? 55 : 40)) { const w = findWater(a); if (w) return setGo(a, w, 'drink', 3); }
   if (herd && a.water < 78) { const l = herdLeader(a); if (l && l !== a && l._st === 'go' && l._then === 'drink') { const w = findWater(a); if (w) return setGo(a, w, 'drink', 3); } }
   if (a.food < 75) { const f = findFeed(a); if (f) return setGo(a, f, 'eat', 4); }
+  // filhote brinca: corrida curta perto da mãe ou dos irmãos
+  if (a.age < 8 && a.sp !== 'galinha' && Math.random() < 0.18) { const m = motherOf(a) || a; const t = [m.x + rnd(-40, 40), m.y + rnd(-24, 24)]; if (!a.area || areaAt(t[0], t[1]) === a.area) { a._st = 'play'; a._tg = t; a._t = rnd(1.5, 3); return; } }
+  // contato social: dois animais da mesma espécie se encontram e ficam um de frente para o outro
+  if (a.age >= 8 && Math.random() < 0.1) { const b = near(a.x, a.y, 34).find(o => o !== a && o.sp === a.sp && o.own === a.own && !o._hid && (o._st === 'idle' || o._st === 'graze' || !o._st)); if (b) { a._st = 'social'; a._mate = b.id; a._t = rnd(3, 6); b._st = 'social'; b._mate = a.id; b._t = a._t; if (a.sp === 'porco' && AU.oink) AU.oink(a.x, a.y, 1.1); else if (a.sp === 'cabra' && AU.bleat && Math.random() < 0.4) AU.bleat(a.x, a.y, 1); return; } }
   // filhote acompanha a mãe
   if (a.age < 8) { const m = motherOf(a); if (m && !m._hid && hyp(m.x - a.x, m.y - a.y) > 30) return setGo(a, { x: m.x + rnd(-10, 10), y: m.y + rnd(4, 10) }, m._st === 'rest' ? 'rest' : 'graze', rnd(4, 8)); }
   // barriga cheia: deita para ruminar
@@ -4333,7 +4366,7 @@ function updAnimals(dt, gm) {
   const cx = cam.x + VW() / 2, cy = cam.y + VH() / 2, R = Math.max(VW(), VH()) * 0.75 + 160;
   for (const a of S.animals) {
     const far = hyp(a.x - cx, a.y - cy) > R && a.id !== P.mnt && lasso.t !== a && P.lead !== a.id && S.cart.hitch !== a.id && a._st !== 'route' && a.sp !== 'cao';
-    if (far) { a._lod = (a._lod || 0) + dt; a._lgm = (a._lgm || 0) + gm; if (a._lod < 0.2) continue; updAnimal(a, a._lod, a._lgm, th); a._lod = 0; a._lgm = 0; continue; }
+    if (far) { a._lod = (a._lod || 0) + dt; a._lgm = (a._lgm || 0) + gm; if (a._lod < (hyp(a.x - cx, a.y - cy) > R * 2.2 ? 1 : 0.2)) continue; updAnimal(a, a._lod, a._lgm, th); a._lod = 0; a._lgm = 0; continue; }
     if (a._lod) { gm += 0; }
     updAnimal(a, dt, gm + (a._lgm || 0), th); a._lgm = 0; a._lod = 0; separate(a);
   }
@@ -4476,6 +4509,8 @@ function calmStep(a, dt, gm) {
     case 'rest': a._pose = a.sp === 'boi' || a.sp === 'cabra' || a.sp === 'porco' ? 'lie' : 'idle'; if (a._t <= 0) a._st = null; if ((hour() >= 20.5 || hour() < 5) && a._t <= 0) { a._st = 'rest'; a._t = 20; } return;
     case 'drink': a._pose = 'drink'; if (a._t <= 0) a._st = null; return;
     case 'eat': a._pose = 'graze'; if (a._t <= 0) a._st = null; return;
+    case 'play': { const r = stepTo(a, a._tg[0], a._tg[1], animalSpeed(a) * 2.6, dt); a._pose = 'run'; a._run = 1; a._vx = (a._hx || 0) * a._mv; a._vy = (a._hy || 0) * a._mv; if (r === true || r === 'stuck' || a._t <= 0) { a._run = 0; a._st = Math.random() < 0.5 ? null : 'idle'; a._t = rnd(1, 3); } return; }
+    case 'social': { a._pose = 'idle'; const b = byId(a._mate); if (b) { const dx = b.x - a.x; a.f = dx > 0 ? 1 : -1; } if (a._t <= 0) { a._st = null; a._mate = null; } return; }
     case 'idle': a._pose = 'idle'; if (a._curious) { const dx = P.x - a.x, dy = P.y - a.y; a._face = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 3 : 2) : (dy > 0 ? 0 : 1); a.f = dx > 0 ? 1 : -1; } if (a._t <= 0) { a._st = null; a._curious = 0; a._face = null; } return;
     case 'follow': case 'come': case 'route': return; // tratados em updAnimal
     default: if (!traitCalm(a)) decide(a); a._pose = 'idle';
@@ -5397,7 +5432,7 @@ A.bagSel = v => { M.sel = v; renderModal(); AU.click(); };
 A.eat = v => { const it = IT[v]; if (!has(v)) return; closeModal(); act('eat', 0.9, null, () => { useInv(v); P.en = cl(P.en + (it.en || 0), 0, 100); P.fo = cl(P.fo + (it.fo || 0), 0, 100); AU.munch(); toast(`+${it.en || 0} energia · +${it.fo || 0} fome`); }, { zoom: 1.2 }); };
 A.drop = v => { useInv(v); renderModal(); };
 /* ---------- menu principal ---------- */
-const MTABS = [['vaq', 'Vaqueiro', 'hat'], ['inv', 'Mochila', 'bag'], ['ani', 'Animais', 'cow'], ['faz', 'Fazenda', 'farm'], ['map', 'Mapa', 'map'], ['ban', 'Banco', 'bank'], ['obr', 'Obras', 'build'], ['peo', 'Peões', 'worker'], ['rel', 'Relações', 'heart'], ['cfg', 'Config.', 'gear']];
+const MTABS = [['vaq', 'Vaqueiro', 'hat'], ['inv', 'Mochila', 'bag'], ['ani', 'Animais', 'cow'], ['faz', 'Fazenda', 'farm'], ['pro', 'Produção', 'bank'], ['map', 'Mapa', 'map'], ['ban', 'Banco', 'bank'], ['obr', 'Obras', 'build'], ['peo', 'Peões', 'worker'], ['rel', 'Relações', 'heart'], ['cfg', 'Config.', 'gear']];
 function openMenu(tab) { showModal('', MTABS, tab || 'vaq', menuTab); }
 function menuTab(t) {
   if (t === 'vaq') {
@@ -5425,6 +5460,7 @@ function menuTab(t) {
   if (t === 'ban') return bankRemote();
   if (t === 'obr') return obrasTab();
   if (t === 'peo') return workersTab();
+  if (t === 'pro') return prodHTML();
   if (t === 'rel') {
     return '<p class="mut">A amizade cresce com conversas diárias, presentes, favores, música e churrascos.</p>' + Object.keys(NPCDEF).map(id => { const d = NPCDEF[id], s = npcState(id), e = npcs.find(n => n.id === id); const loc = e ? (e.hidden ? (e.act === 'missa' ? 'na missa' : 'em casa') : (SPOTS[e.spot] ? e.spot.replace('_', ' ') : '')) : '';
       return `<div class="card"><div class="dlg"><div>${charImg(d.ap, 2)}</div><div style="flex:1"><b>${d.n}</b> <span class="mut">${d.role}${d.farm ? ' · ' + d.farm : ''}</span><br>${hrt(hearts(id))}<br><span class="mut">Agora: ${loc}${s.quest ? ' · 📜 favor pendente' : ''}</span>${NPC_LORE[id] ? `<br><span class="mut">${esc(NPC_LORE[id].split('. ')[0])}.</span>` : ''}${s.mem.slice(0, 2).map(m => `<br><span class="mut">• Dia ${m.d}: ${esc(m.t)}</span>`).join('')}</div></div></div>`; }).join('') + `<div class="card"><b>${ic('heart', 14)} Confraternização</b><p>Convide os amigos (1+ coração) para um churrasco na sua fazenda às 18h.</p>${S.event ? `<p>Churrasco marcado para o dia ${S.event.day} com ${S.event.guests.map(g => NPCDEF[g].n).join(', ')}.</p>` : btn('Marcar churrasco', 'invite')}</div>`;
@@ -5704,7 +5740,7 @@ function tradeView(id) {
   const theirs = S.animals.filter(a => a.own === id);
   const mine = myAnimals().filter(a => !a.main && (d.sells === 'boi' ? a.sp === 'boi' : (a.sp === 'cavalo' || a.sp === 'jumento' || a.sp === 'burro')));
   const q = npcState(id).quest;
-  let h = `<h3>Negociar com ${d.n}</h3><p class="mut">Amizade dá desconto: ${hm} ♥ → compra ${Math.round((disc - 1) * 100)}% / venda ${Math.round((buyM - 1) * 100)}%. Animais comprados chegam amanhã às 6h no Recebimento.</p>`;
+  let h = `<h3>Negociar com ${d.n}</h3>${MERCH[id] ? `<div class="card">📦 <b>Estoque desta semana:</b> foco em ${esc((MERCH[id].sp === 'boi' ? CATTLE : HORSES)[merchS(id).focus].n)} — ${esc(merchS(id).why)}.<br><span class="mut">Estilo: ${esc(MERCH[id].style)}. O estoque muda toda segunda-feira.</span></div>` : ''}<p class="mut">Amizade dá desconto: ${hm} ♥ → compra ${Math.round((disc - 1) * 100)}% / venda ${Math.round((buyM - 1) * 100)}%. Animais comprados chegam amanhã às 6h no Recebimento.</p>`;
   h += '<b>Animais dele</b>' + theirs.map(a => `<div class="card ${M.tsel.theirs === a.id ? 'sel' : ''}" data-a="tSelT" data-v="${a.id}"><div class="row sp">${animalImg(a, 1)}<span style="flex:1">${esc(a.n)} · ${catName(a)} ${breedOf(a).n}<br><span class="stars">${starStr(stars(a))}</span></span><b>${fmt(animalValue(a) * disc)}</b></div></div>`).join('');
   h += '<b>Seus animais</b>' + (mine.map(a => `<div class="card ${M.tsel.mine === a.id ? 'sel' : ''}" data-a="tSelM" data-v="${a.id}"><div class="row sp">${animalImg(a, 1)}<span style="flex:1">${esc(a.n)} · ${catName(a)} ${breedOf(a).n}<br><span class="stars">${starStr(stars(a))}</span>${q && q.k === 'animal' && a.sp === q.sp && stars(a) >= q.st ? ' <span class="tag">favor!</span>' : ''}</span><b>${fmt(animalValue(a) * buyM)}</b></div></div>`).join('') || '<p class="mut">Nenhum animal que ele compre.</p>');
   const T = byId(M.tsel.theirs), Mi = byId(M.tsel.mine);
@@ -5714,7 +5750,7 @@ function tradeView(id) {
 }
 A.tSelT = v => { M.tsel.theirs = +v; renderModal(); };
 A.tSelM = v => { M.tsel.mine = +v; renderModal(); };
-function npcBuy(id, a, price) { if (!pay(price, 'Compra de ' + a.n + ' (' + NPCDEF[id].n + ')')) return false; S.delivery.push({ id: a.id, day: S.day + 1, to: 'receb' }); a.own = 'delivery'; a.x = -999; a.y = -999; addFr(id, 15); npcState(id).trades++; remember(id, 'vendeu ' + a.n + ' para você'); return true; }
+function npcBuy(id, a, price) { if (!pay(price, 'Compra de ' + a.n + ' (' + NPCDEF[id].n + ')')) return false; if (MERCH[id]) { const st = merchS(id); st.sold[a.br] = (st.sold[a.br] || 0) + 1; } S.delivery.push({ id: a.id, day: S.day + 1, to: 'receb' }); a.own = 'delivery'; a.x = -999; a.y = -999; addFr(id, 15); npcState(id).trades++; remember(id, 'vendeu ' + a.n + ' para você'); return true; }
 function npcSell(id, a, price) { const q = npcState(id).quest; if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; if (S.cart.hitch === a.id) S.cart.hitch = null; a.own = id; const p = randIn(NPCDEF[id].area); a.x = p[0]; a.y = p[1]; a._st = null; receive(price, 'Venda de ' + a.n + ' para ' + NPCDEF[id].n); S.stats.sold++; addFr(id, 15); remember(id, 'comprou ' + a.n + ' de você'); if (q && q.k === 'animal' && a.sp === q.sp && stars(a) >= q.st) { M.txt = finishQuest(id); } }
 A.tBuy = () => { const id0 = M.npc, a0 = byId(M.tsel.theirs); if (npcState(id0).noDeal === S.day) { M.txt = 'Hoje eu não negocio mais, já falei.'; M.sub = null; return renderModal(); } if (a0) return openHaggle(id0, a0, false); const id = M.npc, hm = hearts(id), a = byId(M.tsel.theirs); if (npcBuy(id, a, animalValue(a) * (1.1 - hm * 0.015))) { M.txt = 'Negócio fechado! Amanhã cedo ' + a.n + ' tá no seu Recebimento.'; M.sub = null; } renderModal(); };
 A.tSell = () => { const id0 = M.npc, a0 = byId(M.tsel.mine); if (npcState(id0).noDeal === S.day) { M.txt = 'Hoje eu não negocio mais, já falei.'; M.sub = null; return renderModal(); } if (a0) return openHaggle(id0, a0, true); const id = M.npc, hm = hearts(id), a = byId(M.tsel.mine); npcSell(id, a, animalValue(a) * (0.88 + hm * 0.012)); if (!M.txt || M.txt.indexOf('obrigado') < 0) M.txt = 'Bom animal! Fechado.'; M.sub = null; renderModal(); };
@@ -5765,6 +5801,8 @@ function pomarApplyObj() { pomarS().forEach((q, i) => { const pl = POMAR_PLOTS[i
 function fruitStage(q) { const F = FRUITS[q.k]; return q.g < F.grow * 0.35 ? 0 : q.g < F.grow ? 1 : 2; }
 function fruitInSeason(F) { return F.safra === 'ano' || (F.safra === 'seca') === !!season(); }
 function pomarNeighborsBig(i) { const pl = POMAR_PLOTS[i]; let n = 0; pomarS().forEach((q, j) => { if (!q || j === i || !FRUITS[q.k].big) return; const o = POMAR_PLOTS[j]; if (Math.abs(o.tx - pl.tx) + Math.abs(o.ty - pl.ty) === 3) n++; }); return n; }
+function areaCap(k) { const r = AREAS[k].r, t = (r[2] - r[0] - 1) * (r[3] - r[1] - 1); return Math.max(2, Math.floor(t / (AREAS[k].k === 'pasto' ? 9 : AREAS[k].k === 'chiq' ? 4 : 6))); }
+function crowdDay() { S.crowd = {}; for (const k of AKEYS) { if (AREAS[k].k === 'npc' || AREAS[k].k === 'pomar') continue; const L = S.animals.filter(a => a.own === 'player' && a.area === k && a.sp !== 'cao'); const cap = areaCap(k); if (L.length > cap) { S.crowd[k] = L.length + '/' + cap; L.forEach(a => { a.hap = cl(a.hap - 4, 0, 100); a.stress = Math.min(100, (a.stress || 0) + 12); }); } else L.forEach(a => { a.stress = Math.max(0, (a.stress || 0) - 10); }); } const ks = Object.keys(S.crowd); if (ks.length) toast('⚠️ Lotado: ' + ks.map(k => AREAS[k].n + ' (' + S.crowd[k] + ')').join(', ') + '. Os animais ficam estressados e engordam menos.'); }
 function pomarDay() {
   const rain = isRain(); let irr = 0;
   pomarS().forEach(q => { if (!q) return; const F = FRUITS[q.k];
@@ -5800,6 +5838,27 @@ A.pomarHarvest = v => { const i = +v, pl = POMAR_PLOTS[i], q = pomarS()[i]; if (
   q.f = 0; q.poda = 0; S.stats.fruits = (S.stats.fruits || 0) + bag + dep; P.en = Math.max(0, P.en - 3); toast('🧺 ' + (bag + dep) + ' ' + IT[it].n.split(' (')[0].toLowerCase() + (dep ? ' (' + dep + ' foram para o depósito)' : '')); questEvent && questEvent('harvest', q.k, bag + dep);
   S.firsts = S.firsts || {}; if (!S.firsts.colheita) { S.firsts.colheita = 1; setTimeout(() => typeof csPrimeiraColheita === 'function' && csPrimeiraColheita(F), 500); } }); };
 A.irrigBuy = () => { if (S.irrig) return; if (!pay(2800 * priceMul(), 'Irrigação por gotejamento do pomar')) return; S.irrig = 1; toast('💧 Irrigação instalada: as árvores do pomar recebem água todo dia (gasta água do reservatório).'); renderModal(); };
+/* ============ PAINEL DE PRODUÇÃO E RENTABILIDADE ============ */
+// Estimativas por espécie (custos e tempos do próprio jogo). Não é promessa de lucro: depende de pasto, água, saúde, preço e sorte.
+const ECON = {
+  boi: { inv: 'Garrote/novilha: R$ 3 a 7 mil (arroba do dia)', food: 'Pasto + sal mineral: ~R$ 1/dia; na seca, ração ou palma: ~R$ 4/dia', man: 'Vacina (R$ 18 a cada 28 dias), vermífugo, cerca e água', grow: 'Adulto com ~24 dias de jogo; ganha peso todo dia', prod: 'Bezerros (gestação de 7 dias); leite com Sala de Ordenha', sell: 'Por arroba (peso/15 × arroba do dia), no curral, embarcadouro ou leilão', rent: 'Média e segura no longo prazo; boa na engorda das águas', risk: 'Seca sem reserva de comida, pasto rapado, doença' },
+  porco: { inv: 'Leitão: R$ 160 a 250 · matriz: R$ 900 a 1.300', food: 'Ração de suínos: ~R$ 6 a 10/dia por porco em engorda', man: 'Limpar o chiqueiro, água à vontade, vermífugo', grow: 'Leitão a ~100 kg em ~14 dias com boa ração', prod: 'Ninhada de 5 a 12 leitões (gestação de 4 dias) + esterco diário', sell: 'Peso vivo: R$ 7,50/kg × qualidade', rent: 'Alta rotação: lucro rápido se a ração não faltar', risk: 'Ração cara na seca, chiqueiro lotado (estresse), doença' },
+  cabra: { inv: 'Cabra: R$ 400 a 1.200 · bode reprodutor: até R$ 1.500', food: 'Pasto de caatinga, palma e pouca ração: ~R$ 1/dia', man: 'Aprisco seco, vermífugo, água limpa', grow: 'Adulta com ~12 dias; cabrito cresce rápido', prod: 'Leite de cabra diário (Saanen e Anglo-Nubiana dão mais), cabritos (gêmeos são comuns), esterco', sell: 'Cabritos e reprodutores; leite a R$ 5,50–6,50/L', rent: 'Boa para quem começa: barata e rústica no sertão', risk: 'Onça-parda na mata, verme, raças leiteiras sofrem no sol' },
+  galinha: { inv: 'R$ 55 a 70 por ave', food: 'Milho: centavos por dia', man: 'Galinheiro fechado à noite', grow: 'Pintinho adulto em ~6 dias', prod: 'Ovos todo dia (poedeiras rendem mais) e pintinhos com galo e choca', sell: 'Ovos no Mercadinho; aves', rent: 'Pequena, mas garante dinheiro todo dia', risk: 'Raposa e gavião, falta de milho' },
+  cavalo: { inv: 'R$ 6 a 15 mil conforme a raça', food: 'Pasto, milho e sal: ~R$ 3/dia', man: 'Escovar, selar, treinar, ferrar', grow: 'Adulto com ~30 dias; potro precisa de égua e garanhão (Estrebaria)', prod: 'Trabalho na lida, vaquejada, potros', sell: 'Leilão de cavalos e criadores (Sr. Ryan, Dona Graça)', rent: 'Lenta, mas um cavalo campeão vale muito', risk: 'Investimento alto, treino demorado' },
+  jumento: { inv: 'Jumento: ~R$ 1.800 · muar: ~R$ 4.200', food: 'Pasto e pouco milho', man: 'Rústico', grow: '~30 dias', prod: 'Carga e carroça; jumento com égua dá burro e mula', sell: 'Leilão de muares e vizinhos', rent: 'Ferramenta de trabalho: economiza frete e tempo', risk: 'Baixo' },
+  fruta: { inv: 'Mudas de R$ 8 (mamão) a R$ 25 (manga) + enxada e regador', food: 'Água: regador e galões ou irrigação (R$ 2.800 uma vez)', man: 'Rega na seca, adubo de esterco, poda', grow: 'Mamão 8 dias; banana 10; manga 22; umbu 24', prod: 'Colheitas repetidas na safra (manga e umbu nas águas, caju e laranja na seca, outras o ano todo)', sell: 'Mercadinho; fora da safra vale 35% a mais', rent: 'Renda contínua depois de adulta, quase sem custo com irrigação', risk: 'Seca sem rega, copas grandes muito juntas' }
+};
+function prodHTML() {
+  const wk = S.ledger.filter(l => l.d >= S.day - 6), inc = wk.filter(l => l.v > 0).reduce((t, l) => t + l.v, 0), exp = -wk.filter(l => l.v < 0).reduce((t, l) => t + l.v, 0);
+  let h = `<div class="card"><b>Últimos 7 dias</b><br>Entradas: <b style="color:#2a7a3a">${fmt(inc)}</b> · Saídas: <b style="color:#a83a2a">${fmt(exp)}</b> · Saldo: <b>${fmt(inc - exp)}</b>${wk.length ? '<br><span class="mut">' + wk.slice(0, 6).map(l => esc(l.desc.replace(/ \((dinheiro|débito)\)/, '')) + ' ' + (l.v > 0 ? '+' : '') + fmt(l.v)).join(' · ') + '</span>' : ''}</div>`;
+  const mine = myAnimals(), sp = ['boi', 'porco', 'cabra', 'galinha', 'cavalo', 'jumento', 'burro'].filter(k => mine.some(a => a.sp === k));
+  const lact = mine.filter(a => a.sp === 'cabra' && a.sex === 'F' && a.lact > 0), hens = mine.filter(a => a.sp === 'galinha' && a.sex === 'F' && a.age >= 6).length, trees = pomarS().filter(q => q && fruitStage(q) === 2).length;
+  h += '<h3>Seu plantel hoje</h3>' + (sp.map(k => { const L = mine.filter(a => a.sp === k), v = L.reduce((t, a) => t + animalValue(a), 0); return `<div class="row sp"><span>${SPN[k]}: <b>${L.length}</b></span><span class="mut">${fmt(v)}</span></div>`; }).join('') || '<p class="mut">Sem animais ainda.</p>');
+  h += `<div class="card"><b>Produção estimada por dia</b><br>🥚 Ovos: ~${Math.round(hens * 0.85)} · 🥛 Leite de cabra: ~${lact.reduce((t, a) => t + ((GOATS[a.br] || {}).milk || 0.6) * 2.2, 0).toFixed(1)} L${built('ordenha') ? ' · leite de vaca na ordenha' : ''} · 💩 Esterco: ~${(mine.filter(a => a.sp === 'porco' && a.area === 'chiq').length * 0.35 + mine.filter(a => a.sp === 'cabra' && a.area === 'aprisco').length * 0.12).toFixed(1)} saco · 🌳 Árvores produzindo: ${trees}${S.crowd && Object.keys(S.crowd).length ? '<br><span style="color:#a83a2a">⚠️ Lotado: ' + Object.keys(S.crowd).map(k => AREAS[k].n).join(', ') + '</span>' : ''}</div>`;
+  h += '<h3>Guia econômico por criação</h3><p class="mut">Estimativas do jogo. Lucro depende de comida, água, saúde, preço do dia e tempo.</p>' + Object.entries(ECON).map(([k, e]) => `<details class="card"><summary><b>${k === 'fruta' ? 'Pomar' : SPN[k] || k}</b> — ${esc(e.rent)}</summary><p class="mut"><b>Investimento:</b> ${esc(e.inv)}<br><b>Alimentação:</b> ${esc(e.food)}<br><b>Manutenção:</b> ${esc(e.man)}<br><b>Crescimento:</b> ${esc(e.grow)}<br><b>Produção e reprodução:</b> ${esc(e.prod)}<br><b>Venda:</b> ${esc(e.sell)}<br><b>Riscos:</b> ${esc(e.risk)}</p></details>`).join('');
+  return h;
+}
 /* ============ CASA DO AGRO: loja agropecuária completa (estoque semanal, preço regional, animais com ficha) ============ */
 const AGRO_ITEMS = {
   nut: ['racao', 'racaoPorco', 'milho', 'farelo', 'suplemento', 'sal', 'racaoCao'],
