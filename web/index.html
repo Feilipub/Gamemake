@@ -6662,21 +6662,21 @@ function csIntro() {
   const T = p => [p[0] * TS, p[1] * TS];
   const r1 = [[75, 44], [66, 44], [59.5, 44]].map(T), r2 = [[59.5, 44], [38.5, 44.5], [20.5, 44.5], [11.5, 44.5], [11.5, 35.6]].map(T);
   const ride = (route, gal) => (dt, u) => { const [x, y, dx, dy] = pathLerp(route, u); const mv = hyp(x - P.x, y - P.y); P.x = x; P.y = y; if (h) { h.x = x; h.y = y; } P._gal = u < 1 ? (gal || 1) : 0; P._cyc = ((P._cyc || 0) + mv / (gal === 2 ? 46 : 28)) % 1; P._st = u < 1 ? (gal === 2 ? 'gallop' : 'walk') : 'idle'; P._mv = mv / Math.max(dt, 1e-3);
-    if (Math.abs(dx) > Math.abs(dy)) { P.dir = dx > 0 ? 3 : 2; if (h) h.f = dx > 0 ? 1 : -1; } else if (dy) P.dir = dy > 0 ? 0 : 1; if (u < 1 && Math.random() < dt * 5) AU.hoof(x, y); cam.fx = x; cam.fy = y; };
-  const say1 = (who, txt, extra) => ({ d: Math.max(3.4, txt.length * 0.058 + 1.8), fn() { talkShow(who); extra && extra.fn && extra.fn(); },
-    upd(dt, u) { const el = document.querySelector('#sub .tx'); if (el) el.textContent = txt.slice(0, Math.min(txt.length, Math.ceil(CS.t * 32))); fel.pose = who === 'felipe' && CS.t * 32 < txt.length ? 'talk' : 'idle'; extra && extra.upd && extra.upd(dt, u); } });
-  const ax = 11.5 * TS, ay = 35.6 * TS, ex = ax + 14, ey = ay + 3, fx = ex + 24;
+    if (Math.abs(dx) > Math.abs(dy)) { P.dir = dx > 0 ? 3 : 2; if (h) h.f = dx > 0 ? 1 : -1; } else if (dy) P.dir = dy > 0 ? 0 : 1; if (u < 1 && Math.random() < dt * 5) AU.hoof(x, y); cam.fx = x; cam.fy = y; cam.spd = 7; }; // câmera colada no cavaleiro (antes ficava para trás e ele saía da tela)
+  const say1 = (who, txt, extra) => ({ d: Math.max(3.4, txt.length * 0.058 + 1.8), fn() { P.dir = 3; fel.dir = 2; talkShow(who); extra && extra.fn && extra.fn(); },
+    upd(dt, u) { P.dir = 3; fel.dir = 2; const el = document.querySelector('#sub .tx'); if (el) el.textContent = txt.slice(0, Math.min(txt.length, Math.ceil(CS.t * 32))); fel.pose = who === 'felipe' && CS.t * 32 < txt.length ? 'talk' : 'idle'; extra && extra.upd && extra.upd(dt, u); } });
+  const ax = 11.5 * TS, ay = 35.6 * TS, ex = ax + 38, ey = ay + 3, fx = ex + 26; // vaqueiro desce ao lado do cavalo (antes ficava sobreposto a ele)
   const final = () => { // estado final (também usado ao pular)
     P.mnt = null; P._act = null; P.x = ex; P.y = ey; P.dir = 3; P._gal = 0; P._st = 'idle';
     if (h) { h.x = ax; h.y = ay; h._st = 'idle'; h._t = 20; h.f = 1; }
-    if (dog) { dog.x = ex + 8; dog.y = ey + 14; dog._pose = null; dog._st = 'idle'; dog._t = 4; }
+    if (dog) { dog._cs = 0; dog.x = ex + 8; dog.y = ey + 14; dog._pose = null; dog._st = 'idle'; dog._t = 4; }
     bois.forEach(b => { b._t = 0; b._pose = null; });
     fel.x = fx; fel.y = ey; fel.dir = 2; fel.pose = 'idle'; fel.hidden = false;
   };
   const steps = [
     { fade: 1, d: 0.1, fn: () => { S.min = 5 * 60 + 25; S.weather = 'sol'; if (h) { P.mnt = h.id; h._st = 'ridden'; } P.x = r1[0][0]; P.y = r1[0][1]; cam.fx = 84 * TS; cam.fy = 50 * TS; cam.snap = true;
       bois.forEach((b, i) => { b.x = (4.4 + i * 2.4) * TS; b.y = (49.6 + i * 1.1) * TS; b._st = 'idle'; b._t = 99; b._pose = 'graze'; b.f = i ? -1 : 1; });
-      if (dog) { dog.x = 7.6 * TS; dog.y = 29.9 * TS; dog._st = 'idle'; dog._t = 99; dog._pose = 'lie'; }
+      if (dog) { dog._cs = 1; dog.x = 7.6 * TS; dog.y = 29.9 * TS; dog._st = 'idle'; dog._t = 99; dog._pose = 'lie'; }
       fel.cs = true; fel.hidden = false; fel.x = 19.5 * TS; fel.y = 39.6 * TS; fel.dir = 1; fel.path = []; fel.pose = 'idle'; } },
     { fade: 0, cam: [84, 50], z: 1.15, snap: 1, d: 3.6, fn: () => csTitle('RF GAMES APRESENTA') },
     { cam: [74, 45], spd: 0.45, d: 4.6, fn: () => csTitle('LIDA NO SERTÃO', 'Itarantim · Bahia') },
@@ -7412,7 +7412,7 @@ function tick(dt) {
     if (S.pend.length && !M.open && !P._act) { const p = S.pend.shift(); if (p.k === 'obraFim') csObraFim(p.lot); }
     if (S.mach && !S.mach.told && machState() === 'done') { S.mach.told = 1; S.mach.busy = false; toast('⚙️ A forrageira terminou: ração pronta!'); AU.chime(); }
     if ((saveT += dt) > 60) { saveT = 0; SAVE.save('auto', true); }
-  } else if (mode === 'cs') { updCS(dt); updGates(dt); buildGrid(); for (const a of S.animals) updAnimal(a, dt, 0, []); for (const e of npcs) if (e.et > 0) e.et -= dt; }
+  } else if (mode === 'cs') { updCS(dt); updGates(dt); buildGrid(); for (const a of S.animals) if (!a._cs) updAnimal(a, dt, 0, []); for (const e of npcs) if (e.et > 0) e.et -= dt; } // _cs: animal sob controle da cena
   else if (OPMODES[mode]) OP.update(dt);
   if (S) updParts(dt);
 }
