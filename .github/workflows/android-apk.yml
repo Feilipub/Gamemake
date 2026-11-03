@@ -49,9 +49,9 @@ jobs:
           SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
           echo "SDK em $SDK"
           ls "$SDK/build-tools" | tail -3
-          keytool -genkeypair -v -keystore "$HOME/debug.keystore" -storepass android \
-            -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 \
-            -dname "CN=Android Debug,O=Android,C=US"
+          # chave de teste FIXA (versionada): cada APK novo instala por cima do anterior e mantém o save.
+          # Só para testes; para a Play Store use uma chave de release guardada em segredo.
+          cp tools/android/debug.keystore "$HOME/debug.keystore"
           mkdir -p "$HOME/.config/godot"
           for f in editor_settings-4.tres "editor_settings-${GODOT_VERSION%.*}.tres"; do
             cat > "$HOME/.config/godot/$f" <<EOF
