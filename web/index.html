@@ -89,10 +89,11 @@ body.lan .grid{grid-template-columns:repeat(6,1fr)}
 .sl small{font-size:9px;line-height:1;text-align:center;padding:0 2px}
 .cl{width:100%;margin-top:10px;padding:10px}
 .mgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:8px}
-body.lan .mgrid{grid-template-columns:repeat(10,1fr)}
+body.lan .mgrid{grid-template-columns:repeat(12,1fr)} /* uma linha só deitado: duas linhas comiam metade da tela */
 .mgrid button{padding:4px 1px!important;font-size:10px!important;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.05}
 .mgrid button.on{background:linear-gradient(#fbe08a 0 50%,#f0c04a 50%)!important;outline:2px solid #fff4c0}
-.tabs{display:flex;gap:4px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+@media (max-height:420px){.mgrid button{padding:2px 1px!important;font-size:9px!important}.mgrid button svg{width:15px;height:15px}}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;padding-bottom:6px} /* quebra em linhas: abas escondidas à direita não eram vistas no celular */
 .tabs button{flex:0 0 auto;padding:6px 8px;font-size:12px}
 .tabs button.on{background:linear-gradient(#fbe08a 0 50%,#f0c04a 50%)}
 .bar2{display:inline-block;height:9px;width:84px;border:2px solid var(--ink);background:#5a3a20;vertical-align:middle;position:relative}
@@ -355,7 +356,7 @@ function trimC(c, pad) { // recorta bordas transparentes (retratos de animais no
   if (x1 < 0) { TRIM.set(c, c); return c; } x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad); x1 = Math.min(c.width - 1, x1 + pad); y1 = Math.min(c.height - 1, y1 + pad);
   const [rc, rg] = mkC(x1 - x0 + 1, y1 - y0 + 1); rg.drawImage(c, x0, y0, rc.width, rc.height, 0, 0, rc.width, rc.height); TRIM.set(c, rc); return rc;
 }
-function sprHTML(c, sc, key) { let u = key && imgURL.get(key); if (!u) { u = c.toDataURL(); if (key) imgURL.set(key, u); } return `<img class="pi" src="${u}" width="${c.width * sc}" height="${c.height * sc}">`; }
+function sprHTML(c, sc, key) { let u = key && imgURL.get(key); if (!u) { u = c.toDataURL(); if (key) { if (imgURL.size > 500) { let n = 0; for (const k of imgURL.keys()) { imgURL.delete(k); if (++n >= 120) break; } } imgURL.set(key, u); } } /* limite: as imagens em base64 dos menus cresciam sem fim */ return `<img class="pi" src="${u}" width="${c.width * sc}" height="${c.height * sc}">`; }
 let msgT = 0;
 // interface sem emojis: troca os poucos que têm ícone pixel equivalente e remove o resto
 const EMO_RE = /(?:[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{2B55}\u{231A}-\u{23FF}]\u{FE0F}?(?:\u{200D}[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]\u{FE0F}?)*)\s?/gu;
@@ -1194,7 +1195,26 @@ function spotPath(fromP, fromVia, toSpot) {
   roadPath(a, b).forEach(p => pts.push(p));
   for (let i = S2.via.length - 2; i >= 0; i--) pts.push(S2.via[i]);
   pts.push(S2.p);
-  return pts.map(p => [p[0] * TS, p[1] * TS]);
+  return npcRoute(pts.map(p => [p[0] * TS, p[1] * TS]));
+}
+// Os trechos entre pontos da rotina eram retas: onde a reta cruza árvore, pedra, casa ou cerca, o NPC atravessava o
+// obstáculo. Cada trecho bloqueado vira um caminho do A* (mesmo do toque na tela), guardado em cache por trecho.
+const NPCSEG = new Map();
+function npcSegBlocked(ax, ay, bx, by) { const n = Math.ceil(hyp(bx - ax, by - ay) / 4); for (let k = 0; k <= n; k++) { const x = ax + (bx - ax) * k / n, y = ay + (by - ay) * k / n, tx = Math.floor(x / TS), ty = Math.floor(y / TS); if (tx < 0 || ty < 0 || tx >= MW || ty >= MH) return true; const o = obj[ty * MW + tx]; if (o === 1 || o === 3) return true; } return false; }
+function npcFreePt(q) { const tx = Math.floor(q[0] / TS), ty = Math.floor(q[1] / TS); if (!npcSegBlocked(q[0], q[1], q[0], q[1])) return q; const f = typeof pfNearestFree === 'function' ? pfNearestFree(tx, ty) : null; return f ? [(f[0] + 0.5) * TS, (f[1] + 0.6) * TS] : q; }
+function npcRoute(pts) {
+  if (!pts.length || typeof findPath !== 'function' || !obj) return pts;
+  const out = [], first = npcFreePt(pts[0]); out.push(first); let a = first;
+  for (let i = 1; i < pts.length; i++) {
+    const b = npcFreePt(pts[i]);
+    if (npcSegBlocked(a[0], a[1], b[0], b[1])) {
+      const key = Math.round(a[0]) + ',' + Math.round(a[1]) + '>' + Math.round(b[0]) + ',' + Math.round(b[1]); let seg = NPCSEG.get(key);
+      if (seg === undefined) { const sx = PF.sx, sy = PF.sy, hb = PF.hb; PF.npc = 1; let fp = null; try { fp = findPath(a[0], a[1], b[0], b[1], 12000, HB.foot); } finally { PF.npc = 0; } PF.sx = sx; PF.sy = sy; PF.hb = hb; seg = fp ? fp.map(q => [q.x, q.y]) : null; if (NPCSEG.size > 600) NPCSEG.clear(); NPCSEG.set(key, seg); }
+      if (seg) { seg.forEach(q => out.push(q)); a = b; if (hyp(seg[seg.length - 1][0] - b[0], seg[seg.length - 1][1] - b[1]) > 3) out.push(b); continue; }
+    }
+    out.push(b); a = b;
+  }
+  return out;
 }
 /* ---------- caminhos dentro da fazenda (peões, gado conduzido) ---------- */
 const FSP = {
@@ -3777,7 +3797,7 @@ const MUS = {
   make(k) {
     if (this.el[k]) return this.el[k];
     const a = new Audio(); a.preload = k === 'intro' ? 'auto' : 'metadata'; a.loop = k === 'intro' || k === 'cutscene';
-    if (this.http) a.crossOrigin = 'anonymous';
+    if (this.http && !(this.noRoute && this.noRoute[k])) a.crossOrigin = 'anonymous';
     a.addEventListener('error', () => this.fail(k));
     a.addEventListener('canplay', () => { this.ready[k] = true; });
     a.addEventListener('ended', () => { if (k === 'game1' || k === 'game2') this.nextGame(0.5); });
@@ -3786,13 +3806,13 @@ const MUS = {
   },
   // roteia pelo WebAudio quando possível (volume controlável no iOS); senão usa o volume do elemento
   route(k) {
-    if (this.gain[k] || !this.http || !AU.ctx || !this.el[k]) return;
+    if (this.gain[k] || !this.http || !AU.ctx || !this.el[k] || (this.noRoute && this.noRoute[k])) return;
     try { const s = AU.ctx.createMediaElementSource(this.el[k]), g = AU.ctx.createGain(); g.gain.value = 0; s.connect(g); g.connect(AU.buses.mu); this.gain[k] = g; } catch (e) { }
   },
   fail(k) {
     if (this.missing[k]) return;
     // com crossOrigin bloqueado pelo servidor, tenta de novo sem ele (sem WebAudio)
-    if (this.http && this.el[k] && this.el[k].crossOrigin && !this.el[k]._retry) { const a = this.el[k]; a._retry = 1; a.removeAttribute('crossorigin'); this.gain[k] = null; a.src = this.files[k] + '?r=1'; a.load(); if (this.tgt[k] > 0) a.play().catch(() => { }); return; }
+    if (this.http && this.el[k] && this.el[k].crossOrigin && !this.el[k]._retry) { const o = this.el[k]; try { o.pause(); } catch (e) { } this.el[k] = null; this.gain[k] = null; this.noRoute = this.noRoute || {}; this.noRoute[k] = 1; const a = this.make(k); a._retry = 1; a.src = this.files[k] + '?r=1'; a.load(); if (this.tgt[k] > 0) a.play().catch(() => { }); return; } /* elemento novo sem crossorigin e fora do WebAudio: o antigo, já ligado ao WebAudio, tocaria mudo */
     this.missing[k] = true; console.warn('Trilha ausente: ' + this.files[k] + ' (' + this.names[k] + ')');
   },
   missingList() { return Object.keys(this.files).filter(k => this.missing[k]).map(k => this.files[k]); },
@@ -3914,6 +3934,26 @@ function catName(a) { if (a.sp === 'cabra') return a.age < 6 ? 'Cabrito' : a.sex
 const myAnimals = (sp) => S.animals.filter(a => a.own === 'player' && (!sp || a.sp === sp));
 const mainHorse = () => S.animals.find(a => a.main);
 const byId = id => S.animals.find(a => a.id === id);
+// Invariante das referências: vender, abater, penhorar, perder para a onça, mandar ao leilão ou demitir um peão tira o
+// animal/pessoa da lista, mas o laço, o cabresto, a carroça, a montaria e o cavalo do peão podiam continuar apontando
+// para ele (corda desenhada para um animal fantasma e erro ao abrir a carroça ou viajar). Roda em todo quadro de jogo.
+// tira um animal de dentro de cerca, parede ou água funda (procura em espiral o ponto livre mais perto)
+function unstick(a) {
+  if (a.own === 'delivery' || a.own === 'agro' || !boxHit(a.x, a.y, hbOf(a), 'a')) return false;
+  for (let r = 8; r < 200; r += 8) for (let k = 0; k < 12; k++) { const x = a.x + Math.cos(k / 12 * 6.28) * r, y = a.y + Math.sin(k / 12 * 6.28) * r; if (!boxHit(x, y, hbOf(a), 'a')) { a.x = x; a.y = y; return true; } }
+  return false;
+}
+let unstickT = 0;
+function fixRefs() {
+  if ((unstickT -= 1 / 60) <= 0) { unstickT = 2; for (const a of S.animals) { if (a._gh || a._wr || a.id === P.mnt || a._hid || a._cs || a._st === 'lasso' || a._st === 'led' || a._st === 'route' || a._st === 'driven' || a._st === 'come' || a._st === 'follow') continue; unstick(a); } }
+  if (lasso.t && !S.animals.includes(lasso.t) && !(typeof WILD !== 'undefined' && WILD.includes(lasso.t))) lasso.t = null;
+  if (P.lead && !byId(P.lead)) P.lead = null;
+  if (S.cart && S.cart.hitch && !byId(S.cart.hitch)) { S.cart.hitch = null; if (P.cart) P.cart = false; }
+  if (P.mnt && !byId(P.mnt)) P.mnt = null;
+  const wids = new Set(S.workers.map(w => w.id));
+  for (const w of S.workers) if (w.horse && !byId(w.horse)) { w.horse = null; w._mnt = false; }
+  for (const a of S.animals) if (a._wr && !wids.has(a._wr)) { a._wr = null; a._st = null; }
+}
 /* ---------- dinheiro ---------- */
 function ledger(desc, v, acc) { S.ledger.unshift({ d: S.day, h: clock(), desc, v: Math.round(v * 100) / 100, acc: acc || 'cc' }); if (S.ledger.length > 160) S.ledger.length = 160; }
 function priceMul() { return (S.cf && STATES[S.cf.st][5] === 'negocio') ? 0.94 : 1; }
@@ -4058,7 +4098,7 @@ function updNpc(e, dt) {
   if (e.cs) return;
   const s = schedFor(e);
   if (s.spot !== e.spot) { // nova rotina
-    const from = SPOTS[e.spot]; e.path = spotPath(from ? from.p : [e.x / TS, e.y / TS], from ? from.via : [], s.spot); e.spot = s.spot; e.hidden = false;
+    const from = SPOTS[e.spot], far = !from || e.path.length || hyp(from.p[0] * TS - e.x, from.p[1] * TS - e.y) > 6; e.path = spotPath(far ? [e.x / TS, e.y / TS] : from.p, far ? [] : from.via, s.spot); e.spot = s.spot; e.hidden = false; // sai de onde está de fato (antes partia do ponto antigo e cortava caminho em linha reta)
     if (Math.random() < 0.3) { e.emote = pick(['…', '♪', '!']); e.et = 2; }
   }
   e.act = s.act;
@@ -4197,7 +4237,7 @@ function deliveries() {
   now.forEach(d => { const a = byId(d.id); if (!a) return; a.own = 'player'; if (S.firsts && S.firsts.compra && !S.firsts.cs_compra) setTimeout(() => csPrimeiraCompra(a), 900); a.newArr = 1; const p = randIn(d.to || 'receb'); a.x = p[0]; a.y = p[1]; a._st = null; toast('🚚 ' + a.n + ' chegou ao ' + AREAS[d.to || 'receb'].n); });
   if (S.frete && S.fretePend) { for (const k in S.fretePend) S.dep[k] = (S.dep[k] || 0) + S.fretePend[k]; S.fretePend = null; toast('🚚 Entrega da Casa do Agro no depósito.'); }
 }
-function dayTick() { storyCheck(); regionDay(); missionDay(); bicoDay(); if (S.reg && S.reg.pop) { rfarmDay(); jobDay(); } qRefresh();
+function dayTick() { aucExpire(); storyCheck(); regionDay(); missionDay(); bicoDay(); if (S.reg && S.reg.pop) { rfarmDay(); jobDay(); } qRefresh();
   wildDayTick(); rollOffer(); setTimeout(() => S && eventAnnounce(), 2500); if (S.offer && S.offer.day < S.day - 1) S.offer = null;
   S.day++;
   const se = season();
@@ -5244,7 +5284,7 @@ const PF = { open: null, g: null, f: null, from: null, st: null, stamp: 0, heap:
 function pfInit() { const N = MW * MH; PF.g = new Float32Array(N); PF.from = new Int32Array(N); PF.st = new Uint32Array(N); PF.cl = new Uint32Array(N); }
 function pfPass(tx, ty) {
   if (tx < 0 || ty < 0 || tx >= MW || ty >= MH) return 0; const i = ty * MW + tx;
-  if (obj[i] === 2) { const g = GATES[gateId[i]]; return g && !g.lock ? (g.open ? 1 : 3) : 0; }
+  if (obj[i] === 2) { const g = GATES[gateId[i]]; return g && (!g.lock || PF.npc) ? (g.open ? 1 : 3) : 0; } // moradores têm a chave das porteiras trancadas
   return solidT(tx, ty, 'p') ? 0 : 1;
 }
 function pfNearestFree(tx, ty) {
@@ -5817,7 +5857,7 @@ function renderModal() {
   $('mtt').textContent = noEmo(tt); $('mic').innerHTML = M.icon ? ic(M.icon, 22) : (cur && cur[2] ? ic(cur[2], 22) : '');
   $('mc').innerHTML = emoHTML(M.fn(M.tab)); $('mn').scrollTop = st;
 }
-function closeModal() { if (!M.open) return; M.open = false; const mn = $('mn'); mn.classList.remove('on'); mn.style.display = 'none'; setTimeout(() => S && typeof qHud === 'function' && qHud(), 30); paused = mode !== 'play' && mode !== 'cs' ? true : false; if (mode === 'play') paused = false; AU.whoosh(false); }
+function closeModal() { if (S && P) fixRefs(); if (!M.open) return; M.open = false; if (M.qdl && M.qdl.fin) { const f = M.qdl.fin; M.qdl = null; setTimeout(f, 0); } const mn = $('mn'); mn.classList.remove('on'); mn.style.display = 'none'; setTimeout(() => S && typeof qHud === 'function' && qHud(), 30); paused = mode !== 'play' && mode !== 'cs' && mode !== 'film' ? true : false; if (mode === 'play') paused = false; AU.whoosh(false); }
 A.tab = v => { M.tab = v; M.sel = null; M.sub = null; renderModal(); $('mn').scrollTop = 0; AU.click(); };
 const btn = (l, a, v, dis, cls) => `<button data-a="${a}" data-v="${v === undefined ? '' : esc(v)}" ${dis ? 'disabled' : ''} ${cls ? `class="${cls}"` : ''}>${l}</button>`;
 const ibtn = (icn, l, a, v, dis) => `<button data-a="${a}" data-v="${v === undefined ? '' : esc(v)}" ${dis ? 'disabled' : ''}>${ic(icn, 18)}<span>${l}</span></button>`;
@@ -6423,11 +6463,22 @@ function questTick(dt) { if (!S || mode !== 'play' || (qTickT += dt) < 0.5) retu
     else if (sp.ev === 'check') { const ok = sp.key === 'rep1' ? repLv() >= 1 : sp.key === 'trustF4_60' ? trust('f4') >= 60 : sp.key === 'curralAnimal' ? myAnimals().some(a => a.area === 'curral' && !a.main) : sp.key === 'animals6' ? myAnimals().filter(a => !a.main && a.sp !== 'cao').length >= 6 : sp.key === 'trees3' ? pomarS().filter(Boolean).length >= 3 : false; if (ok) qAdvance(q); } }
   bicoTick(); qHud(); }
 // conversa em sequência (retrato, nome e fala; toque para continuar)
-function qDialog(lines, end) { if (!lines || !lines.length) { end && end(); return; } if (CS.on || mode !== 'play') { setTimeout(() => qDialog(lines, end), 800); return; } let i = 0; M.qdl = { lines, end }; const show = () => { const [who, t] = lines[i], me = who === 'me', ap = me ? S.cf.ap : NPCDEF[who].ap, nm = me ? S.cf.name : NPCDEF[who].n;
-    showModal('', null, null, () => `<div class="dlg"><div>${charImg(ap, 4)}</div><div style="flex:1"><b style="font-size:16px">${esc(nm)}</b><div class="txt" style="margin-top:6px">${esc(t)}</div></div></div><div class="row">${btn(i < lines.length - 1 ? 'Continuar ▸' : 'Fechar', 'qNext')}</div>`); };
-  A.qNext = () => { i++; if (i < lines.length) show(); else { closeModal(); end && end(); } }; show(); }
+// Diálogos de missão em fila: antes um diálogo novo (ex.: a próxima missão) substituía o que estava na tela,
+// cortando a fala final e perdendo o que vinha depois dela. Agora cada diálogo espera o anterior, as cenas e as telas abertas.
+const QDQ = []; let QDA = null;
+function qDialog(lines, end) { if (!lines || !lines.length) { end && end(); return; } QDQ.push({ lines, end }); qPump(); }
+function qPump() {
+  if (QDA || !QDQ.length) return;
+  if (CS.on || mode !== 'play' || M.open) { clearTimeout(qPump.t); qPump.t = setTimeout(qPump, 700); return; }
+  const cur = QDA = QDQ.shift(); let i = 0;
+  cur.fin = () => { if (QDA !== cur) return; QDA = null; if (M.qdl === cur) M.qdl = null; cur.end && cur.end(); setTimeout(qPump, 350); };
+  const show = () => { const [who, t] = cur.lines[i], me = who === 'me', ap = me ? S.cf.ap : NPCDEF[who].ap, nm = me ? S.cf.name : NPCDEF[who].n;
+    showModal('', null, null, () => `<div class="dlg"><div>${charImg(ap, 4)}</div><div style="flex:1"><b style="font-size:16px">${esc(nm)}</b><div class="txt" style="margin-top:6px">${esc(t)}</div></div></div><div class="row">${btn(i < cur.lines.length - 1 ? 'Continuar ▸' : 'Fechar', 'qNext')}</div>`); M.qdl = cur; };
+  A.qNext = () => { i++; if (i < cur.lines.length) show(); else closeModal(); };
+  show();
+}
 function qOfferHTML(id) { const L = QDEF.filter(q => q.giver === id && ['offer', 'active'].includes(qState(q.id).s)); return L.map(q => { const st = qState(q.id); return `<div class="card">📜 <b>${q.n}</b>${st.s === 'offer' ? `<p class="mut">${esc(q.intro[0][1])}</p>${btn('Aceitar missão', 'qAcc', q.id)}` : `<br><span class="mut">Agora: ${esc(q.steps[st.step].t)}</span>`}</div>`; }).join(''); }
-A.qAcc = v => { const q = QBY[v]; closeModal(); qDialog(q.intro, () => { qAccept(v); toast('📜 Missão aceita: ' + q.n); }); };
+A.qAcc = v => { const q = QBY[v]; closeModal(); qAccept(v); toast('📜 Missão aceita: ' + q.n); qDialog(q.intro); }; // o jogador já tocou em Aceitar: fechar a conversa no X não desfaz o aceite
 // lembrete na tela com o passo atual (toque abre o diário)
 function qHud() { let el = document.getElementById('qtrack'); if (!el) { el = document.createElement('div'); el.id = 'qtrack'; el.style.cssText = 'position:absolute;z-index:6;left:calc(6px + var(--sal));top:calc(66px + var(--sat));max-width:58%;background:rgba(20,10,5,.78);border:2px solid #7c4424;color:#fbe9c2;font:11px "Pixelify Sans",Georgia,serif;padding:3px 6px;pointer-events:auto;display:none'; el.onclick = () => openMenu('mis'); ($('hud').parentNode || document.body).appendChild(el); }
   const q = QBY[qS().track], st = q && qState(q.id), b = (S.bicos || []).find(x => x.st === 'active');
@@ -6465,7 +6516,7 @@ function bicoEvent() {}
 function bicoTick() { if (!S.bicos) return; for (const b of S.bicos) if (b.st === 'active' && b.due <= S.day && hour() >= 18) { b.st = 'gone'; toast('⌛ O prazo do bico acabou: ' + BICOS[b.k].n + '.'); } }
 
 /* ---------- cutscenes dos primeiros momentos (cada uma só uma vez) ---------- */
-function csOnce(key, steps, end) { S.firsts = S.firsts || {}; if (S.firsts['cs_' + key] || mode !== 'play') return; S.firsts['cs_' + key] = 1; cutscene(steps.concat([{ clr: 1, d: 0.1 }]), end); }
+function csOnce(key, steps, end, tries) { S.firsts = S.firsts || {}; if (S.firsts['cs_' + key]) return; if (mode !== 'play' || CS.on || M.open) { if ((tries || 0) < 40) setTimeout(() => csOnce(key, steps, end, (tries || 0) + 1), 1500); return; } S.firsts['cs_' + key] = 1; cutscene(steps.concat([{ clr: 1, d: 0.1 }]), end); } // espera a cena ou tela aberta terminar em vez de perder a cena única
 function csPrimeiraCompra(a) { csOnce('compra', [{ fade: 1, d: 0.4 }, { fade: 0, cam: [a.x / TS, a.y / TS], snap: 1, z: 2.2, txt: `O caminhão da Casa do Agro chegou com <b>${esc(a.n)}</b>, ${catName(a).toLowerCase()} ${esc(breedOf(a).n)}. O primeiro animal comprado com o seu dinheiro.`, d: 4.2, fn: () => { a._st = 'idle'; a._t = 6; AU.cartRattle && AU.cartRattle(); } }, { txt: 'Animal novo: deixe uns dias no Recebimento ou na Quarentena antes de juntar com o rebanho.', d: 3.6 }]); }
 function csNascimento(m) { if (!m) return; csOnce('nasc', [{ fade: 1, d: 0.4 }, { fade: 0, cam: [m.x / TS, m.y / TS], snap: 1, z: 2.4, txt: `Nasceram leitões! ${esc(m.n)} cuida da ninhada debaixo do abrigo.`, d: 4.4, fn: () => AU.oink && AU.oink(m.x, m.y, 1.6) }, { txt: 'Leitão cresce rápido com ração de suínos. Pode vender, engordar ou guardar para matriz.', d: 3.8 }]); }
 function csPrimeiraColheita(F) { csOnce('colheita', [{ fade: 1, d: 0.4 }, { fade: 0, cam: [P.x / TS, P.y / TS], snap: 1, z: 2.2, txt: `A primeira colheita do pomar: ${esc(F.n.toLowerCase())}. O Seu Dito compra no Mercadinho, e fora da safra vale mais.`, d: 4.4 }]); }
@@ -6681,7 +6732,7 @@ function rocaHarvest(i) { const q = rocaS()[i], C = CROPS[q.c]; if (rocaStage(i)
   P.en = Math.max(0, P.en - 4); toast('✂️ ' + C.n + ': ' + (bag ? bag + ' feixe(s) na mochila' : '') + (bag && dep ? ', ' : '') + (dep ? dep + ' no depósito' : '') + (n > 0 ? ' · ' + n + ' ainda na leira' : ''));
   if (AU.nz) AU.nz(0.3, 0.06, 'bandpass', 900, 1); }
 function openGalpao() { showModal('🔧 Galpão de Equipamentos', null, null, () => {
-  return `<h3>Selas</h3><p class="mut">Escolha a sela usada ao selar.</p>${S.saddles.map(id => { const s = SADDLES.find(q => q.id === id); return `<div class="card ${S.saddleSel === id ? 'sel' : ''}"><b>${s.n}</b><p class="mut">${s.d}</p>${btn(S.saddleSel === id ? 'Em uso' : 'Usar esta', 'useSad', id, S.saddleSel === id)}</div>`; }).join('')}<p class="mut">Compre outras selas na Casa do Agro.</p><h3>Carroça</h3><p>Carga: ${Math.round(cartKg())}/${CART_CAP} kg · ${S.cart.hitch ? 'atrelada a ' + byId(S.cart.hitch).n : 'desatrelada'}</p><p class="mut">Conduza um jumento ou burro pelo cabresto até a carroça e use Ação → Atrelar.</p>`; }); }
+  return `<h3>Selas</h3><p class="mut">Escolha a sela usada ao selar.</p>${S.saddles.map(id => { const s = SADDLES.find(q => q.id === id); return `<div class="card ${S.saddleSel === id ? 'sel' : ''}"><b>${s.n}</b><p class="mut">${s.d}</p>${btn(S.saddleSel === id ? 'Em uso' : 'Usar esta', 'useSad', id, S.saddleSel === id)}</div>`; }).join('')}<p class="mut">Compre outras selas na Casa do Agro.</p><h3>Carroça</h3><p>Carga: ${Math.round(cartKg())}/${CART_CAP} kg · ${S.cart.hitch && byId(S.cart.hitch) ? 'atrelada a ' + byId(S.cart.hitch).n : 'desatrelada'}</p><p class="mut">Conduza um jumento ou burro pelo cabresto até a carroça e use Ação → Atrelar.</p>`; }); }
 A.useSad = v => { S.saddleSel = v; const h = mainHorse(); if (h && h.saddle) h.saddle = v; renderModal(); };
 function openDeposito() { showModal('🌽 Depósito de Alimentos', null, null, () => {
   const nearCart = hyp(S.cart.x - P.x, S.cart.y - P.y) < 90;
@@ -7239,7 +7290,7 @@ const RSPOTS = {
   helena_casa: { p: [127.5, 54.6], via: [[134.5, 54.6], [134.5, 43.5]] }, sc_manejo: { p: [134.5, 60.5], via: [[134.5, 55], [134.5, 43.5]] }, sc_est: { p: [141.5, 53.6], via: [[134.5, 53.6], [134.5, 43.5]] },
   caetano_casa: { p: [187, 14.6], via: [[178.5, 14.6], [176.5, 14.6]] }, ps_horta: { p: [189, 17.4], via: [[189, 20.5], [176.5, 20.5]] }, ps_chiq: { p: [207, 10], via: [[206.5, 20.5], [176.5, 20.5]] },
   otavio_casa: { p: [202.5, 69.6], via: [[202.5, 74.5], [198.5, 60.5], [176.5, 60.5]] }, mr_varanda: { p: [205, 70.4], via: [[202.5, 74.5], [198.5, 60.5], [176.5, 60.5]] }, mr_curral: { p: [203.5, 78.6], via: [[203.5, 75], [198.5, 60.5], [176.5, 60.5]] },
-  mr_est: { p: [189, 82.6], via: [[189, 75], [198.5, 60.5], [176.5, 60.5]] }, mr_func: { p: [224.5, 78.6], via: [[224.5, 75], [198.5, 60.5], [176.5, 60.5]] }, mr_guarita: { p: [184.5, 60.4], via: [[184.5, 60.5], [176.5, 60.5]] }, mr_pista: { p: [197.5, 92], via: [[197.5, 75], [198.5, 60.5], [176.5, 60.5]] }
+  mr_est: { p: [189, 82.6], via: [[189, 75], [198.5, 60.5], [176.5, 60.5]] }, mr_func: { p: [224.5, 78.6], via: [[228.5, 78.6], [228.5, 70.5], [198.5, 60.5], [176.5, 60.5]] }, mr_guarita: { p: [184.5, 60.4], via: [[184.5, 60.5], [176.5, 60.5]] }, mr_pista: { p: [197.5, 92], via: [[197.5, 75], [198.5, 60.5], [176.5, 60.5]] }
 };
 Object.assign(RN, { rw: [118.5, 43.5], rx: [134.5, 43.5], rc: [176.5, 43.5], re: [236.5, 43.5], rn: [176.5, 3], rs: [176.5, 106], rp: [176.5, 20.5], rm: [176.5, 60.5] });
 RE.push(['rw', 'rx'], ['rx', 'rc'], ['rc', 're'], ['rc', 'rp'], ['rp', 'rn'], ['rc', 'rm'], ['rm', 'rs']);
@@ -7303,7 +7354,7 @@ Object.assign(NPC_LORE, {
 
 /* ---------- viagem entre Itarantim e a Região das Serras ---------- */
 function inRegion() { return P.x > 112 * TS; }
-function travelAsk(dir) { if (CS.on || M.open) return; showModal('🛤️ Estrada do leste', null, null, () => `<p>${dir === 'go' ? 'Você chegou ao fim da cidade. A estrada segue para a <b>Região das Serras</b>, onde ficam quatro grandes fazendas.' : 'A estrada volta para <b>Itarantim</b>.'}</p><p><b>${dir === 'go' ? 'Você deseja sair da região?' : 'Voltar para Itarantim?'}</b></p><p class="mut">${P.mnt ? 'Você vai montado em ' + esc(byId(P.mnt).n) + '.' : P.cart ? 'Você vai de carroça.' : 'Você vai a pé.'}${P.lead ? ' ' + esc(byId(P.lead).n) + ' vai no cabresto.' : ''}</p><div class="row">${btn(dir === 'go' ? 'Sim, viajar' : 'Sim, voltar', 'travelGo', dir)}${btn(dir === 'go' ? 'Não, continuar na cidade' : 'Ficar na região', 'travelNo')}</div>`); }
+function travelAsk(dir) { if (CS.on || M.open) return; showModal('🛤️ Estrada do leste', null, null, () => `<p>${dir === 'go' ? 'Você chegou ao fim da cidade. A estrada segue para a <b>Região das Serras</b>, onde ficam quatro grandes fazendas.' : 'A estrada volta para <b>Itarantim</b>.'}</p><p><b>${dir === 'go' ? 'Você deseja sair da região?' : 'Voltar para Itarantim?'}</b></p><p class="mut">${P.mnt ? 'Você vai montado em ' + esc(byId(P.mnt).n) + '.' : P.cart ? 'Você vai de carroça.' : 'Você vai a pé.'}${P.lead && byId(P.lead) ? ' ' + esc(byId(P.lead).n) + ' vai no cabresto.' : ''}</p><div class="row">${btn(dir === 'go' ? 'Sim, viajar' : 'Sim, voltar', 'travelGo', dir)}${btn(dir === 'go' ? 'Não, continuar na cidade' : 'Ficar na região', 'travelNo')}</div>`); }
 A.travelNo = () => { closeModal(); P.x -= (inRegion() ? -20 : 20); S.travelCd = drawT + 3; };
 A.travelGo = v => { closeModal(); csTravel(v); };
 function travelParty() { const L = []; if (P.mnt) L.push(byId(P.mnt)); if (P.lead) L.push(byId(P.lead)); if (P.cart && S.cart.hitch) L.push(byId(S.cart.hitch)); for (const d of myAnimals('cao')) if (d._cmd !== 'ficar') L.push(d); return L.filter(Boolean); }
@@ -7544,6 +7595,11 @@ function aucHammer() {
   }
   renderAuc();
 }
+function aucExpire() { // animal consignado e o jogador não foi ao leilão em 8 dias: volta para o curral (antes sumia)
+  const L = S.auc && S.auc.cons; if (!L || !L.length) return;
+  const back = L.filter(c => S.day - (c.consDay || S.day) >= 8); if (!back.length) return;
+  back.forEach(c => { delete c.consDay; aucReturn(c); }); S.auc.cons = L.filter(c => !back.includes(c)); toast('🐂 ' + back.map(c => c.n).join(', ') + (back.length > 1 ? ' voltaram' : ' voltou') + ' do leilão para o curral.');
+}
 function aucReturn(a) { const b = Object.assign({}, a, { own: 'player' }); const p = randIn('curral'); b.x = p[0]; b.y = p[1]; b.area = 'curral'; S.animals.push(b); }
 function auctionEnd() {
   AUC.on = false; AUC.lotA = null; document.body.classList.remove('auc'); $('auc').style.display = 'none'; cam.taz = 1; cam.fx = cam.fy = null; S.auc.done = S.day;
@@ -7585,7 +7641,7 @@ function openAucDesk() {
   }, 'sell');
 }
 A.aucGo = () => { closeModal(); auctionStart(); };
-A.aucCons = v => { const a = byId(+v); if (!a || !pay(80, 'Frete do leilão')) return; if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; S.animals = S.animals.filter(b => b !== a); const c = JSON.parse(JSON.stringify(a)); for (const k in c) if (k[0] === '_') delete c[k]; S.auc.cons.push(c); toast(a.n + ' vai para o próximo leilão.'); renderModal(); };
+A.aucCons = v => { const a = byId(+v); if (!a || !pay(80, 'Frete do leilão')) return; if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; S.animals = S.animals.filter(b => b !== a); const c = JSON.parse(JSON.stringify(a)); for (const k in c) if (k[0] === '_') delete c[k]; c.consDay = S.day; S.auc.cons.push(c); toast(a.n + ' vai para o próximo leilão.'); renderModal(); };
 function aucInteractables(add) { const x = 102.6 * TS, y = 50.6 * TS; add({ k: 'leilao', label: eventNow('leilao') && !(S.auc && S.auc.done === S.day) ? 'Entrar no leilão' : 'Balcão do leilão', x, y, r: 30, prio: 5, hit: [x - 22, y - 30, x + 22, y + 6], fn: () => eventNow('leilao') && !(S.auc && S.auc.done === S.day) ? auctionStart() : openAucDesk() }); }
 function aucDrawLot(add) { if (AUC.on && AUC.lotA) { const a = AUC.lotA; add(a.y, () => drawAnimal(a)); } }
 /* ---------- caminhão boiadeiro (pixel art) e cenas de abertura dos leilões ---------- */
@@ -7960,8 +8016,17 @@ const FILM = {
   },
   mixC(a, b, k) { return `rgb(${Math.round(a[0] + (b[0] - a[0]) * k)},${Math.round(a[1] + (b[1] - a[1]) * k)},${Math.round(a[2] + (b[2] - a[2]) * k)})`; },
   P(x, y, w, h, c) { this.g.fillStyle = c; this.g.fillRect(Math.round(x), Math.round(y), w, h); },
+  memo(key, w, h, fn) { // desenha uma vez num canvas fora da tela e reaproveita (fundos parados das cenas)
+    this.mc = this.mc || new Map(); key += '|' + w + 'x' + h; let c = this.mc.get(key);
+    if (!c) { const [cc, gg] = mkC(Math.max(1, Math.ceil(w)), Math.max(1, Math.ceil(h))); const g0 = this.g; this.g = gg; try { fn(); } finally { this.g = g0; } c = cc; if (this.mc.size > 60) this.mc.clear(); this.mc.set(key, c); }
+    return c;
+  },
   // céu em faixas com pontilhado nas transições (pixel art, sem degradê liso)
   sky(stops, top, bot) {
+    const key = 'sky' + top + '|' + bot + '|' + JSON.stringify(stops.map(q => [q[0], q[1].map(v => Math.round(v / 6) * 6)]));
+    const c = this.memo(key, this.vw, bot, () => this.skyRaw(stops.map(q => [q[0], q[1].map(v => Math.round(v / 6) * 6)]), top, bot)); this.g.drawImage(c, 0, 0);
+  },
+  skyRaw(stops, top, bot) {
     const g = this.g, vw = this.vw, B = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5], N = 14;
     const at = v => { for (let i = 1; i < stops.length; i++) if (v <= stops[i][0]) { const k = (v - stops[i - 1][0]) / (stops[i][0] - stops[i - 1][0]); return stops[i - 1][1].map((c, j) => c + (stops[i][1][j] - c) * k); } return stops[stops.length - 1][1]; };
     for (let y = top; y < bot; y++) { const q = (y - top) / (bot - top) * N, bi = Math.floor(q), fr = q - bi; const c0 = at(bi / N), c1 = at(Math.min(1, (bi + 1) / N));
@@ -8022,7 +8087,7 @@ const FILM = {
           this.rider(x, gy + 6, an, fr);
           OP.post.call(this, Math.round(vw * 0.92), vh + 2, Math.round(vh * 0.16), '#3a2618', '#a8784a');
         },
-        cue: [[0.4, () => sub(`<b>${nm}</b> chega à Fazenda Boa Esperança, herança do avô <b>Tiãozinho</b>.`)], [3.8, () => AU.gate && AU.gate()]] },
+        cue: [[0.4, () => sub(`<b>${nm}</b> chega à Fazenda Boa Esperança, herança do avô <b>Tiãozinho</b>.`)], [3.8, () => AU.creak && AU.creak()]] },
       { d: 8, z: 2, // 3. o alpendre e o cão do avô
         draw: (t, u) => this.porch(t, u, 'dog'), cue: [[0.4, () => sub(`No alpendre, <b>${dn}</b>, o cão do seu avô, levanta a cabeça... e reconhece a família.`)], [2.4, () => this.dog && AU.bark(P.x, P.y)], [5.5, () => this.dog && AU.bark(P.x, P.y)]] },
       { d: 0, talk: 1, z: 2, draw: (t, u) => this.porch(t, u, 'talk') }, // 4. Seu Felipe (falas com retrato)
@@ -8034,20 +8099,25 @@ const FILM = {
         draw: (t, u) => { const { vw, vh, hy } = this; this.u = 1;
           this.sky([[0, [70, 96, 170]], [0.5, [190, 140, 160]], [0.82, [255, 170, 110]], [1, [255, 220, 150]]], 0, hy);
           this.sun(vw * 0.78, hy - 10, 10, 1); this.ridge(0.7, hy - 2, 14, '#a07890', '#ffc0a0', 0);
-          this.ground('#9a8a4c', '#8c7c44', '#c0aa64'); this.farmUpdate(1 / 60); this.drawFarm(0);
+          this.ground('#9a8a4c', '#8c7c44', '#c0aa64'); this.drawFarm(0);
           const g = this.g; g.globalCompositeOperation = 'soft-light'; g.fillStyle = 'rgba(255,140,60,0.3)'; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = 'source-over';
         },
         cue: [[0.4, () => sub('A história de Tiãozinho continua agora com você.')]] }
     ];
   },
-  porch(t, u, mode) { // fachada do alpendre: parede caiada, porta azul, esteios, chapéu no prego, banco de madeira
-    const { vw, vh } = this, fy = Math.round(vh * 0.74), g = this.g;
+  porch(t, u, mode) { // fachada do alpendre (fundo parado guardado em cache) e, por cima, o vaqueiro, o cão e o Seu Felipe
+    const { vw, vh } = this, fy = Math.round(vh * (vh > vw ? 0.74 : 0.6));
+    this.g.drawImage(this.memo('porch', vw, vh, () => this.porchBg()), 0, 0);
+    this.porchActors(t, u, mode, fy);
+  },
+  porchBg() {
+    const { vw, vh } = this, fy = Math.round(vh * (vh > vw ? 0.74 : 0.6)), g = this.g;
     this.P(0, 0, vw, vh, '#c88a54'); // telhado/sombra no alto
     for (let y = 0; y < fy; y++) this.P(0, y, vw, 1, y < vh * 0.16 ? (y % 4 < 2 ? '#a8502c' : '#8a3c22') : y < vh * 0.19 ? '#5a2a18' : '#efe2c4');
     for (let y = Math.round(vh * 0.16); y > 0; y -= 4) for (let x = (y % 8 ? 0 : 4); x < vw; x += 8) this.P(x, y, 1, 3, '#6a2c18');
     this.P(0, fy - 6, vw, 6, '#c08a5a'); this.P(0, fy - 6, vw, 1, '#d8a878'); // barrado
-    const dx = Math.round(vw * 0.5); this.P(dx - 11, fy - 50, 22, 44, '#2e5a86'); this.P(dx - 9, fy - 48, 8, 40, '#3e72a4'); this.P(dx + 1, fy - 48, 8, 40, '#3e72a4'); this.P(dx - 12, fy - 51, 24, 2, '#e8dcc0'); this.P(dx + 5, fy - 28, 2, 2, '#e0b040');
-    for (const wx of [dx - 46, dx + 30]) { this.P(wx, fy - 44, 16, 20, '#e8dcc0'); this.P(wx + 1, fy - 43, 14, 18, '#2a4e74'); this.P(wx + 7, fy - 43, 1, 18, '#e8dcc0'); this.P(wx + 1, fy - 43, 14, 1, '#4a7aa8'); }
+    const dx = Math.round(vw * 0.5), dh = Math.min(44, Math.round(fy - vh * 0.19 - 10)); this.P(dx - 11, fy - 6 - dh, 22, dh, '#2e5a86'); this.P(dx - 9, fy - 4 - dh, 8, dh - 4, '#3e72a4'); this.P(dx + 1, fy - 4 - dh, 8, dh - 4, '#3e72a4'); this.P(dx - 12, fy - 7 - dh, 24, 2, '#e8dcc0'); this.P(dx + 5, fy - 6 - Math.round(dh * 0.5), 2, 2, '#e0b040');
+    for (const wx of [dx - 46, dx + 30]) { const wy = fy - 6 - dh + 2; this.P(wx, wy, 16, 20, '#e8dcc0'); this.P(wx + 1, wy + 1, 14, 18, '#2a4e74'); this.P(wx + 7, wy + 1, 1, 18, '#e8dcc0'); this.P(wx + 1, wy + 1, 14, 1, '#4a7aa8'); }
     for (const ex of [Math.round(vw * 0.08), Math.round(vw * 0.92)]) { this.P(ex - 3, vh * 0.18, 6, fy - vh * 0.18, '#6a4428'); this.P(ex - 3, vh * 0.18, 2, fy - vh * 0.18, '#9a6a40'); }
     // chapéu de couro no prego do esteio esquerdo
     const hx = Math.round(vw * 0.08), hyy = Math.round(vh * 0.36); this.P(hx - 1, hyy - 2, 2, 2, '#3a3a3a'); this.miniHat(hx, hyy + 7, 0.3);
@@ -8057,6 +8127,9 @@ const FILM = {
     for (let x = 0; x < vw; x += 1) if (((y => y)(0) + x) % 12 < 11) this.P(x, fy, 1, 1, '#6a3a20');
     // luz do sol entrando de lado
     g.globalCompositeOperation = 'soft-light'; g.fillStyle = 'rgba(255,170,80,0.35)'; g.beginPath(); g.moveTo(vw * 0.55, 0); g.lineTo(vw, 0); g.lineTo(vw, vh); g.lineTo(vw * 0.25, vh); g.fill(); g.globalCompositeOperation = 'source-over';
+  },
+  porchActors(t, u, mode, fy) {
+    const { vw } = this;
     const px0 = Math.round(vw * 0.3), dogHome = Math.round(vw * 0.8);
     if (mode === 'dog') {
       // o vaqueiro chega a pé; o cão deitado levanta, late, corre e senta ao lado dele abanando o rabo
@@ -8066,7 +8139,7 @@ const FILM = {
       this.dogAt(dxp, fy + 7, an, fr, flip);
     } else {
       this.walker(px0, fy + 6, 3, 0, 'idle'); this.dogAt(px0 + 18, fy + 7, 'sit', Math.floor(t * 4), true);
-      const fel = this.fel, fx = Math.round(vw * 0.68), talk = this.dl >= 0 && this.dl < 3 && (t * 3) % 1 < 0.6; if (fel) this.walker(fx, fy + 6, 2, talk ? 1 : 0, this.dl === 0 && t < 1.4 ? 'wave' : 'idle', fel.ap);
+      const fel = this.fel, fx = Math.round(vw * 0.68), talk = this.dl >= 0 && this.dl < 3 && (t * 3) % 1 < 0.6; if (fel) this.walker(fx, fy + 6, 2, talk ? 1 : 0, this.dl === 0 && t < 1.4 ? 'wave' : 'idle', fel.d ? fel.d.ap : NPCDEF.felipe.ap);
     }
   },
   miniHat(x, y, s) { // chapéu de couro de vaqueiro visto de frente: aba quebrada para cima em meia-lua, copa baixa, estrelas e costura
@@ -8086,7 +8159,7 @@ const FILM = {
     const { vw, vh } = this, z = Math.max(3, Math.round(Math.min(vw, vh) / 30));
     for (let y = 0; y < vh; y++) this.P(0, y, vw, 1, y % 5 === 0 ? '#e6d6b4' : '#efe2c4');
     const px = Math.round(vw * 0.5); this.P(px - z * 5, 0, z * 10, vh, '#6a4428'); this.P(px - z * 5, 0, z * 3, vh, '#94643c'); for (let y = 0; y < vh; y += z * 3) this.P(px - z * 2 + ((y / z) % 4), y, z, z * 2, '#5a3820');
-    const hs = Math.min(vw * 0.36, vh * 0.3) / 26, sway = Math.sin(t * 1.2) * 0.6, hy0 = Math.round(vh * 0.45); this.P(px - 2, hy0 - 26 * hs * 0.78 - 4, 4, 4, '#5a5a5a'); this.P(px - 1, hy0 - 26 * hs * 0.78 - 4, 1, 1, '#9a9a9a'); this.miniHat(px + sway, hy0, hs);
+    const hs = Math.min(vw * 0.36, vh * 0.3) / 26, sway = Math.sin(t * 1.2) * 0.6, hy0 = Math.round(vh * 0.45); this.P(px - 2, hy0 - 26 * hs * 0.78 - 4, 4, 4, '#5a5a5a'); this.P(px - 1, hy0 - 26 * hs * 0.78 - 4, 1, 1, '#9a9a9a'); { const hw = Math.ceil(26 * hs * 2 + 8), hh = Math.ceil(26 * hs * 1.4 + 8), hc = this.memo('hat' + hs.toFixed(2), hw, hh, () => this.miniHat(hw / 2, Math.ceil(26 * hs * 0.78) + 4, hs)); this.g.drawImage(hc, Math.round(px + sway - hw / 2), Math.round(hy0 - Math.ceil(26 * hs * 0.78) - 4)); }
     const g = this.g; g.globalCompositeOperation = 'soft-light'; g.fillStyle = 'rgba(255,170,80,0.4)'; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = 'source-over';
     for (let i = 0; i < 30; i++) { const x = (i * 53 + t * (4 + i % 5)) % vw, y = (i * 37 + Math.sin(t + i) * 8) % vh; g.fillStyle = `rgba(255,240,190,${0.3 + 0.3 * Math.sin(t * 2 + i)})`; g.fillRect(Math.round(x), Math.round(y), 1, 1); }
   },
@@ -8128,6 +8201,7 @@ const FILM = {
     if (s.cue) while (this.cued < s.cue.length && this.t >= s.cue[this.cued][0]) { s.cue[this.cued][1](); this.cued++; }
     if (s.talk) { this.lineT += dt; const el = document.querySelector('#sub .tx'); if (el) el.textContent = this.lineTxt.slice(0, Math.min(this.lineTxt.length, Math.ceil(this.lineT * 32))); if (this.lineT >= this.lineD) this.talkNext(); return; }
     for (const d of this.dust) { d.l -= dt; d.r += dt * 2; d.x -= dt * 6; d.y -= dt * 2; } this.dust = this.dust.filter(d => d.l > 0);
+    if (this.i === this.list.length - 1) this.farmUpdate(dt);
     if (this.t >= s.d) this.next();
   },
   render() {
@@ -8140,7 +8214,7 @@ const FILM = {
   },
   end() {
     if (!this.on) return; this.on = false; CS.on = false; hideSub(); csTitle(null); document.body.classList.remove('cs'); $('skip').style.display = 'none';
-    mode = 'play'; MUS.setScene('game', 2.5); fadeTo(0); const d = this.done; this.done = null; if (d) d();
+    mode = 'play'; paused = false; MUS.setScene('game', 2.5); fadeTo(0); const d = this.done; this.done = null; if (d) d();
   }
 };
 function csIntro() { // a chegada na fazenda: curta animado e, ao final, o vaqueiro já a pé no terreiro com o cão e o Seu Felipe
@@ -8337,9 +8411,9 @@ const SAVE = {
     if (!S.story) S.story = { intro: 1, mem: {}, seen: {} }; // saves antigos já viram a chegada
     if (!S.land) { S.land = { piquetes: true, leste: true, galinheiro: true }; if (S.house === undefined) S.house = 2; S.rankI = rankOf(patrimonio()); } // saves antigos: a fazenda já era inteira
     applyLand(); applyObjs(); WILD = [];
-    S.animals.forEach(a => { if (a._reloc && AREAS[a._reloc]) { const q = randIn(a._reloc); a.x = q[0]; a.y = q[1]; delete a._reloc; } if (a.own !== 'delivery' && a.own !== 'agro' && boxHit(a.x, a.y, hbOf(a), 'a')) { for (let r = 8; r < 200; r += 8) { let ok = false; for (let k = 0; k < 12; k++) { const x = a.x + Math.cos(k / 12 * 6.28) * r, y = a.y + Math.sin(k / 12 * 6.28) * r; if (!boxHit(x, y, hbOf(a), 'a')) { a.x = x; a.y = y; ok = true; break; } } if (ok) break; } } });
+    S.animals.forEach(a => { if (a._reloc && AREAS[a._reloc]) { const q = randIn(a._reloc); a.x = q[0]; a.y = q[1]; delete a._reloc; } unstick(a); });
     if (boxHit(P.x, P.y, HB.foot, 'p')) { P.x = 7 * TS; P.y = 30.4 * TS; }
-    initNpcs(); if (S.npcPos) npcs.forEach(e => { const p = S.npcPos[e.id]; if (p && SPOTS[p[2]]) { e.x = p[0]; e.y = p[1]; e.spot = p[2]; } });
+    initNpcs(); if (S.npcPos) npcs.forEach(e => { const p = S.npcPos[e.id]; if (p && SPOTS[p[2]]) { e.x = p[0]; e.y = p[1]; e.spot = p[2]; const q = SPOTS[p[2]].p; if (hyp(q[0] * TS - e.x, q[1] * TS - e.y) > 8) { e.path = spotPath([e.x / TS, e.y / TS], [], p[2]); e.hidden = false; } } }); // salvo no meio do caminho: retoma a rota em vez de ficar parado na estrada
     grassSeasonReset(); startPlay(false);
   }
 };
@@ -9004,6 +9078,7 @@ function tick(dt) {
     updGrill(dt); updInst(dt); if ((ctxT -= dt) < 0) { ctxT = 0.12; computeCtx(); }
     if (S.pend.length && !M.open && !P._act) { const p = S.pend.shift(); if (p.k === 'obraFim') csObraFim(p.lot); }
     if (S.mach && !S.mach.told && machState() === 'done') { S.mach.told = 1; S.mach.busy = false; toast('⚙️ A forrageira terminou: ração pronta!'); AU.chime(); }
+    fixRefs();
     if ((saveT += dt) > 60) { saveT = 0; SAVE.save('auto', true); }
   } else if (mode === 'cs') { updCS(dt); updGates(dt); buildGrid(); for (const a of S.animals) if (!a._cs) updAnimal(a, dt, 0, []); for (const e of npcs) if (e.et > 0) e.et -= dt; } // _cs: animal sob controle da cena
   else if (mode === 'film') FILM.update(dt);
