@@ -134,7 +134,7 @@ body.sheet .pad,body.sheet #joy{opacity:0;pointer-events:none}
 #rf .line{width:0;height:2px;background:linear-gradient(90deg,transparent,#c89a50,transparent);transition:width 2.4s ease .9s}
 #rf.on .line{width:min(60vmin,300px)}
 /* título e menu */
-#title{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:calc(6% + var(--sat)) 16px calc(5% + var(--sab));pointer-events:none}
+#title{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;padding:calc(6% + var(--sat)) 16px calc(5% + var(--sab));pointer-events:none}
 #title > *{pointer-events:auto}
 #tt{text-align:center;opacity:0;transform:scale(1.12);filter:blur(6px);transition:opacity 2s ease,transform 3s cubic-bezier(.2,.7,.2,1),filter 2.2s ease}
 #title.rev #tt{opacity:1;transform:none;filter:none}
@@ -144,16 +144,17 @@ body.sheet .pad,body.sheet #joy{opacity:0;pointer-events:none}
 @keyframes shine{from{background-position:120% 0}to{background-position:-120% 0}}
 #ts{margin-top:8px;color:#fff0c4;font-weight:700;font-size:13px;letter-spacing:3px;text-shadow:2px 2px 0 #371d10}
 #tsub{margin-top:4px;color:#ffe08a;font-size:12px;text-shadow:2px 2px 0 #371d10;letter-spacing:2px}
-#tm{display:flex;flex-direction:column;gap:9px;width:min(80vw,290px);opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease;pointer-events:none}
+#tm{display:flex;flex-direction:column;gap:7px;margin-top:auto;margin-bottom:10px;width:min(78vw,280px);opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease;pointer-events:none}
 #title.menu #tm{opacity:1;transform:none;pointer-events:auto}
-#tm button{padding:11px;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px}
+#tm button{padding:9px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(#7a4a26 0 50%,#683c1c 50%);color:#fbe7b8;text-shadow:0 2px 0 #2a160a;box-shadow:inset 0 0 0 2px #c8924a,0 4px 0 rgba(20,10,4,.6)}
+#tm button[data-t=new],#tm button[data-t=cont]:not(:disabled){background:linear-gradient(#f6c75a 0 50%,#e0a032 50%);color:#3a1e0a;text-shadow:0 1px 0 #ffe9a8;box-shadow:inset 0 0 0 2px #fff0b0,0 4px 0 rgba(20,10,4,.6)}
 #tm button small{font-size:11px;font-weight:600;opacity:.8}
 #tfoot{display:flex;gap:10px;align-items:center;justify-content:center;font-size:11px;color:#e0c48a;text-shadow:1px 1px 0 #000;opacity:0;transition:opacity 1s}
 #title.menu #tfoot{opacity:1}
 #tfoot button{font-size:11px;padding:4px 8px}
-body.lan #title{flex-direction:row;justify-content:space-around;align-items:center;padding:calc(12px + var(--sat)) calc(24px + var(--sar)) calc(12px + var(--sab)) calc(24px + var(--sal))}
-body.lan #tt{flex:1}
-body.lan #tm{width:min(36vw,300px)}
+body.lan #title{flex-direction:column;justify-content:flex-start;align-items:center;padding:calc(12px + var(--sat)) calc(24px + var(--sar)) calc(12px + var(--sab)) calc(24px + var(--sal))}
+body.lan #tt h1{font-size:min(7vw,44px)}body.lan #tt h1 br{display:none}body.lan #logo{width:min(16vw,96px)}body.lan #ts,body.lan #tsub{display:inline-block;margin:2px 6px}
+body.lan #tm{display:grid;grid-template-columns:1fr 1fr;width:min(70vw,520px);margin-bottom:34px}
 body.lan #tfoot{position:absolute;bottom:calc(6px + var(--sab));left:0;right:0}
 /* telas sobre o cenário (créditos, controles) */
 .ov{position:absolute;inset:0;z-index:30;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(14px + var(--sat)) 14px calc(14px + var(--sab));background:radial-gradient(ellipse at center,rgba(14,7,3,.9),rgba(8,4,2,.97))}
@@ -258,15 +259,14 @@ body.lan .sw2 .pvbox{position:sticky;top:0}
   <div id="reg" class="wd"></div>
   <div id="toast"></div>
   <div id="title">
-   <div id="tt"><canvas id="logo" width="96" height="48"></canvas><h1>LIDA NO<br>SERTÃO</h1><div id="ts">VAQUEIRO · GADO · TRADIÇÃO</div><div id="tsub">Itarantim · Bahia</div></div>
+   <div id="tt"><canvas id="logo" width="96" height="48"></canvas><h1>LIDA NO <br>SERTÃO</h1><div id="ts">VAQUEIRO · GADO · TRADIÇÃO</div><div id="tsub">Itarantim · Bahia</div></div>
    <div id="tm">
     <button data-t="new"></button>
     <button data-t="cont" id="tcont"></button>
     <button data-t="opt"></button>
     <button data-t="cred"></button>
-    <button data-t="ctrl"></button>
    </div>
-   <div id="tfoot"><span id="tver"></span><button class="btn" id="tfs">Tela cheia</button></div>
+   <div id="tfoot"><span id="tver"></span><button data-t="ctrl" class="btn"></button><button class="btn" id="tfs">Tela cheia</button></div>
   </div>
   <div id="fade"></div>
   <div class="lb" id="lbT"></div><div class="lb" id="lbB"></div>
@@ -522,8 +522,8 @@ function frameURL(kind) {
 function initAssets() {
   const r = document.documentElement.style; r.setProperty('--frame', `url(${frameURL('paper')})`); r.setProperty('--wood', `url(${frameURL('wood')})`); r.setProperty('--ctl', SET.ctl); document.body.classList.toggle('tapmode', SET.mode === 'touch');
   $('ib1').innerHTML = ic('bag', 18); $('ib2').innerHTML = ic('scroll', 18); $('ib3').innerHTML = ic('sell', 18); $('ib4').innerHTML = ic('sound', 22); $('mx').innerHTML = ic('close', 18);
-  const tb = { cont: ['play', 'Continuar'], new: ['plus', 'Novo jogo'], opt: ['gear', 'Configurações'], cred: ['book', 'Créditos'], ctrl: ['pad', 'Controles'] };
-  document.querySelectorAll('#tm button').forEach(b => { const d = tb[b.dataset.t]; b.innerHTML = ic(d[0], 18) + '<span>' + d[1] + '</span>'; });
+  const tb = { cont: ['play', 'Continuar'], new: ['plus', 'Novo jogo'], opt: ['gear', 'Opções'], cred: ['book', 'Créditos'], ctrl: ['pad', 'Controles'] };
+  document.querySelectorAll('#tm button, #tfoot button[data-t]').forEach(b => { const d = tb[b.dataset.t]; b.innerHTML = ic(d[0], 18) + '<span>' + d[1] + '</span>'; });
   $('gateIc').innerHTML = ic('sound', 14);
   drawLogo();
 }
@@ -1570,7 +1570,7 @@ function dogSpr(a, pose, fr) {
 const PORT = (() => {
   const EYEC = ['#4a2c1a', '#6a4024', '#8a5a2e', '#a87a2c', '#4c8a3e', '#3a78c0', '#7a8a96', '#2a1a12'];
   // rampa de cor: luz quente, sombra puxada para o vinho (evita o cinza "sujo" de escurecer para o preto)
-  const ramp = c => [mix(c, '#fff4d8', 0.3), c, mix(c, '#7a2a30', 0.26), mix(c, '#5a1a24', 0.44), mix(c, '#2a0c10', 0.72)];
+  const ramp = c => [mix(c, '#fff4d8', 0.3), c, mix(c, '#7a2a30', 0.26), mix(c, '#5a1a24', 0.44), mix(c, '#120810', 0.86)];
   const W = 64;
   function draw(ap) {
     const [cv, g] = mkC(W, W);
@@ -1594,7 +1594,8 @@ const PORT = (() => {
     }
     const fem = ap.sex === 'F', age = ap.age || 0, ex = ap.expr || 0;
     const sk = SKINS[ap.skin || 0], S = ramp(sk);
-    const hc = HAIRC[ap.hairC || 0], HC = ramp(hc), bc = HAIRC[ap.beardC !== undefined ? ap.beardC : (ap.hairC || 0)], BC = ramp(bc);
+    const hramp = c => [mix(c, '#ffe6b8', 0.42), mix(c, '#ffdcae', 0.1), mix(c, '#3a1024', 0.3), mix(c, '#2a0818', 0.52), mix(c, '#120810', 0.86)];
+    const hc = HAIRC[ap.hairC || 0], HC = hramp(hc), bc = HAIRC[ap.beardC !== undefined ? ap.beardC : (ap.hairC || 0)], BC = ramp(bc);
     const hat = HATS[ap.hat] && HATS[ap.hat].id !== 'none' ? HATS[ap.hat] : null, hair = ap.hair || 0, body = ap.body || 0;
     // ---- geometria da cabeça (grande, ocupando o quadro) ----
     const face = ap.face || 0, FP = [[15.5, 2.3, 20], [16.5, 2.8, 19], [16.5, 4.2, 19.5], [14.5, 2.0, 20.5], [17.5, 3.2, 19]][face];
@@ -1602,7 +1603,11 @@ const PORT = (() => {
     const inHead = (x, y) => { const dx = Math.abs(x + 0.5 - cx) / rx; if (y + 0.5 <= cy) { const dy = (y + 0.5 - cy) / ryT; return dx * dx + dy * dy <= 1; } const dy = (y + 0.5 - cy) / ryB; return dy <= 1 && Math.pow(dx, nJ) + dy * dy <= 1; };
     const head = mk(inHead), chinY = Math.round(cy + ryB);
     const brimY = cy - 8; // linha da aba do chapéu
-    const hairFn = (x, y, k, C) => (Math.round(x * 0.9 + Math.sin(y * 0.5) * 1.4) % 5 === 0) && k === 1 ? C[2] : C[k]; // mechas
+    const hairFn = (x, y, k, C) => { // mechas grossas: risco escuro entre mechas e brilho em faixa na parte de cima
+      const q = (((x + 64 - y * 0.4) % 6) + 6) % 6;
+      if (q < 1 && k >= 1) return C[Math.min(3, k + 1)];
+      if (q >= 2 && q < 3.4 && k <= 1 && y < cy - 4 && y > cy - 17) return C[0];
+      return C[k]; };
     const curlFn = (x, y, k, C) => (H(x >> 1, y >> 1, 4) < 0.2 && k < 3 ? C[k + 1] : C[k]);
     // ---- cabelo de trás ----
     if (hair === 3) cel(mk((x, y) => Math.hypot((x + 0.5 - cx) / (rx + 9), (y + 0.5 - (cy - 5)) / (ryT + 5)) < 1 - H(x >> 1, y >> 1, 3) * 0.07), HC, { fn: curlFn });
@@ -1637,16 +1642,18 @@ const PORT = (() => {
     if (shirt === 5) { for (let y = 50; y < 64; y += 4) { P(cx - 4, y, '#e0b860'); P(cx + 4, y, '#e0b860'); } for (const s of [-1, 1]) for (let k = 0; k < 6; k++) P(cx + s * (4 + k), 50 + k, JEA[4]); }
     if (shirt === 6) for (let y = 52; y < 64; y += 4) P(cx + 6, y, '#e0b860');
     // ---- cabeça ----
-    cel(head, S, { th: [0.16, 0.62, 0.9] });
+    cel(head, S, { th: [0.14, 0.56, 0.88] });
+    for (let y = cy + 4; y < chinY - 1; y++) for (let x = 0; x < W; x++) if (at(head, x, y) && !at(head, x + 2, y) && x > cx) P(x, y, S[3]); // linha do queixo no lado da sombra
     if (fem || age === 0) { g.fillStyle = 'rgba(236,96,110,0.32)'; g.fillRect(cx - 10, cy + 7, 4, 2); g.fillRect(cx + 7, cy + 7, 4, 2); }
     R(cx - 2, chinY - 3, 5, 1, S[0]);
     if (ap.freck) for (let k = 0; k < 12; k++) P(cx - 9 + (k * 7) % 19, cy + 5 + (k * 3) % 4, S[3]);
+    const fx = cx - 1; // rosto levemente virado: traços puxados para a esquerda
     // ---- olhos (grandes, íris colorida, brilho) ----
     const eS = ap.eyes || 0, ew = eS === 4 || fem ? 6 : 5;
     let eh = [4, 5, 3, 4, 5][eS] + (fem ? 1 : 0); if (ex === 3) eh += 1; if (ex === 1) eh = Math.max(2, eh - 1);
     const ey = cy + 2 - Math.floor(eh / 2), ic = EYEC[ap.eyeC !== undefined ? ap.eyeC : 1], IC = ramp(ic), lid = '#2a1218';
     for (const s of [-1, 1]) {
-      const x0 = s < 0 ? cx - 3 - ew : cx + 3;
+      const x0 = s < 0 ? fx - 3 - ew : fx + 3;
       R(x0, ey, ew, eh, '#fbf6ee'); R(x0, ey + eh - 1, ew, 1, '#e4d8d0');
       const iw = ew >= 6 ? 4 : 3, ix = s < 0 ? x0 + ew - iw - 1 : x0 + 1;
       for (let yy = 0; yy < eh; yy++) for (let xx = 0; xx < iw; xx++) P(ix + xx, ey + yy, yy === 0 ? IC[3] : yy === eh - 1 ? IC[0] : IC[1]);
@@ -1655,7 +1662,7 @@ const PORT = (() => {
       R(x0 - (s < 0 ? 1 : 0), ey - 1, ew + 1, 1, lid); P(s < 0 ? x0 - 1 : x0 + ew, ey, lid); // pálpebra e canto externo
       if (eS === 3) P(s < 0 ? x0 - 1 : x0 + ew, ey + 1, lid);
       if (eS === 2) P(s < 0 ? x0 : x0 + ew - 1, ey - 2, lid);
-      if (fem) { P(s < 0 ? x0 - 2 : x0 + ew + 1, ey - 2, lid); P(s < 0 ? x0 - 1 : x0 + ew, ey - 1, lid); }
+      if (fem) { R(x0 - (s < 0 ? 1 : 0), ey - 2, ew + 1, 1, lid); P(s < 0 ? x0 - 2 : x0 + ew + 1, ey - 2, lid); P(s < 0 ? x0 - 2 : x0 + ew + 1, ey - 3, lid); }
       if (ex === 4) { P(s < 0 ? x0 + ew - 1 : x0, ey, lid); P(s < 0 ? x0 + ew - 2 : x0 + 1, ey, lid); }
       R(x0, ey + eh, ew, 1, ex === 1 ? S[3] : S[2]);
       if (age === 2) { P(s < 0 ? x0 - 2 : x0 + ew + 1, ey + 1, S[3]); P(s < 0 ? x0 - 2 : x0 + ew + 1, ey + 3, S[3]); }
@@ -1663,47 +1670,51 @@ const PORT = (() => {
     // ---- sobrancelhas ----
     const bS = ap.brows || 0, brc = (hair === 12 || hair === 1) ? BC[2] : HC[3], bth = bS === 1 || bS === 4 ? 2 : bS === 3 ? 1 : (fem ? 1 : 2), by0 = ey - 3 - (ex === 3 ? 1 : 0);
     for (const s of [-1, 1]) for (let i = 0; i < ew + 1; i++) {
-      const x = s < 0 ? cx - 3 - i : cx + 2 + i; let yy = by0;
+      const x = s < 0 ? fx - 3 - i : fx + 2 + i; let yy = by0;
       if (bS === 2 && i > 0 && i < ew) yy -= 1; if (bS === 4 && i < 2) yy += 1; if (ex === 4 && i < 2) yy += 1; if (ex === 2 && i < 1) yy += 1; if (ex === 3 && i > 1) yy -= 1;
       R(x, yy - (bth - 1), 1, bth, brc);
     }
     // ---- nariz ----
     const nS = ap.nose || 0, nyT = cy + 10, nW = [1, 2, 1, 1, 1][nS];
-    for (let y = cy + 4; y < nyT; y++) P(cx + 1, y, S[2]);
-    if (nS === 4) P(cx + 2, cy + 6, S[2]);
-    P(cx - nW, nyT, S[3]); P(cx + nW + 1, nyT, S[3]); R(cx - nW + 1, nyT, nW * 2, 1, S[2]); P(cx, nyT - 1, S[0]);
-    if (nS === 3) P(cx, nyT - 2, S[0]);
+    for (let y = cy + 4; y < nyT; y++) P(fx + 1, y, S[2]);
+    if (nS === 4) P(fx + 2, cy + 6, S[2]);
+    P(fx - nW, nyT, S[3]); P(fx + nW + 1, nyT, S[3]); R(fx - nW + 1, nyT, nW * 2, 1, S[2]); P(fx, nyT - 1, S[0]);
+    if (nS === 3) P(fx, nyT - 2, S[0]);
+    R(fx + 2, nyT - 2, 1, 2, S[2]); P(fx + 2, nyT + 1, S[2]);
     // ---- boca ----
-    const mS = ap.mouth || 0, MW = [5, 6, 8, 4, 7][mS], my = cy + 14, ml = fem ? '#8a2a3a' : S[4], lipL = fem ? '#d8707e' : S[0], mx0 = cx - (MW >> 1);
-    if (ex === 3) { R(cx - 1, my - 1, 3, 3, '#4a1420'); R(cx - 1, my - 2, 3, 1, ml); R(cx - 1, my + 2, 3, 1, lipL); }
+    const mS = ap.mouth || 0, MW = [5, 6, 8, 4, 7][mS], my = cy + 14, ml = fem ? '#8a2a3a' : S[4], lipL = fem ? '#d8707e' : S[0], mx0 = fx - (MW >> 1);
+    if (ex === 3) { R(fx - 1, my - 1, 3, 3, '#4a1420'); R(fx - 1, my - 2, 3, 1, ml); R(fx - 1, my + 2, 3, 1, lipL); }
     else if (ex === 1) { for (let i = 0; i < MW; i++) { const e = i === 0 || i === MW - 1; P(mx0 + i, my - (e ? 1 : 0), ml); } if (MW >= 5) R(mx0 + 1, my + 1, MW - 2, 1, '#f8f2ea'); R(mx0 + 1, my + (MW >= 5 ? 2 : 1), MW - 2, 1, lipL); }
     else { for (let i = 0; i < MW; i++) { const e = i === 0 || i === MW - 1; P(mx0 + i, my + ((ex === 4 || ex === 2) && e ? 1 : 0), ml); } if (mS === 1 || mS === 4 || fem) R(mx0 + 1, my + 1, MW - 2, 1, lipL); }
-    if (mS === 4 || age === 2) { P(cx - (MW >> 1) - 2, my - 2, S[2]); P(cx + (MW >> 1) + 2, my - 2, S[2]); }
-    if (age === 2) { R(cx - 4, cy - 6, 3, 1, S[2]); R(cx + 2, cy - 6, 3, 1, S[2]); }
+    if (mS === 4 || age === 2) { P(fx - (MW >> 1) - 2, my - 2, S[2]); P(fx + (MW >> 1) + 2, my - 2, S[2]); }
+    if (age === 2) { R(fx - 4, cy - 6, 3, 1, S[2]); R(fx + 2, cy - 6, 3, 1, S[2]); }
     // ---- barba e bigode ----
-    const bd = ap.beard || 0, mouthBox = (x, y) => Math.abs(x + 0.5 - cx) <= (MW >> 1) + 1 && y >= my - 1 && y <= my + 1;
+    const bd = ap.beard || 0, mouthBox = (x, y) => Math.abs(x + 0.5 - fx) <= (MW >> 1) + 1 && y >= my - 1 && y <= my + 1;
     if (bd === 1 || bd === 5) for (let y = cy + 6; y <= chinY + 1; y++) for (let x = cx - rx; x <= cx + rx; x++) { if (!at(head, x, y)) continue; const low = y >= my - 2 || Math.abs(x - cx) > rx - 4; if (!low || mouthBox(x, y)) continue; if (H(x, y, 21) < (bd === 5 ? 0.7 : 0.4)) P(x, y, mix(S[2], BC[2], bd === 5 ? 0.7 : 0.5)); }
     const fullB = bd === 2 || bd === 3 || bd === 4;
     if (fullB) { const ext = bd === 2 ? 1 : bd === 3 ? 3 : 9;
       cel(mk((x, y) => { const d = Math.abs(x + 0.5 - cx); if (y > chinY + ext) return false; if (y > chinY - 1) return d < (rx * 0.7) * (1 - (y - chinY + 1) / (ext + 2)) + 2; if (y < cy + 2) return false; if (!at(head, x, y) && !(y > cy + 2 && d < rx + 1)) return false; if (mouthBox(x, y)) return false; return d > rx - (bd === 2 ? 3 : 4) || y >= my - 1; }), BC, { fn: (x, y, k, C) => (H(x, y, 23) < 0.2 && k < 3 ? C[k + 1] : C[k]) }); }
-    if (bd === 6 || bd === 9) cel(mk((x, y) => y > my + 2 && y <= chinY + 2 && Math.abs(x + 0.5 - cx) < 3.2 - Math.max(0, y - chinY + 1) * 0.9), BC, {});
+    if (bd === 6 || bd === 9) cel(mk((x, y) => y > my + 2 && y <= chinY + 2 && Math.abs(x + 0.5 - fx) < 3.2 - Math.max(0, y - chinY + 1) * 0.9), BC, {});
     if (fullB || bd >= 7) { const mw = bd === 8 ? 6 : 5, th = bd === 8 ? 3 : 2;
-      cel(mk((x, y) => { const d = Math.abs(x + 0.5 - cx); return d < mw && y >= my - 1 - th && y < my - 1 + (d > mw - 2 ? 2 : 0); }), BC, { th: [0.25, 0.6, 0.85] }); }
+      cel(mk((x, y) => { const d = Math.abs(x + 0.5 - fx); return d < mw && y >= my - 1 - th && y < my - 1 + (d > mw - 2 ? 2 : 0); }), BC, { th: [0.25, 0.6, 0.85] }); }
     // ---- cabelo da frente ----
     const capMask = (low, fr) => mk((x, y) => {
-      const d = Math.hypot((x + 0.5 - cx) / (rx + 1.8), (y + 0.5 - (cy - 1)) / (ryT + 1.8)); if (d > 1) return false;
+      const d = Math.hypot((x + 0.5 - cx) / (rx + 2.6), (y + 0.5 - (cy - 1.5)) / (ryT + 2.8)); if (d > 1) return false;
       if (hat && y < brimY - 1) return false;
       if (!at(head, x, y)) return hat ? y < brimY + 2 : (y < Math.min(low, cy - 2) || (low > cy + 4 && y < low));
       return y < fr(x);
     });
     const fringe = (base, amp, per, side) => x => base + Math.round((Math.abs(((x + 64) % per) - per / 2) / (per / 2)) * amp) + (side ? Math.round((x - cx) * side) : 0);
     const hairOpts = { fn: hairFn, th: [0.2, 0.6, 0.86] };
-    if (hair === 0) cel(capMask(cy + 1, fringe(cy - 9, 2, 5, -0.12)), HC, hairOpts);
+    if (hair === 0) cel(capMask(cy + 1, fringe(cy - 10, 4, 6, -0.18)), HC, hairOpts);
     else if (hair === 1) { const m = capMask(cy - 1, () => cy - 10); for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) if (m[y * W + x] && H(x, y, 31) < 0.6) P(x, y, mix(S[2], HC[2], 0.7)); }
     else if (hair === 2) { const m = capMask(cy + 2, fringe(cy - 8, 3, 4)); const extra = mk((x, y) => { for (let k = 0; k < 13; k++) { const a = Math.PI * 1.05 + k / 12 * Math.PI * 0.9, px = cx + Math.cos(a) * (rx + 1.5), py = cy - 2 + Math.sin(a) * (ryT + 1.5); if (hat && py < brimY) continue; if (Math.hypot(x + 0.5 - px, y + 0.5 - py) < 3) return true; } return false; }); for (let i = 0; i < m.length; i++) if (extra[i] && !(head[i] && Math.floor(i / W) > cy - 8)) m[i] = 1; cel(m, HC, { fn: (x, y, k, C) => (H(x >> 1, y >> 1, 5) < 0.25 && k < 3 ? C[k + 1] : C[k]), th: [0.22, 0.6, 0.86] }); }
     else if (hair === 3) cel(mk((x, y) => at(head, x, y) && y < cy - 9 + Math.round(Math.sin(x * 1.3) * 0.8) && !(hat && y < brimY - 1)), HC, { fn: curlFn });
-    else if (hair === 4 || hair === 8 || hair === 9) { const part = x => cy - 9 + Math.round(Math.abs(x + 0.5 - (cx - 3)) * 0.18); cel(capMask(cy + 2, x => (Math.abs(x - cx) > rx - 3 ? cy + 6 : part(x))), HC, hairOpts);
-      const low = hair === 8 ? cy + 12 : hair === 9 ? 56 : 62; for (const s of [-1, 1]) cel(mk((x, y) => { const xo = cx + s * (rx - 0.5) + (hair === 9 ? Math.sin(y * 0.55) : 0); return y > cy - 4 && y < low && Math.abs(x + 0.5 - xo) < 2.6 + Math.max(0, y - cy - 6) * 0.08; }), HC, hairOpts); }
+    else if (hair === 4 || hair === 8 || hair === 9) { // médio, longo e ondulado: uma massa só que emoldura o rosto
+      const part = x => cy - 10 + Math.round(Math.abs(x + 0.5 - (cx - 4)) * 0.22), low = hair === 8 ? cy + 13 : hair === 9 ? 57 : 62;
+      cel(mk((x, y) => { if (hat && y < brimY - 1) return false; if (y >= low) return false; const yy = y + 0.5 - (cy - 1.5); let w;
+        if (yy < 0) { const t = yy / (ryT + 3); if (t < -1) return false; w = (rx + 3.2) * Math.sqrt(1 - t * t); } else w = rx + 3.2 + yy * 0.06 + (hair === 9 ? Math.sin(y * 0.55) * 1.2 : 0) - Math.max(0, y - low + 4) * 0.9;
+        const d = Math.abs(x + 0.5 - cx); if (d > w) return false; if (at(head, x, y) && y >= part(x) && d < rx - 2.5) return false; if (y > cy + 8 && d < rx - 1.5) return false; return true; }), HC, hairOpts); }
     else if (hair === 5 || hair === 6 || hair === 7) { cel(capMask(cy + 1, x => cy - 9 + Math.round(Math.abs(x + 0.5 - cx) * 0.08)), HC, hairOpts);
       if (hair === 6) cel(mk((x, y) => { if (y < cy + 4 || y > 61) return false; const seg = Math.floor((y - cy - 4) / 3), xo = cx + rx - 1 + (seg % 2 ? 1 : 0); return Math.abs(x + 0.5 - xo) < 2.4 - (y > 58 ? 1 : 0); }), HC, { th: [0.3, 0.6, 0.85] });
       if (hair === 7 && !hat) cel(mk((x, y) => Math.hypot(x + 0.5 - cx, y + 0.5 - (cy - ryT - 2)) < 5.2), HC, hairOpts); }
@@ -1737,6 +1748,7 @@ const PORT = (() => {
           if (O.stars) for (const x of [-5, 5]) { R(cx + x, brimY - 6, 1, 3, '#f0d878'); R(cx + x - 1, brimY - 5, 3, 1, '#f0d878'); } }
       }
     }
+    outline(g, W, W);
     return cv;
   }
   return { draw, EYEC };
@@ -7933,58 +7945,217 @@ function startStep() {
 function updCS(dt) { const s = CS.steps[CS.i]; if (!s) return; CS.t += dt; if (s.upd) s.upd(dt, Math.min(1, CS.t / (s.d || 1))); if (CS.t >= (s.d || 0)) { CS.i++; startStep(); } }
 function endCS() { csTitle(null); MUS.setScene('game', 2.5); CS.on = false; cam.fx = cam.fy = null; cam.taz = 1; mode = 'play'; document.body.classList.remove('cs'); $('skip').style.display = 'none'; hideSub(); fadeTo(0); const e = CS.end; CS.end = null; if (e) e(); }
 function skipCS() { if (!CS.on) return; for (let i = CS.i + 1; i < CS.steps.length; i++) { const s = CS.steps[i]; if (s.fn) s.fn(); if (s.upd) s.upd(0, 1); } const cur = CS.steps[CS.i]; if (cur && cur.upd) cur.upd(0, 1); CS.i = CS.steps.length; endCS(); }
-$('skip').onclick = skipCS;
+$('skip').onclick = () => { if (FILM.on) FILM.end(); else skipCS(); };
 function pathLerp(pts, u) { const segs = []; let tot = 0; for (let i = 1; i < pts.length; i++) { const l = hyp(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segs.push(l); tot += l; } let d = u * tot; for (let i = 0; i < segs.length; i++) { if (d <= segs[i]) { const k = d / segs[i]; return [lerp(pts[i][0], pts[i + 1][0], k), lerp(pts[i][1], pts[i + 1][1], k), pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]]; } d -= segs[i]; } const n = pts.length - 1; return [pts[n][0], pts[n][1], 0, 0]; }
 // abertura da história: a herança de Tiãozinho (feita no próprio jogo, com os sprites do mundo)
 const FEL_LINES = ['Seja bem-vindo! Seu avô, Tiãozinho, era um homem muito querido por todos.', 'Cuidava desta fazenda com muito amor e dedicação.', 'Agora, ela está em suas mãos. Sua missão é dar continuidade ao trabalho dele e manter vivo esse legado.'];
-function csIntro() {
+/* ============ ABERTURA DA HISTÓRIA: curta animado em pixel art (cenas desenhadas, com a montaria, o vaqueiro e o cão do jogador) ============ */
+const FILM = {
+  on: false, cv: null, g: null, vw: 0, vh: 0, ps: 2, hy: 0, t: 0, i: 0, u: 1, farm: null, dl: -1, dust: [], sceneT: 0,
+  ensure(z) {
+    if (!this.cv) { const [c, g] = mkC(16, 16); this.cv = c; this.g = g; }
+    const ps = Math.max(2, Math.round(Math.min(W, H * 1.6) / 260)) * (z || 1), vw = Math.ceil(W / ps), vh = Math.ceil(H / ps);
+    if (vw !== this.vw || vh !== this.vh) { this.vw = vw; this.vh = vh; this.ps = ps; this.cv.width = vw; this.cv.height = vh; this.g.imageSmoothingEnabled = false; }
+    this.hy = Math.round(vh * (vh > vw ? 0.6 : 0.62));
+  },
+  mixC(a, b, k) { return `rgb(${Math.round(a[0] + (b[0] - a[0]) * k)},${Math.round(a[1] + (b[1] - a[1]) * k)},${Math.round(a[2] + (b[2] - a[2]) * k)})`; },
+  P(x, y, w, h, c) { this.g.fillStyle = c; this.g.fillRect(Math.round(x), Math.round(y), w, h); },
+  // céu em faixas com pontilhado nas transições (pixel art, sem degradê liso)
+  sky(stops, top, bot) {
+    const g = this.g, vw = this.vw, B = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5], N = 14;
+    const at = v => { for (let i = 1; i < stops.length; i++) if (v <= stops[i][0]) { const k = (v - stops[i - 1][0]) / (stops[i][0] - stops[i - 1][0]); return stops[i - 1][1].map((c, j) => c + (stops[i][1][j] - c) * k); } return stops[stops.length - 1][1]; };
+    for (let y = top; y < bot; y++) { const q = (y - top) / (bot - top) * N, bi = Math.floor(q), fr = q - bi; const c0 = at(bi / N), c1 = at(Math.min(1, (bi + 1) / N));
+      for (let x = 0; x < vw; x += 4) for (let k = 0; k < 4; k++) { const th = B[(y & 3) * 4 + ((x + k) & 3)] / 16; g.fillStyle = `rgb(${(fr > th ? c1 : c0).map(Math.round).join(',')})`; g.fillRect(x + k, y, 1, 1); } }
+  },
+  sun(x, y, r, a) { const g = this.g; g.globalCompositeOperation = 'lighter'; for (let k = 4; k >= 1; k--) { g.fillStyle = `rgba(255,${170 + k * 12},${90 + k * 10},${0.07 * a})`; g.beginPath(); g.arc(x, y, r * (1 + k * 0.9), 0, 7); g.fill(); } g.globalCompositeOperation = 'source-over'; for (let yy = -r; yy <= r; yy++) { const w = Math.round(Math.sqrt(r * r - yy * yy)); this.P(x - w, y + yy, w * 2, 1, yy > r * 0.35 ? '#ffe0a0' : '#fff6da'); } },
+  ridge(seed, base, amp, col, lit, scroll) { const vw = this.vw; for (let x = 0; x < vw; x++) { const X = x + (scroll || 0), n = Math.sin(X * 0.04 + seed) * amp * 0.45 + Math.sin(X * 0.11 + seed * 2) * amp * 0.2 + Math.max(0, Math.sin(X * 0.025 + seed * 3)) * amp, top = Math.round(base - n); this.P(x, top, 1, this.hy - top + 2, col); if (lit) this.P(x, top, 1, 1, lit); } },
+  ground(c1, c2, spk) { const g = this.g, { vw, vh, hy } = this; for (let y = hy; y < vh; y++) this.P(0, y, vw, 1, (y % 3 === 0) ? c2 : c1); for (let i = 0; i < vw * 0.9; i++) { const x = (i * 97 + Math.floor(i / 7) * 13) % vw, y = hy + 2 + ((i * 53) % (vh - hy - 2)); this.P(x, y, 2, 1, spk); } },
+  shrub(x, y, s, d, l) { const g = this.g; for (let k = 0; k < 4; k++) { const bx = x + (k - 1.5) * 3 * s, by = y - 3 * s - (k % 2) * 2 * s, r = (2.6 + (k % 3)) * s; g.fillStyle = d; g.beginPath(); g.arc(bx, by, r, 0, 7); g.fill(); g.fillStyle = l; g.beginPath(); g.arc(bx + r * 0.3, by - r * 0.35, r * 0.55, 0, 7); g.fill(); } this.P(x - 1, y - 2 * s, 2, 2 * s + 1, '#4a3020'); },
+  tree(x, y, s, d, m, l, trunk) { // umbuzeiro: copa larga e baixa, tronco curto e galhos tortos
+    this.P(x - 2 * s, y - 9 * s, 3 * s, 9 * s, trunk); this.P(x - 6 * s, y - 11 * s, 5 * s, s, trunk); this.P(x + s, y - 12 * s, 5 * s, s, trunk);
+    const B = [[-8, -15, 7], [0, -18, 8], [8, -15, 7], [-4, -12, 6], [5, -12, 6]], g = this.g;
+    for (const [bx, by, r] of B) for (let yy = -r * s; yy <= r * s; yy++) for (let xx = -r * s; xx <= r * s; xx++) { const dd = xx * xx + yy * yy * 1.4; if (dd > r * r * s * s) continue; const lt = (xx * 0.7 - yy * 0.7) / (r * s), th = ((xx * 3 + yy * 5 + 64) & 3) / 4; g.fillStyle = lt > 0.5 + th * 0.2 ? l : lt < -0.35 + th * 0.2 ? d : m; g.fillRect(x + bx * s + xx, y + by * s + yy, 1, 1); }
+  },
+  drawR(r, x, y, flip) { if (!r || !r.b) return; const g = this.g; g.save(); if (flip) { g.translate(Math.round(x), 0); g.scale(-1, 1); g.translate(-Math.round(x), 0); } g.drawImage(r.b, Math.round(x - r.ox), Math.round(y - r.oy)); if (r.f) g.drawImage(r.f, Math.round(x - r.ox), Math.round(y - r.oy)); g.restore(); },
+  shadow(x, y, rw) { const g = this.g; g.fillStyle = 'rgba(40,16,20,0.32)'; g.beginPath(); g.ellipse(Math.round(x), Math.round(y), rw, Math.max(1.5, rw * 0.28), 0, 0, 7); g.fill(); },
+  rider(x, y, an, fr) { // a montaria do jogador (raça, pelagem, sela e equipamentos) com o vaqueiro
+    const h = this.h; if (!h) { this.walker(x, y, 3, fr, an === 'idle' ? 'idle' : 'walk'); return; }
+    const r = RIG.get(rigBreed(h), rigCoat(h), 'side', an, fr, rigOpts(h, rigK(h))); this.shadow(x, y + 1, 13); this.drawR(r, x, y, false);
+    const sx = x + (r.seat[0] - r.ox), sy = y + (r.seat[1] - r.oy), rf = an === 'gallop' ? fr % 4 : an === 'trot' ? (fr % 2) * 2 : an === 'walk' ? fr % 2 : 0;
+    this.g.drawImage(charSpr(S.cf.ap, 3, rf, 'ride'), Math.round(sx - 12), Math.round(sy - 21));
+  },
+  walker(x, y, dir, fr, pose, ap) { this.shadow(x, y, 6); this.g.drawImage(charSpr(ap || S.cf.ap, dir, fr, pose), Math.round(x - 12), Math.round(y - 31)); },
+  dogAt(x, y, an, fr, flip) { const d = this.dog; if (!d) return; this.shadow(x, y + 1, 7); this.drawR(RIG.get(rigBreed(d), rigCoat(d), 'side', an, fr % (RIG.frames(an) || 1), rigOpts(d, 1)), x, y, flip); },
+  puff(x, y) { this.dust.push({ x, y, l: 1.2, r: 1 }); },
+  // ===================== cenas =====================
+  scenes() {
+    const nm = esc(S.cf.name), dn = esc(this.dog ? this.dog.n : 'Caramelo');
+    return [
+      { d: 11, // 1. estrada ao amanhecer
+        enter: () => { this.rx = -30; },
+        draw: (t, u) => { const { vw, vh, hy } = this, k = Math.min(1, t / 9);
+          this.sky([[0, [30 + 40 * k, 40 + 50 * k, 96 + 60 * k]], [0.55, [140 + 60 * k, 110 + 50 * k, 150]], [0.85, [250, 160 + 30 * k, 120]], [1, [255, 214, 150]]], 0, hy);
+          this.sun(vw * 0.72, hy - 8 - k * 18, 9, 0.6 + k * 0.4);
+          this.ridge(1.2, hy - 6, 16, this.mixC([90, 70, 110], [170, 120, 140], k), this.mixC([120, 90, 130], [255, 190, 150], k), t * 0.6);
+          this.ridge(4.1, hy, 6, this.mixC([50, 40, 50], [110, 84, 70], k), null, t * 1.5);
+          this.ground(this.mixC([60, 60, 40], [150, 136, 70], k), this.mixC([52, 52, 36], [128, 116, 60], k), this.mixC([80, 80, 50], [180, 160, 90], k));
+          const ry = Math.round(hy + (vh - hy) * 0.35); for (let x = 0; x < vw; x++) { const yy = ry + Math.round(Math.sin((x + t * 22) * 0.03) * 1.5); this.P(x, yy - 3, 1, 8, this.mixC([90, 70, 56], [200, 156, 100], k)); if ((x + Math.round(t * 22)) % 3 === 0) this.P(x, yy, 1, 1, this.mixC([70, 54, 44], [168, 124, 80], k)); }
+          for (let i = 0; i < 6; i++) { const x = ((i * 61 - t * 22) % (vw + 60) + vw + 60) % (vw + 60) - 30; if (i % 3 === 0) OP.cactus.call(this, Math.round(x), ry - 6, 18, this.mixC([30, 40, 30], [60, 96, 56], k), this.mixC([60, 80, 60], [150, 190, 100], k)); else this.shrub(x, ry - 5, 0.9, this.mixC([40, 44, 34], [86, 104, 56], k), this.mixC([60, 64, 44], [150, 160, 80], k)); }
+          const x = Math.min(vw * 0.5, -30 + t * 26), fr = Math.floor(t * 9) % RIG.frames('walk'); this.rider(x, ry + 2, 'walk', fr); if (Math.random() < 0.2) this.puff(x - 8, ry + 2);
+          for (let i = 0; i < 18; i++) { const bx = ((i * 37 + t * 40) % (vw + 40)) - 20, by = vh - 3 - (i % 5) * 4; this.P(bx, by - 6, 1, 6 + (i % 3), this.mixC([30, 26, 22], [70, 60, 40], k)); }
+          const fg = this.mixC([20, 16, 14], [50, 38, 28], k); OP.cactus.call(this, Math.round(vw * 0.06), vh + 2, Math.round(vh * 0.22), fg, this.mixC([50, 40, 30], [210, 150, 90], k));
+        },
+        cue: [[0.3, () => csTitle('RF GAMES APRESENTA')], [3.4, () => csTitle('LIDA NO SERTÃO', 'Itarantim · Bahia')], [7, () => { csTitle(null); sub('Itarantim, sudoeste da Bahia. Depois da ponte do riacho fica a terra que o avô deixou.'); }]] },
+      { d: 8, z: 1.5, // 2. a porteira da Fazenda Boa Esperança
+        draw: (t, u) => { const { vw, vh, hy } = this;
+          this.sky([[0, [80, 130, 196]], [0.7, [190, 196, 210]], [1, [255, 226, 170]]], 0, hy);
+          this.ridge(2.2, hy - 4, 12, '#a88aa0', '#e8b8a8', 0); this.ground('#9a8c4a', '#8a7c40', '#b8a660');
+          const gx = Math.round(vw * 0.62), gy = Math.round(hy + (vh - hy) * 0.4), wood = '#7a4e2c', woodL = '#b07a48', woodD = '#4a2c18';
+          this.tree(gx + 52, gy - 4, 1, '#3e5a2c', '#5e7e36', '#9cb050', '#5a3a22');
+          for (let x = 0; x < vw; x++) { if (x > gx - 22 && x < gx + 22) continue; this.P(x, gy - 13, 1, 1, '#8a8a8a'); this.P(x, gy - 8, 1, 1, '#8a8a8a'); if (x % 12 === 0) { this.P(x, gy - 16, 2, 16, woodD); this.P(x, gy - 16, 1, 16, wood); } }
+          for (const px of [gx - 22, gx + 20]) { this.P(px, gy - 30, 4, 31, woodD); this.P(px, gy - 30, 2, 31, wood); this.P(px, gy - 30, 1, 31, woodL); }
+          this.P(gx - 24, gy - 33, 50, 6, woodD); this.P(gx - 23, gy - 32, 48, 4, '#9a6a3a'); this.P(gx - 23, gy - 32, 48, 1, woodL);
+          const g = this.g; g.font = '5px "Pixelify Sans",monospace'; g.textAlign = 'center'; g.fillStyle = '#f4e2b0'; g.fillText('BOA ESPERANÇA', gx + 1, gy - 28); g.textAlign = 'left';
+          const op = cl((u - 0.48) / 0.3, 0, 1), gw = Math.round(40 * Math.cos(op * 1.35)); // porteira de 5 tábuas abrindo
+          for (let k = 0; k < 5; k++) this.P(gx - 18, gy - 22 + k * 4, gw, 2, k % 2 ? wood : woodL); this.P(gx - 18, gy - 22, 2, 20, woodD); this.P(gx - 18 + gw - 2, gy - 22, 2, 20, woodD); for (let k = 0; k < gw; k++) this.P(gx - 18 + k, gy - 22 + Math.round(k / Math.max(1, gw) * 18), 1, 1, woodD);
+          const x = u < 0.45 ? lerp(-30, gx - 40, u / 0.45) : u < 0.78 ? gx - 40 : lerp(gx - 40, vw + 30, (u - 0.78) / 0.22), an = u >= 0.45 && u < 0.78 ? 'idle' : 'walk', fr = an === 'idle' ? 0 : Math.floor(t * 9) % RIG.frames('walk');
+          this.rider(x, gy + 6, an, fr);
+          OP.post.call(this, Math.round(vw * 0.92), vh + 2, Math.round(vh * 0.16), '#3a2618', '#a8784a');
+        },
+        cue: [[0.4, () => sub(`<b>${nm}</b> chega à Fazenda Boa Esperança, herança do avô <b>Tiãozinho</b>.`)], [3.8, () => AU.gate && AU.gate()]] },
+      { d: 8, z: 2, // 3. o alpendre e o cão do avô
+        draw: (t, u) => this.porch(t, u, 'dog'), cue: [[0.4, () => sub(`No alpendre, <b>${dn}</b>, o cão do seu avô, levanta a cabeça... e reconhece a família.`)], [2.4, () => this.dog && AU.bark(P.x, P.y)], [5.5, () => this.dog && AU.bark(P.x, P.y)]] },
+      { d: 0, talk: 1, z: 2, draw: (t, u) => this.porch(t, u, 'talk') }, // 4. Seu Felipe (falas com retrato)
+      { d: 6, // 5. o chapéu no prego
+        draw: (t, u) => this.hatShot(t, u), cue: [[0.3, () => sub('No esteio do alpendre, o chapéu de couro de Tiãozinho continua no prego, como se ele fosse voltar a qualquer hora.')]] },
+      { d: 6, // 6. as iniciais entalhadas
+        draw: (t, u) => this.carveShot(t, u), cue: [[0.3, () => sub('Na porteira do curral, as iniciais que ele mesmo entalhou: <b>T.S.</b> Cada canto desta terra guarda uma lembrança dele.')]] },
+      { d: 7, // 7. a fazenda no fim da tarde
+        draw: (t, u) => { const { vw, vh, hy } = this; this.u = 1;
+          this.sky([[0, [70, 96, 170]], [0.5, [190, 140, 160]], [0.82, [255, 170, 110]], [1, [255, 220, 150]]], 0, hy);
+          this.sun(vw * 0.78, hy - 10, 10, 1); this.ridge(0.7, hy - 2, 14, '#a07890', '#ffc0a0', 0);
+          this.ground('#9a8a4c', '#8c7c44', '#c0aa64'); this.farmUpdate(1 / 60); this.drawFarm(0);
+          const g = this.g; g.globalCompositeOperation = 'soft-light'; g.fillStyle = 'rgba(255,140,60,0.3)'; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = 'source-over';
+        },
+        cue: [[0.4, () => sub('A história de Tiãozinho continua agora com você.')]] }
+    ];
+  },
+  porch(t, u, mode) { // fachada do alpendre: parede caiada, porta azul, esteios, chapéu no prego, banco de madeira
+    const { vw, vh } = this, fy = Math.round(vh * 0.74), g = this.g;
+    this.P(0, 0, vw, vh, '#c88a54'); // telhado/sombra no alto
+    for (let y = 0; y < fy; y++) this.P(0, y, vw, 1, y < vh * 0.16 ? (y % 4 < 2 ? '#a8502c' : '#8a3c22') : y < vh * 0.19 ? '#5a2a18' : '#efe2c4');
+    for (let y = Math.round(vh * 0.16); y > 0; y -= 4) for (let x = (y % 8 ? 0 : 4); x < vw; x += 8) this.P(x, y, 1, 3, '#6a2c18');
+    this.P(0, fy - 6, vw, 6, '#c08a5a'); this.P(0, fy - 6, vw, 1, '#d8a878'); // barrado
+    const dx = Math.round(vw * 0.5); this.P(dx - 11, fy - 50, 22, 44, '#2e5a86'); this.P(dx - 9, fy - 48, 8, 40, '#3e72a4'); this.P(dx + 1, fy - 48, 8, 40, '#3e72a4'); this.P(dx - 12, fy - 51, 24, 2, '#e8dcc0'); this.P(dx + 5, fy - 28, 2, 2, '#e0b040');
+    for (const wx of [dx - 46, dx + 30]) { this.P(wx, fy - 44, 16, 20, '#e8dcc0'); this.P(wx + 1, fy - 43, 14, 18, '#2a4e74'); this.P(wx + 7, fy - 43, 1, 18, '#e8dcc0'); this.P(wx + 1, fy - 43, 14, 1, '#4a7aa8'); }
+    for (const ex of [Math.round(vw * 0.08), Math.round(vw * 0.92)]) { this.P(ex - 3, vh * 0.18, 6, fy - vh * 0.18, '#6a4428'); this.P(ex - 3, vh * 0.18, 2, fy - vh * 0.18, '#9a6a40'); }
+    // chapéu de couro no prego do esteio esquerdo
+    const hx = Math.round(vw * 0.08), hyy = Math.round(vh * 0.36); this.P(hx - 1, hyy - 2, 2, 2, '#3a3a3a'); this.miniHat(hx, hyy + 7, 0.3);
+    // banco de madeira e chão de tijolo
+    this.P(dx + 30, fy - 12, 26, 3, '#8a5a34'); this.P(dx + 32, fy - 9, 2, 9, '#5a3a20'); this.P(dx + 52, fy - 9, 2, 9, '#5a3a20');
+    for (let y = fy; y < vh; y++) for (let x = 0; x < vw; x++) { const row = Math.floor((y - fy) / 4), b = ((x + (row % 2) * 6) % 12 === 0) || (y - fy) % 4 === 0; if (b || x === 0) this.P(x, y, 1, 1, b ? '#8a4a2a' : (row % 2 ? '#b0643a' : '#a85c34')); }
+    for (let x = 0; x < vw; x += 1) if (((y => y)(0) + x) % 12 < 11) this.P(x, fy, 1, 1, '#6a3a20');
+    // luz do sol entrando de lado
+    g.globalCompositeOperation = 'soft-light'; g.fillStyle = 'rgba(255,170,80,0.35)'; g.beginPath(); g.moveTo(vw * 0.55, 0); g.lineTo(vw, 0); g.lineTo(vw, vh); g.lineTo(vw * 0.25, vh); g.fill(); g.globalCompositeOperation = 'source-over';
+    const px0 = Math.round(vw * 0.3), dogHome = Math.round(vw * 0.8);
+    if (mode === 'dog') {
+      // o vaqueiro chega a pé; o cão deitado levanta, late, corre e senta ao lado dele abanando o rabo
+      const px = lerp(-14, px0, Math.min(1, u / 0.45)), pw = u < 0.45, pfr = Math.floor(t * 9) % 8; this.walker(px, fy + 6, 3, pw ? pfr : 0, pw ? 'walk' : 'idle');
+      let dxp = dogHome, an = 'lie', fr = 0, flip = true;
+      if (u > 0.22 && u < 0.36) { an = 'sit'; fr = Math.floor(t * 6); } else if (u >= 0.36 && u < 0.62) { an = 'trot'; fr = Math.floor(t * 12); dxp = lerp(dogHome, px0 + 18, (u - 0.36) / 0.26); } else if (u >= 0.62) { dxp = px0 + 18; an = Math.floor(t * 2) % 3 === 0 ? 'bark' : 'sit'; fr = Math.floor(t * 6); }
+      this.dogAt(dxp, fy + 7, an, fr, flip);
+    } else {
+      this.walker(px0, fy + 6, 3, 0, 'idle'); this.dogAt(px0 + 18, fy + 7, 'sit', Math.floor(t * 4), true);
+      const fel = this.fel, fx = Math.round(vw * 0.68), talk = this.dl >= 0 && this.dl < 3 && (t * 3) % 1 < 0.6; if (fel) this.walker(fx, fy + 6, 2, talk ? 1 : 0, this.dl === 0 && t < 1.4 ? 'wave' : 'idle', fel.ap);
+    }
+  },
+  miniHat(x, y, s) { // chapéu de couro de vaqueiro visto de frente: aba quebrada para cima em meia-lua, copa baixa, estrelas e costura
+    const Wd = Math.round(26 * s), rx = Wd, ry = Math.round(Wd * 0.78), g = this.g, cx = Math.round(x), by = Math.round(y);
+    const C = { d: '#3e1e0c', m: '#7a4220', l: '#9a5a2c', h: '#c8844a', st: '#ecc890' };
+    for (let yy = -ry; yy <= 0; yy++) { const w = Math.round(Math.sqrt(1 - (yy / ry) ** 2) * rx); for (let xx = -w; xx <= w; xx++) { const edge = w - Math.abs(xx) < Math.max(2, s * 1.6) || yy > -Math.max(2, s); const lt = (-xx / rx) * 0.6 + (-yy / ry) * 0.4; g.fillStyle = edge ? C.d : lt > 0.42 ? C.h : lt > 0.05 ? C.l : C.m; g.fillRect(cx + xx, by + yy, 1, 1); } }
+    for (let a = 0.12; a < 3.05; a += 0.16) { const px = cx + Math.cos(a) * (rx - s * 3.5), py = by - Math.sin(a) * (ry - s * 3.5); g.fillStyle = C.st; g.fillRect(Math.round(px), Math.round(py), Math.max(1, Math.round(s * 0.7)), Math.max(1, Math.round(s * 0.7))); }
+    const star = (sx, sy, r) => { g.fillStyle = '#f2d470'; for (let k = 0; k < 5; k++) { const a = -Math.PI / 2 + k * Math.PI * 2 / 5; for (let q = 0; q <= r; q += 0.5) g.fillRect(Math.round(sx + Math.cos(a) * q), Math.round(sy + Math.sin(a) * q), Math.max(1, Math.round(s * 0.6)), Math.max(1, Math.round(s * 0.6))); } g.fillStyle = '#c89a40'; g.fillRect(Math.round(sx - s * 0.4), Math.round(sy - s * 0.4), Math.max(1, Math.round(s)), Math.max(1, Math.round(s))); };
+    star(cx, by - ry * 0.62, s * 3.2); star(cx - rx * 0.52, by - ry * 0.4, s * 2.6); star(cx + rx * 0.52, by - ry * 0.4, s * 2.6);
+    const crx = Math.round(rx * 0.5), cry = Math.round(ry * 0.42), ctop = by + Math.round(s * 2); // copa (na frente, mais escura)
+    for (let yy = -cry; yy <= 0; yy++) { const w = Math.round(Math.sqrt(1 - (yy / cry) ** 2) * crx); for (let xx = -w; xx <= w; xx++) { const edge = w - Math.abs(xx) < Math.max(1, s) || yy === -cry; const lt = (-xx / crx) * 0.7 + (-yy / cry) * 0.3; g.fillStyle = edge ? C.d : lt > 0.4 ? C.l : lt > -0.2 ? C.m : '#5a2e14'; g.fillRect(cx + xx, ctop + yy, 1, 1); } }
+    g.fillStyle = '#2a140a'; g.fillRect(cx - crx, ctop - Math.round(s * 1.5), crx * 2 + 1, Math.max(1, Math.round(s * 1.2))); // fita
+    g.fillStyle = C.d; g.fillRect(cx - Math.round(rx * 0.7), ctop, Math.round(rx * 1.4), Math.max(1, Math.round(s))); // aba da frente
+    g.fillStyle = '#4a2410'; for (let a = 0; a <= Math.PI; a += 0.04) g.fillRect(Math.round(cx + Math.cos(a) * crx * 0.8), Math.round(ctop + Math.sin(a) * crx * 0.7), Math.max(1, Math.round(s * 0.5)), Math.max(1, Math.round(s * 0.5))); // barbicacho pendurado
+  },
+  hatShot(t, u) { // close no esteio com o chapéu, luz quente e poeira dourada no ar
+    const { vw, vh } = this, z = Math.max(3, Math.round(Math.min(vw, vh) / 30));
+    for (let y = 0; y < vh; y++) this.P(0, y, vw, 1, y % 5 === 0 ? '#e6d6b4' : '#efe2c4');
+    const px = Math.round(vw * 0.5); this.P(px - z * 5, 0, z * 10, vh, '#6a4428'); this.P(px - z * 5, 0, z * 3, vh, '#94643c'); for (let y = 0; y < vh; y += z * 3) this.P(px - z * 2 + ((y / z) % 4), y, z, z * 2, '#5a3820');
+    const hs = Math.min(vw * 0.36, vh * 0.3) / 26, sway = Math.sin(t * 1.2) * 0.6, hy0 = Math.round(vh * 0.45); this.P(px - 2, hy0 - 26 * hs * 0.78 - 4, 4, 4, '#5a5a5a'); this.P(px - 1, hy0 - 26 * hs * 0.78 - 4, 1, 1, '#9a9a9a'); this.miniHat(px + sway, hy0, hs);
+    const g = this.g; g.globalCompositeOperation = 'soft-light'; g.fillStyle = 'rgba(255,170,80,0.4)'; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = 'source-over';
+    for (let i = 0; i < 30; i++) { const x = (i * 53 + t * (4 + i % 5)) % vw, y = (i * 37 + Math.sin(t + i) * 8) % vh; g.fillStyle = `rgba(255,240,190,${0.3 + 0.3 * Math.sin(t * 2 + i)})`; g.fillRect(Math.round(x), Math.round(y), 1, 1); }
+  },
+  carveShot(t, u) { // close da tábua da porteira com T.S. entalhado e um calango atravessando
+    const { vw, vh } = this, z = Math.max(2, Math.round(Math.min(vw, vh) / 40)), g = this.g;
+    this.P(0, 0, vw, vh, '#7a8a50'); for (let i = 0; i < vw * 2; i++) this.P((i * 71) % vw, (i * 43) % vh, 1, 2, i % 2 ? '#6a7a44' : '#8a9a5c');
+    const by = Math.round(vh * 0.38), bh = z * 16; this.P(0, by, vw, bh, '#a8743e'); this.P(0, by, vw, z, '#c8945a'); this.P(0, by + bh - z, vw, z, '#6a4222');
+    for (let k = 0; k < 7; k++) { const yy = by + z * 2 + k * z * 2; for (let x = 0; x < vw; x++) if (Math.sin(x * 0.05 + k * 1.7) > 0.4) this.P(x, yy + Math.round(Math.sin(x * 0.03 + k) * z * 0.6), 1, 1, '#8a5a2e'); }
+    const L = { T: ['11111', '00100', '00100', '00100', '00100'], S: ['01111', '10000', '01110', '00001', '11110'], '.': ['00000', '00000', '00000', '00000', '00100'] }, word = 'T.S.', cw = Math.max(2, Math.floor(vw * 0.62 / (word.length * 6))), startX = Math.round(vw / 2 - word.length * 6 * cw / 2), ty = by + Math.round(bh / 2 - 5 * cw / 2);
+    [...word].forEach((ch, i) => L[ch].forEach((row, ry) => [...row].forEach((b, rx) => { if (b === '1') { const x = startX + i * 6 * cw + rx * cw, y = ty + ry * cw; this.P(x, y, cw, cw, '#3a2210'); this.P(x, y + cw - 1, cw, 1, '#d8a868'); } })));
+    this.P(vw * 0.5 - z * 2, by + z * 3, z * 2, z * 2, '#5a5a5a'); this.P(vw * 0.5 + z * 30, by + z * 3, z * 2, z * 2, '#5a5a5a'); // pregos
+    const lx = lerp(-z * 14, vw + z * 14, u), ly = by - z * 2, st = Math.floor(t * 8) % 2; // calango
+    this.P(lx, ly, z * 8, z * 2, '#8a7a3a'); this.P(lx + z * 8, ly, z * 3, z * 2, '#9a8a44'); this.P(lx + z * 10, ly + z / 2, z, z / 2 + 1, '#1a1a10'); this.P(lx - z * 6, ly + z / 2, z * 6, z, '#7a6a30');
+    this.P(lx + z * (st ? 1 : 2), ly + z * 2, z, z, '#6a5a28'); this.P(lx + z * (st ? 6 : 5), ly + z * 2, z, z, '#6a5a28'); this.P(lx + z * (st ? 2 : 1), ly - z, z, z, '#6a5a28'); this.P(lx + z * (st ? 5 : 6), ly - z, z, z, '#6a5a28');
+    for (let k = 0; k < 4; k++) this.P(lx + z * (1 + k * 2), ly, z, z, '#b0a050');
+  },
+  // ===================== controle =====================
+  start(done) {
+    ['farmInit', 'farmUpdate', 'farmAnchor', 'drawFarm'].forEach(k => { this[k] = OP[k]; });
+    closeModal(); this.done = done; this.on = true; CS.on = true; this.i = -1; this.t = 0; this.dust = [];
+    this.h = mainHorse(); this.dog = myAnimals('cao').find(a => a.avo) || myAnimals('cao')[0]; this.fel = npcs.find(e => e.id === 'felipe');
+    this.list = this.scenes(); this.farm = null; mode = 'film'; document.body.classList.add('cs'); $('skip').style.display = 'block'; input.x = input.y = 0; input.gal = false;
+    MUS.setScene('cutscene', 2); this.next();
+  },
+  next() {
+    this.i++; this.t = 0; this.cued = 0; hideSub(); csTitle(null);
+    const s = this.list[this.i]; if (!s) return this.end();
+    if (s.enter) s.enter();
+    if (s.talk) { this.dl = -1; this.talkNext(); }
+  },
+  talkNext() {
+    const L = [['felipe', FEL_LINES[0]], ['felipe', FEL_LINES[1]], ['felipe', FEL_LINES[2]], ['me', 'Pode deixar, Seu Felipe. Vou cuidar de tudo do jeito que ele cuidava.']];
+    this.dl++; if (this.dl >= L.length) { this.dl = -1; return this.next(); }
+    const [who, txt] = L[this.dl]; this.lineTxt = txt; this.lineT = 0; this.lineD = Math.max(3.4, txt.length * 0.058 + 1.9); talkShow(who);
+  },
+  update(dt) {
+    if (!this.on) return; const s = this.list[this.i]; if (!s) return;
+    this.t += dt; this.sceneT = this.t;
+    if (s.cue) while (this.cued < s.cue.length && this.t >= s.cue[this.cued][0]) { s.cue[this.cued][1](); this.cued++; }
+    if (s.talk) { this.lineT += dt; const el = document.querySelector('#sub .tx'); if (el) el.textContent = this.lineTxt.slice(0, Math.min(this.lineTxt.length, Math.ceil(this.lineT * 32))); if (this.lineT >= this.lineD) this.talkNext(); return; }
+    for (const d of this.dust) { d.l -= dt; d.r += dt * 2; d.x -= dt * 6; d.y -= dt * 2; } this.dust = this.dust.filter(d => d.l > 0);
+    if (this.t >= s.d) this.next();
+  },
+  render() {
+    const s = this.list && this.list[this.i]; if (!s) return; this.ensure(s.z ? (H > W ? s.z : Math.max(1, s.z - 0.5)) : 1); const g = this.g;
+    g.clearRect(0, 0, this.vw, this.vh); s.draw(this.t, s.d ? Math.min(1, this.t / s.d) : 0);
+    for (const d of this.dust) { g.fillStyle = `rgba(220,190,140,${Math.min(0.4, d.l * 0.35)})`; g.beginPath(); g.arc(d.x, d.y, d.r, 0, 7); g.fill(); }
+    X.setTransform(1, 0, 0, 1, 0, 0); X.imageSmoothingEnabled = false; X.drawImage(this.cv, 0, 0, this.vw * this.ps, this.vh * this.ps);
+    const vg = X.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.75); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(10,4,2,0.45)'); X.fillStyle = vg; X.fillRect(0, 0, W, H);
+    const fa = s.d ? Math.max(cl(1 - this.t / 0.6, 0, 1), cl((this.t - (s.d - 0.6)) / 0.6, 0, 1)) : cl(1 - this.t / 0.6, 0, 1); if (fa > 0) { X.fillStyle = `rgba(0,0,0,${fa})`; X.fillRect(0, 0, W, H); }
+  },
+  end() {
+    if (!this.on) return; this.on = false; CS.on = false; hideSub(); csTitle(null); document.body.classList.remove('cs'); $('skip').style.display = 'none';
+    mode = 'play'; MUS.setScene('game', 2.5); fadeTo(0); const d = this.done; this.done = null; if (d) d();
+  }
+};
+function csIntro() { // a chegada na fazenda: curta animado e, ao final, o vaqueiro já a pé no terreiro com o cão e o Seu Felipe
   if (!S.story) S.story = { intro: 0, mem: {}, seen: {} };
-  const fel = npcs.find(e => e.id === 'felipe'), h = mainHorse(), dog = myAnimals('cao')[0], bois = myAnimals('boi'), nm = esc(S.cf.name);
-  const T = p => [p[0] * TS, p[1] * TS];
-  const r1 = [[75, 44], [66, 44], [59.5, 44]].map(T), r2 = [[59.5, 44], [38.5, 44.5], [20.5, 44.5], [11.5, 44.5], [11.5, 35.6]].map(T);
-  const ride = (route, gal) => (dt, u) => { const [x, y, dx, dy] = pathLerp(route, u); const mv = hyp(x - P.x, y - P.y); P.x = x; P.y = y; if (h) { h.x = x; h.y = y; } P._gal = u < 1 ? (gal || 1) : 0; P._cyc = ((P._cyc || 0) + mv / (gal === 2 ? 46 : 28)) % 1; P._st = u < 1 ? (gal === 2 ? 'gallop' : 'walk') : 'idle'; P._mv = mv / Math.max(dt, 1e-3);
-    if (Math.abs(dx) > Math.abs(dy)) { P.dir = dx > 0 ? 3 : 2; if (h) h.f = dx > 0 ? 1 : -1; } else if (dy) P.dir = dy > 0 ? 0 : 1; if (u < 1 && Math.random() < dt * 5) AU.hoof(x, y); cam.fx = x; cam.fy = y; cam.spd = 7; }; // câmera colada no cavaleiro (antes ficava para trás e ele saía da tela)
-  const say1 = (who, txt, extra) => ({ d: Math.max(3.4, txt.length * 0.058 + 1.8), fn() { P.dir = 3; fel.dir = 2; talkShow(who); extra && extra.fn && extra.fn(); },
-    upd(dt, u) { P.dir = 3; fel.dir = 2; const el = document.querySelector('#sub .tx'); if (el) el.textContent = txt.slice(0, Math.min(txt.length, Math.ceil(CS.t * 32))); fel.pose = who === 'felipe' && CS.t * 32 < txt.length ? 'talk' : 'idle'; extra && extra.upd && extra.upd(dt, u); } });
-  const ax = 11.5 * TS, ay = 35.6 * TS, ex = ax + 38, ey = ay + 3, fx = ex + 26; // vaqueiro desce ao lado do cavalo (antes ficava sobreposto a ele)
-  const final = () => { // estado final (também usado ao pular)
-    P.mnt = null; P._act = null; P.x = ex; P.y = ey; P.dir = 3; P._gal = 0; P._st = 'idle';
+  const fel = npcs.find(e => e.id === 'felipe'), h = mainHorse(), dog = myAnimals('cao').find(a => a.avo) || myAnimals('cao')[0];
+  const ax = 11.5 * TS, ay = 35.6 * TS, ex = ax + 38, ey = ay + 3, fx = ex + 26;
+  FILM.start(() => {
+    P.mnt = null; P._act = null; P.x = ex; P.y = ey; P.dir = 3; P._gal = 0; P._st = 'idle'; cam.snap = true; cam.fx = cam.fy = null;
     if (h) { h.x = ax; h.y = ay; h._st = 'idle'; h._t = 20; h.f = 1; }
     if (dog) { dog._cs = 0; dog.x = ex + 8; dog.y = ey + 14; dog._pose = null; dog._st = 'idle'; dog._t = 4; }
-    bois.forEach(b => { b._t = 0; b._pose = null; });
-    fel.x = fx; fel.y = ey; fel.dir = 2; fel.pose = 'idle'; fel.hidden = false;
-  };
-  const steps = [
-    { fade: 1, d: 0.1, fn: () => { S.min = 5 * 60 + 25; S.weather = 'sol'; if (h) { P.mnt = h.id; h._st = 'ridden'; } P.x = r1[0][0]; P.y = r1[0][1]; cam.fx = 84 * TS; cam.fy = 50 * TS; cam.snap = true;
-      bois.forEach((b, i) => { b.x = (4.4 + i * 2.4) * TS; b.y = (49.6 + i * 1.1) * TS; b._st = 'idle'; b._t = 99; b._pose = 'graze'; b.f = i ? -1 : 1; });
-      if (dog) { dog._cs = 1; dog.x = 7.6 * TS; dog.y = 29.9 * TS; dog._st = 'idle'; dog._t = 99; dog._pose = 'lie'; }
-      fel.cs = true; fel.hidden = false; fel.x = 19.5 * TS; fel.y = 39.6 * TS; fel.dir = 1; fel.path = []; fel.pose = 'idle'; } },
-    { fade: 0, cam: [84, 50], z: 1.15, snap: 1, d: 3.6, fn: () => csTitle('RF GAMES APRESENTA') },
-    { cam: [74, 45], spd: 0.45, d: 4.6, fn: () => csTitle('LIDA NO SERTÃO', 'Itarantim · Bahia') },
-    { fn: () => csTitle(null), spd: 1.6, z: 1.05, txt: 'Itarantim, sudoeste da Bahia. Depois da ponte do riacho fica a terra que o avô deixou.', d: 6.2, upd: ride(r1, 1) },
-    { spd: 1.6, txt: `<b>${nm}</b> veio conhecer a Fazenda Boa Esperança, herança de seu avô <b>Tiãozinho</b>.`, d: 8, upd: ride(r2, 1) },
-    { fade: 1, d: 0.45 },
-    { fade: 0, snap: 1, cam: [6, 50.6], z: 1.65, spd: 1.3, txt: 'No pasto, os dois bois pé-duro que ficaram: <b>Malhado</b> e <b>Fumaça</b>.', d: 4.6, fn: () => { setTimeout(() => bois[0] && AU.moo(bois[0].x, bois[0].y, 0.95), 600); setTimeout(() => bois[1] && AU.moo(bois[1].x, bois[1].y, 1.08), 2200); } },
-    { fade: 1, d: 0.45 },
-    { fade: 0, snap: 1, cam: [10.5, 33], z: 1.7, spd: 1.7, txt: 'No alpendre da casa, Caramelo, o cão do avô, levanta a cabeça.', d: 3.4, fn: () => { if (dog) dog._pose = 'sit'; } },
-    { d: 2.2, clr: 1, fn: () => { if (dog) { dog._pose = 'run'; AU.bark(dog.x, dog.y); } }, upd: (dt, u) => { if (!dog) return; const k = easeIO(u); dog.x = lerp(7.6 * TS, ex + 8, k); dog.y = lerp(29.9 * TS, ey + 14, k); dog.f = 1; if (u >= 1) dog._pose = 'sit'; } },
-    { d: 1.0, fn: () => { P.dir = 3; if (h) { h.f = 1; act('dismount', 0.85, h, () => { P.mnt = null; P.x = ex; P.y = ey; h._st = 'idle'; h._t = 30; }, { ex, ey, keep: 1, zoom: false }); AU.saddleCreak(); } }, upd: dt => { if (P._act) updAct(dt); } },
-    { cam: [12.8, 36], z: 2.1, spd: 1.4, d: 3.4, fn: () => { P._act = null; P.mnt = null; P.x = ex; P.y = ey; fel.pose = 'walk'; fel._dist = fel._dist || 0; }, upd: (dt, u) => { const k = Math.min(1, u * 1.15), nx = lerp(19.5 * TS, fx, k), ny = lerp(39.6 * TS, ey, Math.min(1, k * 1.6)); fel._dist += hyp(nx - fel.x, ny - fel.y); fel.dir = Math.abs(nx - fel.x) > Math.abs(ny - fel.y) ? 2 : 1; fel.x = nx; fel.y = ny; if (k >= 1) { fel.pose = 'idle'; fel.dir = 2; } } },
-    say1('felipe', FEL_LINES[0], { fn: () => { fel.emote = '♥'; fel.et = 1.6; } }),
-    say1('felipe', FEL_LINES[1]),
-    say1('felipe', FEL_LINES[2]),
-    say1('me', 'Pode deixar, Seu Felipe. Vou cuidar de tudo do jeito que ele cuidava.'),
-    { fade: 1, d: 0.45 },
-    { fade: 0, snap: 1, cam: [5.6, 28.4], z: 2.6, spd: 1.2, txt: 'No esteio do alpendre, o chapéu de couro de Tiãozinho continua no prego, como se ele fosse voltar a qualquer hora.', d: 5 },
-    { fade: 1, d: 0.45 },
-    { fade: 0, snap: 1, cam: [43.4, 42.2], z: 2.6, spd: 1.1, txt: 'Na porteira do curral, as iniciais que ele mesmo entalhou: <b>T.S.</b> Cada canto desta terra guarda uma lembrança dele.', d: 5.6 },
-    { fade: 1, d: 0.45 },
-    { fade: 0, snap: 1, cam: [13, 35.5], z: 1.3, spd: 0.9, txt: 'A história de Tiãozinho continua agora com você.', d: 4.6 },
-    { fn: () => { final(); fel.cs = false; S.min = Math.max(S.min, 6 * 60 + 15); S.story.intro = 1; addFr('felipe', 30); npcState('felipe').met = 1; remember('felipe', 'recebeu você na chegada'); }, clr: 1, d: 0.2 }
-  ];
-  steps.forEach(st => { const u0 = st.upd; st.upd = (dt, u) => { S.min = Math.min(S.min + dt * 1.1, 6 * 60 + 40); if (u0) u0(dt, u); }; });
-  const f0 = steps[steps.length - 1].fn; steps[steps.length - 1].fn = () => { f0(); };
-  cutscene(steps, () => { final(); fel.cs = false; S.story.intro = 1; setTimeout(qRefresh, 7000); P._gal = 0; say(SET.mode === 'touch' ? 'Toque no chão para andar e nos bois para ver a ficha. O Aboio faz o gado seguir você.' : 'Joystick ou WASD para andar, Correr para galopar. Toque nos bois para ver a ficha; o Aboio faz o gado seguir você.', 6500); SAVE.save('auto', true); });
+    if (fel) { fel.x = fx; fel.y = ey; fel.dir = 2; fel.pose = 'idle'; fel.hidden = false; fel.cs = false; }
+    S.min = Math.max(S.min, 6 * 60 + 15); S.story.intro = 1; addFr('felipe', 30); npcState('felipe').met = 1; remember('felipe', 'recebeu você na chegada');
+    setTimeout(qRefresh, 7000);
+    SAVE.save('auto', true); say(SET.mode === 'touch' ? 'Toque no chão para andar e nos bois para ver a ficha. O Aboio faz o gado seguir você.' : 'Joystick ou WASD para andar, Correr para galopar. Toque nos bois para ver a ficha; o Aboio faz o gado seguir você.', 9000);
+  });
 }
 function removeLock(k, u) { const y = EXP[k].y; const xs = [37, 38, 39]; const n = Math.ceil(u * xs.length); for (let i = 0; i < n; i++) { const x = xs[i], idx = gi(x, y); if (obj[idx] === 1) { obj[idx] = 0; dust((x + .5) * TS, (y + .8) * TS, 6, '#c8a878'); AU.hammer(); } } }
 function csExpansion(k) {
@@ -8244,14 +8415,14 @@ function renderSetup() {
     h += '<label>Estímulo</label>' + chips('aj', STIM.map(s => s.n), CF.aj) + `<div class="desc">${STIM[CF.aj].d}</div>`;
     h += tackHTML(CF.tack || {}, 'tk_');
   } else if (setStep === 3) {
-    const D0 = CF.dog = CF.dog || { br: 'none', n: '', collar: 1, cc: 1 };
-    h += `<div class="desc">O Caramelo, vira-lata do seu avô, já espera na fazenda. Você pode trazer também <b>o seu próprio cão</b>, de qualquer raça.</div><label>Coleira do Caramelo</label>` + chips('dg_cc', COLLARN, D0.cc || 0);
-    h += '<label>Seu cão</label><div class="dogg">' + [['none', null], ...Object.keys(DOGS).map(k => [k, DOGS[k]])].map(([k, B]) => { const on = D0.br === k; if (!B) return `<button data-s="dg_br" data-v="none" class="${on ? 'on' : ''}"><b>Só o Caramelo</b><small>Sem cão extra</small></button>`;
+    const D0 = CF.dog = CF.dog || { br: 'caramelo', n: 'Caramelo', collar: 1 }; if (!D0.br || D0.br === 'none' || !DOGS[D0.br]) { D0.br = 'caramelo'; D0.n = D0.n || 'Caramelo'; }
+    h += `<div class="desc">Seu avô deixou, além da terra, <b>o cão dele</b>: companheiro de anos na lida, ele espera por você no alpendre. Escolha a raça, o nome, a pelagem e a coleira do cão herdado.</div>`;
+    h += '<label>Cão herdado do avô</label><div class="dogg">' + Object.keys(DOGS).map(k => [k, DOGS[k]]).map(([k, B]) => { const on = D0.br === k;
       const sp = RIG.spec(k), porte = sp.H >= 15 ? 'grande' : sp.H >= 12.5 ? 'médio' : 'pequeno', r = RIG.get(k, RIG.BR[k].coats[0], 'side', 'idle', 0, { k: 1, seed: 3, adult: 1, sex: 'M' });
       return `<button data-s="dg_br" data-v="${k}" class="${on ? 'on' : ''}">${sprHTML(trimC(r.b), 2, 'dg|' + k)}<b>${B.n}</b><small>porte ${porte} · ${(B.temp || []).join(', ')}</small></button>`; }).join('') + '</div>';
-    if (D0.br !== 'none' && DOGS[D0.br]) { const B = DOGS[D0.br], cs = RIG.BR[D0.br].coats;
+    { const B = DOGS[D0.br], cs = RIG.BR[D0.br].coats;
       h += `<div class="desc"><b>${B.n}</b> — ${B.d}<div class="stat">${statBar('Toca gado', B.herd, 1.4)}${statBar('Guarda', B.guard, 1.4)}${statBar('Faro', B.track, 1.4)}</div></div>`;
-      h += `<label>Nome</label><input id="dn" maxlength="14" value="${esc(D0.n || B.nm || 'Bob')}"><label>Pelagem</label><div class="ch">${cs.map((c, i) => `<button data-s="dg_coat" data-v="${i}" class="${(D0.coat || 0) === i ? 'on' : ''}">${RIG.COATS[c].n}</button>`).join('')}</div><label>Coleira</label>` + chips('dg_collar', COLLARN, D0.collar || 0); }
+      h += `<label>Nome</label><input id="dn" maxlength="14" value="${esc(D0.n || (D0.br === 'caramelo' ? 'Caramelo' : B.nm) || 'Bob')}"><label>Pelagem</label><div class="ch">${cs.map((c, i) => `<button data-s="dg_coat" data-v="${i}" class="${(D0.coat || 0) === i ? 'on' : ''}">${RIG.COATS[c].n}</button>`).join('')}</div><label>Coleira</label>` + chips('dg_collar', COLLARN, D0.collar || 0); }
   } else {
     const B = mountData();
     h += `<div class="desc" style="font-size:13px"><b>${esc(CF.name)}</b>, vindo(a) de <b>${st[1]}</b>.<br>Montaria: <b>${esc(CF.hn)}</b> — ${B.n}, ${RIG.COATS[CF.coat].n.toLowerCase()}${CF.mt === 'cavalo' ? (CF.hsex === 'F' ? ', égua' : ', garanhão') : ''}.<br><br>Você começa pequeno em Itarantim: um rancho simples, poucos piquetes, <b>dois bois Pé-Duro</b> e pouco dinheiro. O resto, a lida constrói.</div>`;
@@ -8276,7 +8447,7 @@ $('setup').addEventListener('click', e => {
   if (k === 'cat') { setCat = v; return renderSetup(); }
   if (k === 'rand') { randomLook(); return renderSetup(); }
   if (k.startsWith('tk_')) { CF.tack = CF.tack || {}; CF.tack[k.slice(3)] = +v; return renderSetup(); }
-  if (k.startsWith('dg_')) { CF.dog = CF.dog || { br: 'caramelo', n: 'Caramelo', collar: 0 }; const f = k.slice(3); CF.dog[f] = f === 'br' ? v : +v; if (f === 'br') { CF.dog.n = v !== 'none' && DOGS[v] ? (DOGS[v].nm || 'Bob') : ''; CF.dog.coat = 0; } return renderSetup(); }
+  if (k.startsWith('dg_')) { CF.dog = CF.dog || { br: 'caramelo', n: 'Caramelo', collar: 0 }; const f = k.slice(3); CF.dog[f] = f === 'br' ? v : +v; if (f === 'br') { CF.dog.n = v === 'caramelo' ? 'Caramelo' : DOGS[v] ? (DOGS[v].nm || 'Bob') : 'Caramelo'; CF.dog.coat = 0; } return renderSetup(); }
   if (k === 'st') { CF.st = +v; const p = STATES[CF.st][3]; Object.assign(CF.ap, { hat: p.hat, shirt: p.shirt, shirtC: p.shirtC, pants: p.pants, pantsC: p.pantsC, boots: p.boots, acc: p.acc, scarfC: p.scarfC, orn: STATES[CF.st][4] }); CF.sk = Object.assign({}, STATES[CF.st][6]); }
   else if (k === 'sex' || k === 'orn') CF.ap[k] = v;
   else if (k === 'mt') { CF.mt = v; CF.hbr = MOUNT_BREEDS[v][0]; CF.hsex = v === 'muar' ? 'F' : v === 'jegue' ? 'M' : CF.hsex; CF.coat = RIG.BR[rigBreedKey(mtSp(v), CF.hbr, CF.hsex)].coats[0]; if (v !== 'cavalo') CF.mk = 0; }
@@ -8298,7 +8469,7 @@ function drawPreview(dt) {
   const sh = (x, rw) => { g.fillStyle = 'rgba(40,20,10,0.25)'; g.beginPath(); g.ellipse(x, gy + 1, rw, rw * 0.3, 0, 0, 7); g.fill(); };
   const sc = Math.max(2, Math.floor(h / 60));
   if (!setupEdit && setStep === 3) { const D0 = CF.dog || {}, br = D0.br && D0.br !== 'none' ? D0.br : 'caramelo', coat = RIG.BR[br].coats[D0.coat || 0] || RIG.BR[br].coats[0], cyc = pvT % 9, an = cyc < 2.5 ? 'idle' : cyc < 5 ? 'walk' : cyc < 7 ? 'trot' : 'sit', nf = RIG.frames(an) || 1, fr = Math.floor(pvT * (an === 'walk' ? 9 : 12)) % nf;
-    const k2 = Math.max(2, Math.min(4, h / 40)), r = RIG.get(br, coat, 'side', an, fr, { k: 1, seed: 3, adult: 1, sex: 'M', collar: COLLARS[br === 'caramelo' && D0.br === 'none' ? D0.cc || 0 : D0.collar || 0] }); sh(w * 0.5, 10 * k2); put(r.b, w * 0.5 - r.ox * k2, gy - r.oy * k2, k2); return; }
+    const k2 = Math.max(2, Math.min(4, h / 40)), r = RIG.get(br, coat, 'side', an, fr, { k: 1, seed: 3, adult: 1, sex: 'M', collar: COLLARS[D0.br === 'none' ? D0.cc || 0 : D0.collar || 0] }); sh(w * 0.5, 10 * k2); put(r.b, w * 0.5 - r.ox * k2, gy - r.oy * k2, k2); return; }
   if (setupEdit || setStep < 2) {
     sh(w * 0.22, 9 * sc / 2); put(charSpr(ap, 0, (pvT % 3.7) < 0.13 ? 3 : Math.floor(pvT / 0.55) % 3, 'idle'), w * 0.22 - 12 * sc, gy - 30 * sc, sc);
     sh(w * 0.5, 9 * sc / 2); put(charSpr(ap, 3, Math.floor(pvT * 9) % 8, 'walk'), w * 0.5 - 12 * sc, gy - 30 * sc, sc);
@@ -8331,12 +8502,13 @@ function newGame(cf) {
   const h = mkAnimal(sp, cf.hbr, { sex: cf.hsex, n: cf.hn, main: true, age: 40, gen: rnd(62, 78), hap: 85, saddle: S.saddleSel, cond: 60, coat: cf.coat, mk: cf.mt === 'cavalo' ? cf.mk : 0, aff: 60 }); h.tack = Object.assign({}, cf.tack || {}); h.x = 12.5 * TS + 10; h.y = 31 * TS; S.animals.push(h);
   // dois bois Pé-Duro
   const bois = [put(mkAnimal('boi', 'peduro', { sex: 'M', age: 34, n: 'Malhado', coat: 'peVermelho' }), 'p1'), put(mkAnimal('boi', 'peduro', { sex: 'M', age: 30, n: 'Fumaça', coat: 'amarelo' }), 'p1')];
-  const dog = mkAnimal('cao', 'caramelo', { n: 'Caramelo', sex: 'M', age: 30, skills: ['Boiadeiro'] }); dog.x = 14 * TS; dog.y = 32 * TS; S.animals.push(dog); if (cf.dog) dog.collar = cf.dog.cc || 0;
-  if (cf.dog && cf.dog.br && cf.dog.br !== 'none' && DOGS[cf.dog.br]) { const d2 = mkAnimal('cao', cf.dog.br, { n: cf.dog.n || DOGS[cf.dog.br].nm || 'Bob', sex: 'M', age: 20 }); d2.coat = RIG.BR[cf.dog.br].coats[cf.dog.coat || 0]; d2.collar = cf.dog.collar || 0; d2.x = 15 * TS; d2.y = 32.5 * TS; S.animals.push(d2); }
+  // o cão herdado do avô: raça, nome, pelagem e coleira escolhidos no início
+  const cd = cf.dog || {}, dbr = cd.br && cd.br !== 'none' && DOGS[cd.br] ? cd.br : 'caramelo';
+  const dog = mkAnimal('cao', dbr, { n: cd.n || (dbr === 'caramelo' ? 'Caramelo' : DOGS[dbr].nm || 'Bob'), sex: 'M', age: 30, skills: ['Boiadeiro'] }); dog.coat = RIG.BR[dbr].coats[cd.coat || 0] || RIG.BR[dbr].coats[0]; dog.collar = cd.br === 'none' ? (cd.cc || 0) : (cd.collar || 0); dog.avo = 1; dog.x = 14 * TS; dog.y = 32 * TS; S.animals.push(dog);
   for (let i = 0; i < 5; i++) put(mkAnimal('boi', pick(['nelore', 'nelore', 'guzera', 'gir', 'tabapua']), { own: 'felipe' }), 'campos');
   for (let i = 0; i < 3; i++) put(mkAnimal('cavalo', pick(['mm', 'qm', 'campolina', 'crioulo', 'arabe']), { own: 'ryan' }), 'duarte');
   put(mkAnimal('jumento', 'pega', { own: 'ryan' }), 'duarte'); put(mkAnimal('burro', 'burro', { own: 'ryan', sex: 'M' }), 'duarte');
-  S.animals.forEach(a => { if (a.own === 'player') hist(a, a.main ? 'Chegou com ' + cf.name + ' de ' + STATES[cf.st][1] : a.sp === 'boi' ? 'Os dois primeiros bois da fazenda' : 'Cão da fazenda'); });
+  S.animals.forEach(a => { if (a.own === 'player') hist(a, a.main ? 'Chegou com ' + cf.name + ' de ' + STATES[cf.st][1] : a.sp === 'boi' ? 'Os dois primeiros bois da fazenda' : a.avo ? 'Cão do seu avô, herdado junto com a fazenda' : 'Cão da fazenda'); });
   genCandidates(); initNpcs(); grassSeasonReset();
   startPlay(true);
 }
@@ -8384,6 +8556,7 @@ const OP = {
     this.birdT -= dt; if (this.birdT <= 0 && t > 7.2) { this.spawnBirds(); this.birdT = 22 + Math.random() * 18; }
     for (const b of this.birds) { b.x += b.vx * dt; b.y += Math.sin(this.t * 0.7 + b.ph) * 0.0015; } this.birds = this.birds.filter(b => b.x < 1.25 && b.x > -0.25);
     for (const c of this.clouds) { c.x += c.sp * dt * 0.3; if (c.x > 1.3) c.x = -0.4; }
+    this.farmUpdate(dt);
   },
   spawnHerd() {
     const n = 6 + Math.floor(Math.random() * 3), brs = ['peduro', 'nelore', 'nelore', 'gir', 'guzera', 'peduro'];
@@ -8415,7 +8588,7 @@ const OP = {
   /* ---------- cena do amanhecer (baixa resolução, ampliada sem suavização) ---------- */
   ensure() {
     const ps = Math.max(2, Math.round(Math.min(W, H * 1.6) / 300)), vw = Math.ceil(W / ps), vh = Math.ceil(H / ps);
-    if (vw !== this.vw || vh !== this.vh) { this.vw = vw; this.vh = vh; this.ps = ps; this.cv.width = vw; this.cv.height = vh; this.g.imageSmoothingEnabled = false; this.hy = Math.round(vh * (vh > vw ? 0.58 : 0.56)); this.sky = this.g.createImageData(vw, this.hy + 2); this.skyU = -1; this.hills = null; }
+    if (vw !== this.vw || vh !== this.vh) { this.vw = vw; this.vh = vh; this.ps = ps; this.cv.width = vw; this.cv.height = vh; this.g.imageSmoothingEnabled = false; this.hy = Math.round(vh * (vh > vw ? 0.5 : 0.54)); this.sky = this.g.createImageData(vw, this.hy + 2); this.skyU = -1; this.hills = null; }
   },
   skyCol(v, u) { // v: 0 topo .. 1 horizonte
     const P0 = [[0, [10, 14, 42]], [0.55, [40, 38, 86]], [0.85, [92, 64, 102]], [1, [140, 92, 110]]];
@@ -8474,6 +8647,7 @@ const OP = {
     const fieldTop = hy + 2, grassA = this.mixC([40, 44, 30], [128, 120, 62], u), grassB = this.mixC([34, 36, 26], [104, 98, 52], u);
     for (let y = fieldTop; y < vh; y++) { g.fillStyle = (y % 3 === 0) ? grassB : grassA; g.fillRect(0, y, vw, 1); }
     for (let i = 0; i < 160; i++) { const x = (i * 97 + Math.floor(i / 7) * 13) % vw, y = fieldTop + ((i * 53) % (vh - fieldTop)); g.fillStyle = this.mixC([60, 60, 34], [168, 150, 80], u); g.fillRect(x, y, 2, 1); }
+    this.drawFarm(pan);
     const roadY = Math.round(hy + (vh - hy) * 0.32), roadC = this.mixC([60, 46, 38], [188, 146, 92], u), rutC = this.mixC([44, 34, 30], [150, 110, 70], u);
     for (let x = 0; x < vw; x++) { const yy = roadY + Math.round(Math.sin(x * 0.02 + 0.8) * 2); g.fillStyle = roadC; g.fillRect(x, yy - 2, 1, 6); g.fillStyle = rutC; if (x % 2) { g.fillRect(x, yy - 1, 1, 1); g.fillRect(x, yy + 2, 1, 1); } }
     // cerca de arame à beira da estrada
@@ -8515,6 +8689,106 @@ const OP = {
     for (let k = 0; k < 9; k++) { g.fillStyle = tip; g.fillRect(x + ((k * 3) % w), y - h + 2 + k * Math.round(h / 10), 1, 1); }
   },
   post(x, y, h, c, tip) { const g = this.g; for (let yy = 0; yy < h; yy++) { const ww = yy < 2 ? 2 : 3; g.fillStyle = c; g.fillRect(x + (yy < 2 ? 1 : 0), y - h + yy, ww, 1); g.fillStyle = tip; if (yy > 1) g.fillRect(x + 2, y - h + yy, 1, 1); } g.fillStyle = c; for (let s = 0; s < 3; s++) { const wy = y - h + 4 + s * Math.round(h * 0.22); for (let k = 1; k < 70; k++) { const sag = Math.round(Math.sin(k / 70 * Math.PI) * 2); g.fillRect(x - k, wy + sag, 1, 1); if (k % 7 === 3) { g.fillRect(x - k, wy + sag - 1, 1, 1); g.fillRect(x - k, wy + sag + 1, 1, 1); } } } },
+  /* ---------- fazenda ao fundo: casa, paiol, catavento, juazeiro, curral, cavalos e gado pastando ---------- */
+  farm: null,
+  farmInit() {
+    const R = mulberry(913), A = [];
+    const cows = [['nelore', 0], ['nelore', 1], ['gir', 0], ['guzera', 0], ['nelore', 2]];
+    cows.forEach(([br, ci], i) => A.push({ br, coat: RIG.spec(br).coats[ci % RIG.spec(br).coats.length], sp: 'boi', zx: [-66, -30], zy: [7, 13], x: -62 + i * 8 + R() * 3, y: 7 + (i % 3) * 3, f: R() < 0.5 ? 1 : -1, st: 'eat', t: R() * 5, d: 0, k: 0.3, id: 30 + i, sex: i === 1 ? 'M' : 'F' }));
+    const hs = [['mm', 'alazao'], ['campolina', 'tordilho'], ['nordestino', 'castanho']];
+    hs.forEach(([br, coat], i) => A.push({ br, coat, sp: 'cavalo', zx: [24, 78], zy: [10, 22], x: 30 + i * 16 + R() * 6, y: 11 + i * 4, f: i === 1 ? -1 : 1, st: i === 2 ? 'idle' : 'eat', t: 2 + R() * 6, d: 0, k: 0.34, id: 60 + i, sex: 'F' }));
+    A.push({ br: 'mm', coat: 'castanho', sp: 'cavalo', zx: [24, 78], zy: [10, 22], x: 44, y: 17, f: 1, st: 'eat', t: 3, d: 0, k: 0.22, id: 70, sex: 'M', foal: 1 });
+    this.farm = { an: A, smoke: [], motes: [] };
+    for (let i = 0; i < 26; i++) this.farm.motes.push({ x: R(), y: R(), ph: R() * 6.28, s: 0.2 + R() * 0.5 });
+  },
+  farmUpdate(dt) {
+    if (!this.farm) this.farmInit(); const F = this.farm;
+    for (const a of F.an) {
+      a.t -= dt;
+      if (a.foal && a.st !== 'walk') { const m = F.an.find(o => o.id === 60); if (m && Math.abs(m.x - a.x) > 10) { a.st = 'walk'; a.f = m.x > a.x ? 1 : -1; a.t = 2; } }
+      if (a.st === 'walk') { const sp = a.foal ? 4.2 : 2.6; a.x += a.f * sp * dt; a.d += sp * dt; if (a.x < a.zx[0]) { a.x = a.zx[0]; a.f = 1; } if (a.x > a.zx[1]) { a.x = a.zx[1]; a.f = -1; } }
+      if (a.t <= 0) { const r = Math.random(); if (a.st === 'walk' || r < 0.55) { a.st = 'eat'; a.t = 4 + Math.random() * 7; } else if (r < 0.75) { a.st = 'idle'; a.t = 2 + Math.random() * 4; } else { a.st = 'walk'; a.f = Math.random() < 0.5 ? -1 : 1; a.t = 1.5 + Math.random() * 3; if (a.f > 0 && a.x > a.zx[1] - 8) a.f = -1; if (a.f < 0 && a.x < a.zx[0] + 8) a.f = 1; } }
+    }
+    if (Math.random() < dt * 3) F.smoke.push({ x: 0, y: 0, l: 0, r: 0.6 });
+    for (const s of F.smoke) { s.l += dt; s.y -= dt * 2.6; s.x -= dt * (1.2 + s.l * 0.8); s.r += dt * 0.5; } F.smoke = F.smoke.filter(s => s.l < 5);
+  },
+  farmAnchor() { const { vw, vh, hy } = this; return [Math.round(vw * (vh > vw ? 0.42 : 0.47)), hy + 10]; },
+  drawFarm(pan) {
+    if (!this.farm) this.farmInit();
+    const g = this.g, u = this.u, t = this.t, F = this.farm, M = (a, b) => this.mixC(a, b, u), p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w, h); };
+    const [ax, y0] = this.farmAnchor(), x0 = Math.round(ax - pan * 0.35);
+    const shade = 'rgba(30,16,20,0.30)';
+    // trilha de terra da casa até a estrada
+    const roadY = Math.round(this.hy + (this.vh - this.hy) * 0.32), lane = M([70, 54, 46], [196, 152, 98]);
+    for (let y = y0 + 1; y < roadY; y++) { const k = (y - y0) / (roadY - y0), cx = x0 + 2 + Math.round(Math.sin(k * 2.6) * 6 + k * 10), w = 3 + Math.round(k * 4); p(cx - (w >> 1), y, w, 1, lane); }
+    // pasto mais verde em volta da sede (sombra do juazeiro e água do catavento)
+    for (let y = y0 - 2; y < y0 + 24; y++) for (let x = x0 - 74; x < x0 + 86; x += 2) { if (((x * 7 + y * 13) & 7) === 0) p(x, y, 1, 1, M([44, 52, 32], [140, 140, 66])); }
+    // ===== catavento (atrás, à esquerda da casa) =====
+    const wx = x0 - 26, wy = y0 - 4, wood = M([40, 30, 30], [120, 84, 56]), woodL = M([60, 46, 40], [214, 156, 96]);
+    for (let k = 0; k < 24; k++) { const s = Math.round((24 - k) / 6); p(wx - s - 1, wy - k, 1, 1, wood); p(wx + s + 1, wy - k, 1, 1, woodL); if (k % 6 === 3) p(wx - s, wy - k, s * 2 + 1, 1, wood); }
+    const hubX = wx, hubY = wy - 26, ang = t * 2.4;
+    p(hubX + 1, hubY - 1, 5, 1, wood); p(hubX + 5, hubY - 3, 2, 4, woodL); // leme
+    for (let b = 0; b < 8; b++) { const a = ang + b * Math.PI / 4; for (let r = 2; r <= 6; r++) p(hubX + Math.cos(a) * r, hubY + Math.sin(a) * r * 0.95, 1, 1, b % 2 ? woodL : M([90, 80, 80], [236, 220, 190])); }
+    p(hubX - 1, hubY - 1, 2, 2, M([30, 24, 24], [80, 60, 44]));
+    // caixa d'água ao lado
+    const tx = wx - 12; p(tx - 3, wy - 11, 7, 6, M([70, 70, 84], [150, 160, 170])); p(tx + 2, wy - 11, 2, 6, M([100, 100, 110], [220, 226, 220])); p(tx - 3, wy - 12, 7, 1, M([90, 90, 100], [200, 206, 200])); p(tx - 2, wy - 5, 1, 5, wood); p(tx + 2, wy - 5, 1, 5, woodL);
+    // ===== paiol / galpão de madeira (esquerda) =====
+    const gx = x0 - 46, gy = y0 + 1, plank = M([56, 40, 36], [150, 96, 58]), plankD = M([40, 28, 28], [112, 70, 44]), tin = M([70, 70, 82], [176, 170, 160]), tinL = M([96, 96, 106], [246, 230, 196]);
+    g.fillStyle = shade; g.beginPath(); g.moveTo(gx - 10, gy); g.lineTo(gx + 10, gy); g.lineTo(gx - 6, gy + 3); g.lineTo(gx - 28, gy + 3); g.fill();
+    for (let x = -10; x < 10; x++) p(gx + x, gy - 10, 1, 10, x % 3 === 0 ? plankD : plank);
+    p(gx - 4, gy - 7, 7, 7, M([20, 14, 14], [52, 32, 22])); p(gx - 1, gy - 7, 1, 7, plankD); // portão aberto
+    for (let r = 0; r < 5; r++) p(gx - 12 + r, gy - 11 - r, 24 - r * 2 + (r ? 0 : 0), 1, r === 0 ? tinL : (r % 2 ? tin : tinL));
+    for (let x = -11; x < 12; x += 3) p(gx + x, gy - 15, 1, 4, tin);
+    // ===== casa sede: paredes caiadas, alpendre com esteios e telhado colonial =====
+    const hx = x0, hy0 = y0, wall = M([150, 140, 150], [252, 232, 196]), wallS = M([96, 86, 104], [206, 168, 134]), wallP = M([118, 104, 116], [226, 194, 156]);
+    const roofA = M([92, 52, 46], [204, 98, 56]), roofB = M([70, 40, 38], [160, 70, 42]), roofL = M([120, 74, 64], [250, 164, 100]), blue = M([40, 52, 74], [52, 104, 150]), blueL = M([60, 72, 96], [104, 160, 200]), base = M([90, 66, 56], [192, 128, 78]);
+    g.fillStyle = shade; g.beginPath(); g.moveTo(hx - 20, hy0 + 1); g.lineTo(hx + 20, hy0 + 1); g.lineTo(hx - 2, hy0 + 5); g.lineTo(hx - 44, hy0 + 5); g.fill();
+    p(hx - 20, hy0 - 14, 6, 14, wallS); p(hx - 14, hy0 - 14, 34, 14, wall); // lateral na sombra e fachada
+    p(hx - 14, hy0 - 9, 34, 9, wallP); // parede sob o alpendre
+    p(hx - 20, hy0 - 2, 40, 2, base); // barrado
+    p(hx - 1, hy0 - 7, 4, 7, blue); p(hx + 2, hy0 - 7, 1, 7, blueL); p(hx, hy0 - 4, 1, 1, M([200, 160, 80], [255, 220, 120])); // porta
+    for (const wxx of [hx - 10, hx + 9]) { p(wxx - 1, hy0 - 7, 5, 4, wall); p(wxx, hy0 - 6, 3, 3, blue); p(wxx + 2, hy0 - 6, 1, 3, blueL); }
+    p(hx - 18, hy0 - 10, 3, 3, M([60, 50, 50], [140, 110, 90])); // janelinha lateral
+    // telhado principal em quatro águas, telha capa-canal
+    for (let r = 0; r < 9; r++) { const L = hx - 22 + Math.round(r * 1.6), Rr = hx + 22 - Math.round(r * 1.6), yy = hy0 - 15 - r; for (let x = L; x < Rr; x++) p(x, yy, 1, 1, x === Rr - 1 || x === Rr - 2 ? roofL : x < L + 3 ? roofB : ((x + r) % 3 === 0 ? roofB : roofA)); }
+    p(hx - 8, hy0 - 24, 16, 1, roofB);
+    // alpendre: beiral e esteios
+    for (let x = hx - 16; x < hx + 22; x++) { p(x, hy0 - 11, 1, 1, (x & 1) ? roofA : roofB); p(x, hy0 - 10, 1, 1, roofB); }
+    for (const ex of [hx - 15, hx - 7, hx + 6, hx + 14, hx + 20]) { p(ex, hy0 - 9, 1, 9, M([50, 34, 30], [120, 76, 46])); }
+    // chaminé do fogão a lenha e fumaça
+    const cx = hx + 10, cy = hy0 - 22; p(cx, cy - 5, 3, 6, M([120, 110, 116], [226, 206, 176])); p(cx + 2, cy - 5, 1, 6, M([140, 130, 136], [252, 236, 206])); p(cx - 1, cy - 6, 5, 1, M([80, 70, 74], [170, 140, 116]));
+    for (const s of F.smoke) { const a = Math.max(0, 0.42 - s.l * 0.08); g.fillStyle = `rgba(${Math.round(190 + 50 * u)},${Math.round(180 + 40 * u)},${Math.round(190 + 10 * u)},${a})`; g.beginPath(); g.arc(cx + 1 + s.x + Math.sin(t * 1.3 + s.l * 2) * 0.8, cy - 7 + s.y, s.r + s.l * 0.6, 0, 7); g.fill(); }
+    // varal com roupa e cachorro-casinha? só o varal, mexendo com o vento
+    const vx = hx + 26, vy = hy0 - 6; p(vx, vy, 1, 6, M([50, 34, 30], [120, 76, 46])); p(vx + 14, vy, 1, 6, M([50, 34, 30], [120, 76, 46]));
+    for (let k = 0; k < 13; k++) p(vx + 1 + k, vy + 1 + Math.round(Math.sin(k / 13 * Math.PI) * 1), 1, 1, M([60, 50, 50], [160, 140, 120]));
+    [[3, '#c84a3a'], [6, '#e8e0cc'], [9, '#3a6a9a']].forEach(([k, c], i) => { const sw = Math.round(Math.sin(t * 2.2 + i) * 0.8); p(vx + 1 + k + sw, vy + 2, 2, 3, c); });
+    // ===== juazeiro grande (direita), copa iluminada pelo sol =====
+    const jx = x0 + 52, jy = y0 + 4, leafD = M([20, 30, 26], [52, 86, 44]), leaf = M([30, 44, 34], [84, 128, 56]), leafL = M([50, 60, 46], [176, 190, 84]), trunk = M([40, 28, 28], [96, 62, 40]);
+    g.fillStyle = 'rgba(30,16,20,0.32)'; g.beginPath(); g.ellipse(jx - 12, jy + 1, 20, 3, 0, 0, 7); g.fill();
+    p(jx - 1, jy - 12, 3, 12, trunk); p(jx + 1, jy - 12, 1, 12, M([60, 44, 40], [150, 104, 66])); p(jx - 4, jy - 14, 4, 1, trunk); p(jx + 2, jy - 15, 4, 1, trunk);
+    const blobs = [[-9, -17, 7], [0, -21, 8], [9, -17, 7], [-4, -14, 6], [5, -13, 6], [0, -16, 7]], sway = Math.sin(t * 0.8) * 0.6;
+    for (const [bx, by, r] of blobs) for (let yy = -r; yy <= r; yy++) for (let xx = -r; xx <= r; xx++) { const d = xx * xx + yy * yy * 1.3; if (d > r * r) continue; const lit = (xx * 0.8 - yy * 0.6) / r, th = ((xx * 3 + yy * 5 + 16) & 3) / 4; p(jx + bx + xx + Math.round(sway * (-yy) / r), jy + by + yy, 1, 1, lit > 0.55 + th * 0.2 ? leafL : lit < -0.35 + th * 0.2 ? leafD : leaf); }
+    // ===== curral de madeira (esquerda, à frente) =====
+    const fx0 = x0 - 70, fx1 = x0 - 26, post = M([46, 34, 30], [112, 74, 46]), rail = M([70, 52, 44], [188, 136, 86]);
+    const fenceRow = (yy) => { for (let x = fx0; x <= fx1; x++) { p(x, yy - 4, 1, 1, rail); p(x, yy - 2, 1, 1, rail); } for (let x = fx0; x <= fx1; x += 6) p(x, yy - 5, 1, 6, post); };
+    fenceRow(y0 + 5);
+    // animais (ordenados pela profundidade) e cerca da frente
+    const list = F.an.slice().sort((a, b) => a.y - b.y); let frontDone = false;
+    for (const a of list) {
+      if (!frontDone && a.y > 14) { fenceRow(y0 + 15); for (let yy = y0 + 1; yy <= y0 + 15; yy++) { p(fx0, yy - 1, 1, 1, post); p(fx1, yy - 1, 1, 1, post); } frontDone = true; }
+      const an = a.st === 'walk' ? 'walk' : a.st === 'eat' ? 'eat' : 'idle', nf = RIG.frames(an), fr = an === 'walk' ? Math.floor(a.d / 1.6) % nf : an === 'eat' ? Math.floor(t * 1.4 + a.id) % nf : (Math.floor(t * 0.7 + a.id) % 5 === 0 ? 1 : 0) % nf;
+      const r = RIG.get(a.br, a.coat, 'side', an, fr, { k: a.k, seed: a.id, adult: a.foal ? 0 : 1, sex: a.sex }); if (!r || !r.b) continue;
+      const X0 = Math.round(x0 + a.x), Y0 = Math.round(y0 + a.y);
+      g.fillStyle = 'rgba(30,16,20,0.30)'; g.beginPath(); g.ellipse(X0 - 4, Y0, Math.max(3, r.w * 0.42), 1.4, 0, 0, 7); g.fill();
+      g.save(); if (a.f < 0) { g.translate(X0, 0); g.scale(-1, 1); g.translate(-X0, 0); } g.drawImage(r.b, X0 - r.ox, Y0 - r.oy); if (r.f) g.drawImage(r.f, X0 - r.ox, Y0 - r.oy); g.restore();
+    }
+    if (!frontDone) { fenceRow(y0 + 15); for (let yy = y0 + 1; yy <= y0 + 15; yy++) { p(fx0, yy - 1, 1, 1, post); p(fx1, yy - 1, 1, 1, post); } }
+    // cocho
+    p(x0 - 40, y0 + 10, 7, 2, M([50, 38, 34], [130, 90, 56])); p(x0 - 39, y0 + 10, 5, 1, M([40, 50, 60], [90, 130, 150]));
+    // luz quente de fim de tarde sobre a sede e partículas de poeira dourada no ar
+    { const rg = g.createRadialGradient(x0, y0 - 6, 4, x0, y0 - 6, 95); rg.addColorStop(0, `rgba(255,150,60,${0.32 * u})`); rg.addColorStop(1, 'rgba(255,150,60,0)'); g.globalCompositeOperation = 'soft-light'; g.fillStyle = rg; g.fillRect(x0 - 100, y0 - 60, 200, 110); g.globalCompositeOperation = 'source-over'; }
+    for (const m of F.motes) { const mx = (m.x * 190 + t * m.s * 3) % 190, my = Math.sin(t * 0.6 + m.ph) * 4 + m.y * 50; const a = (0.35 + 0.35 * Math.sin(t * 2 + m.ph)) * u; if (a < 0.05) continue; g.fillStyle = `rgba(255,236,170,${a})`; g.fillRect(Math.round(x0 - 90 + mx), Math.round(y0 - 34 + my), 1, 1); }
+  },
   sil: null,
   silhouette(r, x, y, u, rider) { // desenha o sprite escurecido contra o sol, com contorno quente do lado da luz
     if (!this.sil) { const [c, g] = mkC(96, 96); this.sil = c; this.silg = g; }
@@ -8732,6 +9006,7 @@ function tick(dt) {
     if (S.mach && !S.mach.told && machState() === 'done') { S.mach.told = 1; S.mach.busy = false; toast('⚙️ A forrageira terminou: ração pronta!'); AU.chime(); }
     if ((saveT += dt) > 60) { saveT = 0; SAVE.save('auto', true); }
   } else if (mode === 'cs') { updCS(dt); updGates(dt); buildGrid(); for (const a of S.animals) if (!a._cs) updAnimal(a, dt, 0, []); for (const e of npcs) if (e.et > 0) e.et -= dt; } // _cs: animal sob controle da cena
+  else if (mode === 'film') FILM.update(dt);
   else if (OPMODES[mode]) OP.update(dt);
   if (S) updParts(dt);
 }
@@ -8743,7 +9018,7 @@ function loop(ts) {
     while (acc >= STEP && n < 6) { if (S && P) snapshot(); tick(STEP); acc -= STEP; n++; }
     if (n >= 6) acc = 0;
     ALPHA = cl(acc / STEP, 0, 1);
-    if (OPMODES[mode]) OP.render(); else { camUpdate(dt); render(dt); }
+    if (mode === 'film') FILM.render(); else if (OPMODES[mode]) OP.render(); else { camUpdate(dt); render(dt); }
     if (mode === 'play' || mode === 'cs') { hud(dt); updSheet(dt); AU.ambient(dt); }
     MUS.update(dt);
     if ($('setup').style.display !== 'none') drawPreview(dt);
@@ -8767,6 +9042,7 @@ A.slotLoad = n => { closeModal(); SAVE.loadBest(+n).then(ok => { if (!ok) say('N
 A.slotDel = n => { M.del = +n; renderModal(); };
 A.slotDelOk = async n => { await SAVE.deleteSlot(+n); M.del = null; M.slots = await SAVE.slots(); renderModal(); toast('Partida ' + n + ' apagada'); refreshTitle(); };
 async function refreshTitle() { const sl = await SAVE.slots(); const best = sl.filter(s => !s.empty).sort((a, b) => b.ts - a.ts)[0]; const b = $('tcont'); b.disabled = !best; b.innerHTML = ic('play', 18) + '<span>Continuar' + (best ? '<br><small>' + esc(best.name || '') + ' · dia ' + best.day + '</small>' : '<br><small>nenhum jogo salvo</small>') + '</span>'; }
+$('tfoot').addEventListener('click', e => { const b = e.target.closest('button[data-t]'); if (b) $('tm').onclick({ target: b }); });
 $('tm').onclick = async e => {
   const b = e.target.closest('button'); if (!b) return; AU.init(); AU.click(); const t = b.dataset.t;
   if (t === 'new') { const sl = await SAVE.slots(); const free = sl.find(s => s.empty); if (free && sl.every(s => s.empty)) { SAVE.slot = free.n; openSetup(false); } else openSlots('new'); }
