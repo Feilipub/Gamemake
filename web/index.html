@@ -161,6 +161,7 @@ body.sheet .pad,body.sheet #joy{opacity:0;pointer-events:none}
 body:not(.lan) #joy{bottom:calc(110px + var(--sab))}body:not(.lan) .pad{bottom:calc(108px + var(--sab))}
 body.lan #hotbar{bottom:calc(6px + var(--sab))}
 body.cs #hotbar,body.ovl #hotbar{display:none!important}
+.cal span.bd{box-shadow:inset 0 -3px 0 #d870a0}.cal span img.ic{position:absolute;right:1px;top:1px}img.dial{vertical-align:middle;image-rendering:pixelated;margin:-3px 0}
 /* título e menu */
 #title{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;padding:calc(6% + var(--sat)) 16px calc(5% + var(--sab));pointer-events:none}
 #title > *{pointer-events:auto}
@@ -396,12 +397,16 @@ const shownTips = {};
 function tip(k, t) { if (S && S.flags['tip_' + k]) return; if (S) S.flags['tip_' + k] = 1; say(t, 6500); }
 
 /* ============ CONFIGURAÇÕES, ÍCONES E MOLDURAS PIXEL ============ */
-const SET = { q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on' };
+const SET = { tspd: 'normal', q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on' };
 try { Object.assign(SET, JSON.parse(localStorage.getItem('lida_set') || '{}')); } catch (e) { }
+setTimeout(() => applyTimeSpeed(), 0);
 function saveSet() { try { localStorage.setItem('lida_set', JSON.stringify(SET)); } catch (e) { } document.documentElement.style.setProperty('--ctl', SET.ctl); document.body && document.body.classList.toggle('tapmode', SET.mode === 'touch'); }
 function buzz(ms) { if (SET.vib && navigator.vibrate) try { navigator.vibrate(ms || 8); } catch (e) { } }
 // ícones 10x10 desenhados à mão: paleta + linhas
 const ICONS = {
+  leaf: ['a3a2010bc06a28ce8a040d7a4a22', '......aa..|....aabba.|...abcbba.|..abcbbba.|.abcbbbba.|.abbbcbba.|.abbbbca..|..abbba...|..aaaa....|.a........'],
+  flower: ['a3a2010bf0d040cfff8c8d4a7a2ae6aa040', '...bb.....|..bccb....|...bb.bb..|....bccb..|.bb..bb...|bccb.d....|.bb..d....|.....d.e..|...e.dee..|....edd...'],
+  cake: ['a3a2010bf4e0c8ce86a9ad8c4a2ae7a3a1a', '....a.....|....b.....|..aaaaaa..|.acccccca.|.abbbbbba.|.adddddda.|.abbbbbba.|.adddddda.|aaaaaaaaaa|..........'],
   pad: ['a3a2010b8a8e94c2a2a30de04040e40a040', '..........|..........|.aaaaaaaa.|abbbbbbbba|abcbbbbdba|abcccbebba|abbcbbbdba|abbbaabbba|.aaa..aaa.|..........'],
   hat: ['a3a2010b8a5226ce8c050de8b98ee2a1810fb05a40', '..........|...aaaa...|..abbbba..|.aabcbbaa.|aaaaaaaaaa|.adddddda.|.adeddeda.|.adddddda.|..adffda..|...aaaa...'],
   bag: ['a3a2010b9a6030cc88a48de8c050', '...aaaa...|..ab..ba..|.aaaaaaaa.|abbbbbbbba|abccccccba|abbbbbbbba|abbbddbbba|abbbddbbba|abbbbbbbba|.aaaaaaaa.'],
@@ -1336,7 +1341,7 @@ const GR = (() => {
   }
   function paint(cx, cy) {
     const x0 = cx * CK, y0 = cy * CK, w = Math.min(CK, WPX - x0), h = Math.min(CK, HPX - y0); if (w <= 0 || h <= 0) return;
-    const pal = PALS[season], img = gg.createImageData(w, h), D = img.data, RI = roadInfo;
+    const pal = PALS[season & 1], img = gg.createImageData(w, h), D = img.data, RI = roadInfo;
     const M = 2, SW = w + M * 2, SH = h + M * 2, soil = new Int8Array(SW * SH); // solo com margem, para as bordas
     for (let yy = 0; yy < SH; yy++) for (let xx = 0; xx < SW; xx++) soil[yy * SW + xx] = soilAt(x0 + xx - M, y0 + yy - M);
     for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) {
@@ -1414,10 +1419,10 @@ const GR = (() => {
     gg.putImageData(img, x0, y0);
     // detalhes por ladrilho (determinísticos): flores, tufos de capim alto, gravetos, pedras
     for (let ty = y0 >> 4; ty < (y0 + h) >> 4; ty++) for (let tx = x0 >> 4; tx < (x0 + w) >> 4; tx++) { const t = gt(tx, ty), X0 = tx * 16, Y0 = ty * 16, r = hh(tx, ty, 61), fo = forest[gi(tx, ty)];
-      if (t === G.GRASS && !fo && r < (season ? 0.05 : 0.14)) { const fx = X0 + 2 + Math.floor(hh(tx, ty, 62) * 12), fy = Y0 + 2 + Math.floor(hh(tx, ty, 63) * 12), fc = ['#f4e04a', '#ffffff', '#e86a9a', '#c88ae0', '#f08a3a'][Math.floor(hh(tx, ty, 64) * 5)];
+      if (t === G.GRASS && !fo && r < [0.12, 0.05, 0.03, 0.22][season >> 1]) /* flores: muitas na primavera, poucas no inverno */ { const fx = X0 + 2 + Math.floor(hh(tx, ty, 62) * 12), fy = Y0 + 2 + Math.floor(hh(tx, ty, 63) * 12), fc = ['#f4e04a', '#ffffff', '#e86a9a', '#c88ae0', '#f08a3a'][Math.floor(hh(tx, ty, 64) * 5)];
         gg.fillStyle = '#3e6a28'; gg.fillRect(fx, fy + 1, 1, 2); gg.fillStyle = fc; gg.fillRect(fx, fy, 1, 1); gg.fillRect(fx - 1, fy, 1, 1); gg.fillRect(fx + 1, fy, 1, 1); gg.fillRect(fx, fy - 1, 1, 1); gg.fillStyle = '#f8e8a0'; gg.fillRect(fx, fy, 1, 1); }
       if (t === G.PAST && r < 0.22) { const n = 3 + Math.floor(hh(tx, ty, 65) * 4), bx = X0 + 3 + Math.floor(hh(tx, ty, 66) * 9), by = Y0 + 10 + Math.floor(hh(tx, ty, 67) * 5); // touceira de capim
-        for (let k = 0; k < n; k++) { const hgt = 4 + Math.floor(hh(tx * 7 + k, ty, 68) * 4), lean = Math.floor((hh(tx, ty * 7 + k, 69) - 0.5) * 3); for (let s = 0; s < hgt; s++) { gg.fillStyle = s > hgt - 2 ? (season ? '#d8c880' : '#b0c870') : (season ? '#9a8c4c' : '#5a7a34'); gg.fillRect(bx + k * 2 - n + Math.round(lean * s / hgt), by - s, 1, 1); } } }
+        for (let k = 0; k < n; k++) { const hgt = 4 + Math.floor(hh(tx * 7 + k, ty, 68) * 4), lean = Math.floor((hh(tx, ty * 7 + k, 69) - 0.5) * 3); for (let s = 0; s < hgt; s++) { gg.fillStyle = s > hgt - 2 ? ((season & 1) ? '#d8c880' : '#b0c870') : ((season & 1) ? '#9a8c4c' : '#5a7a34'); gg.fillRect(bx + k * 2 - n + Math.round(lean * s / hgt), by - s, 1, 1); } } }
       if ((t === G.GRASS || t === G.DRY) && r > 0.97) { const sx = X0 + 3 + Math.floor(hh(tx, ty, 70) * 10), sy = Y0 + 4 + Math.floor(hh(tx, ty, 71) * 9); gg.fillStyle = 'rgba(30,20,10,0.35)'; gg.fillRect(sx, sy + 2, 5, 1); gg.fillStyle = '#8a8478'; gg.fillRect(sx, sy, 5, 2); gg.fillStyle = '#b8b2a4'; gg.fillRect(sx + 1, sy, 3, 1); gg.fillStyle = '#6a6458'; gg.fillRect(sx + 4, sy + 1, 1, 1); }
       if (t === G.GRASS && fo && r > 0.9) { const sx = X0 + 2 + Math.floor(hh(tx, ty, 72) * 10), sy = Y0 + 4 + Math.floor(hh(tx, ty, 73) * 9); gg.fillStyle = '#5a3a1e'; gg.fillRect(sx, sy, 5, 1); gg.fillRect(sx + 3, sy - 1, 1, 1); }
     }
@@ -3965,12 +3970,18 @@ const cam = { x: 0, y: 0, z: 1, uz: 1.3, az: 1, taz: 1, fx: null, fy: null, free
 let W = 480, H = 800, BASE = 2;
 const SCL = () => BASE * cam.z;
 const VW = () => W / SCL(), VH = () => H / SCL();
-const GMPS = 6; // minutos de jogo por segundo real (24h = 4 min)
+// minutos de jogo por segundo real: Normal = dia de 24 min; Lento = 36 min; Rápido = 16 min (Configurações)
+const TSPD = { lento: 40 / 60, normal: 1, rapido: 1.5 }; let GMPS = 1;
+function applyTimeSpeed() { GMPS = TSPD[SET.tspd] || 1; }
 const WEEK = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const hour = () => S.min / 60;
 const isNight = () => S && (S.min >= 19 * 60 || S.min < 5 * 60);
 const season = () => [10, 11, 0, 1, 2, 3].includes(calDate().m) ? 0 : 1; // águas: nov–abr
 const seasonName = () => season() ? 'Seca' : 'Águas';
+// quatro estações (hemisfério sul) por cima do regime de águas/seca que os sistemas já usam
+const SEAS4 = ['Verão', 'Outono', 'Inverno', 'Primavera'], SEAS4_IC = ['sun', 'leaf', 'cloud', 'flower'];
+const season4 = () => { const m = calDate().m; return m === 11 || m <= 1 ? 0 : m <= 4 ? 1 : m <= 7 ? 2 : 3; };
+const seasonFull = () => SEAS4[season4()] + ' · ' + seasonName();
 const wday = () => (S.day) % 7; // dia 1 = segunda
 function period() { const h = hour(); return h < 5 ? 'Madrugada' : h < 11 ? 'Manhã' : h < 14 ? 'Meio-dia' : h < 18 ? 'Tarde' : 'Noite'; }
 function clock() { const m = Math.floor(S.min), h = Math.floor(m / 60), mm = Math.floor(m % 60 / 10) * 10; return String(h).padStart(2, '0') + ':' + String(mm).padStart(2, '0'); }
@@ -4306,6 +4317,9 @@ function talk(id) {
   { const rx = regionTalkExtra(id); if (rx && Math.random() < 0.65) return rx; }
   const line = npcLine(id); remember(id, 'conversa: "' + line.slice(0, 40) + '…"'); return line;
 }
+// aniversários dos moradores: dia fixo por pessoa, sorteado a partir do nome (não muda entre partidas)
+function bdayOf(id) { let h = 7; for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return { m: h % 12, d: 1 + (h >> 4) % 28 }; }
+function bdayToday(day) { const c = calDate(day === undefined ? S.day : day); return Object.keys(NPCDEF).filter(id => { const b = bdayOf(id); return b.m === c.m && b.d === c.d; }); }
 function giveGift(id, it) {
   const s = npcState(id), d = NPCDEF[id];
   if (s.gift === S.day) return 'Você já me deu um presente hoje. Obrigado!';
@@ -4315,6 +4329,7 @@ function giveGift(id, it) {
   else if (d.likes.includes(it)) { v = 45; r = 'Que bom! Eu gosto muito de ' + IT[it].n.toLowerCase() + '.'; }
   else if (d.dislikes.includes(it)) { v = -30; r = 'Hum... ' + IT[it].n.toLowerCase() + '? Não é bem o meu gosto...'; }
   else r = 'Obrigado pela lembrança!';
+  if (bdayToday().includes(id) && v > 0) { v *= 2; r = 'No dia do meu aniversário! ' + r; S.bdGift = S.bdGift || {}; S.bdGift[id] = S.day; } /* presente no aniversário vale o dobro */
   addFr(id, v); remember(id, 'presente: ' + IT[it].n.toLowerCase()); return r;
 }
 function newQuest(id) {
@@ -4349,7 +4364,7 @@ function updParts(dt) {
 }
 /* ---------- tempo ---------- */
 function updTime(dt) {
-  const gm = dt * GMPS, prevH = Math.floor(S.min / 60);
+  const gm = dt * GMPS, prevH = Math.floor(S.min / 60); /* tempo só corre no modo de jogo sem pausa (tick); telas e cenas não aceleram o relógio */
   S.min += gm;
   if (S.min >= 1440) { S.min -= 1440; dayTick(); }
   const h = Math.floor(S.min / 60); if (h !== prevH) hourTick(h);
@@ -4376,7 +4391,10 @@ function hourTick(h) {
   // fome e energia do vaqueiro
   P.fo = cl(P.fo - 3.2, 0, 100); P.en = cl(P.en - (P.fo < 10 ? 4 : 1.2), 0, 100);
   if (P.en < 12 && !S.flags.tiredTip) { S.flags.tiredTip = 1; say('Você está exausto. Coma algo ou durma na Casa Sede.'); }
-  if (h === 2 && S.min < 2 * 60 + 10) { say('Tarde demais! Você cochilou de cansaço...'); sleep(true); }
+  // exaustão gradual: depois da meia-noite o corpo cansa mais rápido; o jogador só apaga se a energia zerar
+  if (h >= 0 && h < 5) { P.en = cl(P.en - 2.5, 0, 100); if (h === 1 && !S.flags.lateTip) { S.flags.lateTip = 1; say('Já passa da meia-noite: você cansa mais rápido. Durma na cama da Casa Sede quando quiser.', 4000); } }
+  if (S.weather === 'calor' && h >= 11 && h <= 15 && !P.mnt) P.en = cl(P.en - 1.5, 0, 100);
+  if (P.en <= 0) { say('Você não aguentou de cansaço e desmaiou...'); sleep(true); }
 }
 function regrow(hrs) {
   const se = season(), rain = isRain();
@@ -4396,7 +4414,7 @@ function deliveries() {
   now.forEach(d => { const a = byId(d.id); if (!a) return; a.own = 'player'; if (S.firsts && S.firsts.compra && !S.firsts.cs_compra) setTimeout(() => csPrimeiraCompra(a), 900); a.newArr = 1; const p = randIn(d.to || 'receb'); a.x = p[0]; a.y = p[1]; a._st = null; toast('🚚 ' + a.n + ' chegou ao ' + AREAS[d.to || 'receb'].n); });
   if (S.frete && S.fretePend) { for (const k in S.fretePend) S.dep[k] = (S.dep[k] || 0) + S.fretePend[k]; S.fretePend = null; toast('🚚 Entrega da Casa do Agro no depósito.'); }
 }
-function dayTick() { aucExpire(); storyCheck(); regionDay(); missionDay(); bicoDay(); if (S.reg && S.reg.pop) { rfarmDay(); jobDay(); } qRefresh();
+function dayTick() { { const bd = bdayToday(); if (bd.length) toast('🎂 Hoje é aniversário de ' + bd.map(id => NPCDEF[id].n).join(' e ') + '! Presente hoje vale o dobro.'); } aucExpire(); storyCheck(); regionDay(); missionDay(); bicoDay(); if (S.reg && S.reg.pop) { rfarmDay(); jobDay(); } qRefresh();
   wildDayTick(); rollOffer(); setTimeout(() => S && eventAnnounce(), 2500); if (S.offer && S.offer.day < S.day - 1) S.offer = null;
   S.day++;
   const se = season();
@@ -4522,7 +4540,7 @@ let sleeping = false;
 function sleep(faint) {
   if (sleeping) return; sleeping = true;
   closeModal(); fadeTo(1, () => { sleeping = false;
-    const was = S.min; const skip = was > 6 * 60 ? (1440 - was) / 60 + 6 : (6 * 60 - was) / 60; if (S.min > 6 * 60) { S.min = 1440 - 0.01; updTime(0.002); } S.min = 6 * 60; regrow(Math.max(0, Math.floor(skip) - 1)); layEggs(); deliveries(); P._auto = null; P._act = null; P._vx = P._vy = 0;
+    const was = S.min; const skip = was > 6 * 60 ? (1440 - was) / 60 + 6 : (6 * 60 - was) / 60; if (S.min > 6 * 60) { S.min = 1440 - 0.001; updTime(0.01 / GMPS); } /* vira o dia uma única vez, qualquer que seja a velocidade do tempo */ S.min = 6 * 60; regrow(Math.max(0, Math.floor(skip) - 1)); layEggs(); deliveries(); P._auto = null; P._act = null; P._vx = P._vy = 0;
     if (was < 6 * 60 && was >= 0) { /* madrugada: mesmo dia */ }
     P.en = faint ? 55 : 100; P.fo = cl(P.fo - 20, 0, 100); if (faint) { const fee = Math.min(S.cash, 80); S.cash -= fee; if (fee) ledger('Remédio (desmaio)', -fee, 'cx'); }
     P.mnt = null; P.cart = false; P.x = 7 * TS; P.y = 30.4 * TS; P.dir = 0;
@@ -4775,7 +4793,7 @@ function updPlayer(dt) {
     if (sp > B.v[0] * 1.3) horse._stam -= dt * B.cost * 0.75 * sd.cost * (stim === 0 ? 1.25 : stim === 2 ? 0.8 : 1) * perkM * trav; else horse._stam = Math.min(100, horse._stam + dt * B.rec * 0.45 * sd.rec);
     if (horse._stam < 15 && gallop) tip('stam', 'O fôlego do cavalo está acabando. Solte o Galope para ele recuperar.');
   } else {
-    const run = galOn && P.en > 4 && mag > 0.5; maxV = (run ? 58 : 36) * (1 - mudAt(P.x, P.y) * 0.3); if (P.en < 5) maxV *= 0.65; { const wd = waterDepthAt(P.x, P.y); if (wd > 0.05) { maxV *= 1 - wd * 0.6; if (wd > 0.82) P.en = Math.max(0, P.en - dt * 0.3); } } acc = run ? 520 : 620; dec = 760; hb = HB.foot;
+    const run = galOn && P.en > 4 && mag > 0.5; maxV = (run ? 58 : 36) * (1 - mudAt(P.x, P.y) * 0.3); maxV *= P.en < 5 ? 0.65 : P.en < 12 ? 0.8 : P.en < 25 ? 0.92 : 1; /* cansaço deixa o passo mais lento aos poucos */ { const wd = waterDepthAt(P.x, P.y); if (wd > 0.05) { maxV *= 1 - wd * 0.6; if (wd > 0.82) P.en = Math.max(0, P.en - dt * 0.3); } } acc = run ? 520 : 620; dec = 760; hb = HB.foot;
     if (run && hyp(P._vx, P._vy) > 40) P.en = Math.max(0, P.en - dt * 0.25 * (perk() === 'resistente' ? 0.8 : 1));
   }
   // velocidade alvo (analógica) com aceleração e frenagem
@@ -5588,20 +5606,35 @@ const CAL0 = 4 * 28; // deslocamento: dia 1 do jogo = 1º de maio
 function calDate(day) { const n = (day === undefined ? S.day : day) - 1 + CAL0; return { y: Math.floor(n / 336) + 1, m: Math.floor((n % 336) / 28), d: n % 28 + 1 }; }
 function dayOf(m, d, y) { return (y - 1) * 336 + m * 28 + d - CAL0; } // dia do jogo de uma data
 function dateStr(day, long) { const c = calDate(day); return long ? `${c.d} de ${MESES[c.m]}, Ano ${c.y}` : `${c.d} ${MES3[c.m]}`; }
-function phaseName() { const h = hour(); return h < 4.5 ? 'Madrugada' : h < 6.5 ? 'Amanhecer' : h < 11 ? 'Manhã' : h < 13.5 ? 'Meio-dia' : h < 17 ? 'Tarde' : h < 18.8 ? 'Pôr do sol' : 'Noite'; }
+// relógio do HUD: arco do céu com o sol (dia) ou a lua (noite) andando de leste a oeste
+let dialK = '', dialU = '';
+function dialURL() {
+  const k = Math.floor(S.min / 10) + '|' + S.weather; if (k === dialK) return dialU; dialK = k;
+  const [c, g] = mkC(36, 18), m = S.min, day = m >= 330 + sunShift() && m < 1110 - sunShift(), u = day ? (m - 330) / 780 : ((m + 1440 - 1110) % 1440) / 660;
+  const { tint } = ambient(), sky = day ? mix('#6aa8d8', tint || '#ffe0a0', m < 450 || m > 990 ? 0.6 : 0.15) : '#1a2048';
+  g.fillStyle = '#2a1608'; g.beginPath(); g.arc(18, 18, 18, Math.PI, 0); g.fill(); g.fillStyle = sky; g.beginPath(); g.arc(18, 18, 16, Math.PI, 0); g.fill();
+  if (!day) { g.fillStyle = '#fff'; [[8, 12], [14, 6], [25, 9], [29, 14], [20, 13]].forEach(([x, y]) => g.fillRect(x, y, 1, 1)); }
+  if ((WXT[S.weather] || {}).cloud > 0.5) { g.fillStyle = 'rgba(220,226,232,0.8)'; g.fillRect(6, 9, 10, 3); g.fillRect(9, 7, 6, 2); g.fillRect(20, 11, 10, 3); }
+  const a = Math.PI * (1 - cl(u, 0, 1)), x = 18 + Math.cos(a) * 12, y = 17 - Math.sin(a) * 12;
+  if (day) { g.fillStyle = 'rgba(255,230,120,0.5)'; g.beginPath(); g.arc(x, y, 4.5, 0, 7); g.fill(); g.fillStyle = S.weather === 'calor' ? '#ff9a30' : '#ffe060'; g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill(); }
+  else { g.fillStyle = '#f0ecd8'; g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill(); g.fillStyle = '#1a2048'; g.beginPath(); g.arc(x + 1.5, y - 1, 2.4, 0, 7); g.fill(); }
+  g.fillStyle = '#5a3418'; g.fillRect(0, 16, 36, 2); dialU = c.toDataURL(); return dialU;
+}
+function phaseName() { const h = hour(), o = sunShift() / 60; return h < 4.5 + o ? 'Madrugada' : h < 6.5 + o ? 'Amanhecer' : h < 11 ? 'Manhã' : h < 13.5 ? 'Meio-dia' : h < 17 ? 'Tarde' : h < 18.4 - o ? 'Pôr do sol' : h < 19.4 - o ? 'Entardecer' : 'Noite'; }
+function sunShift() { return [-15, 0, 20, 5][season4()]; } // minutos: verão amanhece mais cedo, inverno mais tarde
 /* ---------- tipos de tempo ---------- */
 const WXT = {
   sol: { n: 'Sol forte', ic: 'sun', rain: 0, cloud: 0.05 }, parcial: { n: 'Parcialmente nublado', ic: 'cloud', rain: 0, cloud: 0.35 },
   nublado: { n: 'Nublado', ic: 'cloud', rain: 0, cloud: 0.75 }, garoa: { n: 'Chuva fraca', ic: 'rain', rain: 0.32, cloud: 0.8 },
   chuva: { n: 'Chuva forte', ic: 'rain', rain: 0.8, cloud: 0.92 }, tempestade: { n: 'Tempestade', ic: 'rain', rain: 1, cloud: 1, storm: 1 },
-  neblina: { n: 'Neblina', ic: 'fog', rain: 0, cloud: 0.45 }, vento: { n: 'Ventania', ic: 'wind', rain: 0, cloud: 0.2, wind: 1 }
+  neblina: { n: 'Neblina', ic: 'fog', rain: 0, cloud: 0.45 }, vento: { n: 'Ventania', ic: 'wind', rain: 0, cloud: 0.2, wind: 1 }, calor: { n: 'Calor forte', ic: 'sun', rain: 0, cloud: 0, heat: 1 }
 };
 const isRain = () => !!(S && (S.weather === 'garoa' || S.weather === 'chuva' || S.weather === 'tempestade'));
 // probabilidade do tempo do dia por mês (sertão baiano: chuvas de verão, seca longa no meio do ano)
 function climateOf(m) {
   const aguas = { sol: 22, parcial: 20, nublado: 14, garoa: 15, chuva: 15, tempestade: 8, neblina: 6 };
-  const seca = { sol: 52, parcial: 18, vento: 16, nublado: 7, neblina: 4, garoa: 3 };
-  const meio = { sol: 36, parcial: 22, nublado: 12, vento: 8, garoa: 10, chuva: 7, neblina: 5 };
+  const seca = { sol: 44, calor: m >= 7 && m <= 9 ? 18 : 6, parcial: 18, vento: 16, nublado: 7, neblina: 4, garoa: 3 }; // calor forte no fim da seca (ago-out)
+  const meio = { sol: 32, calor: m === 10 ? 10 : 2, parcial: 22, nublado: 12, vento: 8, garoa: 10, chuva: 7, neblina: 5 };
   return [11, 0, 1, 2].includes(m) ? aguas : [3, 10].includes(m) ? meio : seca;
 }
 function rollWx(day) { const P0 = climateOf(calDate(day).m); let t = 0; for (const k in P0) t += P0[k]; let r = Math.random() * t; for (const k in P0) { r -= P0[k]; if (r <= 0) return k; } return 'sol'; }
@@ -5612,6 +5645,7 @@ function planDay(base) {
   else if (base === 'chuva') { mo = Math.random() < 0.5 ? 'nublado' : 'garoa'; af = 'chuva'; ni = Math.random() < 0.5 ? 'garoa' : 'nublado'; }
   else if (base === 'garoa') { mo = 'nublado'; af = 'garoa'; ni = Math.random() < 0.5 ? 'nublado' : 'garoa'; }
   else if (base === 'neblina') { mo = 'neblina'; af = Math.random() < 0.6 ? 'parcial' : 'sol'; ni = 'parcial'; }
+  else if (base === 'calor') { mo = 'sol'; af = 'calor'; ni = Math.random() < 0.3 ? 'parcial' : 'sol'; }
   else if (base === 'sol') { mo = Math.random() < 0.15 ? 'neblina' : 'sol'; af = 'sol'; ni = Math.random() < 0.2 ? 'parcial' : 'sol'; }
   else if (base === 'vento') { mo = 'parcial'; af = 'vento'; ni = 'vento'; }
   return [[0, ni === 'tempestade' ? 'chuva' : ni], [5.5, v(mo)], [12.5, af], [18.5, ni]];
@@ -5632,7 +5666,7 @@ function updWeather(dt, gm) {
   if (T.storm && Math.random() < dt * 0.09) { W0.flash = 1; const d = rnd(0.3, 2.2); setTimeout(() => AU.thunder && AU.thunder(d), d * 600); if (Math.random() < 0.5) herdPulse(rnd(2, 58) * TS, rnd(2, 88) * TS, 260, 0.9, 1.2); }
 }
 // calor: os bichos bebem mais no sol forte da seca, à tarde
-function heatF() { if (!S) return 1; const h = hour(); return S.weather === 'sol' && h > 10 && h < 16 ? (season() ? 1.45 : 1.2) : isRain() ? 0.7 : 1; }
+function heatF() { if (!S) return 1; const h = hour(); return S.weather === 'calor' && h > 9 && h < 17 ? 1.8 : S.weather === 'sol' && h > 10 && h < 16 ? (season() ? 1.45 : 1.2) : isRain() ? 0.7 : 1; } // calor forte: gado bebe quase o dobro
 // lama: o chão de terra fica pesado depois da chuva
 function mudAt(x, y) { if (!S || !(S.mud >= 0.05)) return 0; const g = gt(Math.floor(x / TS), Math.floor(y / TS)); return (g === G.DIRT || g === G.DRY || g === G.FLOOR || g === G.MUD) ? S.mud : 0; }
 function drawMudTile(tx, ty, g) {
@@ -5645,11 +5679,12 @@ function drawPondShore(tx, ty) { if (!pondT[gi(tx, ty)] || wdepth[gi(tx, ty)] !=
 /* ---------- calendário na tela ---------- */
 function upcomingEvents(n) { const out = []; for (let d = 0; d < n; d++) for (const k of eventsOnDay(S.day + d)) out.push([S.day + d, k]); return out; }
 function calendarHTML() {
-  const c = calDate(), first = S.day - (c.d - 1); let h = `<div class="row sp"><b style="font-size:16px">${MESES[c.m][0].toUpperCase() + MESES[c.m].slice(1)} · Ano ${c.y}</b><span class="mut">${seasonName()} · ${phaseName()} ${clock()}</span></div>`;
+  const c = calDate(), first = S.day - (c.d - 1); let h = `<div class="row sp"><b style="font-size:16px">${MESES[c.m][0].toUpperCase() + MESES[c.m].slice(1)} · Ano ${c.y}</b><span class="mut">${seasonFull()} · ${phaseName()} ${clock()}</span></div>`;
   h += '<div class="cal"><b>D</b><b>S</b><b>T</b><b>Q</b><b>Q</b><b>S</b><b>S</b>';
   const wd0 = first % 7; for (let i = 0; i < wd0; i++) h += '<span></span>';
-  for (let d = 0; d < 28; d++) { const day = first + d, ev = eventsOnDay(day).filter(k => k !== 'forro'), today = day === S.day; h += `<span class="${today ? 'td' : ''} ${ev.length ? 'ev' : ''}" title="${ev.map(k => EVENTS[k].n).join(', ')}">${d + 1}${ev.length ? '<i></i>' : ''}</span>`; }
+  for (let d = 0; d < 28; d++) { const day = first + d, ev = eventsOnDay(day).filter(k => k !== 'forro'), today = day === S.day, bd = bdayToday(day); h += `<span class="${today ? 'td' : ''} ${ev.length ? 'ev' : ''} ${bd.length ? 'bd' : ''}" title="${ev.map(k => EVENTS[k].n).concat(bd.map(id => 'Aniversário: ' + NPCDEF[id].n)).join(', ')}">${d + 1}${ev.length ? '<i></i>' : ''}${bd.length ? ic('cake', 9) : ''}</span>`; }
   h += '</div><h3>Previsão do tempo</h3><div class="row">' + S.wx.fc.map((k, i) => `<div class="card" style="flex:1;text-align:center;padding:5px">${ic(WXT[k].ic, 18)}<br><b>${i === 0 ? 'Hoje' : i === 1 ? 'Amanhã' : WEEK[(S.day + i) % 7]}</b><br><span class="mut" style="font-size:11px">${WXT[k].n}${i >= 2 ? ' (?)' : ''}</span></div>`).join('') + '</div>';
+  { const L = []; for (let k = 0; k < 28; k++) for (const id of bdayToday(S.day + k)) L.push([k, id]); h += '<h3>Aniversários</h3>' + (L.length ? L.slice(0, 6).map(([k, id]) => `<div class="card">${ic('cake', 14)} <b>${NPCDEF[id].n}</b> <span class="mut">· ${k === 0 ? 'hoje' : k === 1 ? 'amanhã' : dateStr(S.day + k)} — presente vale o dobro</span></div>`).join('') : '<p class="mut">Nenhum nos próximos 28 dias.</p>'); }
   h += `<p class="mut">Açude/reservatório: ${Math.round(S.res)}% · Estradas: ${S.mud > 0.5 ? 'muita lama' : S.mud > 0.15 ? 'barro' : 'secas'}</p>`;
   const up = upcomingEvents(14).filter(([d, k]) => k !== 'forro' || d === S.day);
   h += '<h3>Próximos eventos</h3>' + (up.map(([d, k]) => { const E = EVENTS[k]; return `<div class="card"><b>${E.n}</b> <span class="mut">· ${d === S.day ? 'hoje' : d === S.day + 1 ? 'amanhã' : WEEKL[d % 7] + ', ' + dateStr(d)} · ${Math.floor(E.h[0])}h às ${Math.floor(E.h[1]) % 24}h · ${E.where || ({ praca: 'Praça de Itarantim', duarte: 'Fazenda Duarte', bar: 'Bar da Zefa', parque: 'Curral do leilão, em Itarantim' })[E.place] || ''}</span><br><span class="mut">${E.d}</span></div>`; }).join('') || '<p class="mut">Nada marcado.</p>');
@@ -6241,13 +6276,14 @@ function volHTML() { return '<div class="card"><b>Áudio</b>' + [['m', 'Volume g
 function cfgHTML(inGame) {
   const opt = (k, v, l) => `<button data-a="setOpt" data-v="${k}|${v}" class="${SET[k] === v ? 'on' : ''}">${l}</button>`;
   let h = volHTML();
+  h += `<div class="card"><b>Velocidade do tempo</b><div class="ch">${opt('tspd', 'lento', 'Lento (dia de 36 min)')}${opt('tspd', 'normal', 'Normal (24 min)')}${opt('tspd', 'rapido', 'Rápido (16 min)')}</div></div>`;
   h += `<div class="card"><b>Gráficos</b><div class="ch">${opt('q', 'alta', 'Alta resolução')}${opt('q', 'media', 'Desempenho')}</div><b>Modo de controle</b><div class="ch">${opt('mode', 'joy', 'Joystick')}${opt('mode', 'touch', 'Toque na tela')}</div><p class="mut">${SET.mode === 'touch' ? 'Toque no chão para ir até lá; toque duas vezes para correr ou galopar. Os botões de ação continuam na tela.' : 'Joystick virtual (ou WASD/setas no teclado). Segure “Correr” para correr ou galopar.'}</p><b>Tamanho dos botões</b><div class="ch">${opt('ctl', 1, 'Normal')}${opt('ctl', 1.2, 'Grandes')}</div><b>Orientação da tela</b><div class="ch">${opt('ori', 'livre', 'Livre')}${opt('ori', 'retrato', 'Retrato')}${opt('ori', 'paisagem', 'Paisagem')}</div><p class="mut">Travar a orientação só funciona em tela cheia no celular.</p><div class="row">${btn('Tela cheia', 'fs')}</div><b>Cenas dos leilões</b><div class="ch">${opt('aucCs', 'on', 'Mostrar')}${opt('aucCs', 'off', 'Pular sempre')}</div><b>Vibração</b><div class="ch">${opt('vib', true, 'Ligada')}${opt('vib', false, 'Desligada')}</div><b>Zoom</b><p class="mut">Use dois dedos na tela (pinça) ou a rodinha do mouse.</p><div class="row">${btn('Zoom padrão', 'zoomReset')}</div></div>`;
   if (inGame) h += `<div class="card"><div class="row">${ibtn('disk', 'Salvar', 'saveNow')}${ibtn('play', 'Carregar', 'loadNow')}${ibtn('scroll', 'Ajuda', 'help')}${ibtn('book', 'Créditos', 'credits')}${ibtn('farm', 'Tela inicial', 'toTitle')}</div><p class="mut" id="saveInfo">Partida ${SAVE.slot}. Salvamento automático às 6h, ao dormir e a cada 60 s, com cópia de segurança.</p></div>`;
   { const ms = MUS.missingList(), tr = Object.keys(MUS.files).map(k => `<li>${k.toUpperCase()} — <code>${MUS.files[k]}</code> ${MUS.missing[k] ? '<b style="color:#b02020">faltando</b>' : MUS.el && MUS.el[k] ? 'ok' : 'carrega no primeiro toque'}</li>`).join('');
     h += `<div class="card"><b>Trilhas sonoras</b><ul class="mut" style="margin:4px 0 0 16px">${tr}</ul>${ms.length ? '<p>Coloque os arquivos que faltam na pasta <code>audio/</code> ao lado do index.html.</p>' : ''}</div>`; }
   h += `<p class="mut">Versão ${GAME_V} · save v${SAVE_V}</p>`; return h;
 }
-A.setOpt = v => { const [k, x] = v.split('|'); SET[k] = x === 'true' ? true : x === 'false' ? false : isNaN(+x) ? x : +x; saveSet(); if (k === 'q') resize(); if (k === 'mode' && P) { P._auto = null; input.x = input.y = 0; } if (k === 'ori') OP.applyOri(); renderModal(); };
+A.setOpt = v => { const [k, x] = v.split('|'); SET[k] = x === 'true' ? true : x === 'false' ? false : isNaN(+x) ? x : +x; saveSet(); applyTimeSpeed(); if (k === 'q') resize(); if (k === 'mode' && P) { P._auto = null; input.x = input.y = 0; } if (k === 'ori') OP.applyOri(); renderModal(); };
 A.zoomReset = () => { cam.uz = 1.3; SET.uz = 1.3; saveSet(); toast('Zoom restaurado'); };
 document.addEventListener('input', e => { const k = e.target.dataset && e.target.dataset.vol; if (k) { AU.vol[k] = e.target.value / 100; AU.apply(); try { localStorage.setItem('lida_vol', JSON.stringify(AU.vol)); } catch (er) { } } });
 A.saveNow = () => SAVE.save('manual').then(ok => toast(ok ? '💾 Jogo salvo!' : '⚠️ Falha ao salvar'));
@@ -7153,6 +7189,9 @@ const EVENTS = {
   vaquejada: { n: 'Vaquejada na Fazenda Duarte', place: 'duarte', h: [8, 17], d: 'Corra ao lado do boi e derrube-o entre as faixas para ouvir "valeu boi!". O boi levanta e segue inteiro.' },
   agro: { n: 'Feira agropecuária', place: 'praca', h: [8, 17], d: 'Exposição e concurso de animais, barracas de criadores e leilão de animais.' },
   criadores: { n: 'Encontro de criadores', place: 'bar', h: [15, 20], rank: 1, d: 'Criadores da região procuram reprodutores de qualidade e pagam bem.' },
+  carnaval: { n: 'Carnaval de rua', place: 'praca', h: [16, 23.5], d: 'Bloco com charanga, marchinhas e confete na praça. Até o padre dança.' },
+  vaqueiro: { n: 'Missa do Vaqueiro', place: 'praca', h: [8, 13], d: 'Vaqueiros encourados chegam a cavalo para a missa ao ar livre, com aboio e bênção dos animais.' },
+  cavalgada: { n: 'Cavalgada da Primavera', place: 'praca', h: [7, 12], d: 'Cavaleiros e amazonas saem da praça até a Fazenda Duarte. Venha montado!' },
   natal: { n: 'Natal na matriz', place: 'praca', h: [18, 23.5], d: 'Missa do galo, presépio e ceia comunitária na praça.' },
   leilao: { n: 'Leilão de animais', place: 'parque', h: [13, 18], d: 'Leilão no curral da cidade: compradores da região disputam animais lance a lance.' }
 };
@@ -7166,6 +7205,9 @@ function eventsOnDay(day) {
   if (wd === 0 && wk === 0) L.push('criadores'); // primeiro domingo do mês
   if (typeof auctionOn === 'function') { const a = auctionOn(day); if (a) L.push('leilao'); }
   if (c.m === 11 && c.d === 25) L.push('natal');
+  if (c.m === 1 && (c.d === 10 || c.d === 11)) L.push('carnaval');
+  if (c.m === 6 && wd === 0 && wk === 2) L.push('vaqueiro'); // terceiro domingo de julho
+  if (c.m === 8 && c.d === 22) L.push('cavalgada'); // início da primavera
   return L;
 }
 function eventNow(id) { if (!S) return false; const L = eventsOnDay(S.day), h = hour(); return L.filter(k => !id || k === id).find(k => h >= EVENTS[k].h[0] && h < EVENTS[k].h[1]) || null; }
@@ -8119,7 +8161,7 @@ function grassChunk(cx, cy, se) {
 }
 function render(dt) {
   const vw = VW(), vh = VH(), s = SCL();
-  GR.ensure(season(), cam.x, cam.y, vw, vh, 3); groundSeason = season();
+  GR.ensure(season() + season4() * 2, cam.x, cam.y, vw, vh, 3); groundSeason = season();
   X.setTransform(1, 0, 0, 1, 0, 0); X.fillStyle = '#1a2a10'; X.fillRect(0, 0, W, H);
   const ox = Math.round(cam.x * s), oy = Math.round(cam.y * s);
   X.setTransform(s, 0, 0, s, -ox, -oy);
@@ -8197,13 +8239,15 @@ function render(dt) {
   lighting();
 }
 function emote(x, y, t) { X.fillStyle = '#fff8e0'; X.fillRect(Math.round(x - 6), Math.round(y - 9), 12, 10); X.fillRect(Math.round(x - 1), Math.round(y + 1), 2, 2); X.fillStyle = '#2b1608'; X.font = 'bold 8px sans-serif'; X.textAlign = 'center'; X.fillText(t, Math.round(x), Math.round(y - 1)); X.textAlign = 'left'; }
+// iluminação por períodos com transição contínua: madrugada, amanhecer, manhã, meio-dia, tarde, pôr do sol, entardecer, noite
+const AMB = [[0, 0.62, '#2a2a6a', 0.04], [270, 0.6, '#3a306a', 0.05], [320, 0.42, '#ff8a5a', 0.12], [370, 0.14, '#ffb070', 0.24], [430, 0, '#ffe0a0', 0.09], [600, 0, '#fff4d0', 0.04], [690, 0, '#fff8d8', 0.06], [840, 0, '#fff0c8', 0.03], [990, 0, '#ffc070', 0.1], [1050, 0.06, '#ff7a3a', 0.28], [1110, 0.22, '#c0506a', 0.2], [1170, 0.42, '#6a4080', 0.1], [1230, 0.6, '#30307a', 0.05], [1440, 0.62, '#2a2a6a', 0.04]];
 function ambient() {
-  const m = S.min; let dark, tint = null, ta = 0;
-  if (m < 300) dark = 0.62; else if (m < 420) { const u = (m - 300) / 120; dark = 0.62 * (1 - u); tint = '#ff9a5a'; ta = Math.sin(u * Math.PI) * 0.22; }
-  else if (m < 1020) { dark = 0; if (m > 660 && m < 840) { tint = '#fff4c0'; ta = 0.05; } }
-  else if (m < 1140) { const u = (m - 1020) / 120; dark = u * 0.3; tint = '#ff7a3a'; ta = Math.sin(u * Math.PI) * 0.28; }
-  else if (m < 1260) { const u = (m - 1140) / 120; dark = 0.3 + u * 0.32; tint = '#a04060'; ta = (1 - u) * 0.12; }
-  else dark = 0.62;
+  let m = S.min; const sh = sunShift(); if (m > 200 && m < 600) m = Math.max(0, m - sh); else if (m > 900 && m < 1300) m = m + sh;
+  let i = 1; while (i < AMB.length - 1 && AMB[i][0] < m) i++; const A0 = AMB[i - 1], A1 = AMB[i], u = cl((m - A0[0]) / (A1[0] - A0[0]), 0, 1);
+  let dark = A0[1] + (A1[1] - A0[1]) * u, ta = A0[3] + (A1[3] - A0[3]) * u, tint = mix(A0[2], A1[2], u);
+  if (S.weather === 'calor' && m > 600 && m < 1000) { tint = mix(tint, '#ffa040', 0.6); ta = Math.max(ta, 0.14); }
+  if (S.weather === 'neblina' && m < 660) { tint = mix(tint, '#e8eef0', 0.6); ta = Math.max(ta, 0.12); }
+  if (season4() === 2 && m > 400 && m < 1000) ta *= 0.7; // inverno: luz mais fria e baixa
   if (S.wx) dark = Math.max(dark, S.wx.ci * 0.16 + S.wx.ri * 0.08);
   return { dark, tint, ta };
 }
@@ -8235,7 +8279,7 @@ function hud(dt) {
   if ((regT -= dt) < 0 && mode === 'play') { regT = 0.5; const r = regionAt(P.x, P.y); if (!curReg) curReg = r[0]; else if (r[0] !== curReg) { curReg = r[0]; const el = $('reg'); el.innerHTML = r[0] + '<small>' + r[1] + '</small>'; el.classList.add('on'); clearTimeout(regHide); regHide = setTimeout(() => el.classList.remove('on'), 2400); AU.jingle(); } }
   if ((hudT -= dt) > 0) return; hudT = 0.25;
   const night = isNight();
-  $('hDay').innerHTML = ic('calendar', 14) + ` ${WEEK[wday()]} ${dateStr()} · ${seasonName()}`; $('hTime').innerHTML = ic(night ? 'moon' : 'clock', 14) + ' ' + clock(); $('hWx').innerHTML = ic((WXT[S.weather] || WXT.sol).ic, 14) + '<span class="wt"> ' + WX[S.weather][1] + '</span>';
+  $('hDay').innerHTML = ic(SEAS4_IC[season4()], 14) + ` ${WEEK[wday()]} ${dateStr()} · ${SEAS4[season4()]}`; $('hTime').innerHTML = `<img class="dial" src="${dialURL()}" width="36" height="18" alt="">` + ' ' + clock(); $('hWx').innerHTML = ic((WXT[S.weather] || WXT.sol).ic, 14) + '<span class="wt"> ' + WX[S.weather][1] + '</span>';
   $('hMoney').innerHTML = ic('coin', 14) + ' ' + fmt(S.cash) + '&nbsp; ' + ic('bank', 14) + ' ' + fmt(S.acct);
   $('hEnC').firstElementChild.title = 'Energia'; if (!$('hEnC').dataset.i) { $('hEnC').insertAdjacentHTML('afterbegin', ic('bolt', 12)); $('hEnC').dataset.i = 1; $('hFoC').insertAdjacentHTML('afterbegin', ic('meat', 12)); $('hFoC').dataset.i = 1; }
   $('hEn').style.width = P.en + '%'; $('hFo').style.width = P.fo + '%';
@@ -8370,7 +8414,7 @@ const FILM = {
   porch(t, u, mode) { // a casa sede como ela é no mapa: mesmo chão, mesmo desenho e mesma escala dos personagens
     const { vw, vh } = this, g = this.g, hb = BLD.find(q => q.id === 'casa'), doorX = ((hb.door !== undefined ? hb.door : 7) + 0.5) * TS, y1 = (hb.r[3] + 1) * TS;
     const ox = Math.round(doorX - vw / 2), oy = Math.round(y1 - vh * (vh > vw ? 0.6 : 0.45));
-    GR.ensure(season(), ox, oy, vw, vh, 0); g.fillStyle = '#4a6a2a'; g.fillRect(0, 0, vw, vh); g.drawImage(groundC, ox, oy, vw, vh, 0, 0, vw, vh);
+    GR.ensure(season() + season4() * 2, ox, oy, vw, vh, 0); g.fillStyle = '#4a6a2a'; g.fillRect(0, 0, vw, vh); g.drawImage(groundC, ox, oy, vw, vh, 0, 0, vw, vh);
     const hv = S.house === undefined ? 2 : S.house, c = casaSpr(hv, false), x0 = hb.r[0] * TS;
     g.fillStyle = 'rgba(20,12,4,0.25)'; g.fillRect(x0 - 2 - ox, y1 - 2 - oy, c.width - 4, 4);
     g.drawImage(c, x0 - 4 - ox, y1 - c.height + 8 - oy);
