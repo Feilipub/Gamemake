@@ -1,0 +1,63 @@
+{
+  "_comment": "Valores de jogo ajustáveis. Velocidades em pixels de mundo por segundo (1 tile = 16 px). Ver design/gdd/lida-no-sertao-port.md.",
+  "player": {
+    "walk_speed": 40,
+    "run_speed": 66,
+    "half_size": [3.5, 2.5]
+  },
+  "mount": {
+    "walk_speed": 42,
+    "trot_speed": 64,
+    "gallop_speed": 100,
+    "trot_stick_threshold": 0.75,
+    "stamina_max": 100,
+    "stamina_drain_per_sec": 9,
+    "stamina_regen_per_sec": 6,
+    "stamina_min_to_gallop": 8,
+    "mount_distance": 26,
+    "call_speed": 46,
+    "idle_eat_cycle_sec": [3, 8],
+    "half_size": [6, 3]
+  },
+  "cattle": {
+    "walk_speed": 16,
+    "trot_speed": 32,
+    "flee_speed": 46,
+    "flee_radius": 30,
+    "flee_radius_fast": 58,
+    "fast_speed_ref": 90,
+    "follow_radius": 140,
+    "follow_stop_distance": 30,
+    "separation_radius": 20,
+    "separation_weight": 1.3,
+    "cohesion_radius": 70,
+    "cohesion_weight": 0.35,
+    "graze_chance": 0.5,
+    "idle_chance": 0.25,
+    "state_min_sec": 2.5,
+    "state_max_sec": 7.0,
+    "aboio_duration_sec": 14,
+    "steer_rate": 4.0,
+    "neighbor_radius": 90,
+    "half_size": [6, 3]
+  },
+  "time": {
+    "day_length_sec": 300,
+    "start_minute": 390
+  },
+  "camera": {
+    "zoom": 2.0,
+    "zoom_min": 1.25,
+    "zoom_max": 4.0,
+    "follow_speed": 7.0,
+    "wheel_step": 1.12,
+    "title_pan_speed": 14.0
+  },
+  "music": {
+    "fade_in_sec": 1.5,
+    "fade_out_sec": 2.0,
+    "crossfade_before_end_sec": 2.5,
+    "music_volume": 0.8,
+    "sfx_volume": 0.9
+  }
+}
