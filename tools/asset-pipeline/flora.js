@@ -109,5 +109,33 @@
     }
     return false;
   }
-  return { draw(g, t, v, se) { const P = mkP(g); if (t === 'coqueiro' || t === 'licuri' || t === 'palmeira') { palm(P, t, v, se); return true; } if (tree(P, t, v, se) !== false) return true; return small(P, t, v, se) !== false; } };
+  // frutíferas do pomar: k = espécie, st = 0 muda, 1 jovem, 2 adulta; o.flor, o.fruta (0..1), o.murcha
+  const FR = {
+    manga: { bark: '#5a3e2a', pal: ['#143a18', '#225824', '#327630', '#4a943c'], fc: '#e8902a', f2: '#c8401a', flor: '#e8e0a0', big: 1 },
+    caju: { bark: '#6a4a30', pal: ['#2e5a26', '#4a8a38', '#6aa84c', '#90c86a'], fc: '#e8402a', f2: '#f0c030', flor: '#e8a0b0', crooked: 1 },
+    umbu: { bark: '#6a5a48', pal: ['#2c4e20', '#467a30', '#64983e', '#8ab854'], fc: '#c8d060', f2: '#a8b040', flor: '#f4f0e0', wide: 1 },
+    acerola: { bark: '#6a5040', pal: ['#1e4a1e', '#2f6a2c', '#43883a', '#68a850'], fc: '#e02a2a', f2: '#f05a3a', flor: '#f0a0c0', bush: 1 },
+    goiaba: { bark: '#a07858', pal: ['#2e5a28', '#4a8238', '#68a04a', '#8cbc62'], fc: '#d8d060', f2: '#e8a0a0', flor: '#f8f4e8' },
+    pinha: { bark: '#6a5a4a', pal: ['#2a5226', '#3f7a34', '#5a9a44', '#7ab858'], fc: '#8ab858', f2: '#6a9a40', flor: '#e8e0b0', bush: 1 },
+    limao: { bark: '#5a4a3a', pal: ['#183e1c', '#285e2a', '#3a7e38', '#58a048'], fc: '#9ad040', f2: '#7ab030', flor: '#f8f8f0', bush: 1 },
+    laranja: { bark: '#5a4a3a', pal: ['#183e1c', '#285e2a', '#3a7e38', '#58a048'], fc: '#f09a20', f2: '#e88010', flor: '#f8f8f0' }
+  };
+  function fruit(g, k, st, o) {
+    const P = mkP(g); o = o || {}; const s = k.length * 17 + 5, dry = o.murcha;
+    if (k === 'banana') { const n = st === 0 ? 1 : st === 1 ? 2 : 3; for (let i = 0; i < n; i++) { const x = BX + (i - (n - 1) / 2) * 9, h = [10, 20, 30][st] - i * 3; for (let y = 0; y < h; y++) { P(x - 2, BY - y, 4, 1, y % 5 === 0 ? '#4e6a2c' : '#5e7a36'); P(x - 2, BY - y, 1, 1, '#88a85a'); P(x + 1, BY - y, 1, 1, '#3e5622'); }
+        for (let j = 0; j < 5; j++) { const a = -Math.PI / 2 + (j - 2) * 0.62, L = [8, 13, 17][st]; for (let q = 0; q < L; q++) { const px = x + Math.cos(a) * q, py = BY - h + Math.sin(a) * q * .8 + q * q * .035, w = Math.max(2, Math.round(Math.sin(Math.min(1, q / L * 1.1) * Math.PI) * 4)); P(px - (w >> 1), py - 1, w, 3, dry ? (q % 2 ? '#a8a060' : '#8a8048') : '#3f8a32'); P(px - (w >> 1), py - 1, w, 1, dry ? '#b8b070' : '#6aba52'); P(px, py, 1, 1, dry ? '#9a9050' : '#a8d07a'); if (q % 5 === 4 && !dry) P(px + (w >> 1), py + 1, 1, 2, '#2e6a26'); } } }
+      if (st === 2 && o.fruta > 0) { const x = BX - 4, y = BY - 22; for (let r = 0; r < 4; r++) P(x, y + r * 2, 7 - r, 2, o.fruta > 0.6 ? '#e8d040' : '#8ab040'); P(x + 2, y + 8, 2, 4, '#8a2a3a'); } return; }
+    if (k === 'mamao') { const h = [8, 22, 38][st]; for (let y = 0; y < h; y++) { P(BX - 2, BY - y, 4, 1, '#9a9a7a'); P(BX - 2, BY - y, 1, 1, '#bababa'); if (y % 4 === 0) P(BX - 2, BY - y, 4, 1, '#7a7a5a'); }
+      for (let j = 0; j < 7; j++) { const a = -Math.PI / 2 + (j - 3) * 0.5, L = [6, 11, 15][st]; for (let q = 0; q < L; q++) { const px = BX + Math.cos(a) * q, py = BY - h + Math.sin(a) * q * .7 + q * q * .04; P(px, py, 1, 1, dry ? '#a8a060' : '#7aa040'); } const ex = BX + Math.cos(a) * L, ey = BY - h + Math.sin(a) * L * .7 + L * L * .04, r = [2, 3, 4][st]; for (let yy = -r; yy <= r; yy++) for (let xx = -r - 1; xx <= r + 1; xx++) if (xx * xx / ((r + 1) * (r + 1)) + yy * yy / (r * r) <= 1) P(ex + xx, ey + yy, 1, 1, dry ? '#a8a060' : (xx + yy) % 3 === 0 ? '#5ab048' : yy < 0 ? '#4aa040' : '#2e7a2e'); }
+      if (st === 2 && o.fruta > 0) for (let i = 0; i < Math.round(3 + o.fruta * 4); i++) { const fx = BX - 5 + (i % 3) * 4, fy = BY - h + 3 + Math.floor(i / 3) * 5, fc = o.fruta > 0.6 ? '#f0a030' : '#7ab040'; P(fx, fy, 3, 4, fc); P(fx, fy, 1, 2, shade(fc, .35)); P(fx + 2, fy + 3, 1, 1, shade(fc, -.3)); } return; }
+    const F = FR[k] || FR.goiaba, sc = [0.32, 0.62, 1][st];
+    const C = (x, y, r, ry) => ({ x: 32 + (x - 32) * sc, y: 70 - (70 - y) * sc, r: Math.max(2, r * sc), ry: Math.max(2, (ry || r) * sc) });
+    const cl = F.bush ? [C(32, 40, 15, 12), C(22, 46, 9, 8), C(42, 45, 9, 8), C(32, 32, 9, 7)] : F.wide ? [C(32, 38, 22, 10), C(17, 42, 10, 7), C(47, 42, 10, 7), C(31, 31, 12, 8)] : F.big ? [C(32, 32, 22, 16), C(32, 20, 13, 9), C(16, 39, 9, 8), C(48, 39, 9, 8)] : [C(32, 34, 17, 13), C(22, 40, 9, 7), C(42, 39, 9, 7), C(32, 25, 10, 7)];
+    const hh = Math.max(4, reach(cl)); trunk(P, BX, BY, hh, Math.max(2, Math.round(6 * sc)), Math.max(1, Math.round(3 * sc)), F.crooked ? 6 * sc : 0, F.bark, s);
+    if (st === 0) { P(BX - 4, BY, 9, 1, '#4a3420'); }
+    canopy(P, cl, dry ? DRY : F.pal, { seed: s, dens: dry ? .55 : 1 });
+    if (o.flor && st === 2) for (let i = 0; i < 14; i++) { const c = cl[i % cl.length], a = H(i, s, 31) * 6.28, d = H(s, i, 32) * c.r * .8; P(c.x + Math.cos(a) * d, c.y + Math.sin(a) * d * .7, 1, 1, F.flor); }
+    if (o.fruta > 0 && st === 2) { const n = Math.round(4 + o.fruta * 12); for (let i = 0; i < n; i++) { const c = cl[i % cl.length], a = H(i, s, 41) * 6.28, d = H(s, i, 42) * c.r * .75, fx = c.x + Math.cos(a) * d, fy = c.y + Math.sin(a) * d * .7 + 2; const col = o.fruta > 0.6 ? F.fc : shade(F.pal[2], .1); P(fx, fy, 2, 2, col); P(fx, fy, 1, 1, shade(col, .4)); if (k === 'caju' && o.fruta > 0.6) P(fx, fy + 2, 1, 1, '#8a6a4a'); if (k === 'manga' && i % 3 === 0) P(fx + 1, fy + 1, 1, 1, F.f2); } }
+  }
+  return { fruit, draw(g, t, v, se) { const P = mkP(g); if (t === 'coqueiro' || t === 'licuri' || t === 'palmeira') { palm(P, t, v, se); return true; } if (tree(P, t, v, se) !== false) return true; return small(P, t, v, se) !== false; } };
 })()
