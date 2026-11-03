@@ -4,7 +4,7 @@ Arquivos JSON lidos por `src/core/game_data.gd`. Os dois primeiros são **gerado
 pipeline `tools/asset-pipeline/export_from_html.js` a partir do protótipo HTML
 (`prototypes/html-v3.2/index.html`). Não edite à mão: rode o pipeline de novo.
 
-## `world_map.json` (gerado) — schema_version 1
+## `world_map.json` (gerado) — schema_version 2
 
 | Chave | Tipo | Significado |
 |---|---|---|
@@ -17,6 +17,10 @@ pipeline `tools/asset-pipeline/export_from_html.js` a partir do protótipo HTML
 | `herd` | [{x, y, sex, n}] | Rebanho inicial do jogador: posição, sexo (`F`/`M`) e nome. |
 | `areas` | objeto | Áreas cercadas do protótipo (piquetes, curral…), em tiles `[x0, y0, x1, y1]`. |
 | `objects` | [obj] | Tudo que fica de pé no mapa, desenhado com ordenação por profundidade. |
+| `areas` | {chave: {n, k, r, parcel, gates}} | Áreas cercadas (piquetes, curral, apartadouros, galinheiro…): nome, tipo, retângulo em tiles, terreno comprável (`parcel`) e ids das porteiras. |
+| `gates` | [gate] | Porteiras funcionais: `id`, `t` (tira de 4 quadros fechada→aberta), `fw`, `fh`, `x`, `y`, `s`, `tiles` (tiles que bloqueiam quando fechada), `h` (horizontal), `area`, `parcel`, `open`. Os tiles das porteiras **não** entram em `solid`; o jogo liga/desliga. |
+| `troughs` | [{a, k, x, y, w, cap}] | Cochos: área, tipo (`agua`/`racao`), posição em tiles, largura, capacidade. |
+| `markers` | {nome: [x, y]} | Pontos de interação planejados (porta da casa, lembranças do avô, reservatório, fogueira…), em tiles. Cada sistema liga o seu quando for portado. |
 
 Cada `obj`:
 
@@ -25,7 +29,7 @@ Cada `obj`:
 | `t` | Caminho da textura (`res://assets/art/world/obj/...png`). Prédios também têm `..._n.png` (noite, janelas acesas). |
 | `x`, `y` | Canto superior esquerdo onde a textura é desenhada (pixels de mundo). |
 | `s` | Linha de ordenação (o "pé" do objeto): quem tem `s` maior fica na frente. |
-| `k` | Tipo: `fence`, `gate`, `prop`, `tree`, `bld`. |
+| `k` | Tipo: `fence`, `trough`, `prop`, `tree`, `bld`. |
 | `px`, `py` | (árvores) base do tronco, usada para a sombra. |
 | `id`, `w` | (prédios) identificador e largura em pixels. |
 
@@ -36,6 +40,11 @@ Mapa `nome_da_tira -> {file, fw, fh, n, ox, oy}`: cada tira é um PNG com `n` qu
 `player_<pose>_<dir>`, `mounted_<andadura>_<dir>`, `horse_<anim>_<vista>`,
 `peduro<F|M>_<anim>_<vista>`. `dir`: 0 frente, 1 costas, 3 direita (esquerda = espelho de 3).
 `vista`: `side` (olhando para a direita), `front`, `back`.
+
+## `farm_parcels.json` (editável)
+
+Terrenos compráveis (valores do original): chave → `{name, price, desc}`; `start_owned` lista os que o jogador
+já tem no começo. Porteiras de áreas com `parcel` não comprado ficam travadas.
 
 ## `game_tuning.json` (editável)
 
@@ -65,5 +74,6 @@ tempos em segundos; raios em pixels.
 | `time` | `day_length_sec`, `start_minute` | Duração do dia em segundos reais; hora inicial em minutos (390 = 6h30). |
 | `camera` | `zoom`, `zoom_min`, `zoom_max`, `wheel_step` | Zoom padrão e limites; passo da rodinha/pinça. |
 | | `follow_speed`, `title_pan_speed` | Suavização da câmera; velocidade do passeio no título. |
+| `interaction` | `radius`, `gate_anim_speed`, `gate_body_margin` | Alcance do botão Ação (px); velocidade da porteira (1/s); folga para não fechar em cima de alguém (px). |
 | `music` | `fade_in_sec`, `fade_out_sec`, `crossfade_before_end_sec` | Transições entre trilhas. |
 | | `music_volume`, `sfx_volume` | Volumes iniciais (0–1). |

@@ -7,6 +7,7 @@ extends Node2D
 signal aboio_called(at: Vector2)
 signal mount_changed(mounted: bool)
 signal message(text: String)
+signal action_pressed
 
 var mounted := false
 var stamina := 100.0
@@ -99,6 +100,8 @@ func _physics_process(dt: float) -> void:
 		toggle_mount()
 	if controls_enabled and Input.is_action_just_pressed(&"aboio"):
 		aboio_called.emit(position)
+	if controls_enabled and Input.is_action_just_pressed(&"action"):
+		action_pressed.emit()
 
 
 ## Monta se o cavalo estiver perto; senão assobia para ele vir. Montado: desmonta.

@@ -11,6 +11,8 @@ extends Node
 ##   --run              segura Correr
 ##   --aboio            chama o gado no início
 ##   --wait=3           segundos até a captura
+##   --interact=0.5     aperta Ação depois de N segundos (ex.: abrir a porteira)
+##   --move-after=1.2   só começa a andar depois de N segundos
 ##   --capture=caminho.png  salva a tela e fecha
 
 const AUTOSAVE_SEC := 60.0
@@ -85,6 +87,10 @@ func _apply_debug_args() -> void:
 	if _args.has("mounted"):
 		world.horse.position = world.player.position
 		world.player.toggle_mount()
+	if _args.has("interact"):
+		get_tree().create_timer(float(_args.interact)).timeout.connect(world.interact)
+	if _args.has("move-after"):
+		await get_tree().create_timer(float(_args["move-after"])).timeout
 	if _args.has("move"):
 		var p: PackedStringArray = String(_args.move).split(",")
 		var v := Vector2(float(p[0]), float(p[1]))

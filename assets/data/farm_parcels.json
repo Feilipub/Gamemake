@@ -1,0 +1,7 @@
+{
+  "_comment": "Terrenos compráveis da Fazenda Boa Esperança (valores do original v3.2, PARCELS e EXP). Enquanto não comprados, as porteiras das áreas com esse 'parcel' ficam travadas. Preços em R$.",
+  "piquetes": {"name": "Terreno dos Piquetes 3 e 4", "price": 14000, "desc": "Dois piquetes cercados a leste do Piquete 2, com bebedouros. O avô vendeu na seca grande."},
+  "leste": {"name": "Terreno do Curral Grande", "price": 24000, "desc": "Recebimento, confinamento, quarentena, haras e o Lote B para obras."},
+  "galinheiro": {"name": "Cercado do galinheiro", "price": 2500, "desc": "Cercado com poleiro ao lado da casa."},
+  "start_owned": []
+}

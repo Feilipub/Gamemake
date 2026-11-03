@@ -33,7 +33,7 @@ godot --headless --path . -s res://tests/run_tests.gd
 
 ```bash
 npm i playwright && npx playwright install chromium   # uma vez
-node tools/asset-pipeline/export_from_html.js prototypes/html-v3.2/index.html .
+node tools/asset-pipeline/export_from_html.js prototypes/html-v3.2/index.html . [layout.json]
 godot --headless --path . --import
 ```
 
@@ -57,6 +57,15 @@ modelos de exportação → Baixar).
    Android no canto superior direito) instala e abre direto no aparelho.
 
 ## Estado do porte
+
+Fases da reconstrução: inventário do original em `design/reference/inventario_original_v3_2.md`;
+planejamento da nova fazenda em `design/level/fazenda_boa_esperanca.md`.
+
+Fase 3 (em andamento): **nova Fazenda Boa Esperança** gerada a partir de um layout em dados
+(`tools/asset-pipeline/layouts/fazenda_boa_esperanca.json`) — sede com terreiro e roda de fogo, galinheiro,
+cercado dos cavalos com cocheira, curral de espera com apartadouros, seringa e embarcadouro, 4 piquetes com
+bebedouro e sombra, Curral Grande comprável; bordas orgânicas no chão; **porteiras funcionais** (Ação abre e
+fecha, animadas, bloqueiam o gado, não fecham em cima de alguém, travadas em terreno não comprado).
 
 Fatia 1 (pronta): mapa completo da fazenda e da cidade, colisão, cercas/porteiras/árvores/prédios,
 luz do dia e janelas acesas à noite, vaqueiro (parado/andando/correndo), montaria com passo,

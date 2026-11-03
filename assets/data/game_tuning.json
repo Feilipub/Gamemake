@@ -3,7 +3,10 @@
   "player": {
     "walk_speed": 40,
     "run_speed": 66,
-    "half_size": [3.5, 2.5]
+    "half_size": [
+      3.5,
+      2.5
+    ]
   },
   "mount": {
     "walk_speed": 42,
@@ -16,8 +19,14 @@
     "stamina_min_to_gallop": 8,
     "mount_distance": 26,
     "call_speed": 46,
-    "idle_eat_cycle_sec": [3, 8],
-    "half_size": [6, 3]
+    "idle_eat_cycle_sec": [
+      3,
+      8
+    ],
+    "half_size": [
+      6,
+      3
+    ]
   },
   "cattle": {
     "walk_speed": 16,
@@ -39,7 +48,10 @@
     "aboio_duration_sec": 14,
     "steer_rate": 4.0,
     "neighbor_radius": 90,
-    "half_size": [6, 3]
+    "half_size": [
+      6,
+      3
+    ]
   },
   "time": {
     "day_length_sec": 300,
@@ -59,5 +71,10 @@
     "crossfade_before_end_sec": 2.5,
     "music_volume": 0.8,
     "sfx_volume": 0.9
+  },
+  "interaction": {
+    "radius": 26,
+    "gate_anim_speed": 2.5,
+    "gate_body_margin": 5
   }
 }

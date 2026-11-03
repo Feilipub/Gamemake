@@ -23,11 +23,13 @@ const savePng = (rel, dataUrl) => fs.writeFileSync(P(rel), Buffer.from(dataUrl.s
 const HELPERS = `window.__exp = {
   url(c) { return c.toDataURL('image/png'); },
   strip(cs) { const fw = Math.max(...cs.map(c => c.width)), fh = Math.max(...cs.map(c => c.height)); const [c, g] = mkC(fw * cs.length, fh); cs.forEach((k, i) => g.drawImage(k, i * fw, 0)); return { url: c.toDataURL('image/png'), fw, fh, n: cs.length }; },
-  ground(se) { buildGround(se); const [c, g] = mkC(WPX, HPX); g.drawImage(groundC, 0, 0);
+  ground(se) { buildGround(se); if (window.__groundPost) __groundPost(se); const [c, g] = mkC(WPX, HPX); g.drawImage(groundC, 0, 0);
     for (let cy = 0; cy * GCS < MH; cy++) for (let cx = 0; cx * GCS < MW; cx++) { const ch = grassChunk(cx, cy, se); if (ch && ch.any) g.drawImage(ch.l[0], cx * GCS * TS, cy * GCS * TS - 4); }
     return c.toDataURL('image/png'); },
   world() {
+    const anim0 = GATES.map(g => g.anim); GATES.forEach(g => { g.anim = 1; });
     const solid = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) solid.push(solidT(tx, ty) ? 1 : 0);
+    GATES.forEach((g, k) => { g.anim = anim0[k]; });
     const water = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) water.push(ground[gi(tx, ty)] === G.WATER ? 1 : 0);
     const tex = {}, inst = []; const reg = (key, mk) => { if (!tex[key]) tex[key] = this.url(mk()); return key; };
     for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) { const i = gi(tx, ty); if (obj[i] !== 1) continue;
@@ -38,12 +40,19 @@ const HELPERS = `window.__exp = {
     for (const p of PROPS) { const key = 'prop_' + p.t + '_' + p.v; inst.push({ t: reg(key, () => propSpr(p.t, p.v, 0)), x: p.x - 32, y: p.y - 70, s: p.y, k: TREES.has(p.t) ? 'tree' : 'prop', px: p.x, py: p.y }); }
     for (const b of BLD) { const x0 = b.r[0] * TS, y1 = (b.r[3] + 1) * TS; const mk = n => () => (b.id === 'casa' && S.house === 0 && typeof ranchoSpr === 'function' ? ranchoSpr(b, n) : bldSpr(b, n));
       const key = 'bld_' + b.id; reg(key, mk(false)); reg(key + '_n', mk(true)); inst.push({ t: key, x: x0 - 4, y: b.r[1] * TS - b.top, s: y1 - 2, k: 'bld', id: b.id, w: (b.r[2] - b.r[0] + 1) * TS }); }
-    // porteiras: desenhadas fechadas, capturadas do canvas principal
-    GATES.forEach((g, gi2) => { const xs = g.t.map(q => q[0]), ys = g.t.map(q => q[1]); const x0 = Math.min(...xs) * TS - 16, y0 = Math.min(...ys) * TS - 32, w = (Math.max(...xs) - Math.min(...xs) + 1) * TS + 32, hh = (Math.max(...ys) - Math.min(...ys) + 1) * TS + 48;
-      const was = S.gates[gi2]; S.gates[gi2] = 0; X.setTransform(1, 0, 0, 1, -x0, -y0); X.clearRect(x0, y0, w, hh); drawGate(g, X); X.setTransform(1, 0, 0, 1, 0, 0); const d = X.getImageData(0, 0, w, hh); S.gates[gi2] = was;
-      const [c, gg] = mkC(w, hh); gg.putImageData(d, 0, 0); const key = 'gate_' + gi2; tex[key] = this.url(c);
-      inst.push({ t: key, x: x0, y: y0, s: g.h ? Math.max(...ys) * TS + 14 : (Math.max(...ys) + 1) * TS - 1, k: 'gate' }); });
-    return { TS, MW, MH, solid, water, tex, inst, areas: AREAS, spawn: (() => { const q = newState().p; return { x: q.x, y: q.y }; })(), herd: S.animals.filter(a => a.own === 'player' && a.sp === 'boi').map(a => ({ x: a.x, y: a.y, sex: a.sex, n: a.n })) };
+    // cochos (nível de 85%)
+    TROUGHS.forEach((t, k) => { const key = 'trough_' + t.k + '_' + t.w; inst.push({ t: reg(key, () => troughSpr(t, 0.85)), x: t.x * TS - 2, y: t.y * TS - 2, s: t.y * TS + 15, k: 'trough', ti: k }); });
+    // porteiras: 4 quadros (fechada → aberta) capturados do canvas principal; os tiles vão à parte
+    const gates = [];
+    GATES.forEach((g, gi2) => { const xs = g.t.map(q => q[0]), ys = g.t.map(q => q[1]); const x0 = Math.min(...xs) * TS - 32, y0 = Math.min(...ys) * TS - 32, w = (Math.max(...xs) - Math.min(...xs) + 1) * TS + 64, hh = (Math.max(...ys) - Math.min(...ys) + 1) * TS + 48;
+      const anim0 = g.anim, cs = [];
+      for (const a of [0, 0.34, 0.67, 1]) { g.anim = a; X.setTransform(1, 0, 0, 1, -x0, -y0); X.clearRect(x0, y0, w, hh); drawGate(g, X); X.setTransform(1, 0, 0, 1, 0, 0); const d = X.getImageData(0, 0, w, hh); const [c, gg] = mkC(w, hh); gg.putImageData(d, 0, 0); cs.push(c); }
+      g.anim = anim0; const st = this.strip(cs); const key = 'gate_' + gi2; tex[key] = st.url;
+      const ar = g.a && AREAS[g.a];
+      gates.push({ id: gi2, t: 'res://assets/art/world/obj/' + key + '.png', fw: st.fw, fh: st.fh, n: st.n, x: x0, y: y0, s: g.h ? Math.max(...ys) * TS + 14 : (Math.max(...ys) + 1) * TS - 1, tiles: g.t, h: !!g.h, area: g.a || null, parcel: ar && ar.parcel ? ar.parcel : null, open: !!g.open }); });
+    const areas = {}; for (const k of AKEYS) { const a = AREAS[k]; areas[k] = { n: a.n, k: a.k, r: a.r, parcel: a.parcel || null, gates: a.gates || (a.gate !== undefined ? [a.gate] : []) }; }
+    const troughs = TROUGHS.map(t => ({ a: t.a, k: t.k, x: t.x, y: t.y, w: t.w, cap: t.cap }));
+    return { TS, MW, MH, solid, water, tex, inst, gates, areas, troughs, spawn: window.__layoutSpawn || (() => { const q = newState().p; return { x: q.x, y: q.y }; })(), herd: S.animals.filter(a => a.own === 'player' && a.sp === 'boi').map(a => ({ x: a.x, y: a.y, sex: a.sex, n: a.n })) };
   },
   char(ap, pose, dir, n) { const cs = []; for (let f = 0; f < n; f++) cs.push(charSpr(ap, dir, f, pose)); return this.strip(cs); },
   rig(a, view, an) { const n = RIG.frames(an), rs = []; for (let f = 0; f < n; f++) rs.push(rigFrame(a, view, an, f));
@@ -67,6 +76,14 @@ const HELPERS = `window.__exp = {
   await p.waitForFunction(() => window.__lida.S && window.__lida.S.animals && window.__lida.S.animals.length > 0, null, { timeout: 30000 });
   await p.waitForTimeout(1500);
   await ev(HELPERS);
+  // novo layout da Fazenda Boa Esperança (dados), aplicado sobre o mapa do protótipo
+  const layoutPath = path.resolve(process.argv[4] || path.join(__dirname, 'layouts/fazenda_boa_esperanca.json'));
+  const layout = JSON.parse(fs.readFileSync(layoutPath, 'utf8'));
+  await ev(require('./apply_layout.js'));
+  await ev(require('./ground_post.js'));
+  console.log('layout:', JSON.stringify(await ev('__applyLayout(' + JSON.stringify(layout) + ')')));
+  await ev('window.__layoutSpawn = { x: ' + layout.spawn[0] + ' * TS, y: ' + layout.spawn[1] + ' * TS }; true');
+  const markers = layout.markers || {};
   // congela o laço do jogo para o canvas principal servir de área de captura
   await ev('window.requestAnimationFrame = () => 0; true');
   await p.waitForTimeout(200);
@@ -79,7 +96,7 @@ const HELPERS = `window.__exp = {
   // mundo
   const W = await ev('__exp.world()');
   for (const [k, u] of Object.entries(W.tex)) savePng('assets/art/world/obj/' + k + '.png', u);
-  const world = { schema_version: 1, tile_size: W.TS, map_width: W.MW, map_height: W.MH, solid: W.solid, water: W.water, spawn: W.spawn, herd: W.herd, areas: W.areas,
+  const world = { schema_version: 2, tile_size: W.TS, map_width: W.MW, map_height: W.MH, solid: W.solid, water: W.water, spawn: W.spawn, herd: W.herd, areas: W.areas, gates: W.gates, troughs: W.troughs, markers,
     objects: W.inst.map(o => Object.assign({}, o, { t: 'res://assets/art/world/obj/' + o.t + '.png' })) };
   fs.writeFileSync(P('assets/data/world_map.json'), JSON.stringify(world));
 

@@ -11,6 +11,8 @@ var clock: GameClock
 var player: Player
 var horse: Horse
 var cows: Array[Cow] = []
+var gates: Array[Gate] = []
+var owned_parcels: Dictionary = {}
 var aboio_left := 0.0
 var playing := false
 
@@ -62,6 +64,18 @@ func build() -> void:
 		elif o.k == "tree":
 			shadows.points.append(Vector2(float(o.px), float(o.py) - 2.0))
 
+	for p: String in GameData.parcels.get("start_owned", []):
+		owned_parcels[p] = true
+	var areas: Dictionary = w.get("areas", {})
+	for gd: Dictionary in w.get("gates", []):
+		var g := Gate.new()
+		var ak = gd.get("area")
+		var label := String(areas[ak].n) if ak != null and areas.has(ak) else ""
+		var parcel = gd.get("parcel")
+		_ysort.add_child(g)
+		g.setup(gd, grid, ts, parcel != null and not owned_parcels.has(parcel), label)
+		gates.append(g)
+
 	var spawn := Vector2(float(w.spawn.x), float(w.spawn.y))
 	horse = Horse.new()
 	horse.position = spawn + Vector2(24, 2)
@@ -73,6 +87,7 @@ func build() -> void:
 	_ysort.add_child(player)
 	player.setup(grid, _tuning, horse)
 	player.aboio_called.connect(_on_aboio)
+	player.action_pressed.connect(interact)
 	player.message.connect(func(t: String) -> void: message.emit(t))
 
 	var i := 0
@@ -109,13 +124,80 @@ func set_playing(on: bool) -> void:
 		_camera.reset_smoothing()
 
 
+## Interação mais próxima do vaqueiro (por enquanto: porteiras). null se nada ao alcance.
+func nearest_interactable() -> Gate:
+	var best: Gate = null
+	var bd := float(_tuning.interaction.radius)
+	for g in gates:
+		var d := g.center().distance_to(player.position)
+		if d < bd:
+			bd = d
+			best = g
+	return best
+
+
+## Texto do botão Ação para a interação atual ("" se nada).
+func interaction_label() -> String:
+	if not playing:
+		return ""
+	var g := nearest_interactable()
+	return g.action_label() if g != null else ""
+
+
+## Faz a interação mais próxima (chamado pelo botão Ação).
+func interact() -> void:
+	if not playing:
+		return
+	var g := nearest_interactable()
+	if g == null:
+		return
+	if g.state.locked:
+		var info: Dictionary = GameData.parcels.get(g.parcel, {})
+		message.emit("Porteira travada: %s ainda não é seu (R$ %s)." % [info.get("name", "esse terreno"), _money(int(info.get("price", 0)))])
+		return
+	if g.state.open and _body_in(g.rect().grow(float(_tuning.interaction.gate_body_margin))):
+		message.emit("Tem bicho ou gente na porteira. Espere passar para fechar.")
+		return
+	g.toggle()
+
+
+## Compra um terreno: destrava as porteiras dele.
+func own_parcel(key: String) -> void:
+	owned_parcels[key] = true
+	for g in gates:
+		if g.parcel == key:
+			g.set_locked(false)
+
+
+func _body_in(r: Rect2) -> bool:
+	if r.has_point(player.position) or (horse.visible and r.has_point(horse.position)):
+		return true
+	for c in cows:
+		if r.has_point(c.position):
+			return true
+	return false
+
+
+static func _money(v: int) -> String:
+	var s := str(v)
+	var out := ""
+	while s.length() > 3:
+		out = "." + s.substr(s.length() - 3) + out
+		s = s.substr(0, s.length() - 3)
+	return s + out
+
+
 ## Estado salvo da partida.
 func to_save() -> Dictionary:
 	var herd := []
 	for c in cows:
 		herd.append({"x": c.position.x, "y": c.position.y})
-	return {"v": 1, "day": clock.day, "minute": clock.minute, "player": player.to_save(),
-		"horse": {"x": horse.position.x, "y": horse.position.y}, "herd": herd}
+	var gate_open := []
+	for g in gates:
+		gate_open.append(g.state.open)
+	return {"v": 2, "day": clock.day, "minute": clock.minute, "player": player.to_save(),
+		"horse": {"x": horse.position.x, "y": horse.position.y}, "herd": herd,
+		"gates": gate_open, "parcels": owned_parcels.keys()}
 
 
 ## Restaura um save (campos ausentes ficam no padrão).
@@ -128,6 +210,13 @@ func from_save(d: Dictionary) -> void:
 	if not hp.is_empty():
 		horse.position = Vector2(float(hp.x), float(hp.y))
 	player.from_save(d.get("player", {}))
+	for p: String in d.get("parcels", []):
+		own_parcel(p)
+	var go: Array = d.get("gates", [])
+	for i in mini(go.size(), gates.size()):
+		if bool(go[i]) != gates[i].state.open:
+			gates[i].state.open = bool(go[i])
+			gates[i].state.anim = 1.0 if gates[i].state.open else 0.0
 	var herd: Array = d.get("herd", [])
 	for i in mini(herd.size(), cows.size()):
 		cows[i].position = Vector2(float(herd[i].x), float(herd[i].y))

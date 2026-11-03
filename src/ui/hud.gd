@@ -8,6 +8,7 @@ var _clock_lbl: Label
 var _stamina: ProgressBar
 var _msg: Label
 var _msg_t := 0.0
+var _hint: Label
 var _stick: VirtualStick
 var _buttons: Array[TouchScreenButton] = []
 var _root: Control
@@ -45,11 +46,17 @@ func setup(world: World, force_touch: bool) -> void:
 	_msg.modulate.a = 0.0
 	_root.add_child(_msg)
 
+	_hint = Label.new()
+	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hint.add_theme_font_size_override("font_size", 13)
+	_hint.add_theme_color_override("font_color", UiTheme.GOLD)
+	_root.add_child(_hint)
+
 	var touch := force_touch or DisplayServer.is_touchscreen_available()
 	_stick = VirtualStick.new()
 	_stick.visible = touch
 	_root.add_child(_stick)
-	for spec in [["Correr", &"run"], ["Montar", &"mount"], ["Aboio", &"aboio"]]:
+	for spec in [["Correr", &"run"], ["Montar", &"mount"], ["Aboio", &"aboio"], ["Ação", &"action"]]:
 		var b := _make_button(spec[0], spec[1])
 		b.visible = touch
 		add_child(b)
@@ -77,6 +84,8 @@ func _process(dt: float) -> void:
 	_stamina.value = _world.player.stamina
 	_msg_t -= dt
 	_msg.modulate.a = clampf(_msg_t * 2.0, 0.0, 1.0)
+	var lbl := _world.interaction_label()
+	_hint.text = ("[E] " if not _stick.visible else "") + lbl if lbl != "" else ""
 
 
 func _layout() -> void:
@@ -84,6 +93,8 @@ func _layout() -> void:
 	_msg.position = Vector2(vs.x * 0.15, 46)
 	_msg.size = Vector2(vs.x * 0.7, 40)
 	_stick.position = Vector2(14, vs.y - _stick.size.y - 10)
+	_hint.position = Vector2(vs.x * 0.2, vs.y - 34)
+	_hint.size = Vector2(vs.x * 0.6, 24)
 	var bw := 74.0
 	var bh := 34.0
 	for i in _buttons.size():

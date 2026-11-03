@@ -42,3 +42,14 @@ func test_from_world_merges_water_as_blocked() -> void:
 	var g := CollisionGrid.from_world(w)
 	assert_false(g.is_blocked_tile(0, 0))
 	assert_true(g.is_blocked_tile(1, 0), "água ainda não é atravessável")
+
+
+func test_set_blocked_opens_and_closes_a_passage() -> void:
+	var g := _grid()
+	g.set_blocked(2, 0, false)
+	var p := g.move(Vector2(24, 8), Vector2(20, 0), Vector2(3, 2))
+	assert_eq(p.x, 44.0, "com o tile liberado, atravessa")
+	g.set_blocked(2, 0, true)
+	assert_true(g.is_blocked_tile(2, 0), "fechou de novo")
+	g.set_blocked(99, 99, true)
+	assert_true(g.is_blocked_tile(99, 99), "fora do mapa continua bloqueado e não quebra")

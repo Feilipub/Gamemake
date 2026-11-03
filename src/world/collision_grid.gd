@@ -32,6 +32,13 @@ static func from_world(world: Dictionary) -> CollisionGrid:
 	return CollisionGrid.new(b, w, h, float(world.tile_size))
 
 
+## Liga/desliga o bloqueio de um tile (porteiras). Fora do mapa é ignorado.
+func set_blocked(tx: int, ty: int, on: bool) -> void:
+	if tx < 0 or ty < 0 or tx >= width or ty >= height:
+		return
+	_blocked[ty * width + tx] = 1 if on else 0
+
+
 ## Tile bloqueado? Fora do mapa conta como bloqueado.
 func is_blocked_tile(tx: int, ty: int) -> bool:
 	if tx < 0 or ty < 0 or tx >= width or ty >= height:

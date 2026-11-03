@@ -6,6 +6,7 @@ extends Node
 var world: Dictionary = {}
 var sprites: Dictionary = {}
 var tuning: Dictionary = {}
+var parcels: Dictionary = {}
 
 var _tex_cache: Dictionary = {}
 var _frames_cache: Dictionary = {}
@@ -15,6 +16,7 @@ func _ready() -> void:
 	world = load_json("res://assets/data/world_map.json")
 	sprites = load_json("res://assets/data/art_sprites.json")
 	tuning = load_json("res://assets/data/game_tuning.json")
+	parcels = load_json("res://assets/data/farm_parcels.json")
 
 
 ## Lê um arquivo JSON e devolve o dicionário (vazio em caso de erro).
