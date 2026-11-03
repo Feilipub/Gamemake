@@ -178,3 +178,10 @@ $RECYCLE.BIN/
 # the project root. Anchored so a reports/ folder elsewhere stays tracked.
 /reports/
 /test-results/
+
+# app Android: arquivos do jogo copiados no build (tools/android/prepare_web.sh)
+android-app/app/src/main/assets/
+android-app/.gradle/
+android-app/app/build/
+android-app/build/
+android-app/local.properties
