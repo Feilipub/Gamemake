@@ -323,7 +323,7 @@ body.lan .sw2 .pvbox{position:sticky;top:0}
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 150, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '5.7.0', SAVE_V = 9;
+const GAME_V = '5.8.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -490,6 +490,19 @@ function itemIconURL(id) {
     case 'balde': p(2, 3, 8, 1, '#6a6a72'); p(2, 4, 8, 7, '#a8a8b0'); p(3, 5, 6, 2, '#f4f4f0'); p(1, 1, 10, 1, '#5a5a62'); break;
     case 'palma': p(5, 1, 3, 4, '#5a9a3a'); p(2, 4, 4, 5, '#6aaa44'); p(6, 5, 4, 5, '#5a9a3a'); p(3, 5, 1, 1, '#f0e0a0'); p(8, 7, 1, 1, '#f0e0a0'); p(5, 9, 2, 2, '#4a7a2a'); break;
     case 'silagem': sack('#3a6a3a', '#e8d080'); break;
+    case 'sorgo': sack('#d8c8a0', '#a8482a'); break; case 'capim': sack('#8ab060', '#3a7a2a'); break; case 'mandioca': sack('#c8a878', '#6a4422'); break; case 'esterco': sack('#6a4a2a', '#3a2410'); break; case 'adubo': sack('#e8e8e8', '#3a8a3a'); break;
+    case 'alface': p(2, 4, 8, 6, '#7ac850'); p(3, 3, 6, 1, '#a8e070'); p(5, 5, 2, 5, '#c8f090'); break;
+    case 'couve': p(2, 2, 8, 7, '#3a8a3a'); p(5, 2, 1, 9, '#8ac060'); p(5, 9, 2, 2, '#6a9a4a'); break;
+    case 'cheiro': for (let x = 3; x < 10; x += 2) p(x, 2, 1, 8, '#5ab040'); p(3, 8, 7, 2, '#c8e8a0'); break;
+    case 'tomate': p(3, 4, 6, 6, '#d83a2a'); p(4, 3, 4, 1, '#d83a2a'); p(5, 2, 2, 2, '#3a8a3a'); p(4, 5, 1, 2, '#f08070'); break;
+    case 'pimenta': p(3, 5, 3, 3, '#e8a020'); p(7, 4, 3, 4, '#d83a2a'); p(4, 4, 1, 1, '#3a8a3a'); p(8, 3, 1, 1, '#3a8a3a'); break;
+    case 'abobora': p(2, 4, 8, 6, '#e08a2a'); p(4, 4, 1, 6, '#c06a1a'); p(7, 4, 1, 6, '#c06a1a'); p(5, 2, 2, 2, '#5a7a2a'); break;
+    case 'feijaoV': p(2, 3, 2, 7, '#8ab040'); p(5, 2, 2, 8, '#7aa030'); p(8, 3, 2, 7, '#8ab040'); break;
+    case 'enxada': p(5, 1, 1, 10, '#8a5a2a'); p(2, 9, 6, 2, '#7a7a82'); break;
+    case 'regador': p(2, 4, 6, 6, '#3a8a5a'); p(8, 3, 3, 1, '#2a6a4a'); p(3, 2, 4, 1, '#2a6a4a'); break;
+    case 'foice': p(3, 5, 1, 6, '#8a5a2a'); p(3, 2, 6, 1, '#c8c8d0'); p(8, 3, 1, 3, '#c8c8d0'); break;
+    case 'pulverizador': p(3, 2, 6, 8, '#d0d0c8'); p(3, 2, 6, 2, '#3a6aa0'); p(9, 6, 2, 1, '#4a4a52'); break;
+    case 'defensivo': p(4, 1, 4, 2, '#2a2a2a'); p(3, 3, 6, 8, '#e0b030'); p(4, 5, 4, 3, '#2a2a2a'); break;
     default: if (IT[id] && IT[id].c === 'carne') meat('#c84a4a', '#f0e0c0'); else { p(2, 2, 8, 8, '#c8a050'); p(4, 4, 4, 4, '#8a6a30'); }
   }
   outline(g, 12, 12); u = c.toDataURL(); icCache.set(key, u); return u;
@@ -4000,12 +4013,13 @@ function dietOf(a) { // o que o animal come hoje e quanto isso rende (GMD real, 
   const need = Math.max(3, (a.wt || 200) * 0.05); if (a.rationKg) R.racao = 0.38 * Math.min(1, a.rationKg / need);
   if (S.silo2 && S.silo2[a.area] >= S.day) R.silagem = 0.3;
   if (S.palm && S.palm[a.area] >= S.day && !aguas) R.palma = 0.12;
+  if (S.capim && S.capim[a.area] >= S.day) R.capim = 0.16;
   if (a.age < 12 && a.maeId && !a.desm && !a.enj) R.leite = 0.3;
   if (a.area === 'conf' && built('cocho')) R.conf = 1.25;
   return R;
 }
 function gmdReal(a, B) {
-  const R = dietOf(a); let real = (R.pasto + R.sal + R.racao + R.silagem + R.palma);
+  const R = dietOf(a); let real = (R.pasto + R.sal + R.racao + R.silagem + R.palma + (R.capim || 0));
   if (R.leite) real = Math.max(real, 0.5) + R.leite; else if (a.age < 3) real = Math.max(real, 0.3);
   real *= R.conf * (B.gain || 1) * (0.8 + (a.gen || 50) / 250) * cl(a.hp / 100, 0.2, 1) * (1 + skill('pec') * 0.05) * (a.skills.includes('Ganho de Peso') ? 1.15 : 1) * (a.hv ? 1.1 : 1) * (a.cast || a.sex === 'F' ? 1 : 1.06);
   real *= Math.max(0.3, 1 - (a.carr || 0) * 0.004 - (a.verme || 0) * 0.005 - (a.mosca || 0) * 0.002) * (a.manca ? 0.8 : 1) * (a.sick ? 0.4 : 1);
@@ -4061,7 +4075,7 @@ function addInv(id, n, force) { n = n || 1; if (!force && IT[id] && invKg() + IT
 function useInv(id, n) { n = n || 1; if ((S.inv[id] || 0) < n) return false; S.inv[id] -= n; if (!S.inv[id]) delete S.inv[id]; return true; }
 const has = (id, n) => (S.inv[id] || 0) >= (n || 1);
 function depCap() { return 2000 + Object.values(S.lots).filter(l => l && l.done && l.b === 'silo').length * 3000; }
-function depKg() { return (S.dep.racao || 0) + (S.dep.milho || 0) + (S.dep.sal || 0); }
+function depKg() { let s = 0; for (const k of DEPKG) s += S.dep[k] || 0; return s; }
 function cartKgOf(v) { let k = 0; for (const i in v.cargo) k += (IT[i] ? IT[i].kg : 1) * v.cargo[i]; return k; }
 function cartKg() { let k = 0; for (const i in S.cart.cargo) k += (IT[i] ? IT[i].kg : 1) * S.cart.cargo[i]; return k; }
 const CART_CAP = 400;
@@ -4474,7 +4488,7 @@ function dayTick() { storyCheck(); regionDay(); missionDay(); socialDay();
     }
   }
   for (const m of born) { if (m.sp === 'boi' && startLabor(m)) continue; birthCalf(m); }
-  cattleDayAfter();
+  cattleDayAfter(); agroDay();
   // galinhas: pintinhos
   const hens = S.animals.filter(a => a.sp === 'galinha' && a.own === 'player'), cap = 10 + (built('galinheiro') ? 12 : 0);
   if (hens.some(h => h.sex === 'M') && hens.length < cap) for (const h of hens) if (h.sex === 'F' && h.skills.includes('Choca') && Math.random() < 0.08) { const c = mkAnimal('galinha', h.br, { age: 0, mae: h.n, x: h.x, y: h.y }); S.animals.push(c); toast('🐤 Nasceu um pintinho!'); break; }
@@ -4858,7 +4872,7 @@ Object.keys(ACTFX).forEach(k => { ACT_POSE[k] = ACTFX[k].pose; });
 const TOOLC = { vacina: '#4ac0d0', vacRaiva: '#d04040', vermifugo: '#8a5ad0', remedio: '#f0e0a0', soro: '#5ab05a', bruce: '#60c060' };
 // a cada quadro da ação: contato, partículas, sons e reação
 function actFxUpd(A, dt) {
-  const F = ACTFX[A.k]; if (!F) return; const a = A.a, u = A.t / A.dur;
+  const F = ACTFX[A.k]; if (!F) return; const a = A.a, u = A.t / A.dur; agroFx(A, dt, u);
   if (F.hit !== undefined && !A.fxHit && u >= F.hit) {
     A.fxHit = 1;
     if (a && F.react) a._fx = { pose: F.react, t0: drawT, until: drawT + (F.rt || 0.6) };
@@ -4895,6 +4909,7 @@ function drawActFX(A) {
     case 'pipette': { R(side ? (s > 0 ? hx : hx - 10) : hx, side ? hy : hy - 10, side ? 10 : 1, side ? 1 : 10, '#a8d8f0'); R(side ? (s > 0 ? hx - 2 : hx + 1) : hx - 1, side ? hy - 1 : hy, 2, 2, '#e8eef4'); break; }
     case 'rope': { if (!a) break; X.strokeStyle = '#c8a060'; X.lineWidth = 1; X.beginPath(); X.moveTo(hx, hy); X.quadraticCurveTo((hx + ix(a)) / 2, Math.max(hy, iy(a) - 10) + 6, ix(a) + (a.f || 1) * 8, iy(a) - 12); X.stroke(); break; }
     case 'yoke': { if (!a) break; const k = rigK(a), sp = RIG.spec(rigBreed(a)), nx = Math.round(ix(a) + (a.f || 1) * sp.L * 0.34 * k), ny = Math.round(iy(a) - sp.H * k - 2); R(nx - 1, ny - 1, 3, 9, '#6a4020'); R(nx, ny, 1, 8, '#9a6a38'); R(nx - 3, ny + 2, 1, 5, '#3a2410'); R(nx + 3, ny + 2, 1, 5, '#3a2410'); break; }
+    default: agroTool(F.tool, A, hx, hy, s, side, u, R);
   }
 }
 // reação do animal (sobrepõe a pose da IA)
@@ -6667,6 +6682,275 @@ A.feiraPick = v => { M.fsel = M.fsel === v ? null : v; renderModal(); };
 function feiraDeliver(a, price) { if (a.sp === 'cao' && myAnimals('cao').length >= 2) { say('Dois cães já bastam na fazenda!'); return false; } a.own = 'delivery'; a.x = a.y = -999; markBought(a, price); S.animals.push(a); S.delivery.push({ id: a.id, day: S.day + 1, to: a.sp === 'galinha' ? 'galin' : 'receb' }); if (a._calf) { const c = a._calf; delete a._calf; c.own = 'delivery'; c.x = c.y = -999; c.maeId = a.id; markBought(c, 0); S.animals.push(c); S.delivery.push({ id: c.id, day: S.day + 1, to: 'receb' }); } return true; }
 A.feiraBuy = v => { const [i, j] = v.split('|').map(Number), lot = S.feira.lots[i], a = lot && lot.animals[j]; if (!a) return; const pr = feiraPrice(a); if (!pay(pr, 'Feira: ' + a.n + ' (' + breedOf(a).n + ')')) return; if (!feiraDeliver(a, pr - (a._calf ? 0 : 0))) return; lot.animals.splice(j, 1); M.fsel = null; toast('🔨 ' + a.n + ' comprado(a)! Chega amanhã cedo.'); renderModal(); };
 A.feiraLote = v => { const lot = S.feira.lots[+v]; if (!lot) return; const tot = lot.animals.reduce((s, a) => s + feiraPrice(a), 0) * 0.97; if (!pay(tot, 'Feira: lote de ' + lot.animals.length + ' ' + lot.kind.toLowerCase())) return; const n = lot.animals.length; lot.animals.forEach(a => feiraDeliver(a, feiraPrice(a) * 0.97)); lot.animals = []; M.fsel = null; toast('🔨 Lote de ' + n + ' arrematado! Chega amanhã cedo no Recebimento.'); renderModal(); };
+/* ============ SUPER MEGA ATUALIZAÇÃO DA AGRICULTURA: horta de consumo e roça para ração ============ */
+Object.assign(IT, {
+  alface: { i: '', n: 'Alface (pé)', kg: 0.3, p: 3, en: 2, fo: 8, d: 'Da horta: salada fresquinha.', c: 'comida' },
+  couve: { i: '', n: 'Couve (maço)', kg: 0.3, p: 4, en: 3, fo: 9, d: 'Couve manteiga da horta, boa refogada.', c: 'comida' },
+  cheiro: { i: '', n: 'Cheiro-verde (maço)', kg: 0.1, p: 2.5, en: 1, fo: 3, d: 'Coentro e cebolinha: o tempero do sertão.', c: 'comida' },
+  tomate: { i: '', n: 'Tomate', kg: 0.15, p: 2.5, en: 2, fo: 6, d: 'Tomate maduro do pé.', c: 'comida' },
+  pimenta: { i: '', n: 'Pimenta-de-cheiro (punhado)', kg: 0.1, p: 3, en: 1, fo: 2, d: 'Arde pouco e perfuma muito.', c: 'comida' },
+  abobora: { i: '', n: 'Abóbora (jerimum)', kg: 3, p: 9, en: 8, fo: 30, d: 'Jerimum grande: dá para a família inteira.', c: 'comida' },
+  feijaoV: { i: '', n: 'Feijão-verde (porção)', kg: 0.5, p: 6, en: 6, fo: 20, d: 'Feijão-de-corda colhido verde, o do baião de dois.', c: 'comida' },
+  sorgo: { i: '', n: 'Sorgo (saco 20kg)', kg: 20, p: 30, d: 'Grão de sorgo: a forrageira tritura em ração.', c: 'trato' },
+  capim: { i: '', n: 'Capim picado (saco 30kg)', kg: 30, p: 14, d: 'Capim-elefante da capineira, picado para o cocho.', c: 'trato' },
+  mandioca: { i: '', n: 'Mandioca (saco 25kg)', kg: 25, p: 35, d: 'Raiz da roça: vira raspa (ração) na forrageira.', c: 'trato' },
+  esterco: { i: '', n: 'Esterco curtido (saco 25kg)', kg: 25, p: 10, d: 'Do curral: o melhor adubo para horta e roça.', c: 'trato' },
+  adubo: { i: '', n: 'Adubo NPK (saco 25kg)', kg: 25, p: 120, d: 'Adubo químico: +30% de colheita num talhão ou na horta toda.', c: 'trato' },
+  defensivo: { i: '', n: 'Defensivo (frasco)', kg: 0.5, p: 45, d: 'Calda contra lagarta e pulgão. Use com o pulverizador: 1 frasco por canteiro ou talhão.', c: 'vet' },
+  enxada: { i: '', n: 'Enxada', kg: 2, p: 60, d: 'Para capinar e preparar a terra.', c: 'ferr' },
+  regador: { i: '', n: 'Regador', kg: 1, p: 45, d: 'Água da cisterna para regar a horta.', c: 'ferr' },
+  foice: { i: '', n: 'Foice', kg: 1.5, p: 70, d: 'Corta milho, sorgo e capim mais rápido que o facão.', c: 'ferr' },
+  pulverizador: { i: '', n: 'Pulverizador costal', kg: 4, p: 220, d: 'Bomba de costas para aplicar o defensivo contra praga.', c: 'ferr' }
+});
+const DEPKG = ['racao', 'milho', 'sal', 'silagem', 'palma', 'sorgo', 'capim', 'mandioca', 'esterco'];
+const CROPS = {
+  alface: { n: 'Alface', k: 'h', days: 2, item: 'alface', q: 6, seed: 8, c: '#7ac850', d: 'Rápida e fácil: em 2 dias.' },
+  couve: { n: 'Couve', k: 'h', days: 3, item: 'couve', q: 5, seed: 10, regrow: 1.5, cuts: 3, c: '#3a8a3a', d: 'Colhe as folhas 3 vezes.' },
+  cheiro: { n: 'Cheiro-verde', k: 'h', days: 2, item: 'cheiro', q: 6, seed: 6, c: '#5ab040', d: 'Coentro e cebolinha.' },
+  tomate: { n: 'Tomate', k: 'h', days: 4, item: 'tomate', q: 12, seed: 15, c: '#d83a2a', pr: 1.4, d: 'Dá muito, mas a praga gosta.' },
+  pimenta: { n: 'Pimenta-de-cheiro', k: 'h', days: 4, item: 'pimenta', q: 10, seed: 12, regrow: 2, cuts: 3, c: '#e8a020', d: 'Colhe 3 vezes.' },
+  abobora: { n: 'Abóbora (jerimum)', k: 'h', days: 5, item: 'abobora', q: 3, seed: 10, c: '#e08a2a', d: 'Rama que espalha no canteiro.' },
+  feijao: { n: 'Feijão-de-corda', k: 'h', days: 3, item: 'feijaoV', q: 6, seed: 10, c: '#4a9a3a', d: 'Colhido verde, para o baião de dois.' },
+  milho: { n: 'Milho', k: 'r', days: 6, item: 'milho', kg: 220, seed: 90, sil: 0.72, silKg: 600, c: '#e8c040', pr: 1.5, d: 'Grão para a forrageira fazer ração, ou verde para silagem.' },
+  sorgo: { n: 'Sorgo', k: 'r', days: 5, item: 'sorgo', kg: 200, seed: 70, sil: 0.7, silKg: 520, dry: 0.85, c: '#a8482a', d: 'Aguenta a seca melhor que o milho. Grão ou silagem.' },
+  capim: { n: 'Capim-elefante', k: 'r', days: 4, item: 'capim', kg: 480, seed: 120, regrow: 3, cuts: 99, dry: 0.6, c: '#4a9a3a', d: 'Capineira: corta, rebrota e corta de novo. Capim picado para o cocho.' },
+  palma: { n: 'Palma forrageira', k: 'r', days: 8, item: 'palma', kg: 600, seed: 150, regrow: 5, cuts: 99, dry: 1.05, c: '#6aaa44', d: 'O salva-vidas da seca: cresce sem chuva e rebrota sempre.' },
+  mandioca: { n: 'Mandioca', k: 'r', days: 9, item: 'mandioca', kg: 300, seed: 60, dry: 0.8, c: '#3a7a3a', d: 'Raiz forte: a forrageira faz raspa para o gado.' }
+};
+const HORTA = { r: [21, 33, 27, 41] };
+const HORTA_BEDS = [[21, 33, 23, 34], [25, 33, 27, 34], [21, 36, 23, 37], [25, 36, 27, 37], [21, 39, 23, 40], [25, 39, 27, 40]];
+const ST_N = { mato: 'no mato', pronto: 'terra pronta', plant: 'crescendo', maduro: 'pronto para colher', perdido: 'perdido' };
+BUILD.roca = { n: 'Roça (preparo do solo)', p: 2500, mat: { arame: 1 }, days: 1, req: [], f: 'Trator ara o lote e divide em 3 talhões para plantar milho, sorgo, capim, palma e mandioca.' };
+function agroPlots() {
+  const L = HORTA_BEDS.map((r, i) => ({ id: 'h' + (i + 1), r, kind: 'h', nm: 'Canteiro ' + (i + 1) }));
+  for (const k in LOTS) { const l = S.lots[k]; if (!l || l.b !== 'roca' || !l.done) continue; const r = LOTS[k].r; for (let i = 0; i < 3; i++) L.push({ id: k + (i + 1), r: [r[0], r[1] + i * 2, r[2], r[1] + i * 2 + 1], kind: 'r', nm: 'Talhão ' + k + (i + 1), lot: k }); }
+  return L;
+}
+function initAgro(s) { if (!s.agro) s.agro = { plots: {}, seeds: { alface: 1, cheiro: 1 }, seen: {}, plow: {} }; if (!s.agroV) { s.agroV = 1; s.inv = s.inv || {}; s.inv.enxada = s.inv.enxada || 1; s.inv.regador = s.inv.regador || 1; } }
+function plotSt(id) { const P0 = S.agro.plots; if (!P0[id]) P0[id] = { st: id[0] === 'h' ? 'mato' : 'pronto', crop: null, prog: 0, mato: id[0] === 'h' ? 0.9 : 0, praga: 0, adub: 0 }; return P0[id]; }
+function agroMap() { // a horta ocupa o gramado ao lado do terreiro: tira as moitas de lá
+  const [x0, y0, x1, y1] = HORTA.r; for (let i = PROPS.length - 1; i >= 0; i--) { const q = PROPS[i], tx = Math.floor(q.x / TS), ty = Math.floor(q.y / TS); if (tx >= x0 - 1 && tx <= x1 + 1 && ty >= y0 - 1 && ty <= y1 + 1) { PROPS.splice(i, 1); obj[gi(tx, ty)] = 0; } }
+}
+function cropRate(pl, p, C) {
+  let r = 1; const rain = isRain();
+  if (pl.kind === 'h') r = (p.w === S.day || rain) ? 1 : 0.12;
+  else r = season() === 0 ? 1 : (C.dry || 0.55);
+  if (rain && pl.kind === 'r') r *= 1.15; if (p.adub) r *= 1.1; if (p.mato > 0.5) r *= 0.6; r *= 1 - (p.praga || 0) * 0.5; return r;
+}
+let agroT = 0;
+function agroTick(gm) {
+  if (!S || !S.agro || (agroT += gm) < 2) return; const g = agroT; agroT = 0;
+  for (const pl of agroPlots()) { const p = plotSt(pl.id); if (isRain() && pl.kind === 'h') p.w = S.day; if (p.st !== 'plant') continue; const C = CROPS[p.crop]; if (!C) continue;
+    p.prog = Math.min(1, p.prog + g / 1440 / C.days * cropRate(pl, p, C));
+    if (p.prog >= 1) { p.st = 'maduro'; p.dMat = S.day; toast('🌾 ' + pl.nm + ': ' + C.n.toLowerCase() + ' pronto para colher!'); } }
+}
+function agroDay() {
+  if (!S.agro) return;
+  for (const pl of agroPlots()) { const p = plotSt(pl.id), C = CROPS[p.crop];
+    if (p.st === 'pronto' || p.st === 'plant') p.mato = cl((p.mato || 0) + 0.09, 0, 1);
+    if (p.st === 'plant' && pl.kind === 'h' && p.w < S.day - 1 && !isRain()) { p.dry = (p.dry || 0) + 1; if (p.dry >= 2) { p.st = 'perdido'; toast('🥀 ' + pl.nm + ': ' + C.n.toLowerCase() + ' secou sem água. Regue a horta todo dia!'); } } else p.dry = 0;
+    if (p.st === 'plant' && p.prog > 0.2 && C && Math.random() < (pl.kind === 'r' ? 0.08 : 0.06) * (C.pr || 1) * (season() === 0 ? 1.2 : 0.8)) { p.praga = Math.min(1, (p.praga || 0) + 0.35); if (!S.agro.seen.praga) { S.agro.seen.praga = 1; if (cenasOn()) S.pend.push({ k: 'praga', id: pl.id }); } toast('🐛 Praga no ' + pl.nm + ' (' + C.n.toLowerCase() + ')! Pulverize com defensivo.'); }
+    if (p.st === 'maduro' && C && !C.regrow && S.day - (p.dMat || S.day) >= 4) { p.st = 'perdido'; toast('🥀 ' + pl.nm + ': passou do ponto e perdeu a colheita.'); }
+  }
+}
+function plotQ(p) { return (1 + (p.adub || 0) * 0.3) * (1 - (p.praga || 0) * 0.6) * (1 - (p.mato || 0) * 0.3) * rnd(0.9, 1.1) * (1 + skill('lid') * 0.03); }
+const plotC = pl => [(pl.r[0] + pl.r[2] + 1) / 2 * TS, (pl.r[3] + 1) * TS + 2];
+function plotAct(pl, key, dur, fn) { closeModal(); const [x, y] = plotC(pl); approach({ x, y }, 12, () => act(key, dur, { x, y: y - 10 }, fn, { zoom: 1.3 }), pl.nm); }
+function openPlot(id) {
+  const pl = agroPlots().find(q => q.id === id); if (!pl) return; const p = plotSt(id);
+  if (pl.kind === 'h' && !S.agro.seen.horta && cenasOn()) { S.agro.seen.horta = 1; return csHorta(); }
+  showModal((pl.kind === 'h' ? '🥬 ' : '🌽 ') + pl.nm + (pl.kind === 'h' ? ' — Horta' : ' — Roça'), null, null, () => {
+    const C = CROPS[p.crop]; let h = `<p>Situação: <b>${ST_N[p.st]}</b>${C ? ' · ' + C.n : ''}</p>`;
+    if (p.st === 'plant' && C) { const left = (1 - p.prog) * C.days / Math.max(0.1, cropRate(pl, p, C)); h += `<div class="row sp">${bar(p.prog * 100, 'y')}<span>${Math.round(p.prog * 100)}% · ~${left < 1 ? Math.round(left * 24) + ' h' : left.toFixed(1) + ' dias'}</span></div>`; }
+    h += `<p class="mut">Mato ${Math.round((p.mato || 0) * 100)}%${p.praga ? ' · <b style="color:#b02020">praga ' + Math.round(p.praga * 100) + '%</b>' : ''}${p.adub ? ' · adubado' : ''}${pl.kind === 'h' ? ' · ' + (p.w === S.day || isRain() ? '💧 regado hoje' : '<b>sem água hoje</b>') : ' · sequeiro (' + (season() === 0 ? 'águas: cresce bem' : 'seca: cresce devagar') + ')'}</p>`;
+    h += '<div class="row">';
+    if (p.st === 'mato' || p.st === 'perdido' || (p.mato || 0) > 0.3) h += btn('Capinar' + (p.st === 'mato' || p.st === 'perdido' ? ' e preparar a terra' : ''), 'agCap', id, !has('enxada'));
+    if (p.st === 'pronto' && !p.adub) h += btn('Adubar com esterco (' + Math.round(S.dep.esterco || 0) + ' kg no depósito)', 'agAdub', id + '|esterco', (S.dep.esterco || 0) < 25 && !has('esterco')) + btn('Adubo NPK', 'agAdub', id + '|adubo', !has('adubo'));
+    if (pl.kind === 'h' && (p.st === 'plant' || p.st === 'pronto')) h += btn('Regar este canteiro', 'agWat', id, !has('regador') || p.w === S.day) + btn('Regar a horta toda', 'agWatAll', '', !has('regador'));
+    if (p.st === 'plant' && p.praga > 0) h += btn('Pulverizar defensivo', 'agSpr', id, !has('pulverizador') || !has('defensivo'));
+    if (p.st === 'plant' && C && C.sil && p.prog >= C.sil) h += btn('Colher verde para silagem', 'agSil', id, !has('foice') && !has('facao'));
+    if (p.st === 'maduro') h += btn('Colher ' + C.n.toLowerCase(), 'agHarv', id, pl.kind === 'r' && !has('foice') && !has('facao'));
+    h += '</div>';
+    if (p.st === 'pronto') { const L = Object.keys(CROPS).filter(c => CROPS[c].k === pl.kind); h += '<h3>Plantar</h3>' + L.map(c => { const Cc = CROPS[c], n = S.agro.seeds[c] || 0; return `<div class="card"><div class="row sp"><span><b>${Cc.n}</b> · ${Cc.days} dias${Cc.regrow ? ' · rebrota' : ''}<br><span class="mut">${Cc.d} Colheita: ${Cc.kg ? '≈' + Cc.kg + ' kg' : '≈' + Cc.q + ' un.'}</span></span>${btn('Plantar (' + n + ')', 'agPlant', id + '|' + c, !n)}</div></div>`; }).join('') + '<p class="mut">Sementes e mudas na Casa do Agro › Sementes.</p>'; }
+    if (!has('enxada')) h += '<p class="mut">Compre uma enxada na Casa do Agro.</p>';
+    return h;
+  }, 'farm');
+}
+const plotById = id => agroPlots().find(q => q.id === id);
+A.agCap = id => { const pl = plotById(id), p = plotSt(id); plotAct(pl, 'hoe', pl.kind === 'h' ? 2.2 : 3.6, () => { p.mato = 0; if (p.st === 'mato' || p.st === 'perdido') { p.st = 'pronto'; p.crop = null; p.prog = 0; p.praga = 0; } P.en = Math.max(0, P.en - (pl.kind === 'h' ? 3 : 6)); toast('🌱 ' + pl.nm + ' capinado' + (p.st === 'pronto' ? ': terra pronta para plantar.' : '.')); }); };
+A.agAdub = v => { const [id, k] = v.split('|'), pl = plotById(id), p = plotSt(id); plotAct(pl, 'manure', 1.8, () => { if (k === 'esterco') { if ((S.dep.esterco || 0) >= 25) S.dep.esterco -= 25; else if (!useInv('esterco')) return; } else if (!useInv('adubo')) return; p.adub = 1; toast('💩 ' + pl.nm + ' adubado: +30% na colheita.'); }); };
+A.agPlant = v => { const [id, c] = v.split('|'), pl = plotById(id), p = plotSt(id); if (!(S.agro.seeds[c] > 0)) return; plotAct(pl, 'sow', pl.kind === 'h' ? 1.8 : 3, () => { S.agro.seeds[c]--; p.st = 'plant'; p.crop = c; p.prog = 0; p.praga = 0; p.w = pl.kind === 'h' ? p.w : S.day; p.cuts = CROPS[c].cuts || 1; P.en = Math.max(0, P.en - 3); toast('🌱 ' + CROPS[c].n + ' plantado no ' + pl.nm + '.' + (pl.kind === 'h' ? ' Regue todo dia!' : '')); }); };
+A.agWat = id => { const pl = plotById(id), p = plotSt(id); plotAct(pl, 'waterCan', 1.6, () => { if (S.res < 2 && !built('poco')) return say('A cisterna está quase seca.'); S.res = Math.max(0, S.res - 0.5); p.w = S.day; toast('💧 ' + pl.nm + ' regado.'); }); };
+A.agWatAll = () => { const L = agroPlots().filter(q => q.kind === 'h' && ['plant', 'pronto'].includes(plotSt(q.id).st)); closeModal(); const [x, y] = [24.5 * TS, 38 * TS]; approach({ x, y }, 12, () => act('waterCan', 1 + L.length * 0.6, { x: x - 10, y: y - 8 }, () => { L.forEach(q => { plotSt(q.id).w = S.day; }); S.res = Math.max(0, S.res - L.length * 0.5); P.en = Math.max(0, P.en - 2); toast('💧 Horta regada: ' + L.length + ' canteiro(s).'); }, { zoom: 1.2 }), 'Horta'); };
+A.agSpr = id => { const pl = plotById(id), p = plotSt(id); plotAct(pl, 'sprayer', 2.4, () => { if (!useInv('defensivo')) return; p.praga = 0; toast('🧴 Praga controlada no ' + pl.nm + '.'); }); };
+function harvestPlot(pl, p, sil) {
+  const C = CROPS[p.crop], q = plotQ(p); let msg;
+  if (sil) { const kg = Math.round(C.silKg * q); S.dep.silagem = (S.dep.silagem || 0) + kg; msg = kg + ' kg de silagem de ' + C.n.toLowerCase(); p.st = 'mato'; p.mato = 0.3; p.crop = null; p.prog = 0; }
+  else if (pl.kind === 'h') { const n = Math.max(1, Math.round(C.q * q)); addInv(C.item, n, true); msg = n + ' × ' + IT[C.item].n.split(' (')[0].toLowerCase(); }
+  else { const kg = Math.round(C.kg * q); S.dep[C.item] = (S.dep[C.item] || 0) + kg; msg = kg + ' kg de ' + C.n.toLowerCase() + ' no depósito'; }
+  if (!sil) { if (C.regrow && (p.cuts || 1) > 1) { p.cuts = (p.cuts || 1) - 1; p.st = 'plant'; p.prog = Math.max(0, 1 - C.regrow / C.days); } else { p.st = 'mato'; p.mato = 0.3; p.crop = null; p.prog = 0; } }
+  p.adub = 0; p.praga = 0; S.stats.colheitas = (S.stats.colheitas || 0) + 1; if (depKg() > depCap()) toast('⚠️ Depósito acima da capacidade: construa um Silo.');
+  return msg;
+}
+A.agHarv = id => { const pl = plotById(id), p = plotSt(id), C = CROPS[p.crop]; plotAct(pl, pl.kind === 'h' ? 'pick' : 'scythe', pl.kind === 'h' ? 2 : 3.4, () => { const crop = p.crop; const msg = harvestPlot(pl, p); P.en = Math.max(0, P.en - (pl.kind === 'h' ? 2 : 8)); AU.chime(); if (pl.kind === 'r' && cenasOn()) return csColheita(pl, crop, msg); toast('🧺 Colheu ' + msg + '.'); }); };
+A.agSil = id => { const pl = plotById(id), p = plotSt(id); plotAct(pl, 'scythe', 3.4, () => { const crop = p.crop; const msg = harvestPlot(pl, p, true); P.en = Math.max(0, P.en - 8); if (cenasOn()) return csSilagem(pl, crop, msg); toast('🌽 Ensilado: ' + msg + '.'); }); };
+/* ---------- desenho: canteiros, talhões e plantas por estágio ---------- */
+function plantSpr(c, stg, v) {
+  return cached('pl|' + c + '|' + stg + '|' + v, 16, 28, g => {
+    const p = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); }, B = 26, C = CROPS[c], gC = '#4a9a3a', gL = '#7ac850', gD = '#2f6a2a', dry = '#a88a4a', dryD = '#7a5a30';
+    if (stg === 0) { p(5 + v, B - 1, 2, 1, '#3a2414'); p(10 - v, B - 1, 2, 1, '#3a2414'); return; }
+    if (stg === 5) { p(7, B - 6, 1, 6, dryD); p(5, B - 5, 2, 1, dry); p(8, B - 4, 3, 1, dry); p(4, B - 1, 8, 1, dryD); return; }
+    const s = stg; // 1 broto, 2 médio, 3 quase, 4 maduro
+    switch (c) {
+      case 'alface': { const r = s === 1 ? 2 : s === 2 ? 3 : 4; p(8 - r, B - r, r * 2, r, gL); p(8 - r + 1, B - r - 1, r * 2 - 2, 1, gL); p(8 - 1, B - r, 2, r, '#a8e070'); p(8 - r, B - 1, r * 2, 1, gC); break; }
+      case 'cheiro': { const h = s * 2 + 1; for (let k = 0; k < 4; k++) p(5 + k * 2, B - h + (k % 2), 1, h, k % 2 ? gC : gL); break; }
+      case 'couve': { const h = s * 3; p(7, B - h, 2, h, '#6a9a4a'); for (let k = 0; k < s; k++) { p(3, B - 3 - k * 3, 5, 2, gC); p(9, B - 4 - k * 3, 5, 2, gC); } p(5, B - h - 1, 6, 2, gL); break; }
+      case 'tomate': { const h = 4 + s * 3; p(12, B - h - 2, 1, h + 2, '#8a5a2a'); p(7, B - h, 2, h, gD); for (let k = 0; k < s; k++) { p(4, B - 4 - k * 3, 4, 2, gC); p(9, B - 5 - k * 3, 4, 2, gC); } if (s >= 3) { p(4, B - 7, 2, 2, s === 4 ? '#e03a2a' : '#9ac040'); p(10, B - 10, 2, 2, s === 4 ? '#e03a2a' : '#9ac040'); p(6, B - 12, 2, 2, s === 4 ? '#d83020' : '#b0c040'); } break; }
+      case 'pimenta': { const r = 2 + s; p(8 - r, B - r * 2 + 1, r * 2, r * 2 - 1, gC); p(8 - r + 1, B - r * 2, r * 2 - 2, 1, gL); p(7, B - 2, 2, 2, gD); if (s >= 3) for (let k = 0; k < 4; k++) p(8 - r + 1 + (k * 3) % (r * 2 - 1), B - r * 2 + 2 + (k * 2) % (r * 2 - 2), 1, 2, s === 4 ? (k % 2 ? '#e8a020' : '#d83a2a') : '#7ac040'); break; }
+      case 'abobora': { p(1, B - 2, 14, 1, gD); p(2, B - 3, 4, 2, gC); p(10, B - 4, 4, 3, gC); if (s >= 2) p(6, B - 5, 4, 3, gL); if (s >= 3) { const big = s === 4; p(big ? 3 : 4, B - (big ? 6 : 4), big ? 8 : 5, big ? 5 : 3, big ? '#e08a2a' : '#c8b040'); if (big) { p(5, B - 6, 1, 5, '#c06a1a'); p(8, B - 6, 1, 5, '#c06a1a'); p(6, B - 7, 2, 1, '#5a7a2a'); } } break; }
+      case 'feijao': { const h = 3 + s * 3; p(7, B - h, 1, h, gD); for (let k = 0; k < s + 1; k++) { p(4, B - 3 - k * 3, 3, 2, gC); p(8, B - 4 - k * 3, 3, 2, gL); } if (s >= 3) { p(10, B - 8, 1, 4, '#8ab040'); p(5, B - 11, 1, 4, '#8ab040'); } break; }
+      case 'milho': case 'sorgo': { const h = [0, 5, 11, 17, 21][s], mi = c === 'milho'; p(7, B - h, 2, h, mi ? '#5a9a3a' : '#6a8a3a'); for (let k = 0; k < Math.min(4, s + 1); k++) { const y = B - 3 - k * 4; p(k % 2 ? 9 : 2, y, 5, 1, gC); p(k % 2 ? 13 : 1, y + 1, 2, 1, gD); } if (s >= 3) { if (mi) { p(9, B - 12, 2, 5, s === 4 ? '#e8c040' : '#a8c060'); p(9, B - 13, 2, 1, '#c8a060'); p(7, B - h - 2, 2, 3, '#d8c890'); } else { p(6, B - h - 4, 4, 5, s === 4 ? '#a8482a' : '#8a7a3a'); p(7, B - h - 5, 2, 1, '#c86a3a'); } } break; }
+      case 'capim': { const h = [0, 5, 10, 15, 19][s]; for (let k = 0; k < 6; k++) { const x = 2 + k * 2, hh = h - (k % 3) * 2; p(x, B - hh, 1, hh, k % 2 ? gC : gD); p(x + (k % 2 ? 1 : -1), B - hh, 1, 2, gL); } break; }
+      case 'palma': { const n = s + 1, pc = '#6aaa44', pd = '#4a8a34'; p(5, B - 6, 6, 6, pc); if (n > 2) { p(2, B - 11, 5, 5, pc); p(9, B - 12, 5, 6, pc); } if (n > 3) { p(5, B - 16, 5, 5, pc); } if (n > 4) { p(10, B - 18, 4, 5, pc); p(1, B - 16, 4, 4, pc); } for (let k = 0; k < 5; k++) p(3 + k * 2, B - 4 - (k * 3) % 12, 1, 1, '#e8e8a0'); p(5, B - 1, 6, 1, pd); if (s === 4) p(6, B - 19, 2, 2, '#e85a8a'); break; }
+      case 'mandioca': { const h = [0, 5, 10, 15, 18][s]; p(7, B - h, 1, h, '#a06a4a'); p(9, B - h + 2, 1, h - 2, '#a06a4a'); if (s >= 2) for (let k = 0; k < 5; k++) { p(3 + k * 2, B - h - (k % 2), 2, 1, gC); p(4 + k * 2, B - h + 1, 1, 2, gD); } if (s === 4) { p(4, B - 1, 3, 1, '#8a5a2a'); p(9, B - 1, 3, 1, '#8a5a2a'); } break; }
+    }
+  });
+}
+function plantStage(p) { if (p.st === 'perdido') return 5; if (p.st === 'maduro') return 4; const u = p.prog || 0; return u < 0.06 ? 0 : u < 0.33 ? 1 : u < 0.66 ? 2 : 3; }
+function drawSoil(pl, p) {
+  const [x0, y0, x1, y1] = pl.r, X0 = x0 * TS, Y0 = y0 * TS, W0 = (x1 - x0 + 1) * TS, H0 = (y1 - y0 + 1) * TS, R = (x, y, w, h, c) => { X.fillStyle = c; X.fillRect(Math.round(x), Math.round(y), w, h); };
+  const wet = pl.kind === 'h' && (p.w === S.day || isRain()), plowK = pl.lot && S.agro.plow[pl.lot] !== undefined ? S.agro.plow[pl.lot] : 1;
+  if (pl.kind === 'h') { R(X0 - 2, Y0 - 2, W0 + 4, H0 + 4, '#7a4a22'); R(X0 - 2, Y0 - 2, W0 + 4, 1, '#a8703a'); }
+  if (p.st === 'mato' && pl.kind === 'h') R(X0, Y0, W0, H0, '#7a6a3a'); else R(X0, Y0, W0 * (pl.kind === 'r' ? plowK : 1), H0, wet ? '#4a3020' : '#6e4a2e');
+  if (p.st !== 'mato' || pl.kind === 'r') for (let y = Y0 + 3; y < Y0 + H0; y += 4) R(X0, y, W0 * (pl.kind === 'r' ? plowK : 1), 1, wet ? '#3a2418' : '#5a3a22');
+  const m = p.mato || 0; if (m > 0.05) for (let i = 0; i < W0 * H0 / 22 * m; i++) { const x = X0 + ((i * 37) % W0), y = Y0 + ((i * 53) % H0); R(x, y, 1, 2, i % 3 ? '#6a9a3a' : '#8ab040'); R(x + 1, y + 1, 1, 1, '#4a7a2a'); }
+}
+function drawPlants(pl, p, row) {
+  const st = plantStage(p), c = p.crop; if (!c) return; const y = (row + 1) * TS, step = pl.kind === 'h' ? 8 : 8;
+  for (let x = pl.r[0] * TS + 1; x < (pl.r[2] + 1) * TS - 6; x += step) { const v = ((x >> 3) + row) % 3; X.drawImage(plantSpr(c, st, v), Math.round(x - 4), y - 28 + (pl.kind === 'h' ? -1 : 0)); }
+  if (p.praga > 0.2 && st >= 1 && st <= 4) { X.fillStyle = '#2a3a14'; for (let k = 0; k < 4 * p.praga; k++) { const t = drawT * 2 + k * 1.7; X.fillRect(Math.round(pl.r[0] * TS + ((k * 29 + Math.floor(t)) % ((pl.r[2] - pl.r[0] + 1) * TS))), Math.round(y - 8 - (k % 3) * 3 + Math.sin(t) * 1), 2, 1); } }
+}
+function drawHortaFrame() {
+  const [x0, y0, x1, y1] = HORTA.r, X0 = x0 * TS - 6, Y0 = y0 * TS - 6, X1 = (x1 + 1) * TS + 6, Y1 = (y1 + 1) * TS + 4, R = (x, y, w, h, c) => { X.fillStyle = c; X.fillRect(Math.round(x), Math.round(y), w, h); };
+  // cerquinha de varas com porteirinha embaixo
+  for (let x = X0; x <= X1; x += 8) { R(x, Y0 - 6, 2, 8, '#7a5a34'); if (!(x > 24 * TS - 10 && x < 25 * TS + 6)) R(x, Y1 - 6, 2, 8, '#7a5a34'); }
+  for (let y = Y0; y <= Y1; y += 8) { R(X0, y - 6, 2, 8, '#7a5a34'); R(X1, y - 6, 2, 8, '#7a5a34'); }
+  R(X0, Y0 - 4, X1 - X0 + 2, 1, '#9a7a4a'); R(X0, Y0 - 1, X1 - X0 + 2, 1, '#8a6a40');
+  R(X0, Y1 - 4, 24 * TS - 12 - X0, 1, '#9a7a4a'); R(25 * TS + 6, Y1 - 4, X1 - 25 * TS - 4, 1, '#9a7a4a');
+  // espantalho
+  const ex = X0 - 10, ey = Y0 + 20; R(ex, ey - 22, 1, 22, '#6a4422'); R(ex - 6, ey - 17, 13, 1, '#6a4422'); R(ex - 3, ey - 16, 7, 8, '#b03a30'); R(ex - 2, ey - 22, 5, 5, '#e8d8a8'); R(ex - 4, ey - 24, 9, 2, '#d8b860'); R(ex - 2, ey - 26, 5, 2, '#d8b860'); R(ex - 1, ey - 20, 1, 1, '#2a1a10'); R(ex + 1, ey - 20, 1, 1, '#2a1a10'); R(ex - 6, ey - 17, 1, 4, '#d8b860'); R(ex + 6, ey - 17, 1, 4, '#d8b860');
+  // placa
+  R(X1 + 4, Y1 - 18, 14, 8, '#e8dcc0'); R(X1 + 10, Y1 - 10, 2, 10, '#6a4422'); R(X1 + 6, Y1 - 15, 2, 2, '#4a9a3a'); R(X1 + 9, Y1 - 16, 2, 3, '#4a9a3a'); R(X1 + 12, Y1 - 15, 2, 2, '#d83a2a');
+}
+function tractorDraw(t) { const x = Math.round(t.x), y = Math.round(t.y), f = t.f || 1, R = (dx, dy, w, h, c) => { X.fillStyle = c; X.fillRect(f > 0 ? x + dx : x - dx - w, y + dy, w, h); };
+  R(-26, -5, 8, 3, '#5a5a62'); R(-24, -3, 1, 3, '#3a3a40'); R(-20, -3, 1, 3, '#3a3a40'); // arado
+  R(-14, -14, 20, 8, '#c83a2a'); R(-14, -14, 20, 2, '#e05a40'); R(2, -12, 8, 6, '#c83a2a'); R(-10, -22, 8, 8, '#2a2a30'); R(-9, -21, 6, 6, '#9ac8e0'); R(6, -20, 1, 6, '#3a3a40');
+  R(-16, -12, 10, 12, '#1a1a1e'); R(-13, -9, 4, 6, '#5a5a62'); R(4, -6, 6, 6, '#1a1a1e'); R(6, -4, 2, 2, '#5a5a62');
+  R(-8, -27, 4, 5, '#3a2a1a'); R(-9, -28, 6, 1, '#5a3a1a'); }
+function drawAgro(add, inV) {
+  if (!S.agro) return;
+  const vis = r => inV((r[0] + r[2] + 1) / 2 * TS, (r[1] + r[3] + 1) / 2 * TS, 180);
+  if (vis(HORTA.r)) add(HORTA.r[1] * TS - 8, drawHortaFrame, (HORTA.r[0] + HORTA.r[2] + 1) / 2 * TS, { w: 160, h: 180, flat: 1 });
+  for (const pl of agroPlots()) { if (!vis(pl.r)) continue; const p = plotSt(pl.id), cx = (pl.r[0] + pl.r[2] + 1) / 2 * TS;
+    add(pl.r[1] * TS, () => drawSoil(pl, p), cx, { w: 140, h: 60, flat: 1 });
+    if (p.crop && (p.st === 'plant' || p.st === 'maduro' || p.st === 'perdido')) for (let row = pl.r[1]; row <= pl.r[3]; row++) add((row + 1) * TS - 1, () => drawPlants(pl, p, row), cx, { w: 140, h: 60 }); }
+  if (S.agro._trac) { const t = S.agro._trac; add(t.y, () => tractorDraw(t), t.x, { w: 80, h: 60 }); }
+}
+function agroInteractables(add) {
+  if (!S.agro || P.mnt || P.cart) return;
+  for (const pl of agroPlots()) { const p = plotSt(pl.id), [x, y] = plotC(pl), C = CROPS[p.crop]; const lbl = (pl.kind === 'h' ? '🥬 ' : '🌽 ') + pl.nm + (C ? ': ' + C.n.toLowerCase() + (p.st === 'maduro' ? ' (colher!)' : p.st === 'plant' ? ' ' + Math.round(p.prog * 100) + '%' : '') : p.st === 'mato' ? ' (no mato)' : p.st === 'pronto' ? ' (plantar)' : '');
+    add({ k: 'plot' + pl.id, label: lbl, x, y: y - 8, r: pl.kind === 'h' ? 26 : 40, prio: 2, hit: [pl.r[0] * TS, pl.r[1] * TS - 8, (pl.r[2] + 1) * TS, (pl.r[3] + 1) * TS + 4], fn: () => openPlot(pl.id) }); }
+}
+/* ---------- ferramentas da lavoura (desenho e efeitos) ---------- */
+Object.assign(ACTFX, {
+  hoe: { pose: 'hammer', tool: 'hoe' }, sow: { pose: 'throw', tool: 'seedbag' }, waterCan: { pose: 'pour', tool: 'wcan' },
+  manure: { pose: 'carry', tool: 'msack' }, sprayer: { pose: 'reach', tool: 'backpack' }, pick: { pose: 'pickup', tool: 'basket' }, scythe: { pose: 'throw', tool: 'scythe' }
+});
+['hoe', 'sow', 'waterCan', 'manure', 'sprayer', 'pick', 'scythe'].forEach(k => { ACT_POSE[k] = ACTFX[k].pose; });
+function agroTool(tool, A, hx, hy, s, side, u, R) {
+  const sw = Math.sin(drawT * 9) > 0;
+  switch (tool) {
+    case 'hoe': { const up = sw; R(hx - (side ? 0 : 1), hy - (up ? 10 : 2), 1, up ? 10 : 8, '#8a5a2a'); R(side ? hx + s * (up ? 1 : 2) : hx - 2, up ? hy - 11 : hy + 5, side ? 3 : 4, 2, '#7a7a82'); break; }
+    case 'seedbag': { R(hx - 2, hy - 2, 4, 4, '#d8c8a0'); R(hx - 1, hy - 3, 2, 1, '#8a6a3a'); break; }
+    case 'wcan': { const x0 = hx + (side ? s : 0); R(x0 - 2, hy - 3, 5, 4, '#3a8a5a'); R(x0 + (side ? s * 3 : 2), hy - 4, 3, 1, '#2a6a4a'); R(x0 - 1, hy - 5, 3, 1, '#2a6a4a'); break; }
+    case 'msack': { R(hx - 3, hy - 4, 6, 6, '#8a6a3a'); R(hx - 2, hy - 2, 4, 2, '#5a3a1a'); break; }
+    case 'backpack': { const bx = ix(P) + (side ? -s * 5 : 0), by = iy(P) - 20; R(bx - 3, by, 6, 8, '#d0d0c8'); R(bx - 3, by, 6, 2, '#3a6aa0'); R(hx, hy, side ? s * 6 : 1, 1, '#4a4a52'); break; }
+    case 'basket': { const by = iy(P) - 4; R(hx - 4, by, 8, 4, '#b08a50'); R(hx - 4, by, 8, 1, '#8a6634'); R(hx - 2, by - 1, 2, 1, '#d83a2a'); R(hx + 1, by - 1, 2, 1, '#7ac850'); break; }
+    case 'scythe': { const k = (Math.sin(drawT * 8) + 1) / 2, ang = side ? (s > 0 ? -1.2 + k * 1.8 : Math.PI + 1.2 - k * 1.8) : 1.2; const ex = hx + Math.cos(ang) * 8, ey = hy + Math.sin(ang) * 8; X.strokeStyle = '#8a5a2a'; X.lineWidth = 1; X.beginPath(); X.moveTo(hx, hy); X.lineTo(ex, ey); X.stroke(); X.strokeStyle = '#c8c8d0'; X.beginPath(); X.arc(ex, ey, 3, ang - 0.4, ang + 2.2); X.stroke(); break; }
+  }
+}
+function agroFx(A, dt, u) {
+  const a = A.a; if (!a) return;
+  if (A.k === 'hoe' && Math.random() < dt * 4) { dust(a.x + rnd(-10, 10), a.y + 8, 1, '#8a6a42'); if (Math.random() < 0.5) AU.nz(0.06, 0.04, 'lowpass', 600, 1); }
+  if (A.k === 'sow' && Math.random() < dt * 10) part(P.x + rnd(-4, 4), P.y - 12, 'drop', { vx: rnd(-20, 20), vy: rnd(-10, 6), m: 0.5, c: '#d8c070' });
+  if (A.k === 'waterCan' && Math.random() < dt * 24) { const [hx, hy] = handPos(P, 'pour'); part(hx + (P.dir === 2 ? -4 : 4), hy - 2, 'drop', { vx: P.dir === 2 ? -10 : P.dir === 3 ? 10 : 0, vy: 26, m: 0.35, c: '#8ac8f0' }); }
+  if (A.k === 'manure' && Math.random() < dt * 8) part(P.x + rnd(-8, 8), P.y - 10, 'drop', { vx: rnd(-12, 12), vy: 14, m: 0.5, c: '#5a3a1a' });
+  if (A.k === 'sprayer' && Math.random() < dt * 22) { const [hx, hy] = handPos(P, 'reach'); part(hx + (P.dir === 2 ? -6 : 6), hy, 'smoke', { vx: (P.dir === 2 ? -1 : 1) * rnd(10, 22), vy: rnd(-4, 6), m: 0.6, c: 'rgba(220,240,220,0.7)', s: 1 }); }
+  if (A.k === 'pick' && Math.random() < dt * 3) heart(P.x, P.y - 26);
+  if (A.k === 'scythe' && Math.random() < dt * 9) part(a.x + rnd(-14, 14), a.y + rnd(-6, 6), 'drop', { vx: rnd(-18, 18), vy: rnd(-26, -8), m: 0.6, c: pick(['#5a9a3a', '#7ac850', '#c8b060']) });
+}
+/* ---------- loja de sementes ---------- */
+function sementesTab() {
+  let h = '<p class="mut">Sementes e mudas: cada compra dá para plantar <b>1 canteiro</b> (horta) ou <b>1 talhão</b> (roça). A roça é uma obra: encomende "Roça (preparo do solo)" num lote livre na Casa do Pedreiro.</p><h3>Horta</h3>';
+  const row = c => { const C = CROPS[c]; return `<div class="card"><div class="row sp"><span><b>${C.n}</b> · ${C.days} dias${C.regrow ? ' · rebrota' : ''}<br><span class="mut">${C.d}</span></span><b>${fmt2(C.seed * priceMul())}</b></div><div class="row">${btn('+1', 'buySeed', c + '|1')}${btn('+3', 'buySeed', c + '|3')}<span class="mut">tem ${S.agro.seeds[c] || 0}</span></div></div>`; };
+  h += Object.keys(CROPS).filter(c => CROPS[c].k === 'h').map(row).join('') + '<h3>Roça (ração do gado)</h3>' + Object.keys(CROPS).filter(c => CROPS[c].k === 'r').map(row).join('');
+  h += '<h3>Ferramentas e insumos</h3>' + ['enxada', 'regador', 'foice', 'pulverizador', 'defensivo', 'adubo'].map(id => shopRow(id)).join('');
+  return h;
+}
+A.buySeed = v => { const [c, n] = v.split('|'); if (!pay(CROPS[c].seed * +n * priceMul(), 'Sementes: ' + CROPS[c].n + ' x' + n)) return; S.agro.seeds[c] = (S.agro.seeds[c] || 0) + +n; toast('🌱 +' + n + ' ' + CROPS[c].n); renderModal(); };
+/* ---------- cutscenes da lavoura ---------- */
+function csHorta() {
+  const c = [(HORTA.r[0] + HORTA.r[2] + 1) / 2, (HORTA.r[1] + HORTA.r[3] + 1) / 2];
+  cutscene([
+    { fade: 0, cam: [c[0], c[1] - 1], snap: 0, z: 1.8, pitch: 38, rays: 0.6, txt: 'A horta do avô Tiãozinho… o mato tomou conta dos canteiros.', d: 3 },
+    { txt: 'Ele dizia: "quem tem horta não passa fome". Alface, couve, tomate, jerimum, feijão-verde…', d: 3.4, upd: (dt, u) => { cam.fx = (c[0] - 2 + u * 4) * TS; } },
+    { txt: 'Capine com a enxada, plante a semente e <b>regue todo dia</b>. Esterco do curral é o melhor adubo.', d: 3.4 },
+    { clr: 1, d: 0.1 }
+  ]);
+}
+function csTrator(k) {
+  const r = LOTS[k].r, rows = [], y0 = r[1] * TS, X0 = r[0] * TS - 18, X1 = (r[2] + 1) * TS + 18; for (let i = 0; i < 3; i++) { const y = y0 + (i * 2 + 1.6) * TS; rows.push(i % 2 ? [[X1, y], [X0, y]] : [[X0, y], [X1, y]]); }
+  S.agro.plow[k] = 0; const t = { x: X0, y: rows[0][0][1], f: 1 }; S.agro._trac = t;
+  const ctr = lotCenter(k); let last = 0;
+  cutscene([
+    { fade: 0, cam: [ctr[0], ctr[1]], snap: 1, z: 1.5, pitch: 40, txt: '🚜 O tratorista chegou para preparar a roça do Lote ' + k + '.', d: 2.2 },
+    ...rows.map((pts, i) => ({ txt: ['Primeira passada do arado: a terra vermelha vira por cima.', 'A grade quebra os torrões e alisa o talhão.', 'Último talhão: a roça está pronta para o plantio!'][i], d: 3, upd: (dt, u) => { const [x, y] = pathLerp(pts, u); t.f = pts[1][0] > pts[0][0] ? 1 : -1; t.x = x; t.y = y; S.agro.plow[k] = Math.max(S.agro.plow[k], (i + u) / 3); if (Math.random() < dt * 14) dust(x - t.f * 24, y, 1, '#8a5a32'); if (drawT - last > 0.35) { last = drawT; AU.nz(0.3, 0.05, 'lowpass', 140, 1); } } })),
+    { txt: 'Três talhões prontos. Compre sementes na Casa do Agro e plante: milho e sorgo dão ração e silagem; capim e palma rebrotam o ano todo.', d: 3.6, fn: () => { S.agro._trac = null; S.agro.plow[k] = 1; } },
+    { clr: 1, d: 0.1 }
+  ], () => { S.agro._trac = null; delete S.agro.plow[k]; addFr && addFr('chico', 10); SAVE.save('auto', true); });
+}
+function csColheita(pl, crop, msg) {
+  const [cx, cy] = plotC(pl), C = CROPS[crop] || {}, aps = (S.workers.length ? S.workers.map(w => w.ap) : BUILDER_AP).slice(0, 2);
+  const acts = aps.map((ap, i) => ({ ap, x: pl.r[0] * TS + 10 + i * 30, y: (pl.r[1] + 1 + i) * TS, dir: 3, fr: 0, pose: 'walk', alpha: 1 })); acts.forEach(a => CINE.actors.push(a));
+  cutscene([
+    { fade: 0, cam: [cx / TS, cy / TS - 1.2], snap: 1, z: 1.7, pitch: 38, rays: 0.5, txt: '🌾 Colheita no ' + pl.nm + ': ' + (C.n || '').toLowerCase() + '!', d: 2.6, upd: (dt) => { acts.forEach((a, i) => { a.x += dt * 22; a.fr = Math.floor(drawT * 8 + i) % 8; if (Math.random() < dt * 6) part(a.x + rnd(-4, 4), a.y - 12, 'drop', { vx: rnd(-12, 12), vy: -16, m: 0.5, c: C.c || '#e8c040' }); }); } },
+    { txt: 'Os peões ensacam e a carroça leva para o depósito: <b>' + msg + '</b>.', d: 3, fn: () => { acts.forEach(a => { a.pose = 'carryW'; }); AU.coin && AU.coin(); }, upd: (dt) => { acts.forEach((a, i) => { a.x += dt * 18; a.fr = Math.floor(drawT * 8 + i) % 8; a.alpha = Math.max(0, a.alpha - dt * 0.25); }); } },
+    { clr: 1, d: 0.1 }
+  ], () => csClear());
+}
+function csSilagem(pl, crop, msg) {
+  const f = objPos('forrageira'), [cx, cy] = plotC(pl);
+  cutscene([
+    { fade: 0, cam: [cx / TS, cy / TS - 1], snap: 1, z: 1.6, txt: '🌽 Milho verde, no ponto de "pamonha": hora de ensilar!', d: 2.4, upd: (dt) => { if (Math.random() < dt * 10) part(cx + rnd(-50, 50), cy - rnd(4, 20), 'drop', { vx: rnd(-16, 16), vy: -14, m: 0.6, c: '#7ac850' }); } },
+    { cam: [f.x / TS, f.y / TS], txt: 'A forrageira pica tudo e o picado vai para o silo, bem apertado para não entrar ar.', d: 3, fn: () => AU.nz(2.6, 0.1, 'bandpass', 300, 1), upd: (dt) => { if (Math.random() < dt * 20) part(f.x + rnd(-6, 6), f.y - 18, 'drop', { vx: rnd(-20, 20), vy: rnd(-30, -10), m: 0.6, c: pick(['#7ac850', '#a8d060', '#5a9a3a']) }); } },
+    { txt: 'Fechado com lona, vira silagem: comida boa para a seca. ' + msg + '.', d: 2.8 },
+    { clr: 1, d: 0.1 }
+  ]);
+}
+function csPraga(id) {
+  const pl = plotById(id); if (!pl) return; const [cx, cy] = plotC(pl), C = CROPS[plotSt(id).crop] || {};
+  cutscene([
+    { fade: 0, cam: [cx / TS, cy / TS - 0.8], snap: 1, z: 2.6, dof: 0.6, txt: '🐛 Olhe de perto as folhas do ' + pl.nm + '…', d: 2.4 },
+    { txt: (C.k === 'r' ? 'Lagarta-do-cartucho comendo o ' + (C.n || 'milho').toLowerCase() + '!' : 'Pulgão e lagarta nas folhas da horta!') + ' Praga derruba a colheita.', d: 3 },
+    { txt: 'Compre defensivo e um pulverizador costal na Casa do Agro e aplique no canteiro ou talhão.', d: 3 },
+    { clr: 1, d: 0.1 }
+  ]);
+}
+function drawRocaPrep(x0, y0, r, prog) { const W0 = (r[2] - r[0] + 1) * TS, H0 = (r[3] - r[1] + 1) * TS, R = (x, y, w, h, c) => { X.fillStyle = c; X.fillRect(Math.round(x), Math.round(y), w, h); };
+  for (const [x, y] of [[x0, y0], [x0 + W0 - 2, y0], [x0, y0 + H0 - 2], [x0 + W0 - 2, y0 + H0 - 2]]) { R(x, y - 6, 2, 8, '#8a5a2a'); R(x - 1, y - 7, 4, 2, '#e04a2a'); }
+  R(x0, y0 - 3, W0, 1, 'rgba(240,230,200,0.7)'); R(x0, y0 + H0 - 3, W0, 1, 'rgba(240,230,200,0.7)');
+  for (let i = 0; i < 3; i++) R(x0 + 4, y0 + i * 2 * TS + 10, (W0 - 8) * prog, 3, '#7a5232');
+  R(x0 + W0 / 2 - 10, y0 + H0 - 16, 22, 10, '#e8dcc0'); R(x0 + W0 / 2, y0 + H0 - 6, 2, 6, '#6a4422'); R(x0 + W0 / 2 - 7, y0 + H0 - 13, 3, 4, '#4a9a3a'); R(x0 + W0 / 2 - 2, y0 + H0 - 14, 3, 5, '#e8c040'); R(x0 + W0 / 2 + 3, y0 + H0 - 13, 3, 4, '#6aaa44'); }
 /* ---------- lojas ---------- */
 function shopCart() { return hyp(S.cart.x - P.x, S.cart.y - P.y) < 110 || P.cart; }
 function buyItem(id, n, dest) {
@@ -6707,10 +6991,11 @@ function oxTab() {
 }
 A.buyOxCart = () => { if (S.veh.boi.own) return; if (!pay(OXCART_P * priceMul(), 'Carro de boi (carpintaria)')) return; Object.assign(S.veh.boi, newOxCart(), { own: true }); toast('🐂 O carro de boi chegou à fazenda!'); AU.jingle(); if (cenasOn()) { closeModal(); return csOxCart(); } renderModal(); };
 A.buyOxPair = v => { const pr = S.oxStock.list[+v]; if (!pr) return; const cost = (animalValue(pr[0]) + animalValue(pr[1])) * 1.05 * priceMul(); if (!pay(cost, 'Junta de bois ' + pr[0].n + ' e ' + pr[1].n)) return; for (const a of pr) { a.own = 'delivery'; a.x = a.y = -999; markBought(a, cost / 2); S.animals.push(a); S.delivery.push({ id: a.id, day: S.day + 1, to: 'receb' }); } S.oxStock.list.splice(+v, 1); toast('🐂 Junta comprada! Chega amanhã cedo no Recebimento.'); renderModal(); };
-function openAgro() { showModal('🌿 Casa do Agro', [['ins', 'Insumos'], ['sel', 'Selaria'], ['ani', 'Feira de animais'], ['boi', 'Carro de boi'], ['vet', 'Veterinária'], ['gen', 'Genética']], 'ins', t => {
+function openAgro() { showModal('🌿 Casa do Agro', [['ins', 'Insumos'], ['sel', 'Selaria'], ['ani', 'Feira de animais'], ['boi', 'Carro de boi'], ['vet', 'Veterinária'], ['gen', 'Genética'], ['sem', 'Sementes']], 'ins', t => {
   let h = keeperBanner('agro'); if (!shopCart()) h += '<p class="mut">💡 Estacione a carroça aqui perto para levar sacos pesados, ou peça entrega.</p>';
   if (t === 'ins') h += ['racao', 'milho', 'sal', 'palma', 'silagem', 'galaoV', 'galao', 'lenha', 'carvao'].map(id => shopRow(id, { frete: 1 })).join('');
   if (t === 'gen') h += geneticaTab();
+  if (t === 'sem') h += sementesTab();
   if (t === 'sel') { h += ['escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho'].map(id => shopRow(id)).join(''); h += SADDLES.filter(s => s.p).map(s => `<div class="card"><b>${s.n}</b> — ${fmt(s.p)}<p class="mut">${s.d}</p>${S.saddles.includes(s.id) ? '✅ Você já tem' : btn('Comprar', 'buySad', s.id)}</div>`).join(''); }
   if (t === 'ani') h += feiraTab();
   if (t === 'boi') h += oxTab();
@@ -6729,7 +7014,7 @@ function openMercadinho() { showModal('🧺 Mercadinho Itarantim', [['com', 'Com
   let h = keeperBanner('mercadinho');
   if (t === 'com') h += ['rapadura', 'queijo', 'cafe', 'farinha'].map(id => shopRow(id)).join('');
   if (t === 'var') h += ['violao', 'viola', 'lampiao', 'galaoV'].map(id => shopRow(id)).join('');
-  if (t === 'ven') { const o = S.inv.ovo || 0, l = S.inv.leite || 0; h += `<div class="card">🥚 Ovos na mochila: <b>${o}</b> × ${fmt2(IT.ovo.p)} ${btn('Vender todos', 'sellP', 'ovo', !o)}</div><div class="card">🥛 Leite na mochila: <b>${l}</b> L × ${fmt2(IT.leite.p)} ${btn('Vender todo', 'sellP', 'leite', !l)}</div><p class="mut">Recolha ovos no galinheiro e leite na Sala de Ordenha.</p>`; }
+  if (t === 'ven') { const o = S.inv.ovo || 0, l = S.inv.leite || 0; h += `<div class="card">🥚 Ovos na mochila: <b>${o}</b> × ${fmt2(IT.ovo.p)} ${btn('Vender todos', 'sellP', 'ovo', !o)}</div><div class="card">🥛 Leite na mochila: <b>${l}</b> L × ${fmt2(IT.leite.p)} ${btn('Vender todo', 'sellP', 'leite', !l)}</div><p class="mut">Recolha ovos no galinheiro e leite na Sala de Ordenha.</p>`; h += '<h3>Da sua horta</h3>' + ['alface', 'couve', 'cheiro', 'tomate', 'pimenta', 'abobora', 'feijaoV'].map(k => `<div class="card">${iic(k, 18)} ${IT[k].n}: <b>${S.inv[k] || 0}</b> × ${fmt2(IT[k].p)} ${btn('Vender todos', 'sellP', k, !S.inv[k])}</div>`).join(''); }
   return h; }); }
 A.sellP = v => { const n = S.inv[v] || 0; if (!n) return; useInv(v, n); receive(n * IT[v].p, 'Venda de ' + n + 'x ' + IT[v].n, 'cash'); addFr('dito', 5); renderModal(); };
 function openBar() { showModal('🍺 Bar da Zefa', [['com', 'Refeições'], ['mur', 'Mural de peões'], ['pro', 'Quem está aqui']], 'com', t => {
@@ -6820,13 +7105,13 @@ A.useSad = v => { S.saddleSel = v; const h = mainHorse(); if (h && h.saddle) h.s
 function openDeposito() { showModal('🌽 Depósito de Alimentos', null, null, () => {
   const nearCart = hyp(S.cart.x - P.x, S.cart.y - P.y) < 90;
   let h = `<div class="row sp"><span>Capacidade</span>${bar(depKg() / depCap() * 100, 'y')}<span>${Math.round(depKg())}/${depCap()} kg</span></div><table class="t"><tr><th>Item</th><th>Depósito</th><th>Mochila</th><th></th></tr>`;
-  for (const k of ['racao', 'milho', 'sal', 'lenha', 'carvao']) { const kg = ['racao', 'milho', 'sal'].includes(k), unit = kg ? IT[k].kg : 1; const d = kg ? Math.floor((S.dep[k] || 0) / unit) : (S.dep[k] || 0); h += `<tr><td>${iic(k, 16)} ${IT[k].n.split(' (')[0]}</td><td>${kg ? Math.round(S.dep[k] || 0) + ' kg' : d}</td><td>${S.inv[k] || 0}</td><td>${btn('⬆ pegar', 'depGet', k, d < 1)}${btn('⬇ guardar', 'depPut', k, !S.inv[k])}</td></tr>`; }
+  for (const k of ['racao', 'milho', 'sal', 'silagem', 'palma', 'sorgo', 'capim', 'mandioca', 'esterco', 'lenha', 'carvao']) { const kg = DEPKG.includes(k), unit = kg ? IT[k].kg : 1; const d = kg ? Math.floor((S.dep[k] || 0) / unit) : (S.dep[k] || 0); h += `<tr><td>${iic(k, 16)} ${IT[k].n.split(' (')[0]}</td><td>${kg ? Math.round(S.dep[k] || 0) + ' kg' : d}</td><td>${S.inv[k] || 0}</td><td>${btn('⬆ pegar', 'depGet', k, d < 1)}${btn('⬇ guardar', 'depPut', k, !S.inv[k])}</td></tr>`; }
   h += '</table>';
   h += nearCart ? `<div class="card"><b>Carroça aqui</b> (${Math.round(cartKg())} kg)<div class="row">${btn('Descarregar tudo no depósito', 'cartUnload')}${btn('Carregar 4 sacos de ração', 'cartLoad', 'racao')}</div></div>` : '<p class="mut">Traga a carroça até a porta para carregar/descarregar em quantidade.</p>';
   return h; }); }
-A.depGet = k => { const kg = ['racao', 'milho', 'sal'].includes(k); if (kg) { if (S.dep[k] < IT[k].kg) return; if (!addInv(k, 1)) return; S.dep[k] -= IT[k].kg; } else { if (!S.dep[k]) return; if (!addInv(k, 1)) return; S.dep[k]--; } renderModal(); };
-A.depPut = k => { if (!useInv(k)) return; const kg = ['racao', 'milho', 'sal'].includes(k); if (kg && depKg() + IT[k].kg > depCap()) { addInv(k, 1, true); return say('Depósito cheio! Construa um Silo.'); } S.dep[k] = (S.dep[k] || 0) + (kg ? IT[k].kg : 1); renderModal(); };
-A.cartUnload = () => { const c = S.cart.cargo; let n = 0; for (const k in c) { const kg = ['racao', 'milho', 'sal'].includes(k); if (kg && depKg() + IT[k].kg * c[k] > depCap()) { say('Depósito cheio!'); continue; } if (['racao', 'milho', 'sal', 'lenha', 'carvao'].includes(k)) { S.dep[k] = (S.dep[k] || 0) + (kg ? IT[k].kg * c[k] : c[k]); n += c[k]; delete c[k]; } else { addInv(k, c[k], true); delete c[k]; } } toast('📦 ' + n + ' volume(s) descarregados.'); renderModal(); };
+A.depGet = k => { const kg = DEPKG.includes(k); if (kg) { if (S.dep[k] < IT[k].kg) return; if (!addInv(k, 1)) return; S.dep[k] -= IT[k].kg; } else { if (!S.dep[k]) return; if (!addInv(k, 1)) return; S.dep[k]--; } renderModal(); };
+A.depPut = k => { if (!useInv(k)) return; const kg = DEPKG.includes(k); if (kg && depKg() + IT[k].kg > depCap()) { addInv(k, 1, true); return say('Depósito cheio! Construa um Silo.'); } S.dep[k] = (S.dep[k] || 0) + (kg ? IT[k].kg : 1); renderModal(); };
+A.cartUnload = () => { const c = S.cart.cargo; let n = 0; for (const k in c) { const kg = DEPKG.includes(k); if (kg && depKg() + IT[k].kg * c[k] > depCap()) { say('Depósito cheio!'); continue; } if ([...DEPKG, 'lenha', 'carvao'].includes(k)) { S.dep[k] = (S.dep[k] || 0) + (kg ? IT[k].kg * c[k] : c[k]); n += c[k]; delete c[k]; } else { addInv(k, c[k], true); delete c[k]; } } toast('📦 ' + n + ' volume(s) descarregados.'); renderModal(); };
 A.cartLoad = k => { let n = 0; while (n < 4 && S.dep[k] >= IT[k].kg && cartKg() + IT[k].kg <= cartCap()) { S.dep[k] -= IT[k].kg; S.cart.cargo[k] = (S.cart.cargo[k] || 0) + 1; n++; } toast('📦 ' + n + ' saco(s) na carroça.'); renderModal(); };
 function openIgreja() { showModal('⛪ Igreja Matriz', null, null, () => {
   const missa = wday() === 0 && hour() >= 8.8 && hour() < 10.4;
@@ -6839,13 +7124,13 @@ function openTrough(i) {
     const cap = trCap(i), nearC = hyp(S.cart.x - P.x, S.cart.y - P.y) < 80;
     let h = `<h3>${t.k === 'agua' ? '💧 Cocho d’água' : '🌽 Cocho de trato'} — ${AREAS[t.a].n}</h3><div class="row sp">${bar(S.tr[i] / cap * 100, t.k === 'agua' ? 'w' : 'y')}<span>${Math.round(S.tr[i])}/${cap} ${t.k === 'agua' ? 'L' : 'kg'}</span></div>`;
     if (t.k === 'agua') h += `<div class="row">${btn('Despejar galão (20 L)', 'trWater', i, !has('galao'))}</div><p class="mut">Galões cheios: ${S.inv.galao || 0}. Encha no reservatório da sede.</p>`;
-    else { const mil = t.a === 'galin' || t.a === 'haras'; h += `<div class="row">${btn(mil ? 'Colocar milho (20 kg)' : 'Colocar ração (25 kg)', 'trFeed', i + '|' + (mil ? 'milho' : 'racao'), !has(mil ? 'milho' : 'racao') && !(nearC && S.cart.cargo[mil ? 'milho' : 'racao']))}${!mil ? btn('Colocar sal mineral', 'trSalt', i, !has('sal')) + btn('Palma forrageira', 'trPalma', i + '|palma', !has('palma')) + btn('Silagem', 'trPalma', i + '|silagem', !has('silagem')) : ''}</div>${!mil ? '<p class="mut">Na seca, palma mata a fome e a sede; silagem engorda mais que ração.</p>' : ''}${nearC ? '<p class="mut">Usando a carga da carroça quando a mochila não tiver.</p>' : ''}`; }
+    else { const mil = t.a === 'galin' || t.a === 'haras'; h += `<div class="row">${btn(mil ? 'Colocar milho (20 kg)' : 'Colocar ração (25 kg)', 'trFeed', i + '|' + (mil ? 'milho' : 'racao'), !has(mil ? 'milho' : 'racao') && !(nearC && S.cart.cargo[mil ? 'milho' : 'racao']))}${!mil ? btn('Colocar sal mineral', 'trSalt', i, !has('sal')) + btn('Palma forrageira', 'trPalma', i + '|palma', !has('palma')) + btn('Silagem', 'trPalma', i + '|silagem', !has('silagem')) + btn('Capim picado', 'trPalma', i + '|capim', !has('capim')) : ''}</div>${!mil ? '<p class="mut">Na seca, palma mata a fome e a sede; silagem engorda mais que ração.</p>' : ''}${nearC ? '<p class="mut">Usando a carga da carroça quando a mochila não tiver.</p>' : ''}`; }
     return h;
   });
 }
 A.trWater = v => { const i = +v, t = TROUGHS[i]; if (!has('galao')) return; closeModal(); act('fill', 1.1, { x: (t.x + t.w / 2) * TS, y: t.y * TS }, () => { if (!useInv('galao')) return; addInv('galaoV', 1, true); S.tr[i] = Math.min(trCap(i), S.tr[i] + 20); AU.splash(); P.en = Math.max(0, P.en - 1); toast('💧 +20 L no cocho'); }); };
 A.trFeed = v => { const [i, k] = v.split('|'), t = TROUGHS[+i]; closeModal(); act('feed', 1.3, { x: (t.x + t.w / 2) * TS, y: t.y * TS }, () => { if (!useInv(k)) { if (S.cart.cargo[k]) { S.cart.cargo[k]--; if (!S.cart.cargo[k]) delete S.cart.cargo[k]; } else return; } S.tr[+i] = Math.min(trCap(+i), S.tr[+i] + IT[k].kg); P.en = Math.max(0, P.en - 1.5); AU.nz(0.4, 0.08, 'bandpass', 1200, 1); toast('🌽 Cocho abastecido (+' + IT[k].kg + ' kg)'); }); };
-A.trPalma = v => { const [i, k] = v.split('|'), t = TROUGHS[+i]; closeModal(); act('feed', 1.4, { x: (t.x + t.w / 2) * TS, y: t.y * TS }, () => { if (!useInv(k)) return; S.tr[+i] = Math.min(trCap(+i), S.tr[+i] + IT[k].kg); if (k === 'palma') { S.palm = S.palm || {}; S.palm[t.a] = S.day + 1; } else { S.silo2 = S.silo2 || {}; S.silo2[t.a] = S.day + 1; } P.en = Math.max(0, P.en - 2); toast(k === 'palma' ? '🌵 Palma picada no cocho: o gado come e mata a sede.' : '🌽 Silagem no cocho: engorda forte por hoje.'); }); };
+A.trPalma = v => { const [i, k] = v.split('|'), t = TROUGHS[+i]; closeModal(); act('feed', 1.4, { x: (t.x + t.w / 2) * TS, y: t.y * TS }, () => { if (!useInv(k)) return; S.tr[+i] = Math.min(trCap(+i), S.tr[+i] + IT[k].kg); if (k === 'palma') { S.palm = S.palm || {}; S.palm[t.a] = S.day + 1; } else if (k === 'capim') { S.capim = S.capim || {}; S.capim[t.a] = S.day + 1; } else { S.silo2 = S.silo2 || {}; S.silo2[t.a] = S.day + 1; } P.en = Math.max(0, P.en - 2); toast(k === 'palma' ? '🌵 Palma picada no cocho: o gado come e mata a sede.' : k === 'capim' ? '🌿 Capim picado no cocho: volumoso para o gado.' : '🌽 Silagem no cocho: engorda forte por hoje.'); }); };
 A.trSalt = v => { if (!useInv('sal')) return; const t = TROUGHS[+v]; S.salt[t.a] = S.day + 3; toast('🧂 Sal mineral no cocho: gado mais saudável por 3 dias.'); renderModal(); };
 function openLot(k) { showModal('Lote ' + k, null, null, () => {
   const l = S.lots[k]; if (!l) return '<p>Lote livre. Encomende uma obra na Casa do Pedreiro, na cidade.</p>';
@@ -6962,11 +7247,11 @@ function openMachine() { showModal('⚙ Forrageira (triturador)', null, null, ()
   let h = '<p>Tritura milho em ração balanceada: <b>1 saco de milho (20 kg) → 22 kg de ração</b> no depósito. Leva 1 hora de jogo. Custo de energia elétrica: R$ 3.</p>';
   if (st === 'done') h += `<div class="card">✅ Ração pronta: ${S.mach.out} kg ${btn('Recolher para o depósito', 'machGet')}</div>`;
   else if (st) h += `<div class="card">⚙️ Triturando... ${bar(100 - st / 60 * 100, 'y')} ${Math.ceil(st)} min</div>`;
-  else h += `<div class="row">${btn('Triturar 1 saco (depósito: ' + Math.round(S.dep.milho) + ' kg)', 'machGo', 'dep', S.dep.milho < 20)}${btn('Triturar 1 saco da mochila', 'machGo', 'inv', !has('milho'))}</div>`;
+  else h += `<div class="row">${btn('Triturar milho (depósito: ' + Math.round(S.dep.milho) + ' kg)', 'machGo', 'dep', S.dep.milho < 20)}${btn('Triturar sorgo (' + Math.round(S.dep.sorgo || 0) + ' kg)', 'machGo', 'dep:sorgo', (S.dep.sorgo || 0) < 20)}${btn('Raspa de mandioca (' + Math.round(S.dep.mandioca || 0) + ' kg)', 'machGo', 'dep:mandioca', (S.dep.mandioca || 0) < 20)}${btn('Triturar 1 saco da mochila', 'machGo', 'inv', !has('milho'))}</div>`;
   return h; }); }
-A.machGo = src => { if (src === 'dep') { if (S.dep.milho < 20) return; S.dep.milho -= 20; } else if (!useInv('milho')) return; if (!pay(3, 'Energia da forrageira')) return; S.mach = { end: S.day * 1440 + S.min + 60, out: Math.round(22 * (S.machUp ? 1.3 : 1)), busy: true }; closeModal(); act('hammer', 1.2, (() => { const f = objPos('forrageira'); return { x: f.x, y: f.y }; })(), () => { toast('⚙️ Forrageira ligada!'); AU.nz(1.2, 0.12, 'bandpass', 300, 1); }); };
+A.machGo = src => { let fk = 1; if (src === 'dep') { if (S.dep.milho < 20) return; S.dep.milho -= 20; } else if (src.startsWith('dep:')) { const g = src.slice(4); if ((S.dep[g] || 0) < 20) return; S.dep[g] -= 20; fk = g === 'sorgo' ? 0.95 : 0.82; } else if (!useInv('milho')) return; if (!pay(3, 'Energia da forrageira')) return; S.mach = { end: S.day * 1440 + S.min + 60, out: Math.round(22 * fk * (S.machUp ? 1.3 : 1)), busy: true }; closeModal(); act('hammer', 1.2, (() => { const f = objPos('forrageira'); return { x: f.x, y: f.y }; })(), () => { toast('⚙️ Forrageira ligada!'); AU.nz(1.2, 0.12, 'bandpass', 300, 1); }); };
 A.machGet = () => { if (machState() !== 'done') return; if (depKg() + S.mach.out > depCap()) return say('Depósito cheio!'); S.dep.racao += S.mach.out; toast('🌽 +' + S.mach.out + ' kg de ração no depósito'); AU.pickup(); S.mach = null; renderModal(); };
-function cleanCurral(k) { if ((S.dirt[k] || 0) < 5) return say('Está limpo.'); act('sweep', 3.2, { x: P.x + 10, y: P.y }, () => { S.dirt[k] = 0; P.en = Math.max(0, P.en - 5); toast('🧹 ' + AREAS[k].n + ' limpo!'); AU.chime(); }, { int: 1 }); }
+function cleanCurral(k) { if ((S.dirt[k] || 0) < 5) return say('Está limpo.'); act('sweep', 3.2, { x: P.x + 10, y: P.y }, () => { const ek = Math.round((S.dirt[k] || 0) * 1.5); S.dep.esterco = (S.dep.esterco || 0) + ek; S.dirt[k] = 0; P.en = Math.max(0, P.en - 5); toast('🧹 ' + AREAS[k].n + ' limpo! +' + ek + ' kg de esterco no depósito.'); AU.chime(); }, { int: 1 }); }
 /* ---------- ajuda e opções ---------- */
 function showHelp() { showModal('❓ Como jogar', null, null, () => `<p><b>Andar:</b> joystick (ou WASD/setas). Segure <b>Correr/Galope</b> (Shift) para ir mais rápido.</p><p><b>Toque no mapa:</b> toque em um <b>animal</b> para abrir a ficha dele com as ações. Toque em pessoas, porteiras, cochos, portas e objetos para o vaqueiro ir até lá e interagir.</p><p><b>Zoom:</b> use dois dedos (pinça) na tela ou a rodinha do mouse.</p><p><b>Ação</b> (E/Espaço): o botão amarelo mostra a interação mais próxima.</p><p><b>Aboio</b> (Q): o gado e os cavalos próximos seguem você. <b>Laço</b> (F): laça o animal mais próximo. <b>Montar</b> (R): sela e monta; longe do cavalo, assobia para ele vir.</p><p><b>Vender:</b> animais no Curral Principal, no Açougue ou pela ficha do animal.</p><p><b>Pastagens:</b> o capim acaba e rebrota; faça rodízio entre os piquetes.</p><p><b>Dia:</b> ~4 minutos. Durma na Casa Sede após as 18h.</p><p class="mut">Teclado: I mochila · M menu · Esc fecha.</p>`, 'scroll'); }
 function showCredits() { closeModal(); OP.credits(); }
@@ -7654,6 +7939,7 @@ function openBalanca() {
   }, 'cow');
 }
 function farmInteractables(add) {
+  agroInteractables(add);
   const [bx, by] = fpx('balanca');
   add({ k: 'brete', label: '🐂 Brete: manejo do lote', x: bx - 2, y: by + 22, r: 18, prio: 2, hit: [bx - 14, by + 4, bx + 10, by + 30], fn: () => act('reach', 0.4, { x: bx - 12, y: by + 20 }, openBrete, { zoom: false }) });
   add({ k: 'balanca', label: 'Balança: pesar o gado do curral', x: bx, y: by, r: 18, prio: 2, hit: [bx - 10, by - 18, bx + 10, by + 6], fn: () => act('reach', 0.4, { x: bx - 12, y: by + 4 }, openBalanca, { zoom: false }) });
@@ -8572,11 +8858,12 @@ function collectItems(tx0, tx1, ty0, ty1, vw, vh, se, vx0, vy0) {
   for (const k in LOTS) { const r = LOTS[k].r, l = S.lots[k]; const x0 = r[0] * TS, y0 = r[1] * TS, y1 = (r[3] + 1) * TS; if (x0 > vx0 + vw || (r[2] + 1) * TS < vx0 || y1 < vy0 || y0 - 30 > vy0 + vh) continue; if (LOTS[k].exp && !S.exp[LOTS[k].exp]) continue;
     if (!lotOwned(k)) continue;
     if (!l) add(y0 + 4, () => { X.fillStyle = '#8a5a2a'; [[x0 + 2, y0 + 2], [x0 + 108, y0 + 2], [x0 + 2, y1 - 4], [x0 + 108, y1 - 4]].forEach(([x, y]) => { X.fillRect(x, y - 6, 2, 7); X.fillStyle = '#e04a2a'; X.fillRect(x - 1, y - 7, 4, 2); X.fillStyle = '#8a5a2a'; }); X.fillStyle = 'rgba(240,220,160,0.5)'; X.fillRect(x0 + 3, y0 + 1, 106, 1); X.fillRect(x0 + 3, y1 - 5, 106, 1); X.fillStyle = '#e8dcc0'; X.fillRect(x0 + 48, y1 - 14, 16, 9); X.fillStyle = '#6a4422'; X.fillRect(x0 + 55, y1 - 6, 2, 6); txt((x, y, w, h, c) => { X.fillStyle = c; X.fillRect(x, y, w, h); }, k, x0 + 54, y1 - 12, '#7a3a1a'); }, x0 + 56, { flat: 1 });
+    else if (l.b === 'roca') { if (!l.done) add(y0 + 4, () => drawRocaPrep(x0, y0, r, l.prog), x0 + 56, { flat: 1 }); }
     else { const stg = l.done ? 3 : l.prog < 0.3 ? 0 : l.prog < 0.65 ? 1 : 2; add(y1 - 4, () => X.drawImage(consSpr(l.b, stg), x0 - 4, y0 - 20), x0 + 56, { w: 150, h: 150, b: y1, fade: 1 });
       if (!l.done && hour() >= 7 && hour() < 17 && !isRain()) BUILDER_AP.forEach((ap, i) => { const bx = x0 + 20 + i * 70, by = y1 + 4; add(by, () => drawPerson(ap, bx, by, i ? 2 : 3, Math.floor(drawT * 3 + i) % 2, 'hammer'), bx); if (Math.random() < dt * 1.2) { AU.hammer(bx, by); dust(bx + (i ? -10 : 10), by - 6, 1, '#b8a888'); } }); } }
   TROUGHS.forEach((t, i) => { const x = t.x * TS, y = t.y * TS; if (!inV(x, y, 40)) return; add(y + 15, () => X.drawImage(troughSpr(t, S.tr[i] / trCap(i)), x - 2, y - 2), x + t.w * 8, { w: t.w * 16 + 16, h: 40, b: y + 16 }); });
   for (const a of S.animals) { if (a.id === P.mnt || a._wr || !inV(a.x, a.y, 40)) continue; add(iy(a), () => drawAnimal(a), ix(a), { w: 110, h: 100 }); }
-  aucDrawLot(add); drawCSX(add); drawCSA(add);
+  aucDrawLot(add); drawCSX(add); drawCSA(add); drawAgro(add, inV);
   cineDrawActors(add, inV);
   for (const e of npcs) { if (e.hidden || !inV(e.x, e.y, 30)) continue; add(iy(e), () => { const [pz, fr] = npcPose(e); X.globalAlpha = e.alpha === undefined ? 1 : e.alpha; drawPerson(e.d.ap, ix(e), iy(e), e.dir, fr, pz); X.globalAlpha = 1; if (e.emote && e.et > 0) emote(ix(e), iy(e) - 34, e.emote); }, ix(e), { w: 90, h: 100 }); }
   for (const w of S.workers) { if (w.x === undefined || !inV(w.x, w.y, 30)) continue; if (w._mnt) { const h = workerHorse(w); if (h) { add(w.y, () => { const sp = h._mv || 0, an = sp < 2 ? 'idle' : sp > 40 ? 'trot' : 'walk', cyc = RIG.cycleLen(rigBreed(h), an === 'idle' ? 'walk' : an, rigK(h)) || 20; drawMounted(h, w.ap, w.x, w.y, w.dir || 0, an, an === 'idle' ? 0 : Math.floor(((h._dist || 0) / cyc % 1) * 8) % 8); }, w.x, { w: 120, h: 120 }); continue; } } if (w._sleep) continue; add(iy(w), () => { const wx = ix(w), wy = iy(w); const pz = w._pose === 'walk' ? 'walk' : w._pose || 'idle'; drawPerson(w.ap, wx, wy, w.dir || 0, pz === 'walk' ? Math.floor((w._ph || 0) / 22 * 8 / 0.22) % 8 : Math.floor(drawT * 3) % 2, pz === 'carry' && w._pose === 'walk' ? 'carryW' : pz); if (w.task && w._pose !== 'walk' && !w._wait) { X.fillStyle = '#2b1608'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), 16, 3); X.fillStyle = '#7ad040'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), Math.round(16 * (w.task.prog || 0)), 3); } }, ix(w), { w: 90, h: 100 }); }
@@ -9219,8 +9506,8 @@ const SAVE = {
     v = o.v || v || 1; while (v < SAVE_V && MIGR[v]) v = MIGR[v](o); o.v = SAVE_V;
     const base = newState(); for (const k in base) if (o[k] === undefined) o[k] = base[k];
     for (const k in base.dep) if (o.dep[k] === undefined) o.dep[k] = 0;
-    S = o; P = S.p; initVeh(S); if (!S.gadoV) { S.animals.forEach(a => { if (a.own === 'player' && a.sp === 'boi' && a.sex === 'M' && a.age >= 24) a.cast = 1; }); S.gadoV = 2; } lasso.t = null; parts = []; rings = []; if (S.cf && S.cf.ap) delete S.cf.ap.tool; if (!S.chest) S.chest = {}; if (!S.esc) S.esc = []; S.esc = []; S.animals.forEach(a => { if (!a.hist) a.hist = []; if (a._st === 'route') a._st = null; });
-    genMap(); initGrass(); if (S.grass) { const u = new Uint8Array(MW * MH); decodeU8(S.grass, u); for (let i = 0; i < u.length; i++) if (ground[i] === G.PAST) grass[i] = u[i]; }
+    S = o; P = S.p; initVeh(S); initAgro(S); if (!S.gadoV) { S.animals.forEach(a => { if (a.own === 'player' && a.sp === 'boi' && a.sex === 'M' && a.age >= 24) a.cast = 1; }); S.gadoV = 2; } lasso.t = null; parts = []; rings = []; if (S.cf && S.cf.ap) delete S.cf.ap.tool; if (!S.chest) S.chest = {}; if (!S.esc) S.esc = []; S.esc = []; S.animals.forEach(a => { if (!a.hist) a.hist = []; if (a._st === 'route') a._st = null; });
+    genMap(); agroMap(); initGrass(); if (S.grass) { const u = new Uint8Array(MW * MH); decodeU8(S.grass, u); for (let i = 0; i < u.length; i++) if (ground[i] === G.PAST) grass[i] = u[i]; }
     GATES.forEach((g, i) => { g.open = !!S.gates[i]; g.anim = g.open ? 1 : 0; });
     while (S.tr.length < TROUGHS.length) S.tr.push(TROUGHS[S.tr.length].cap * 0.5);
     for (const k of ['norte', 'sul']) if (S.exp[k]) { const y = EXP[k].y; for (const x of [37, 38, 39]) obj[gi(x, y)] = 0; }
@@ -9375,10 +9662,10 @@ function finishWardrobe() { S.cf.ap = Object.assign({}, CF.ap); $('setup').style
 /* ---------- novo jogo: começo pequeno ---------- */
 function newGame(cf) {
   $('setup').style.display = 'none'; document.body.classList.remove('ovl');
-  S = newState(); P = S.p; initVeh(S); lasso.t = null; parts = [];
+  S = newState(); P = S.p; initVeh(S); initAgro(S); lasso.t = null; parts = [];
   S.cf = { name: cf.name, st: cf.st, sk: cf.sk, ap: Object.assign({}, cf.ap), hn: cf.hn, aj: cf.aj, mt: cf.mt };
   S.saddles = [...new Set(['nord', SADDLES[cf.sd].id])]; S.saddleSel = SADDLES[cf.sd].id;
-  genMap(); initGrass(); S.tr = TROUGHS.map(t => t.cap * (t.k === 'agua' ? 0.7 : 0.5)); S.gates = GATES.map(g => g.open ? 1 : 0);
+  genMap(); agroMap(); initGrass(); S.tr = TROUGHS.map(t => t.cap * (t.k === 'agua' ? 0.7 : 0.5)); S.gates = GATES.map(g => g.open ? 1 : 0);
   startSmall(); applyLand(); applyObjs();
   const put = (a, k) => { const p = randIn(k); a.x = p[0]; a.y = p[1]; S.animals.push(a); return a; };
   const sp = mtSp(cf.mt);
@@ -9779,12 +10066,12 @@ const STEP = 1 / 60; let acc = 0, lastT = 0, saveT = 0;
 function tick(dt) {
   drawT += dt;
   if (mode === 'play' && !paused) {
-    holdTick(); placeTick(dt); INV_CAP = invCapNow(); const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); updAuction(dt); updDirector(dt); if (VQ.on) updVaquejada(dt); else if (IN.on) updInterior(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
+    holdTick(); placeTick(dt); INV_CAP = invCapNow(); const gm = updTime(dt); agroTick(gm); updWeather(dt, gm); updMissions(dt); updAuction(dt); updDirector(dt); if (VQ.on) updVaquejada(dt); else if (IN.on) updInterior(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
     { const h = P.mnt ? byId(P.mnt) : null; if (h && h._react && (h._react.t -= dt) <= 0) h._react = null; }
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);
     updGrill(dt); updInst(dt); if ((ctxT -= dt) < 0) { ctxT = 0.12; computeCtx(); }
-    if (S.pend.length && !M.open && !P._act) { const p = S.pend.shift(); if (p.k === 'obraFim') csObraFim(p.lot); else if (p.k === 'truckIn') csTruckIn(p.ids); else if (p.k === 'theft') csTheft(p); else if (p.k === 'escape') csEscape(byId(p.id)); }
+    if (S.pend.length && !M.open && !P._act) { const p = S.pend.shift(); if (p.k === 'obraFim') { if (S.lots[p.lot] && S.lots[p.lot].b === 'roca') { if (cenasOn()) csTrator(p.lot); else toast('🚜 Roça do Lote ' + p.lot + ' pronta: 3 talhões para plantar.'); } else csObraFim(p.lot); } else if (p.k === 'praga') csPraga(p.id); else if (p.k === 'truckIn') csTruckIn(p.ids); else if (p.k === 'theft') csTheft(p); else if (p.k === 'escape') csEscape(byId(p.id)); }
     if (S.mach && !S.mach.told && machState() === 'done') { S.mach.told = 1; S.mach.busy = false; toast('⚙️ A forrageira terminou: ração pronta!'); AU.chime(); }
     if ((saveT += dt) > 60) { saveT = 0; SAVE.save('auto', true); }
   } else if (mode === 'cs') { updCS(dt); updGates(dt); buildGrid(); for (const a of S.animals) updAnimal(a, dt, 0, []); for (const e of npcs) if (e.et > 0) e.et -= dt; }
