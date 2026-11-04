@@ -1285,7 +1285,7 @@ function furnCtx(C2) {
   for (const f of FURN) { if (f.r !== R0.id) continue; const fx = f.x, fy = f.wall ? (f.ty + 1.6) * TS : f.y, d = hyp(fx - P.x, fy - P.y); if (d > 26) continue;
     const mine = R0.H.own === 'player';
     if (mine && (f.t === 'cama' || f.t === 'camaC')) C2(d, '🛏️ Dormir', () => sleep(false), fx, fy - 20);
-    else if (mine && f.t === 'fogao') C2(d, '🍳 Fogão e casa', openHouse, fx, fy - 20);
+    else if (mine && f.t === 'fogao') C2(d, '🍳 Fogão a lenha (cozinhar)', openStove, fx, fy - 20);
     else if (mine && f.t === 'bau') C2(d, '📦 Baú da casa', openChest, fx, fy - 20);
     else if (mine && f.t === 'guardaRoupa') C2(d, '👕 Guarda-roupa', () => openSetup(true), fx, fy - 20);
     else if (f.t === 'cadeira' || f.t === 'sofa' || f.t === 'banco' || f.t === 'rede') C2(d + 4, '🪑 Sentar', () => sitOn(f), fx, fy - 20);
@@ -3060,6 +3060,29 @@ const ART2 = (() => {
       const hgt = [6, 13, 19, 25][stage]; col(10, Y - hgt, 4);
       if (stage >= 2) { p(14, Y - 10, 4, 3, '#5e8a5a'); col(16, Y - 16, 3); }
       if (stage >= 3) { p(7, Y - 13, 4, 3, '#5e8a5a'); col(6, Y - 20, 3); p(11, Y - hgt - 3, 3, 2, '#f8f4e8'); p(12, Y - hgt - 4, 1, 1, '#ffffff'); }
+    } else if (kind === 'milho') { // pés de milho: colmo, folhas compridas caídas, pendão e espigas com cabelo
+      const h = [6, 14, 22, 26][stage]; for (const [x, k] of [[8, 0], [15, 1]]) { const hh = h - k * 2; p(x, Y - hh, 2, hh, '#6a9a3a'); p(x, Y - hh, 1, hh, '#8aba4a');
+        for (let y = Y - 3; y > Y - hh + 2; y -= 4) { const sd = ((y >> 2) + k) % 2 ? 1 : -1; for (let i = 0; i < 5; i++) p(x + sd * (i + 1) + (sd < 0 ? 1 : 0), y - 1 + (i > 2 ? 1 : 0), 1, 1, i > 3 ? '#a8c860' : '#5e8e34'); }
+        if (stage >= 2) { p(x - 1, Y - hh - 3, 4, 1, '#d8c070'); p(x, Y - hh - 4, 2, 1, '#e8d080'); }
+        if (stage === 3) { p(x + 2, Y - hh + 9, 2, 5, '#c8d070'); p(x + 2, Y - hh + 9, 1, 5, '#e8e090'); p(x + 3, Y - hh + 8, 1, 2, '#9a5a2a'); } }
+    } else if (kind === 'feijao') { // feijoeiro baixo de folha trifoliada, flor lilás e vagens
+      const N = [[[12, Y - 4]], [[10, Y - 6], [14, Y - 5]], [[8, Y - 8], [12, Y - 10], [16, Y - 8], [12, Y - 5]], [[7, Y - 9], [12, Y - 12], [17, Y - 9], [10, Y - 6], [15, Y - 6]]][stage];
+      for (const [x, y] of N) { p(12, y + 2, 1, Y - y - 2, '#5a8a32'); p(x - 2, y, 3, 2, '#4e8a2e'); p(x + 1, y - 1, 3, 2, '#6aa83a'); p(x - 1, y - 2, 3, 2, '#5e9a34'); }
+      if (stage === 2) { p(9, Y - 9, 1, 1, '#c88ae0'); p(15, Y - 10, 1, 1, '#c88ae0'); }
+      if (stage === 3) for (const [x, y] of [[8, Y - 5], [14, Y - 7], [11, Y - 4], [17, Y - 6]]) { p(x, y, 1, 4, '#b8a860'); p(x + 1, y + 1, 1, 3, '#9a8a48'); }
+    } else if (kind === 'mandioca') { // mandioca: hastes finas com nós e folhas palmadas no alto; raiz aparece ao colher
+      const h = [7, 13, 19, 23][stage]; for (const [x, k] of [[10, 0], [14, 2]]) { const hh = h - k; for (let y = Y - 1; y > Y - hh; y--) p(x + (y % 5 === 0 ? 1 : 0), y, 1, 1, y % 3 ? '#8a7a5a' : '#6a5a3a');
+        const lf = (cx, cy) => { for (let a = -2; a <= 2; a++) { const an = -Math.PI / 2 + a * 0.55; for (let d = 1; d <= 4; d++) p(cx + Math.round(Math.cos(an) * d), cy + Math.round(Math.sin(an) * d * 0.8), 1, 1, d > 2 ? '#7ab854' : '#4e8a34'); } };
+        lf(x, Y - hh); if (stage >= 2) lf(x - 3, Y - hh + 5); if (stage >= 3) lf(x + 3, Y - hh + 3); }
+      if (stage === 3) { p(7, Y, 4, 2, '#a86a34'); p(13, Y + 1, 5, 1, '#a86a34'); }
+    } else if (kind === 'abobora') { // rama rasteira com folhas largas, flor amarela e a abóbora madura
+      const L = [[[12, Y - 3]], [[9, Y - 4], [14, Y - 3]], [[6, Y - 4], [11, Y - 6], [16, Y - 4], [19, Y - 3]], [[5, Y - 4], [10, Y - 7], [15, Y - 5], [19, Y - 3]]][stage];
+      p(4, Y - 2, 17, 1, '#5a8a32'); for (const [x, y] of L) { p(x - 2, y, 5, 3, '#4e8a2e'); p(x - 1, y - 1, 3, 1, '#6aa83a'); p(x, y + 1, 1, 1, '#3a6a24'); }
+      if (stage === 2) p(17, Y - 6, 2, 2, '#f0c030');
+      if (stage === 3) { p(12, Y - 7, 8, 6, '#e08a2a'); p(11, Y - 6, 10, 4, '#e08a2a'); p(14, Y - 7, 1, 6, '#c06a1a'); p(17, Y - 7, 1, 6, '#c06a1a'); p(13, Y - 6, 1, 2, '#f8b050'); p(15, Y - 9, 2, 2, '#5a7a2a'); }
+    } else if (kind === 'cana') { // canavial: colmos segmentados roxo-esverdeados e folhas longas em leque
+      const h = [8, 16, 24, 30][stage]; for (const [x, k] of [[7, 1], [11, 0], [15, 2]]) { const hh = Math.min(30, h - k * 2); for (let y = Y - 1; y > Y - hh; y--) p(x, y, 2, 1, y % 4 === 0 ? '#5a4a2a' : stage >= 3 ? '#8a7a4a' : '#7a9a4a');
+        for (let i = 0; i < 6; i++) { p(x - 1 - i, Y - hh + i, 1, 1, '#6aa83a'); p(x + 2 + i, Y - hh + i, 1, 1, '#5e9a34'); } p(x, Y - hh - 3, 1, 3, '#8aba4a'); }
     } else { // maniçoba: arbusto de folhas palmadas (5 lóbulos), pecíolos avermelhados
       const stem = (x0, y0, x1, y1) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let k = 0; k <= n; k++) p(Math.round(x0 + (x1 - x0) * k / n), Math.round(y0 + (y1 - y0) * k / n), 1, 1, '#9a5a3a'); };
       const leaf = (cx, cy, s) => { for (let k = -2; k <= 2; k++) { const a = -Math.PI / 2 + k * 0.62; for (let d = 1; d <= s; d++) { const x = cx + Math.round(Math.cos(a) * d), y = cy + Math.round(Math.sin(a) * d); p(x, y, 2, 1, d >= s - 1 ? '#7ab854' : '#56963e'); } } p(cx, cy, 2, 2, '#3e7a30'); };
@@ -4957,7 +4980,7 @@ function deliveries() {
   now.forEach(d => { const a = byId(d.id); if (!a) return; a.own = 'player'; if (S.firsts && S.firsts.compra && !S.firsts.cs_compra) setTimeout(() => csPrimeiraCompra(a), 900); a.newArr = 1; const p = randIn(d.to || 'receb'); a.x = p[0]; a.y = p[1]; a._st = null; toast('🚚 ' + a.n + ' chegou ao ' + AREAS[d.to || 'receb'].n); });
   if (S.frete && S.fretePend) { for (const k in S.fretePend) S.dep[k] = (S.dep[k] || 0) + S.fretePend[k]; S.fretePend = null; toast('🚚 Entrega da Casa do Agro no depósito.'); }
 }
-function dayTick() { { const bd = bdayToday(); if (bd.length) toast('🎂 Hoje é aniversário de ' + bd.map(id => NPCDEF[id].n).join(' e ') + '! Presente hoje vale o dobro.'); } aucExpire(); storyCheck(); regionDay(); missionDay(); bicoDay(); if (S.reg && S.reg.pop) { rfarmDay(); jobDay(); } qRefresh();
+function dayTick() { rocaGrowTick(); { const bd = bdayToday(); if (bd.length) toast('🎂 Hoje é aniversário de ' + bd.map(id => NPCDEF[id].n).join(' e ') + '! Presente hoje vale o dobro.'); } aucExpire(); storyCheck(); regionDay(); missionDay(); bicoDay(); if (S.reg && S.reg.pop) { rfarmDay(); jobDay(); } qRefresh();
   wildDayTick(); rollOffer(); setTimeout(() => S && eventAnnounce(), 2500); if (S.offer && S.offer.day < S.day - 1) S.offer = null;
   S.day++;
   const se = season();
@@ -7547,7 +7570,8 @@ function openMercadinho() { showModal('🧺 Mercadinho Itarantim', [['com', 'Com
   let h = keeperBanner('mercadinho');
   if (t === 'com') h += ['rapadura', 'queijo', 'cafe', 'farinha'].map(id => shopRow(id)).join('');
   if (t === 'var') h += ['violao', 'viola', 'lampiao', 'galaoV'].map(id => shopRow(id)).join('');
-  if (t === 'ven') { const o = S.inv.ovo || 0, l = S.inv.leite || 0; h += `<div class="card">🥚 Ovos na mochila: <b>${o}</b> × ${fmt2(IT.ovo.p)} ${btn('Vender todos', 'sellP', 'ovo', !o)}</div><div class="card">🥛 Leite na mochila: <b>${l}</b> L × ${fmt2(IT.leite.p)} ${btn('Vender todo', 'sellP', 'leite', !l)}</div><p class="mut">Recolha ovos no galinheiro e leite na Sala de Ordenha.</p>`; { const pe = Object.keys(FISHD).map(k => 'pe_' + k).filter(id => S.inv[id]); h += '<h3>Peixe fresco</h3>' + (pe.length ? pe.map(id => `<div class="card"><div class="row sp">${iic(id, 22)}<span style="flex:1">${IT[id].n}<br><span class="mut">Mochila: ${S.inv[id]} · ${fmt2(mercPrice(id))} cada</span></span>${btn('Vender', 'sellF', id)}</div></div>`).join('') : '<p class="mut">Nenhum peixe na mochila. Vara e isca na Casa do Agro.</p>'); } h += '<h3>Frutas e leite de cabra</h3>' + [...Object.keys(FRUITS).map(k => FRUITS[k].item), 'leiteCabra'].map(id => { const n = S.inv[id] || 0, pr = mercPrice(id); return `<div class="card"><div class="row sp">${iic(id, 22)}<span style="flex:1">${IT[id].n}<br><span class="mut">Mochila: ${n}${S.dep[id] ? ' · depósito: ' + S.dep[id] : ''}</span></span><b>${fmt2(pr)}</b></div>${btn('Vender tudo da mochila', 'sellF', id, !n)}</div>`; }).join(''); }
+  if (t === 'ven') { const o = S.inv.ovo || 0, l = S.inv.leite || 0; h += `<div class="card">🥚 Ovos na mochila: <b>${o}</b> × ${fmt2(IT.ovo.p)} ${btn('Vender todos', 'sellP', 'ovo', !o)}</div><div class="card">🥛 Leite na mochila: <b>${l}</b> L × ${fmt2(IT.leite.p)} ${btn('Vender todo', 'sellP', 'leite', !l)}</div><p class="mut">Recolha ovos no galinheiro e leite na Sala de Ordenha.</p>`; { const rc = ROCA_SELL.filter(id => S.inv[id]); h += '<h3>Da roça e da cozinha</h3>' + (rc.length ? rc.map(id => `<div class="card"><div class="row sp">${iic(id, 22)}<span style="flex:1">${IT[id].n}<br><span class="mut">Mochila: ${S.inv[id]} · ${fmt2(mercPrice(id))} cada</span></span>${btn('Vender', 'sellF', id)}</div></div>`).join('') : '<p class="mut">Nada da roça na mochila. Milho, feijão, mandioca, abóbora e cana nascem nas leiras da roça.</p>'); }
+  { const pe = Object.keys(FISHD).map(k => 'pe_' + k).filter(id => S.inv[id]); h += '<h3>Peixe fresco</h3>' + (pe.length ? pe.map(id => `<div class="card"><div class="row sp">${iic(id, 22)}<span style="flex:1">${IT[id].n}<br><span class="mut">Mochila: ${S.inv[id]} · ${fmt2(mercPrice(id))} cada</span></span>${btn('Vender', 'sellF', id)}</div></div>`).join('') : '<p class="mut">Nenhum peixe na mochila. Vara e isca na Casa do Agro.</p>'); } h += '<h3>Frutas e leite de cabra</h3>' + [...Object.keys(FRUITS).map(k => FRUITS[k].item), 'leiteCabra'].map(id => { const n = S.inv[id] || 0, pr = mercPrice(id); return `<div class="card"><div class="row sp">${iic(id, 22)}<span style="flex:1">${IT[id].n}<br><span class="mut">Mochila: ${n}${S.dep[id] ? ' · depósito: ' + S.dep[id] : ''}</span></span><b>${fmt2(pr)}</b></div>${btn('Vender tudo da mochila', 'sellF', id, !n)}</div>`; }).join(''); }
   return h; }); }
 function mercPrice(id) { const F = Object.values(FRUITS).find(f => f.item === id); const off = F && !fruitInSeason(F) ? 1.35 : 1; return Math.round(IT[id].p * off * (1 + ((S.day * 7 + id.length) % 11 - 5) / 100) * 100) / 100; } // fruta fora de época vale mais
 A.sellF = v => { const n = S.inv[v] || 0; if (!n) return; const pr = mercPrice(v); useInv(v, n); receive(Math.round(n * pr * 100) / 100, 'Venda de ' + n + 'x ' + IT[v].n, 'cash'); addFr('dito', 3); questEvent('sell', v, n); S.stats.fruitSold = (S.stats.fruitSold || 0) + n; renderModal(); };
@@ -7637,18 +7661,20 @@ A.coffee = () => { S.flags.coffee = S.day; P.en = cl(P.en + 12, 0, 100); toast('
 function collectManure() { let n = Math.floor(S.esterco || 0), bag = 0, dep = 0; if (n) questEvent('produce', 'esterco'); { const k = Math.min(n, invRoom('esterco')); if (k > 0) { addInv('esterco', k, true); n -= k; bag += k; } } while (n > 0 && depKg() + 20 <= depCap()) { S.dep.esterco = (S.dep.esterco || 0) + 20; n--; dep++; } S.esterco = n + ((S.esterco || 0) % 1); if (!bag && !dep) return say('Mochila e depósito cheios.'); P.en = Math.max(0, P.en - 3); toast('💩 Esterco: ' + (bag ? bag + ' saco(s) na mochila' : '') + (bag && dep ? ', ' : '') + (dep ? dep + ' no depósito' : '')); }
 /* ---------- roça de forragem ---------- */
 function rocaS() { if (!Array.isArray(S.roca)) S.roca = []; while (S.roca.length < ROCA_PLOTS.length) S.roca.push({ c: ROCA_PLOTS[S.roca.length].c, d: null }); return S.roca; }
-function rocaAge(i) { const q = rocaS()[i]; return q.d == null ? -1 : Math.max(0, S.day - q.d); }
+function rocaAge(i) { const q = rocaS()[i]; if (q.d == null) return -1; if (CROPS[q.c] && CROPS[q.c].food) return q.g || 0; return Math.max(0, S.day - q.d); }
 function rocaStage(i) { const q = rocaS()[i], a = rocaAge(i); if (a < 0) return -1; const C = CROPS[q.c]; return a >= C.grow ? 3 : Math.min(2, Math.floor(a * 3 / C.grow)); }
 function rocaInteractables(add, foot) { if (!foot) return; ROCA_PLOTS.forEach((pl, i) => { const q = rocaS()[i], C = CROPS[q.c], st = rocaStage(i);
-  const label = st < 0 ? '🌱 Leira vazia: plantar' : st === 3 ? '✂️ Colher ' + C.n.toLowerCase() : '🌵 ' + C.n + ' (' + Math.min(rocaAge(i), C.grow) + '/' + C.grow + ' dias)';
-  add({ k: 'roca', label, x: pl.x, y: pl.y, r: 18, prio: 2, hit: [pl.x - 16, pl.y - 26, pl.x + 16, pl.y + 6], fn: () => st < 0 ? openRocaPlant(i) : st === 3 ? act('pickup', 1.2, { x: pl.x, y: pl.y }, () => rocaHarvest(i)) : say(C.n + ': faltam ' + (C.grow - rocaAge(i)) + ' dia(s) para colher.') }); }); }
-function openRocaPlant(i) { showModal('🌱 Roça de forragem', null, null, () => '<p class="mut">Plantas nativas que o gado come. Plante, espere os dias e colha em feixes de 10 kg para os cochos de trato. Depois do corte, rebrota.</p>' + Object.keys(CROPS).map(k => { const C = CROPS[k]; return `<div class="card"><b>${C.n}</b> — muda ${fmt(C.p)}<p class="mut">${C.d}<br>Pronta em ${C.grow} dias · ${C.feixes} feixes por colheita · rebrota em ${C.regrow} dias.</p>${btn('Plantar ' + C.n.toLowerCase(), 'rocaPlant', i + '|' + k, !canPay(C.p))}</div>`; }).join('')); }
-A.rocaPlant = v => { const [i, k] = v.split('|'), C = CROPS[k], pl = ROCA_PLOTS[+i]; if (!canPay(C.p)) return say('A muda custa ' + fmt(C.p) + '.'); closeModal(); act('pickup', 1.4, { x: pl.x, y: pl.y }, () => { if (!pay(C.p, 'Muda: ' + C.n)) return; const q = rocaS()[+i]; q.c = k; q.d = S.day; P.en = Math.max(0, P.en - 3); toast('🌱 ' + C.n + ' plantada. Pronta em ' + C.grow + ' dias.'); }); };
-function rocaHarvest(i) { const q = rocaS()[i], C = CROPS[q.c]; if (rocaStage(i) !== 3) return; let n = q.left || C.feixes, bag = 0, dep = 0;
+  const food = C.food && q.d != null, thirsty = food && st < 3 && (q.w || -9) < S.day && (S.rained || -9) < S.day;
+  const label = st < 0 ? '🌱 Leira vazia: plantar' : st === 3 ? '✂️ Colher ' + C.n.toLowerCase() : thirsty && has('regador') ? '💧 Regar ' + C.n.toLowerCase() + ' (' + rocaAge(i) + '/' + C.grow + ')' : food && !q.ad && has('esterco') ? '💩 Adubar ' + C.n.toLowerCase() : (food ? '🌽 ' : '🌵 ') + C.n + ' (' + Math.min(rocaAge(i), C.grow) + '/' + C.grow + (food ? ' dias com água' : ' dias') + ')' + (thirsty ? ' · com sede' : '');
+  add({ k: 'roca', label, x: pl.x, y: pl.y, r: 18, prio: 2, hit: [pl.x - 16, pl.y - 26, pl.x + 16, pl.y + 6], fn: () => st < 0 ? openRocaPlant(i) : st === 3 ? act('pickup', 1.2, { x: pl.x, y: pl.y }, () => rocaHarvest(i)) : thirsty && has('regador') ? A.rocaWater(i) : food && !q.ad && has('esterco') ? A.rocaFert(i) : say(C.n + ': faltam ' + (C.grow - rocaAge(i)) + (food ? ' dia(s) com água' : ' dia(s)') + ' para colher.' + (thirsty ? ' Está com sede: regue (regador) ou espere chuva.' : '')) }); }); }
+function openRocaPlant(i) { showModal('🌱 Roça', null, null, () => { const card = k => { const C = CROPS[k]; return `<div class="card"><div class="row sp">${C.food ? iic(C.item, 26) : ''}<span style="flex:1"><b>${C.n}</b> — ${C.food ? 'semente' : 'muda'} ${fmt(C.p)}<br><span class="mut">${C.d}<br>${C.food ? `Pronta com ${C.grow} dias de água (chuva ou rega) · ${C.feixes} por colheita (+50% com esterco) · depois replante.` : `Pronta em ${C.grow} dias · ${C.feixes} feixes por colheita · rebrota em ${C.regrow} dias.`}</span></span></div>${btn('Plantar', 'rocaPlant', i + '|' + k, !canPay(C.p))}</div>`; };
+  return '<h3>Lavoura de comida</h3><p class="mut">Precisa de água: chuva ou rega com o regador. Quatro dias secos e ela se perde.</p>' + Object.keys(CROPS).filter(k => CROPS[k].food).map(card).join('') + '<h3>Forragem nativa (gado)</h3><p class="mut">Aguenta a seca sem rega e rebrota depois do corte.</p>' + Object.keys(CROPS).filter(k => !CROPS[k].food).map(card).join(''); }); }
+A.rocaPlant = v => { const [i, k] = v.split('|'), C = CROPS[k], pl = ROCA_PLOTS[+i]; if (!canPay(C.p)) return say('A muda custa ' + fmt(C.p) + '.'); closeModal(); act('pickup', 1.4, { x: pl.x, y: pl.y }, () => { if (!pay(C.p, 'Muda: ' + C.n)) return; const q = rocaS()[+i]; q.c = k; q.d = S.day; q.g = 0; q.dry = 0; q.ad = 0; q.w = -9; P.en = Math.max(0, P.en - 3); toast('🌱 ' + C.n + ' plantada. Pronta em ' + C.grow + ' dias.'); }); };
+function rocaHarvest(i) { const q = rocaS()[i], C = CROPS[q.c]; if (rocaStage(i) !== 3) return; let n = q.left || (C.food && q.ad ? Math.round(C.feixes * 1.5) : C.feixes), bag = 0, dep = 0;
   { const k = Math.min(n, invRoom(C.item)); if (k > 0) { addInv(C.item, k, true); n -= k; bag += k; } }
   while (n > 0 && depKg() + IT[C.item].kg <= depCap()) { S.dep[C.item] = (S.dep[C.item] || 0) + IT[C.item].kg; n--; dep++; }
   if (!bag && !dep) return say('Mochila e depósito cheios. Esvazie antes de colher.');
-  if (n > 0) q.left = n; else { delete q.left; q.d = S.day - (C.grow - C.regrow); }
+  if (n > 0) q.left = n; else { delete q.left; if (C.food) { q.d = null; q.g = 0; q.ad = 0; q.dry = 0; questEvent && questEvent('harvest', q.c, C.feixes); } else q.d = S.day - (C.grow - C.regrow); }
   P.en = Math.max(0, P.en - 4); toast('✂️ ' + C.n + ': ' + (bag ? bag + ' feixe(s) na mochila' : '') + (bag && dep ? ', ' : '') + (dep ? dep + ' no depósito' : '') + (n > 0 ? ' · ' + n + ' ainda na leira' : ''));
   if (AU.nz) AU.nz(0.3, 0.06, 'bandpass', 900, 1); }
 function openGalpao() { showModal('🔧 Galpão de Equipamentos', null, null, () => {
@@ -10102,6 +10128,72 @@ function interactables(forTap) {
   if (foot) { const ak = areaAt(P.x, P.y); if (ak && S.dirt[ak] > 20) add({ k: 'clean', label: '🧹 Limpar ' + AREAS[ak].n, x: P.x, y: P.y, r: 999, prio: -3, fn: () => cleanCurral(ak) }); }
   return L;
 }
+/* ===================== ROÇADO DE COMIDA E COZINHA =====================
+   As leiras da roça aceitam também lavoura de comida (milho, feijão, mandioca, abóbora, cana). Diferente das forrageiras
+   nativas, essas só crescem nos dias com água: chuva ou rega. Quatro dias sem água e a lavoura se perde. Adubo de esterco
+   rende 50% a mais. A colheita vai para a mochila/depósito e vira comida no fogão a lenha da casa (gasta lenha). */
+Object.assign(CROPS, {
+  milho: { n: 'Milho', grow: 7, feixes: 6, item: 'espiga', p: 12, food: 1, d: 'Semente de milho crioulo. Dá espigas para pamonha, canjica, cuscuz e isca.' },
+  feijao: { n: 'Feijão-de-corda', grow: 5, feixes: 4, item: 'feijao', p: 10, food: 1, d: 'Ligeiro e resistente. O feijão do prato de todo dia.' },
+  mandioca: { n: 'Mandioca', grow: 9, feixes: 6, item: 'mandioca', p: 8, food: 1, d: 'Maniva plantada. Raiz para fazer farinha no fogão.' },
+  abobora: { n: 'Abóbora (jerimum)', grow: 8, feixes: 3, item: 'abobora', p: 9, food: 1, d: 'Rama que se espalha. Jerimum para doce e cozido.' },
+  cana: { n: 'Cana-de-açúcar', grow: 10, feixes: 5, item: 'cana', p: 14, food: 1, d: 'Cana caiana. Vira rapadura no tacho.' }
+});
+Object.assign(IT, {
+  espiga: { i: '', n: 'Espiga de milho verde', kg: 0.3, p: 1.2, d: 'Da sua roça. Cozinhe no fogão: pamonha, canjica, cuscuz ou massa de isca.', c: 'roca', en: 2, fo: 6 },
+  feijao: { i: '', n: 'Feijão-de-corda (kg)', kg: 1, p: 7, d: 'Feijão colhido e debulhado. Feijão tropeiro no fogão.', c: 'roca' },
+  mandioca: { i: '', n: 'Mandioca (kg)', kg: 1, p: 2.2, d: 'Raiz fresca. No fogão vira farinha.', c: 'roca' },
+  abobora: { i: '', n: 'Abóbora (jerimum)', kg: 2, p: 6, d: 'Para doce de abóbora com rapadura.', c: 'roca' },
+  cana: { i: '', n: 'Feixe de cana', kg: 5, p: 6, d: 'Cana cortada. No tacho vira rapadura.', c: 'roca' },
+  doceAbobora: { i: '', n: 'Doce de abóbora', kg: 0.4, p: 9, en: 10, fo: 16, d: 'Doce em pedaço, feito no tacho. Muita gente gosta de ganhar.', c: 'comida' },
+  cuscuz: { i: '', n: 'Cuscuz de milho', kg: 0.4, p: 7, en: 8, fo: 28, d: 'Cuscuz no cuscuzeiro, café da manhã do sertão.', c: 'comida' },
+  tropeiro: { i: '', n: 'Feijão tropeiro', kg: 0.5, p: 14, en: 20, fo: 40, d: 'Feijão com farinha. Comida de quem vai pra lida o dia todo.', c: 'comida' },
+  peixeAssado: { i: '', n: 'Peixe assado', kg: 0.4, p: 10, en: 8, fo: 30, d: 'Peixe na brasa com sal.', c: 'comida' }
+});
+if (typeof ICAT !== 'undefined') ICAT.roca = ICAT.roca || 'Roça';
+ICON_EXTRA.espiga = p => { p(4, 1, 4, 9, '#e8d060'); p(5, 2, 1, 7, '#f8e890'); p(3, 3, 1, 7, '#6a9a3a'); p(8, 3, 1, 7, '#6a9a3a'); p(5, 0, 2, 1, '#9a5a2a'); p(4, 10, 4, 1, '#5a8a32'); };
+ICON_EXTRA.feijao = p => { p(2, 5, 8, 5, '#c8a878'); p(3, 4, 6, 1, '#d8b888'); for (const [x, y] of [[3, 6], [5, 7], [7, 6], [4, 8], [6, 9], [8, 8]]) p(x, y, 1, 1, '#7a4a2a'); };
+ICON_EXTRA.mandioca = p => { p(1, 5, 10, 3, '#8a5a2a'); p(2, 4, 7, 1, '#a86a34'); p(1, 6, 10, 1, '#f0e0c0'); p(10, 5, 1, 2, '#6a3a1a'); };
+ICON_EXTRA.abobora = p => { p(2, 4, 8, 6, '#e08a2a'); p(1, 5, 10, 4, '#e08a2a'); p(4, 4, 1, 6, '#c06a1a'); p(7, 4, 1, 6, '#c06a1a'); p(5, 2, 2, 2, '#5a7a2a'); p(3, 5, 1, 2, '#f8b050'); };
+ICON_EXTRA.cana = p => { for (const x of [3, 6, 8]) { p(x, 1, 2, 10, '#8a7a4a'); p(x, 3, 2, 1, '#5a4a2a'); p(x, 7, 2, 1, '#5a4a2a'); } p(2, 0, 3, 1, '#6aa83a'); p(7, 0, 3, 1, '#6aa83a'); };
+ICON_EXTRA.doceAbobora = p => { p(2, 4, 8, 6, '#c86a2a'); p(2, 4, 8, 1, '#e88a3a'); p(4, 6, 2, 2, '#e8a050'); p(1, 9, 10, 1, '#d8d0c0'); };
+ICON_EXTRA.cuscuz = p => { p(2, 3, 8, 7, '#f0d060'); p(3, 2, 6, 1, '#f8e080'); p(2, 6, 8, 1, '#e0b840'); p(1, 9, 10, 2, '#a86a34'); };
+ICON_EXTRA.tropeiro = p => { p(1, 6, 10, 4, '#e8e0d0'); p(2, 4, 8, 3, '#9a6a3a'); p(3, 4, 2, 1, '#e8d080'); p(6, 5, 2, 1, '#e8d080'); p(5, 3, 1, 1, '#7a3a2a'); };
+ICON_EXTRA.peixeAssado = p => { p(1, 8, 10, 2, '#d8d0c0'); p(2, 4, 7, 4, '#a8783a'); p(3, 3, 5, 1, '#c8984a'); p(9, 5, 2, 2, '#a8783a'); p(0, 4, 2, 4, '#8a5a2a'); p(4, 5, 3, 1, '#5a3a1a'); };
+function cropIsFood(q) { return !!(CROPS[q.c] && CROPS[q.c].food); }
+function rocaRainMark() { if (isRain()) S.rained = S.day; }
+// crescimento diário da lavoura de comida (chamado na virada do dia)
+function rocaGrowTick() { if (S.rocaT === S.day) return; S.rocaT = S.day; const lost = [];
+  rocaS().forEach((q, i) => { if (!cropIsFood(q) || q.d == null) return; const C = CROPS[q.c]; if ((q.g || 0) >= C.grow) return;
+    const wet = (S.rained || -9) >= S.day - 1 || (q.w || -9) >= S.day - 1;
+    if (wet) { q.g = (q.g || 0) + 1; q.dry = 0; } else { q.dry = (q.dry || 0) + 1; if (q.dry >= 4) { lost.push(C.n); q.d = null; q.g = 0; q.dry = 0; q.ad = 0; } } });
+  if (lost.length) toast('🥀 Sem água há 4 dias, perdeu-se: ' + lost.join(', ') + '. Regue a roça na seca.'); }
+A.rocaWater = v => { const i = +v, q = rocaS()[i], pl = ROCA_PLOTS[i]; act('water', 1.1, { x: pl.x, y: pl.y }, () => { q.w = S.day; P.en = Math.max(0, P.en - 1.5); for (let k = 0; k < 6; k++) part(pl.x + rnd(-10, 10), pl.y - 8, 'drop', { vx: rnd(-6, 6), vy: 10, m: .5, c: '#8ac8f0' }); toast('💧 Leira regada.'); }); };
+A.rocaFert = v => { const i = +v, q = rocaS()[i], pl = ROCA_PLOTS[i]; if (!has('esterco')) return say('Precisa de 1 saco de esterco curtido (esterqueira).'); act('pickup', 1.2, { x: pl.x, y: pl.y }, () => { useInv('esterco'); q.ad = 1; toast('🌱 Leira adubada: colheita 50% maior.'); }); };
+// fogão a lenha: receitas com ingredientes reais; cada fornada gasta 1 feixe de lenha ou carvão
+const RECIPES = [
+  { id: 'farinha', n: 'Farinha de mandioca', in: { mandioca: 3 }, out: 2, t: 'Ralar, prensar e torrar no forno.' },
+  { id: 'rapadura', n: 'Rapadura', in: { cana: 2 }, out: 3, t: 'Moer a cana e apurar o melado no tacho.' },
+  { id: 'doceAbobora', n: 'Doce de abóbora', in: { abobora: 1, rapadura: 1 }, out: 2, t: 'Jerimum cozido com rapadura até dar ponto.' },
+  { id: 'cuscuz', n: 'Cuscuz de milho', in: { espiga: 2 }, out: 1, t: 'Milho ralado no cuscuzeiro.' },
+  { id: 'pamonha', n: 'Pamonha', in: { espiga: 3 }, out: 2, t: 'Milho verde ralado, cozido na palha.' },
+  { id: 'canjica', n: 'Canjica', in: { espiga: 2, leite: 1 }, out: 2, t: 'Milho com leite e canela.' },
+  { id: 'tropeiro', n: 'Feijão tropeiro', in: { feijao: 1, farinha: 1 }, out: 1, t: 'Feijão refogado com farinha.' },
+  { id: 'peixeAssado', n: 'Peixe assado', in: { peixe: 1 }, out: 1, t: 'Qualquer peixe da sua pesca, na brasa.' },
+  { id: 'massa', n: 'Massa de milho (isca)', in: { espiga: 1 }, out: 6, t: 'Fubá com água, bolinhas para tilápia e pacu.' }
+];
+const anyFish = () => Object.keys(S.inv).find(k => k.startsWith('pe_') && S.inv[k] > 0);
+const recHas = R => Object.entries(R.in).every(([k, n]) => k === 'peixe' ? !!anyFish() : has(k, n));
+const fuelId = () => has('lenha') ? 'lenha' : has('carvao') ? 'carvao' : null;
+function openStove() { showModal('🔥 Fogão a lenha', null, null, () => { const fu = fuelId();
+  let h = `<p class="mut">Cada fornada gasta 1 feixe de lenha (ou carvão). Você tem: lenha ${S.inv.lenha || 0}, carvão ${S.inv.carvao || 0}.${fu ? '' : ' <b>Sem lenha — compre na Casa do Agro.</b>'}</p>`;
+  h += RECIPES.map(R => { const ok = recHas(R) && fu; const ing = Object.entries(R.in).map(([k, n]) => k === 'peixe' ? `1 peixe (${anyFish() ? '✔' : '✘'})` : `${n}× ${IT[k].n} (${S.inv[k] || 0})`).join(' + ');
+    return `<div class="card"><div class="row sp">${iic(R.id, 28)}<span style="flex:1"><b>${R.n}</b> ×${R.out}<br><span class="mut">${ing}<br>${R.t}</span></span>${btn('Cozinhar', 'cook', R.id, !ok)}</div></div>`; }).join('');
+  return h + `<div class="row">${btn('🏠 Casa (dormir, salvar, roupas)', 'openHouseUI')}</div>`; }); }
+A.openHouseUI = () => { closeModal(); openHouse(); };
+A.cook = id => { const R = RECIPES.find(r => r.id === id); if (!R || !recHas(R) || !fuelId()) return; if (invRoom(R.id) < R.out) return say('Mochila sem espaço para ' + IT[R.id].n.toLowerCase() + '.'); closeModal();
+  act('feed', 1.6, null, () => { useInv(fuelId()); for (const [k, n] of Object.entries(R.in)) { if (k === 'peixe') useInv(anyFish()); else useInv(k, n); } addInv(R.id, R.out, true); S.stats.cooked = (S.stats.cooked || 0) + 1; questEvent && questEvent('cook', R.id, R.out); AU.chime && AU.chime(); toast('🍲 ' + R.n + ' pronta (×' + R.out + ').'); P.en = Math.max(0, P.en - 2); }); };
+const ROCA_SELL = ['espiga', 'feijao', 'mandioca', 'abobora', 'cana', 'farinha', 'rapadura', 'doceAbobora', 'cuscuz', 'tropeiro', 'pamonha', 'canjica'];
 /* ===================== PESCA =====================
    Espécies do sertão baiano por lugar (açude, rio, riacho da mata), horário e tempo. Vara e isca de verdade (mochila),
    fisgada no tempo certo e briga com a linha (tensão). O peixe vai para a mochila, pode ser vendido no Mercadinho,
@@ -10217,7 +10309,7 @@ const STEP = 1 / 60; let acc = 0, lastT = 0, saveT = 0;
 function tick(dt) {
   drawT += dt;
   if (mode === 'play' && !paused) {
-    holdTick(); placeTick(dt); bagSync(); insideTick(); houseGuard(); if ((tick.lendT = (tick.lendT || 0) - dt) < 0) { tick.lendT = 1; lendTick(); const lh = loanedHorse(); if (lh && P.mnt !== lh.id && lh._st !== 'tied' && !lh._act) lh._st = 'tied'; } const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); CINE.update(dt); FISH.update(dt); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
+    holdTick(); placeTick(dt); bagSync(); insideTick(); houseGuard(); if ((tick.lendT = (tick.lendT || 0) - dt) < 0) { tick.lendT = 1; lendTick(); const lh = loanedHorse(); if (lh && P.mnt !== lh.id && lh._st !== 'tied' && !lh._act) lh._st = 'tied'; } const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); CINE.update(dt); FISH.update(dt); rocaRainMark(); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
     { const h = P.mnt ? byId(P.mnt) : null; if (h && h._react && (h._react.t -= dt) <= 0) h._react = null; }
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);
