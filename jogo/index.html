@@ -248,6 +248,14 @@ body.cs #joy,body.cs .pad,body.cs #hud,body.cs #bar{opacity:0}
 #inp button{flex:1 1 22%;padding:10px 2px;font-size:calc(13px*var(--fs))}
 #inp .lbl{width:100%;font-size:calc(12px*var(--fs));color:var(--gold)}
 body.in .pad,body.in #joy{display:none!important}
+body.fsh .pad,body.fsh #joy{display:none!important}
+#fishUI{position:absolute;left:0;right:0;bottom:0;display:none;padding:8px 10px;padding-bottom:calc(8px + var(--sab));background:rgba(20,10,5,.94);border-top:4px solid var(--leather);z-index:15;color:#fbe9c2;max-width:720px;margin:0 auto;user-select:none;-webkit-user-select:none;touch-action:none}
+#fishUI .fmsg{font-size:calc(13.5px*var(--fs));line-height:1.4;margin-bottom:6px;min-height:1.4em}
+#fishUI .fbar{position:relative;height:14px;border:2px solid var(--ink);background:#3a2414;margin:4px 0}#fishUI .fbar i{display:block;height:100%}
+#fishUI .ften .fz{position:absolute;left:32%;width:54%;top:0;bottom:0;border-left:2px solid #8ad070;border-right:2px solid #e05a40;pointer-events:none}
+#fishUI .frow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}#fishUI button{border:3px solid var(--ink);background:linear-gradient(#f0a84a 0 50%,#d98a2c 50%);color:#2b1608;font-weight:800;padding:8px 10px;font-size:calc(13px*var(--fs))}#fishUI button:disabled{opacity:.5}
+#fishUI .fbig{flex:2;min-width:140px;padding:12px;font-size:calc(16px*var(--fs))}#fishUI .fhot{background:linear-gradient(#ff6040 0 50%,#e03a20 50%);color:#fff;animation:pulse .5s ease-in-out infinite}
+#fishUI .fcard{display:flex;gap:10px;align-items:center;background:var(--paper2);color:#2b1608;border:3px solid var(--ink);padding:8px}#fishUI .fcard .mut{font-size:calc(12px*var(--fs))}#fishUI .fnm{font-family:var(--fH);font-size:calc(18px*var(--fs))}#fishUI .fkg{font-weight:800;color:#2a6aa0}#fishUI .fimg img{image-rendering:pixelated}
 body.ttl #hud,body.ttl #bar,body.ttl #joy,body.ttl .pad{display:none!important}
 /* criação do personagem */
 #setup{position:absolute;inset:0;z-index:21;display:none;background:rgba(24,13,7,.94);padding:10px 12px 40px;padding-top:calc(10px + var(--sat));overflow-y:auto}
@@ -342,8 +350,8 @@ body.lan .sw2 .pvbox{position:sticky;top:0}
 'use strict';
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
-const TS = 16, MW = 192, MH = 150, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '6.1.0', SAVE_V = 9;
+const TS = 16, MW = 192, MH = 204, WPX = MW * TS, HPX = MH * TS;
+const GAME_V = '6.2.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -1533,6 +1541,7 @@ function computeDepth() {
   while (q.length) { const i = q.shift(), x = i % MW, y = (i / MW) | 0; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= MW || ny >= MH) continue; const j = gi(nx, ny); if (ground[j] === G.WATER && pondT[j] && !wdepth[j]) { wdepth[j] = Math.min(4, wdepth[i] + 1); q.push(j); } } }
   // riacho da estrada (2 de fundo: o cavalo vadeia, o gado só passa pela ponte) e córrego da mata (raso)
   for (let i = 0; i < MW * MH; i++) if (ground[i] === G.WATER && !pondT[i]) wdepth[i] = (i % MW) >= 60 || i >= 90 * MW ? 2 : 1;
+  if (typeof aguasDepthFix === 'function') aguasDepthFix();
 }
 function waterDepthAt(x, y) { // profundidade contínua (0 margem .. 1 nado) amostrando os centros das casas vizinhas
   const fx = x / TS - 0.5, fy = y / TS - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), u = fx - x0, v = fy - y0;
@@ -1630,7 +1639,15 @@ const REGIONS = [
   { id: 'acude', n: 'Açude Grande', r: [96, 104, 124, 124] },
   { id: 'rio', n: 'Beira do rio', r: [0, 122, 191, 133] },
   { id: 'mata', n: 'Mata do Rio', r: [0, 134, 88, 149] },
-  { id: 'trilha', n: 'Trilha dos fundos', r: [14, 90, 62, 92] }
+  { id: 'trilha', n: 'Trilha dos fundos', r: [14, 90, 62, 92] },
+  { id: 'varzea', n: 'Várzea do Pardo', r: [0, 150, 191, 164] },
+  { id: 'sulpardo', n: 'Campos da Vereda', r: [0, 176, 129, 203] },
+  { id: 'caatsul', n: 'Caatinga do Pardo', r: [130, 176, 191, 203] },
+  { id: 'pardo', n: 'Rio Pardo', s: 'O RIO GRANDE', r: [0, 163, 191, 176] },
+  { id: 'porto', n: 'Porto do Pardo', s: 'VILA DE PESCADORES', r: [58, 152, 86, 164] },
+  { id: 'vereda', n: 'Lagoa da Vereda', s: 'BURITIZAL', r: [6, 182, 38, 199] },
+  { id: 'brejo', n: 'Brejo das Taboas', r: [40, 182, 61, 203] },
+  { id: 'barragem', n: 'Barragem do Pardo', s: 'AÇUDE PÚBLICO', r: [132, 177, 172, 199] }
 ];
 function worldRegion(x, y) { const tx = x / TS, ty = y / TS; for (let i = REGIONS.length - 1; i >= 0; i--) { const r = REGIONS[i].r; if (tx >= r[0] && tx <= r[2] + 1 && ty >= r[1] && ty <= r[3] + 1) return REGIONS[i]; } return null; }
 const riverY = x => 127 + Math.round(Math.sin(x * 0.07) * 1.4 + Math.sin(x * 0.023) * 1.1);
@@ -1662,6 +1679,7 @@ function genRegionsGround(R) {
   for (let y = 108; y <= 109; y++) { const cx = Math.floor(creekX(y)); for (let x = cx - 1; x <= cx; x++) ground[gi(x, y)] = G.BRIDGE; }
   // --- açude grande e lagoa do haras
   regionPond(110, 113, 7, 4.5, 81); regionPond(166, 24, 5, 3.4, 83);
+  genPardoGround(R);
   // --- matas: mata do rio (sul) e capoeira na beira oeste
   genMata([0, 134, 88, 149], R, [[60, 140, 89, 140]]); genMata([0, 92, 12, 125], R, []);
 }
@@ -1686,6 +1704,7 @@ function genRegionTroughs(tr) {
   tr('umburana', 'agua', 19, 97, 2, 120); tr('retiro', 'agua', 67, 95, 2, 300); tr('boaVista', 'agua', 161, 111, 2, 300);
 }
 function genRegionProps(P) {
+  genPardoProps(P);
   // Lagoa Seca: pomar e sombra
   [['manga', 138.5, 10.85], ['manga', 159.5, 17.85], ['ipe', 148.5, 34.85], ['coqueiro', 161.5, 12.6], ['inga', 171.5, 21.85], ['juazeiro', 135.5, 28.85], ['umbu', 141.5, 32.85]].forEach(([t, x, y]) => P(t, x, y, 1));
   P('placa', 145.6, 41.6, 0); P('cavalete', 158.6, 16.6, 1);
@@ -1993,6 +2012,7 @@ function propSpr(t, v, se) {
       for (const [x, y, r] of C) for (let j = 0; j < 5; j++) { const a = R() * 6.28; p(Math.round(x + Math.cos(a) * r), Math.round(y + Math.sin(a) * r), 1, 1, y + Math.sin(a) * r > cy ? lo : base); } // borda recortada
       for (let j = 0; j < (o.fruit ? o.fruit[1] : 0); j++) { const [x, y, r] = C[(j * 5 + v) % C.length], a = R() * 6.28, d = R() * (r - 2); p(Math.round(x + Math.cos(a) * d), Math.round(y + Math.sin(a) * d), 2, 2, typeof o.fruit[0] === 'string' ? o.fruit[0] : o.fruit[0][j % o.fruit[0].length]); }
     };
+    if (pardoPropSpr(t, v, p, BX, BY, R)) return;
     switch (t) {
       case 'umbu': bigTree({ tw: 7, th: 14, cy: BY - 30, rx: 24, ry: 12, n: 8, bark: '#6a5038', cols: se ? ['#5a6436', '#7a8a4a', '#a0a862'] : ['#2e5a20', '#4f7a32', '#7aa848'], br: [[-12, -10], [11, -9], [-3, -14], [5, -13]] }); if (se) for (let i = 0; i < 6; i++) p(BX - 14 + Math.floor(R() * 28), BY - 38 + Math.floor(R() * 12), 2, 2, '#c8c060'); break;
       case 'juazeiro': bigTree({ tw: 6, th: 12, cy: BY - 28, rx: 21, ry: 13, n: 8, bark: '#5a4434', cols: ['#1e4a1c', '#2f6a2a', '#5a9a44'], br: [[-9, -9], [8, -10], [0, -12]] }); for (let i = 0; i < 5; i++) p(BX - 12 + Math.floor(R() * 24), BY - 34 + Math.floor(R() * 12), 1, 1, '#e8c860'); break;
@@ -4273,8 +4293,9 @@ function receive(v, desc, to) { v = Math.round(v * 100) / 100; if (to === 'cash'
 /* ---------- inventário ---------- */
 const INV_BASE = 30; let INV_CAP = 30; // o jegue e a mula com alforje carregam mais
 function invCapNow() { const h = P && P.mnt && S ? byId(P.mnt) : null; return INV_BASE + (h ? (h.sp === 'jumento' ? 25 : h.sp === 'burro' ? 15 : 0) : 0); }
-function invKg() { let k = 0; for (const i in S.inv) if (IT[i]) k += IT[i].kg * S.inv[i]; return Math.round(k * 10) / 10; }
-function addInv(id, n, force) { n = n || 1; if (!force && IT[id] && invKg() + IT[id].kg * n > INV_CAP + 0.01) { say('Mochila pesada demais (' + INV_CAP + ' kg). Use a carroça ou o depósito.'); return false; } S.inv[id] = (S.inv[id] || 0) + n; return true; }
+function itKgE(i) { return IT[i] ? IT[i].kg * (IT[i].c === 'peixe' && S.inv.sambura ? 0.2 : 1) : 0; }
+function invKg() { let k = 0; for (const i in S.inv) if (IT[i]) k += itKgE(i) * S.inv[i]; return Math.round(k * 10) / 10; }
+function addInv(id, n, force) { n = n || 1; if (!force && IT[id] && invKg() + itKgE(id) * n > INV_CAP + 0.01) { say('Mochila pesada demais (' + INV_CAP + ' kg). Use a carroça ou o depósito.'); return false; } S.inv[id] = (S.inv[id] || 0) + n; return true; }
 function useInv(id, n) { n = n || 1; if ((S.inv[id] || 0) < n) return false; S.inv[id] -= n; if (!S.inv[id]) delete S.inv[id]; return true; }
 const has = (id, n) => (S.inv[id] || 0) >= (n || 1);
 function depCap() { return 2000 + Object.values(S.lots).filter(l => l && l.done && l.b === 'silo').length * 3000; }
@@ -4647,7 +4668,7 @@ function dogDay() { for (const d of myAnimals('cao')) { d.water = Math.max(d.wat
     if ((S.dep.racaoCao || 0) >= kg) { S.dep.racaoCao = +(S.dep.racaoCao - kg).toFixed(2); d.food = 100; d.fedDay = S.day; }
     else if ((S.inv.racaoCao || 0) >= kg / 10) { useInv('racaoCao', kg / 10); d.food = 100; d.fedDay = S.day; }
     else if (d.food < 40) { d.hap = cl(d.hap - 6, 0, 100); if (Math.random() < 0.4 * dogStat(d, 'track')) { d.food = cl(d.food + 45, 0, 100); toast('🐕 ' + d.n + ' caçou um preá no mato. Compre ração de cão e guarde no depósito: o cão come sozinho de manhã.'); } } } if (myAnimals('cao').length && (S.dep.racaoCao || 0) < 2 && !(S.inv.racaoCao > 0.1)) toast('🦴 A ração dos cães está acabando no depósito.'); }
-function dayTick() { storyCheck(); regionDay(); missionDay(); socialDay(); dogDay();
+function dayTick() { storyCheck(); regionDay(); missionDay(); socialDay(); dogDay(); aguasDay();
   wildDayTick(); rollOffer(); setTimeout(() => S && eventAnnounce(), 2500); if (S.offer && S.offer.day < S.day - 1) S.offer = null;
   S.day++;
   const se = season();
@@ -4961,6 +4982,7 @@ function updPlayer(dt) {
   if (P._vx === undefined) { P._vx = P._vy = 0; P._dist = 0; }
   if (P._act) { updAct(dt); P._vx *= 0.7; P._vy *= 0.7; return; }
   if (inst.on) { P._vx = P._vy = 0; P._st = 'play'; return; }
+  if (FS.on && !P.boat) { P._vx = P._vy = 0; P._st = 'idle'; P._mv = 0; return; }
   if (MOVE.edit) { P._vx = P._vy = 0; P._st = 'idle'; P._mv = 0; return; }
   if (AUC.on) { P._vx = P._vy = 0; P._st = 'idle'; P._mv = 0; P.dir = 1; return; }
   let ix = input.x, iy = input.y, mag = hyp(ix, iy); if (mag > 1) { ix /= mag; iy /= mag; mag = 1; }
@@ -4971,6 +4993,7 @@ function updPlayer(dt) {
   const galOn = input.gal || !!(P._auto && P._auto.run); autoCloseBehind();
   if (!P.cart) autoVeh();
   if (P.cart) { updCartDrive(dt, ix, iy, mag); return; }
+  if (P.boat) { if (FS.on) { ix = iy = mag = 0; } updBoat(dt, ix, iy, mag); return; }
   const horse = P.mnt ? byId(P.mnt) : null;
   let maxV, acc, dec, hb, gallop = false, B = null;
   if (horse) {
@@ -6519,7 +6542,7 @@ A.bagSel = v => { M.sel = v; renderModal(); AU.click(); };
 A.eat = v => { const it = IT[v]; if (!has(v)) return; closeModal(); act('eat', 0.9, null, () => { useInv(v); P.en = cl(P.en + (it.en || 0), 0, 100); P.fo = cl(P.fo + (it.fo || 0), 0, 100); AU.munch(); toast(`+${it.en || 0} energia · +${it.fo || 0} fome`); }, { zoom: 1.2 }); };
 A.drop = v => { useInv(v); renderModal(); };
 /* ---------- menu principal ---------- */
-const MTABS = [['vaq', 'Vaqueiro', 'hat'], ['inv', 'Mochila', 'bag'], ['ani', 'Animais', 'cow'], ['gad', 'Gado', 'cow'], ['faz', 'Fazenda', 'farm'], ['map', 'Mapa', 'map'], ['ban', 'Banco', 'bank'], ['obr', 'Obras', 'build'], ['peo', 'Peões', 'worker'], ['rel', 'Relações', 'heart'], ['cfg', 'Config.', 'gear']];
+const MTABS = [['nat', 'Natureza', 'eye'], ['vaq', 'Vaqueiro', 'hat'], ['inv', 'Mochila', 'bag'], ['ani', 'Animais', 'cow'], ['gad', 'Gado', 'cow'], ['faz', 'Fazenda', 'farm'], ['map', 'Mapa', 'map'], ['ban', 'Banco', 'bank'], ['obr', 'Obras', 'build'], ['peo', 'Peões', 'worker'], ['rel', 'Relações', 'heart'], ['cfg', 'Config.', 'gear']];
 function openMenu(tab) { showModal('', MTABS, tab || 'vaq', menuTab); }
 function menuTab(t) {
   if (t === 'vaq') {
@@ -6553,6 +6576,7 @@ function menuTab(t) {
       return `<div class="card"><div class="dlg"><div>${charImg(d.ap, 2)}</div><div style="flex:1"><b>${d.n}</b> <span class="mut">${d.role}${d.farm ? ' · ' + d.farm : ''}</span><br>${hrt(hearts(id))}<br><span class="mut">Agora: ${loc}${s.quest ? ' · 📜 favor pendente' : ''}</span>${s.mem.slice(0, 2).map(m => `<br><span class="mut">• Dia ${m.d}: ${esc(m.t)}</span>`).join('')}</div></div></div>`; }).join('') + `<div class="card"><b>${ic('heart', 14)} Confraternização</b><p>Convide os amigos (1+ coração) para um churrasco na sua fazenda às 18h.</p>${S.event ? `<p>Churrasco marcado para o dia ${S.event.day} com ${S.event.guests.map(g => NPCDEF[g].n).join(', ')}.</p>` : btn('Marcar churrasco', 'invite')}</div>`;
   }
   if (t === 'cfg') return cfgHTML(true);
+  if (t === 'nat') return natHTML();
   return '';
 }
 A.aniF = v => { M.sub = v; renderModal(); };
@@ -6607,7 +6631,7 @@ function mapHTML() {
   for (const k of ['norte', 'sul']) if (!S.exp[k]) { g.fillStyle = 'rgba(40,20,10,0.45)'; const y0 = k === 'norte' ? 0 : 67; g.fillRect(0, y0 * sc, 60 * sc, 22 * sc); }
   g.font = cvFont(10 * (SET.fs || 1), 800); g.textAlign = 'center';
   const lab = (t, x, y) => { g.fillStyle = '#000'; g.fillText(t, x * sc + 1, y * sc + 1); g.fillStyle = '#fff4c0'; g.fillText(t, x * sc, y * sc); };
-  lab('SUA FAZENDA', 20, 22); lab('ITARANTIM', 90, 32); lab('F. CAMPOS', 75, 2.5); lab('F. DUARTE', 75, 89); lab('HARAS LAGOA SECA', 148, 5); lab('F. SERRA AZUL', 150, 92); lab('SÍTIO UMBURANA', 36, 95); lab('RETIRO', 76, 121); lab('AÇUDE', 110, 106); lab('RIO', 40, 126); lab('MATA DO RIO', 44, 145); lab('LAJEDOS', 140, 140); lab('SERROTE', 187, 30); lab('Curral', 45, 38); lab('Pastos', 18, 56); if (!S.exp.norte) lab('À VENDA', 30, 11); if (!S.exp.sul) lab('À VENDA', 30, 78);
+  lab('SUA FAZENDA', 20, 22); lab('ITARANTIM', 90, 32); lab('F. CAMPOS', 75, 2.5); lab('F. DUARTE', 75, 89); lab('HARAS LAGOA SECA', 148, 5); lab('F. SERRA AZUL', 150, 92); lab('SÍTIO UMBURANA', 36, 95); lab('RETIRO', 76, 121); lab('AÇUDE', 110, 106); lab('RIO PARDO', 112, 170); lab('PORTO', 72, 155); lab('VEREDA', 22, 183); lab('BREJO', 51, 196); lab('BARRAGEM', 152, 197); lab('RIO', 40, 126); lab('MATA DO RIO', 44, 145); lab('LAJEDOS', 140, 140); lab('SERROTE', 187, 30); lab('Curral', 45, 38); lab('Pastos', 18, 56); if (!S.exp.norte) lab('À VENDA', 30, 11); if (!S.exp.sul) lab('À VENDA', 30, 78);
   for (const a of S.animals) if (a.own === 'player') { g.fillStyle = a.sp === 'boi' ? '#f4f0e8' : '#c08040'; g.fillRect(a.x / TS * sc - 1, a.y / TS * sc - 1, 2, 2); }
   for (const e of npcs) if (!e.hidden) { g.fillStyle = '#40a0e0'; g.fillRect(e.x / TS * sc - 2, e.y / TS * sc - 2, 4, 4); }
   g.fillStyle = '#ff3020'; g.beginPath(); g.arc(P.x / TS * sc, P.y / TS * sc, 4, 0, 7); g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 1.5; g.stroke();
@@ -7560,6 +7584,518 @@ function drawCityDeco(add, inV) {
     else add(o.y, () => X.drawImage(cdecoSpr(o.k, o), Math.round(o.x - 20), Math.round(o.y - 42)), o.x, { w: 50, h: 50 }); }
   drawWires(add, inV); drawBandeirolas(add, inV);
 }
+/* ============ ÁGUAS DO SERTÃO (v6.2): expansão ao sul — Rio Pardo, Porto do Pardo, Lagoa da Vereda,
+   Brejo das Taboas e Barragem do Pardo. Plantas aquáticas, corredeira, sangradouro, peixes e aves. ============ */
+const PARDO = {
+  top: x => 166 + Math.round(Math.sin(x * 0.045) * 2.2 + Math.sin(x * 0.11 + 1) * 0.8),
+  wid: x => 7 + Math.round(Math.sin(x * 0.06 + 0.7) * 1.6) + ((x >= 24 && x <= 40) || (x >= 116 && x <= 136) ? 3 : 0),
+  isl: x => (x >= 27 && x <= 37) || (x >= 119 && x <= 133), // coroas de areia no meio do rio
+  pier: 72, pier2: 66, bridge: 90,
+  LAGOA: [22, 190, 11, 5.8], BAR: [152, 188, 17, 7.5], BREJO: [42, 184, 60, 202], DAM: 178
+};
+const WPLANTS = []; // aguapé, ninfeias e pedras de corredeira (sobre a água)
+function genPardoGround(R) {
+  // base: várzea verde ao norte do rio, caatinga e campos ao sul
+  for (let y = 150; y < MH; y++) for (let x = 0; x < 184; x++) { const i = gi(x, y); const t = PARDO.top(x); if (y < t - 1) { ground[i] = vnoise(x * 0.16, y * 0.16, 77) > 0.74 ? G.MUD : G.GRASS; } else if (y > t + PARDO.wid(x)) { ground[i] = x < 90 ? (vnoise(x * 0.12, y * 0.12, 79) > 0.62 ? G.DRY : G.GRASS) : (vnoise(x * 0.13, y * 0.13, 61) > 0.74 ? G.ROCK : G.DRY); } forest[i] = 0; }
+  // o rio grande: largo, com fundo e coroas de areia
+  for (let x = 0; x < MW; x++) { const t = PARDO.top(x), w = PARDO.wid(x), c = t + w / 2;
+    for (let y = t; y < t + w; y++) { const i = gi(x, y); ground[i] = G.WATER; pondT[i] = 1; if (PARDO.isl(x) && Math.abs(y + 0.5 - c) < 1.3 && H2(x, y, 95) < 0.85) { ground[i] = G.SAND; pondT[i] = 0; } }
+    for (const y of [t - 1, t + w]) if (H2(x, y, 96) < 0.82) ground[gi(x, y)] = G.SAND; if (H2(x, t - 2, 97) < 0.35) ground[gi(x, t - 2)] = G.SAND; if (H2(x, t + w + 1, 98) < 0.35) ground[gi(x, t + w + 1)] = G.SAND; }
+  // estrada do sul atravessa a várzea, a ponte grande e segue para a caatinga
+  fillR(90, 150, 91, MH - 1, G.DIRT);
+  for (let y = PARDO.top(90) - 2; y <= PARDO.top(90) + PARDO.wid(90) + 1; y++) for (const x of [90, 91]) { ground[gi(x, y)] = G.BRIDGE; pondT[gi(x, y)] = 0; }
+  // Porto do Pardo: terreiro, ruazinha e dois trapiches de madeira entrando no rio
+  fillR(62, 155, 82, 161, G.DIRT); fillR(64, 158, 89, 158, G.DIRT);
+  for (const [px, n] of [[PARDO.pier, 5], [PARDO.pier2, 3]]) { const t = PARDO.top(px), n2 = Math.min(n, PARDO.wid(px) - 2); for (let y = t - 2; y < t + n2; y++) { ground[gi(px, y)] = G.BRIDGE; pondT[gi(px, y)] = 0; } }
+  // Lagoa da Vereda (buritizal): capim em volta e lagoa funda no meio
+  { const [cx, cy, rx, ry] = PARDO.LAGOA; for (let y = Math.floor(cy - ry * 2); y <= cy + ry * 2; y++) for (let x = Math.floor(cx - rx * 2); x <= cx + rx * 2; x++) { if (x < 0 || y < 0 || x >= MW || y >= MH) continue; if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 < 3.2) ground[gi(x, y)] = G.GRASS; } regionPond(cx, cy, rx, ry, 91); }
+  // Brejo das Taboas: lama, poças rasas e capim-d'água
+  { const [x0, y0, x1, y1] = PARDO.BREJO; for (let y = y0; y <= y1 && y < MH; y++) for (let x = x0; x <= x1; x++) { const i = gi(x, y), n = vnoise(x * 0.3, y * 0.3, 88); ground[i] = n > 0.58 ? G.WATER : n > 0.4 ? G.MUD : G.GRASS; pondT[i] = 0; } }
+  // Barragem do Pardo: açude público com paredão de terra e pedra e sangradouro que desce para o rio
+  { const [cx, cy, rx, ry] = PARDO.BAR; regionPond(cx, cy, rx, ry, 93); const D = PARDO.DAM;
+    for (let x = 133; x <= 171; x++) { ground[gi(x, D)] = G.DIRT; ground[gi(x, D + 1)] = G.DIRT; pondT[gi(x, D)] = pondT[gi(x, D + 1)] = 0; if (ground[gi(x, D - 1)] !== G.WATER) ground[gi(x, D - 1)] = G.ROCK; if (ground[gi(x, D + 2)] !== G.WATER) ground[gi(x, D + 2)] = G.ROCK; }
+    for (let y = PARDO.top(168) + PARDO.wid(168) - 1; y <= D + 2; y++) for (const x of [168, 169]) { const i = gi(x, y); if (y === D || y === D + 1) { ground[i] = G.BRIDGE; pondT[i] = 0; } else { ground[i] = G.WATER; pondT[i] = 0; } }
+    fillR(92, D, 132, D + 1, G.DIRT); }
+  // trilha para a lagoa e o brejo
+  fillR(30, 181, 89, 181, G.DIRT);
+}
+function genPardoProps(P) {
+  const R = mulberry(6262), solid = (x, y, r) => { for (let dx = -r; dx <= r; dx++) obj[gi(Math.round(x - 0.5) + dx, Math.floor(y))] = 3; };
+  // porto: palhoças, canoas na areia, redes secando, barraca do pescador
+  [[64.5, 157.85, 0], [68.6, 156.6, 1], [77.5, 156.9, 2], [81.2, 159.6, 3]].forEach(([x, y, v]) => { P('palhoca', x, y, v); solid(x, y, 1); });
+  P('barraca', 76.2, 161.4, 0); solid(76.2, 161.4, 1); P('rede', 62.6, 160.9, 0); P('rede', 72.4, 160.6, 1); P('varal', 70.2, 157.9, 0);
+  P('coqueiro', 61.5, 156.6, 1); P('coqueiro', 83.5, 155.6, 0); P('coqueiro', 79.6, 162.4, 1); P('buriti', 66.5, 162.2, 2);
+  { const t = PARDO.top(69), t2 = PARDO.top(75); P('canoa', 69.3, t - 0.75, 0); P('canoa', 75.4, t2 - 0.7, 1); P('canoa', 63.6, PARDO.top(63) - 0.7, 2); }
+  P('placaPorto', 86.6, 157.7, 0); P('placaBarragem', 93.6, PARDO.DAM - 0.4, 0); P('placaVereda', 88.4, 180.6, 0);
+  // mata ciliar nas duas margens (sem tapar porto, ponte e paredão)
+  for (let x = 1; x < 183; x++) { if ((x >= 58 && x <= 86) || (x >= 86 && x <= 95) || (x >= 130 && x <= 172)) continue; const t = PARDO.top(x), w = PARDO.wid(x);
+    for (const y of [t - 3, t - 4, t + w + 2, t + w + 3]) { const i = gi(x, y); if (obj[i] || (ground[i] !== G.GRASS && ground[i] !== G.DRY && ground[i] !== G.MUD)) continue; if (R() < 0.2) { let near = false; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (obj[gi(x + dx, y + dy)]) near = true; if (near) continue; PROPS.push({ t: pick2(R, ['inga', 'inga', 'ipe', 'barriguda', 'juazeiro', 'mata1', 'mata2', 'buriti']), x: (x + 0.5) * TS, y: (y + 0.85) * TS, v: Math.floor(R() * 8) }); obj[i] = 3; } } }
+  // buritis em volta da lagoa
+  { const [cx, cy, rx, ry] = PARDO.LAGOA; for (let k = 0; k < 22; k++) { const a = k / 22 * 6.28 + R() * 0.2, d = 1.35 + R() * 0.4, x = cx + Math.cos(a) * rx * d, y = cy + Math.sin(a) * ry * d, i = gi(Math.floor(x), Math.floor(y)); if (ground[i] === G.WATER || obj[i]) continue; PROPS.push({ t: 'buriti', x: (Math.floor(x) + 0.5) * TS, y: (Math.floor(y) + 0.85) * TS, v: Math.floor(R() * 8) }); obj[i] = 3; } }
+  // taboas no brejo e nas margens novas
+  { const [x0, y0, x1, y1] = PARDO.BREJO; for (let y = y0; y <= y1 && y < MH - 1; y++) for (let x = x0; x <= x1; x++) { const i = gi(x, y); if (obj[i]) continue; if ((ground[i] === G.MUD || ground[i] === G.WATER) && R() < 0.22) PROPS.push({ t: 'taboa', x: (x + 0.5) * TS, y: (y + 0.9) * TS, v: Math.floor(R() * 4) }); } }
+  // ninhos de joão-de-barro em mourões e árvores perto da sede
+  [[11.6, 28.2], [24.4, 45.2], [36.6, 44.9], [53.5, 45.2], [70.4, 158.2]].forEach(([x, y], v) => P('ninho', x, y, v % 3));
+  // plantas aquáticas: aguapé e ninfeia nas lagoas, no brejo, na barragem e nos açudes; pedras da corredeira
+  WPLANTS.length = 0;
+  for (let y = 1; y < MH - 1; y++) for (let x = 1; x < MW - 1; x++) { const i = gi(x, y); if (ground[i] !== G.WATER) continue; const k = waterKind(x, y); let edge = 0; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (ground[gi(x + dx, y + dy)] !== G.WATER) edge++;
+    const pr = k === 'lagoa' ? (edge ? 0.55 : 0.12) : k === 'brejo' ? 0.4 : k === 'barragem' ? (edge ? 0.18 : 0) : k === 'acude' ? (edge ? 0.12 : 0) : k === 'pardo' ? (edge ? 0.04 : 0) : 0;
+    if (R() < pr) WPLANTS.push({ x: (x + 0.2 + R() * 0.6) * TS, y: (y + 0.2 + R() * 0.6) * TS, t: R() < (k === 'lagoa' ? 0.45 : 0.25) ? 'ninfeia' : 'aguape', v: Math.floor(R() * 6), fl: R() < 0.5 });
+    if (k === 'pardo' && x >= 146 && x <= 158 && R() < 0.22) WPLANTS.push({ x: (x + 0.5) * TS, y: (y + 0.5) * TS, t: 'pedraRio', v: Math.floor(R() * 4) }); }
+}
+// que água é essa (para peixes, aves e pesca)
+function waterKind(tx, ty) {
+  const [lx, ly, lrx, lry] = PARDO.LAGOA, [bx, by, brx, bry] = PARDO.BAR, Bj = PARDO.BREJO;
+  if (((tx + 0.5 - bx) / (brx + 1.5)) ** 2 + ((ty + 0.5 - by) / (bry + 1.5)) ** 2 < 1 && ty > PARDO.DAM) return 'barragem';
+  if (((tx + 0.5 - lx) / (lrx + 1.5)) ** 2 + ((ty + 0.5 - ly) / (lry + 1.5)) ** 2 < 1) return 'lagoa';
+  if (tx >= Bj[0] && tx <= Bj[2] && ty >= Bj[1] && ty <= Bj[3]) return 'brejo';
+  if (ty >= 158 && ty <= PARDO.DAM + 2) return 'pardo';
+  if (ty >= 120 && ty <= 134 && !pondT[gi(tx, ty)]) return 'rio';
+  if (pondT[gi(tx, ty)]) return 'acude';
+  return 'riacho';
+}
+const WK_N = { pardo: 'Rio Pardo', rio: 'rio da Beira', riacho: 'riacho', acude: 'açude', lagoa: 'Lagoa da Vereda', brejo: 'brejo', barragem: 'Barragem do Pardo' };
+// brejo raso, sangradouro raso e corrente
+function aguasDepthFix() { const [x0, y0, x1, y1] = PARDO.BREJO; for (let y = y0; y <= y1 && y < MH; y++) for (let x = x0; x <= x1; x++) { const i = gi(x, y); if (ground[i] === G.WATER) wdepth[i] = 1; } for (let y = PARDO.DAM - 6; y <= PARDO.DAM + 3; y++) for (const x of [168, 169]) { const i = gi(x, y); if (ground[i] === G.WATER && !pondT[i]) wdepth[i] = 1; } }
+// ---------- desenho dos props novos ----------
+function pardoPropSpr(t, v, p, BX, BY, R) {
+  switch (t) {
+    case 'buriti': { const tall = 44 + (v % 3) * 4; for (let y = 0; y < tall; y++) { p(BX - 1, BY - y, 3, 1, y % 5 === 0 ? '#6a5a44' : '#8a7a5e'); }
+      const top = BY - tall; for (let k = 0; k < 13; k++) { const a = -Math.PI + k / 12 * Math.PI, L = 12 + (k % 3) * 2; for (let i = 3; i < L; i++) { const x = Math.round(BX + Math.cos(a) * i), y = Math.round(top + Math.sin(a) * i * 0.75 + (i > L - 5 ? (i - L + 5) * 0.8 : 0)); p(x, y, 1, 2, k % 2 ? '#3a7a34' : '#4e9a3e'); if (i % 3 === 0) p(x, y - 1, 1, 1, '#6aba54'); } }
+      for (let k = 0; k < 5; k++) p(BX - 3 + k, top + 3 + (k % 2), 2, 2, '#9a4a1e'); p(BX - 2, top, 5, 3, '#5a4a30'); return true; }
+    case 'palhoca': { const w = 34, h = 13, x0 = BX - w / 2;
+      p(x0 + 2, BY - h, w - 4, h, '#b8865a'); for (let y = BY - h; y < BY; y += 3) p(x0 + 2, y, w - 4, 1, '#a0744a'); p(x0 + 2, BY - h, 1, h, '#8a6040'); p(x0 + w - 3, BY - h, 1, h, '#8a6040');
+      p(BX - 3, BY - 10, 7, 10, '#3a2616'); p(BX - 3, BY - 10, 7, 1, '#5a3a20'); p(x0 + 6, BY - 9, 5, 4, '#2a1a10'); p(x0 + w - 11, BY - 9, 5, 4, '#2a1a10');
+      for (let k = 0; k < 14; k++) { const yy = BY - h - 14 + k, ww = Math.round((k / 14) * (w + 6)); p(BX - ww / 2, yy, ww, 1, k % 3 === 0 ? '#a88a44' : k % 2 ? '#c8a858' : '#d8b868'); }
+      for (let k = 0; k < w + 6; k += 3) p(x0 - 3 + k, BY - h - 1, 1, 3, '#9a7a3a'); p(BX - 1, BY - h - 16, 3, 3, '#8a6a2a'); return true; }
+    case 'canoa': { const L = 38, x0 = BX - L / 2, y0 = BY - 6; for (let k = 0; k < L; k++) { const e = Math.min(k, L - 1 - k), hh = Math.min(5, 1 + e * 0.6); p(x0 + k, y0 + 5 - hh, 1, hh, k % 7 === 0 ? '#5a3418' : '#7a4a24'); p(x0 + k, y0 + 5 - hh, 1, 1, '#a8703e'); }
+      p(x0 + 6, y0 + 2, L - 12, 1, '#3a2010'); p(BX - 4, y0 + 1, 2, 3, '#5a3418'); p(BX + 6, y0 + 1, 2, 3, '#5a3418'); if (v !== 1) { for (let k = 0; k < 16; k++) p(BX - 14 + k, y0 - 2 + Math.round(k * 0.15), 1, 1, '#c8a060'); p(BX + 1, y0 - 1, 3, 2, '#c8a060'); } p(x0 + 2, BY, L - 4, 1, 'rgba(40,30,10,0.3)'); return true; }
+    case 'rede': { p(BX - 15, BY - 20, 2, 20, '#7a5a34'); p(BX + 13, BY - 20, 2, 20, '#7a5a34'); p(BX - 15, BY - 20, 30, 1, '#5a4024');
+      for (let y = 0; y < 14; y++) for (let x = 0; x < 26; x++) if ((x + y) % 3 === 0 || (x - y + 30) % 3 === 0) p(BX - 13 + x, BY - 19 + y + Math.round(Math.sin(x * 0.25) * 1.5), 1, 1, y > 11 ? '#8a7a5a' : '#c8c0a8');
+      for (let k = 0; k < 5; k++) p(BX - 11 + k * 5, BY - 6 + Math.round(Math.sin(k * 0.25 * 5) * 1.5), 2, 2, '#e8e0c0'); return true; }
+    case 'barraca': { p(BX - 16, BY - 22, 2, 22, '#6a4a2a'); p(BX + 14, BY - 22, 2, 22, '#6a4a2a'); for (let k = 0; k < 6; k++) p(BX - 18 + k, BY - 28 + k, 36 - k * 2 + k * 2, 1, k % 2 ? '#2a6aa0' : '#e8e0d0'); for (let x = 0; x < 36; x += 6) p(BX - 18 + x, BY - 23, 3, 2, '#2a6aa0');
+      p(BX - 14, BY - 10, 28, 3, '#8a5a2a'); p(BX - 14, BY - 7, 28, 7, '#6a4020'); p(BX - 14, BY - 10, 28, 1, '#a87040');
+      for (let k = 0; k < 4; k++) { const x = BX - 10 + k * 6; p(x, BY - 20, 1, 3, '#d8d0b0'); p(x - 1, BY - 17, 3, 5, k % 2 ? '#b8c0c8' : '#9aa8b0'); p(x - 1, BY - 12, 3, 1, '#6a7a88'); }
+      p(BX - 9, BY - 9, 6, 1, '#c8d0d8'); p(BX + 2, BY - 9, 7, 1, '#d8a050'); return true; }
+    case 'ninho': { p(BX - 1, BY - 22, 2, 22, '#6a4a2a'); p(BX - 6, BY - 30, 12, 8, '#a8743e'); p(BX - 5, BY - 31, 10, 1, '#b8844e'); p(BX - 7, BY - 27, 1, 4, '#8a5a2e'); p(BX + 6, BY - 27, 1, 4, '#8a5a2e'); p(BX + (v % 2 ? 2 : -4), BY - 26, 2, 3, '#2a1a10'); p(BX - 5, BY - 23, 10, 1, '#7a4a24'); return true; }
+    case 'placaPorto': case 'placaBarragem': case 'placaVereda': { p(BX - 1, BY - 16, 2, 16, '#6a4a2a'); p(BX - 13, BY - 24, 26, 10, '#e8d8b0'); p(BX - 13, BY - 24, 26, 1, '#fff0c8'); p(BX - 13, BY - 15, 26, 1, '#8a6a3a'); const c = t === 'placaPorto' ? '#2a6aa0' : t === 'placaBarragem' ? '#3a7a3a' : '#2a8a6a'; for (let k = 0; k < 4; k++) p(BX - 10 + k * 5, BY - 21, 3, 1, c); for (let k = 0; k < 3; k++) p(BX - 8 + k * 6, BY - 18, 4, 1, '#5a3a1a'); return true; }
+  }
+  return false;
+}
+// ---------- camada da água: aguapé, ninfeia, corredeira, sangradouro, chuva, correnteza ----------
+function drawAguasGround(tx0, tx1, ty0, ty1) {
+  const vx0 = tx0 * TS, vx1 = (tx1 + 1) * TS, vy0 = ty0 * TS, vy1 = (ty1 + 1) * TS, se = season();
+  // correnteza do Rio Pardo e do rio: riscos claros descendo para leste
+  for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) { const i = gi(tx, ty); if (ground[i] !== G.WATER) continue; const k = (ty >= 158 && ty <= PARDO.DAM - 2 && tx > 0) ? 'pardo' : (ty >= 120 && ty <= 134 && !pondT[i]) ? 'rio' : null; if (!k) continue;
+    const ph = ((drawT * (k === 'pardo' ? 14 : 10) + H2(tx, ty, 51) * 40) % 40) - 8; if (H2(tx, ty, 52) < 0.55) { X.fillStyle = 'rgba(225,245,255,0.28)'; X.fillRect(tx * TS + ph, ty * TS + Math.floor(H2(tx, ty, 53) * 14), 6, 1); } }
+  // sangradouro: espuma descendo
+  { const D = PARDO.DAM; if (vx0 < 171 * TS && vx1 > 166 * TS && vy0 < (D + 3) * TS && vy1 > (D - 8) * TS) for (let k = 0; k < 14; k++) { const yy = ((drawT * 40 + k * 23) % (9 * TS)); X.fillStyle = k % 2 ? 'rgba(255,255,255,0.7)' : 'rgba(210,240,255,0.6)'; X.fillRect(168 * TS + (k * 7) % 28 + 1, (D + 2) * TS - yy, 2, 3); } }
+  for (const w of WPLANTS) { if (w.x < vx0 - 16 || w.x > vx1 + 16 || w.y < vy0 - 16 || w.y > vy1 + 16) continue; const x = Math.round(w.x), y = Math.round(w.y + Math.sin(drawT * 0.8 + w.v) * 0.6);
+    if (w.t === 'pedraRio') { X.fillStyle = '#6e6a62'; X.fillRect(x - 4, y - 2, 8, 4); X.fillStyle = '#8e8a82'; X.fillRect(x - 3, y - 3, 5, 2); const f = Math.sin(drawT * 5 + w.v) > 0; X.fillStyle = 'rgba(255,255,255,0.75)'; X.fillRect(x - 6, y + 1, 3, 1); X.fillRect(x + 4, y + (f ? 1 : 2), 3, 1); X.fillRect(x - 5, y - 3, 1, 1); continue; }
+    if (w.t === 'ninfeia') { X.fillStyle = '#3a7a34'; X.beginPath(); X.ellipse(x, y, 4.5, 2.6, 0, 0.35, 6.0); X.lineTo(x, y); X.fill(); X.fillStyle = '#5a9a44'; X.fillRect(x - 2, y - 1, 3, 1); if (w.fl && !(se && w.v % 2)) { X.fillStyle = w.v % 3 ? '#f4f0f8' : '#f0a8c8'; X.fillRect(x + 1, y - 3, 3, 2); X.fillStyle = '#f0d040'; X.fillRect(x + 2, y - 3, 1, 1); } continue; }
+    // aguapé (baronesa): roseta de folhas redondas e flor lilás
+    X.fillStyle = '#2e6a2a'; X.fillRect(x - 4, y - 1, 9, 3); X.fillStyle = '#4a8a38'; X.fillRect(x - 3, y - 3, 3, 3); X.fillRect(x + 1, y - 3, 3, 3); X.fillRect(x - 1, y - 4, 3, 2); X.fillStyle = '#6aaa4a'; X.fillRect(x - 2, y - 3, 1, 1); X.fillRect(x + 2, y - 3, 1, 1);
+    if (w.fl) { X.fillStyle = '#b088d8'; X.fillRect(x, y - 7, 2, 3); X.fillStyle = '#d0b0f0'; X.fillRect(x - 1, y - 6, 1, 1); X.fillRect(x + 2, y - 6, 1, 1); X.fillStyle = '#f0d040'; X.fillRect(x, y - 6, 1, 1); } }
+  // chuva na água: círculos que se abrem
+  if (isRain()) { const n = S.weather === 'garoa' ? 14 : 34; X.strokeStyle = 'rgba(230,245,255,0.55)'; X.lineWidth = 1; for (let k = 0; k < n; k++) { const s = Math.floor(drawT * 2 + k * 0.37), hx = H2(s, k, 61), hy = H2(k, s, 62); const tx = tx0 + Math.floor(hx * (tx1 - tx0 + 1)), ty = ty0 + Math.floor(hy * (ty1 - ty0 + 1)); if (gt(tx, ty) !== G.WATER) continue; const u = (drawT * 2 + k * 0.37) % 1; X.globalAlpha = 1 - u; X.beginPath(); X.ellipse(tx * TS + hx * 13 % 16, ty * TS + hy * 17 % 16, 1 + u * 5, 0.5 + u * 2, 0, 0, 7); X.stroke(); } X.globalAlpha = 1; }
+  if (typeof drawFishShadows === 'function') drawFishShadows(vx0, vx1, vy0, vy1);
+}
+
+/* ---------- PEIXES: espécies do sertão baiano e do Rio Pardo ----------
+   hab: onde vive · kg: peso · pk: R$/kg · r: frequência · t: hora boa · f: força (1-5) · b: iscas preferidas · d: profundidade mínima */
+const FISH = {
+  piaba: { n: 'Piaba', hab: ['riacho', 'acude', 'brejo', 'lagoa', 'rio'], kg: [0.02, 0.08], pk: 12, r: 9, t: 'dia', f: 1, b: { minhoca: 1, massa: 1.4, nada: 0.6 }, d: 1, c: ['#c8d0d8', '#7a8a98', '#eef2f4', '#e0a040'], sh: 'peq', tx: 'Peixinho prateado que vive em cardume. Serve de isca viva para traíra, tucunaré e dourado.' },
+  acara: { n: 'Acará', hab: ['acude', 'lagoa', 'brejo', 'barragem'], kg: [0.1, 0.5], pk: 9, r: 6, t: 'dia', f: 1, b: { minhoca: 1.3, massa: 1 }, d: 1, c: ['#9a9a6a', '#5a6a3a', '#d8d0a0', '#3a3a2a'], sh: 'alto', mk: 'mancha', tx: 'Pequeno e brigão, com uma mancha preta no meio do corpo. Fica perto das plantas da margem.' },
+  tilapia: { n: 'Tilápia', hab: ['acude', 'barragem', 'lagoa'], kg: [0.3, 1.6], pk: 11, r: 7, t: 'dia', f: 2, b: { massa: 1.5, minhoca: 1 }, d: 1, c: ['#8a9aa0', '#4a5a68', '#d8dce0', '#c05a4a'], sh: 'alto', mk: 'listras', tx: 'O peixe mais criado nos açudes do Nordeste. Morde massa e minhoca o dia inteiro.' },
+  traira: { n: 'Traíra', hab: ['acude', 'lagoa', 'brejo', 'riacho', 'barragem'], kg: [0.3, 3], pk: 10, r: 5, t: 'crep', f: 3, b: { viva: 2.2, minhoca: 0.8 }, d: 1, c: ['#6a5a3a', '#3a3020', '#b8a878', '#2a2018'], sh: 'longo', mk: 'manchas', tx: 'Predadora de boca cheia de dentes. Ataca no lusco-fusco, na beira das taboas. Cuidado ao tirar o anzol!' },
+  muçum: { n: 'Muçum', hab: ['brejo', 'riacho'], kg: [0.2, 1], pk: 9, r: 3, t: 'noite', f: 2, b: { minhoca: 1.8 }, d: 1, c: ['#5a4a32', '#2e261a', '#8a7a58', '#2a2018'], sh: 'enguia', tx: 'Peixe em forma de cobra que vive na lama do brejo. Sai à noite.' },
+  cascudo: { n: 'Cascudo', hab: ['riacho', 'rio', 'pardo'], kg: [0.1, 0.8], pk: 8, r: 4, t: 'noite', f: 2, b: { minhoca: 1.4, massa: 1 }, d: 1, c: ['#4a4a3a', '#2a2a20', '#7a7a5a', '#2a2a20'], sh: 'cascudo', mk: 'pintas', tx: 'Tem uma armadura de placas e gruda nas pedras do fundo. Dá um caldo famoso.' },
+  mandi: { n: 'Mandi', hab: ['rio', 'pardo'], kg: [0.1, 0.6], pk: 9, r: 5, t: 'noite', f: 2, b: { minhoca: 1.6 }, d: 2, c: ['#b8b0a0', '#6a6458', '#e8e4d8', '#e8c050'], sh: 'bagre', tx: 'Bagrinho de bigode e ferrão no peito: pega com cuidado. Morde à noite no fundo.' },
+  piau: { n: 'Piau', hab: ['rio', 'pardo', 'barragem'], kg: [0.3, 2], pk: 13, r: 5, t: 'dia', f: 3, b: { massa: 1.5, minhoca: 1 }, d: 2, c: ['#b8b4a0', '#6a6a58', '#e8e4d0', '#d04a2a'], sh: 'medio', mk: 'pintasLat', tx: 'Peixe de rio com três pintas pretas no lado. Belisca a isca antes de engolir.' },
+  curimata: { n: 'Curimatã', hab: ['rio', 'pardo', 'barragem', 'acude'], kg: [0.5, 3], pk: 10, r: 5, t: 'dia', f: 3, b: { massa: 1.8 }, d: 2, c: ['#c0c8cc', '#6a7a84', '#eef2f4', '#a8a090'], sh: 'medio', tx: 'Sobe o rio em cardume na piracema, no começo das águas. Come lodo e massa.' },
+  pacu: { n: 'Pacu', hab: ['pardo', 'barragem'], kg: [0.6, 4], pk: 16, r: 3, t: 'dia', f: 3, b: { massa: 1.6 }, d: 2, c: ['#8a8a88', '#4a4a4a', '#d8b878', '#5a5a5a'], sh: 'redondo', tx: 'Redondo como um prato, de dentes quase humanos. Gosta de fruta e massa.' },
+  piranha: { n: 'Piranha', hab: ['pardo', 'lagoa'], kg: [0.2, 1], pk: 7, r: 4, t: 'dia', f: 2, b: { viva: 1.2, minhoca: 1.4 }, d: 2, c: ['#9aa0a8', '#4a5058', '#d04030', '#3a3a3a'], sh: 'piranha', tx: 'Pequena e brava. Pode cortar a linha com os dentes!' },
+  tucunare: { n: 'Tucunaré', hab: ['barragem', 'acude'], kg: [0.5, 4], pk: 20, r: 3, t: 'dia', f: 4, b: { viva: 2.5, minhoca: 0.4 }, d: 2, c: ['#b8b040', '#5a6a2a', '#e8d870', '#d04020'], sh: 'medio', mk: 'barras', tx: 'Peixe esportivo, de barras pretas e um olho no rabo. Salta e briga muito. Morde isca viva.' },
+  tambaqui: { n: 'Tambaqui', hab: ['barragem'], kg: [1, 8], pk: 15, r: 2, t: 'dia', f: 4, b: { massa: 1.8 }, d: 3, c: ['#4a4a40', '#22221c', '#a8a070', '#2a2a22'], sh: 'redondo', tx: 'Grandão e escuro, foi solto na barragem. Briga com força: use molinete.' },
+  dourado: { n: 'Dourado', hab: ['pardo'], kg: [2, 12], pk: 30, r: 0.9, t: 'dia', f: 5, b: { viva: 3 }, d: 3, c: ['#e8b030', '#b07818', '#f8e070', '#d05a20'], sh: 'longo', mk: 'riscos', tx: 'O rei do rio: todo dourado, salta fora d’água. Só no Rio Pardo, com isca viva e molinete.' },
+  surubim: { n: 'Surubim', hab: ['pardo'], kg: [3, 25], pk: 32, r: 0.6, t: 'noite', f: 5, b: { viva: 2.4, minhoca: 0.6 }, d: 3, c: ['#8a8a84', '#3a3a34', '#e8e8e0', '#2a2a24'], sh: 'bagre', mk: 'pintas', tx: 'Bagre gigante pintado, do fundo do poço. Raro: só à noite, nos pontos mais fundos.' },
+  pitu: { n: 'Pitu (camarão)', hab: ['riacho', 'rio', 'pardo'], kg: [0.03, 0.12], pk: 40, r: 2, t: 'noite', f: 1, b: { massa: 1.5 }, d: 1, c: ['#8a9a78', '#4a5a3a', '#c8d0a8', '#d06030'], sh: 'camarao', tx: 'Camarão de água doce, de garras compridas. Pega mais com a tarrafa.' }
+};
+const FISH_K = Object.keys(FISH);
+const BAITS = [['minhoca', 'Minhoca'], ['massa', 'Massa'], ['viva', 'Isca viva (piaba)'], ['nada', 'Sem isca']];
+// ---------- desenho dos peixes (ícone, cartão e saltos) ----------
+function fishCanvas(k, sc) {
+  return cached('fish|' + k + '|' + (sc || 1), 40, 18, g => {
+    const F = FISH[k], [cb, cd, cl, cf] = F.c, p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); }, sh = F.sh;
+    const body = (x0, x1, h, cy) => { for (let x = x0; x <= x1; x++) { const u = (x - x0) / (x1 - x0), hh = Math.max(1, Math.round(Math.sin(Math.min(1, u * 1.15) * Math.PI) * h)); p(x, cy - hh, 1, hh * 2, cb); p(x, cy - hh, 1, 1, cd); p(x, cy - hh + 1, 1, Math.max(1, Math.round(hh * 0.5)), cd); p(x, cy + Math.round(hh * 0.3), 1, Math.max(1, Math.ceil(hh * 0.7)), cl); } };
+    const tail = (x, cy, h) => { for (let k2 = 0; k2 < 5; k2++) p(x - k2, cy - Math.round(h * (k2 + 1) / 5), 1, Math.round(h * (k2 + 1) / 5) * 2 + 1, k2 > 2 ? cf : cd); };
+    if (sh === 'enguia') { for (let x = 3; x < 37; x++) { const y = 9 + Math.round(Math.sin(x * 0.35) * 2); p(x, y - 1, 1, 3, cb); p(x, y - 1, 1, 1, cd); p(x, y + 1, 1, 1, cl); } p(35, 8 + Math.round(Math.sin(12.6) * 2), 1, 1, '#141010'); return; }
+    if (sh === 'camarao') { for (let k2 = 0; k2 < 6; k2++) { p(10 + k2 * 3, 9 - Math.round(Math.sin(k2 * 0.5) * 2), 3, 4, k2 % 2 ? cb : cd); } p(28, 7, 4, 3, cd); for (let k2 = 0; k2 < 10; k2++) p(31 + k2, 6 - Math.round(k2 * 0.2), 1, 1, cf); p(30, 7, 1, 1, '#141010'); p(6, 9, 4, 4, cf); return; }
+    const big = sh === 'redondo' || sh === 'alto' || sh === 'piranha', x0 = 8, x1 = sh === 'peq' ? 26 : 34, h = sh === 'redondo' ? 6.5 : sh === 'alto' || sh === 'piranha' ? 5.5 : sh === 'longo' ? 3.6 : sh === 'bagre' ? 3.8 : sh === 'cascudo' ? 3.6 : sh === 'peq' ? 2.4 : 4.4, cy = 9;
+    tail(x0 + 1, cy, big ? 5 : 4); body(x0, x1, h, cy);
+    p(Math.round((x0 + x1) / 2) - 2, cy - Math.round(h) - 2, 5, 2, cf); p(Math.round((x0 + x1) / 2) - 1, cy + Math.round(h) , 3, 2, cf);
+    if (F.mk === 'listras') for (let x = x0 + 6; x < x1 - 5; x += 3) p(x, cy - Math.round(h) + 1, 1, Math.round(h * 1.6), cd);
+    if (F.mk === 'barras') { for (let k2 = 0; k2 < 3; k2++) p(x0 + 8 + k2 * 6, cy - Math.round(h), 2, Math.round(h * 1.7), '#2a2a20'); p(x0 + 2, cy - 1, 2, 2, '#f0d040'); p(x0 + 2, cy - 1, 1, 1, '#141010'); }
+    if (F.mk === 'mancha') p(Math.round((x0 + x1) / 2), cy - 1, 2, 2, '#1a1a12');
+    if (F.mk === 'manchas' || F.mk === 'pintas') for (let k2 = 0; k2 < 9; k2++) p(x0 + 4 + (k2 * 7) % (x1 - x0 - 6), cy - Math.round(h) + 1 + (k2 * 3) % Math.max(2, Math.round(h * 1.6)), 1, 1, F.mk === 'pintas' ? '#141410' : cd);
+    if (F.mk === 'pintasLat') for (let k2 = 0; k2 < 3; k2++) p(x0 + 9 + k2 * 6, cy, 2, 2, '#1a1a12');
+    if (F.mk === 'riscos') for (let x = x0 + 4; x < x1 - 4; x += 2) p(x, cy - 1 + (x % 4 ? 0 : 1), 1, 1, '#c07010');
+    if (sh === 'piranha') { p(x1 - 3, cy + 1, 3, 2, '#f0f0e8'); p(x1 - 5, cy + 2, 4, 2, '#d04030'); }
+    if (sh === 'bagre' || sh === 'cascudo') { for (let k2 = 0; k2 < 6; k2++) { p(x1 + 1 + Math.round(k2 * 0.6), cy + 1 + k2 % 3, 1, 1, cd); } }
+    if (sh === 'cascudo') for (let x = x0 + 3; x < x1; x += 3) p(x, cy - Math.round(h), 1, Math.round(h * 2), shade(cb, -0.25));
+    p(x1 - 3, cy - Math.round(h * 0.35), 1, 1, '#141010'); p(x1 - 3, cy - Math.round(h * 0.35) - 1, 1, 1, '#f0f0f0');
+  });
+}
+const fishImg = (k, sc) => sprHTML(fishCanvas(k), sc || 3, 'fsh|' + k + (sc || 3));
+// ---------- itens ----------
+Object.assign(IT, {
+  vara: { i: '🎣', n: 'Vara de bambu', kg: 1, p: 35, d: 'Vara simples com linha, chumbada e boia. Alcança 3 casas na água e aguenta peixe de até 4 kg.', c: 'ferr' },
+  molinete: { i: '🎣', n: 'Vara com molinete', kg: 1.2, p: 240, d: 'Arremessa longe (6 casas), linha forte (até 18 kg) e recolhe mais rápido. Para dourado e surubim.', c: 'ferr' },
+  tarrafa: { i: '🕸️', n: 'Tarrafa', kg: 2, p: 150, d: 'Rede de arremesso: pega vários peixes pequenos e pitu de uma vez, na água rasa.', c: 'ferr' },
+  minhoca: { i: '🪱', n: 'Minhoca (isca)', kg: 0.01, p: 0.8, d: 'Isca boa para quase todo peixe. Dá para cavar na lama do brejo e da horta.', c: 'isca' },
+  massa: { i: '🍞', n: 'Massa (isca)', kg: 0.01, p: 0.6, d: 'Bolinha de massa de farinha: tilápia, curimatã, pacu e tambaqui adoram.', c: 'isca' },
+  sambura: { i: '🧺', n: 'Samburá de palha', kg: 0.4, p: 25, d: 'Cesto de pescador preso na cintura: os peixes pesam só 1/5 na mochila.', c: 'ferr' },
+  binoculo: { i: '🔭', n: 'Binóculo', kg: 0.5, p: 180, d: 'Para observar aves de longe: elas entram na caderneta a até 220 px de distância.', c: 'ferr' },
+  peixeAssado: { i: '🐟', n: 'Peixe assado na brasa', kg: 0.4, p: 18, en: 14, fo: 38, d: 'Peixe assado na fogueira com sal grosso. Mata a fome do vaqueiro.', c: 'comida' },
+  caldoPeixe: { i: '🍲', n: 'Caldo de peixe', kg: 0.5, p: 24, en: 22, fo: 42, d: 'Caldo de cascudo ou mandi com pirão. Dá força para o dia todo.', c: 'comida' }
+});
+for (const k of FISH_K) { const F = FISH[k], avg = (F.kg[0] + F.kg[1]) / 2; IT['px_' + k] = { i: '🐟', n: F.n + ' (fresco)', kg: avg, p: Math.round(avg * F.pk * 10) / 10, d: F.tx, c: 'peixe' }; }
+{ const _ic2 = itemIconURL; itemIconURL = function (id) { if (id && id.startsWith('px_') && FISH[id.slice(3)]) { const k = 'itf:' + id; let u = icCache.get(k); if (u) return u; const [c, g] = mkC(12, 12); g.imageSmoothingEnabled = false; g.drawImage(fishCanvas(id.slice(3)), 4, 2, 34, 14, 0, 2, 12, 6); u = c.toDataURL(); icCache.set(k, u); return u; }
+  const X1 = { vara: g => { for (let i = 0; i < 10; i++) g('#a8844a', 1 + i, 10 - i, 1, 1); g('#e8e0c8', 11, 1, 1, 8); g('#e04030', 10, 8, 2, 2); }, molinete: g => { for (let i = 0; i < 10; i++) g('#3a3a40', 1 + i, 10 - i, 1, 1); g('#c8c8d0', 3, 7, 3, 3); g('#e8e0c8', 11, 1, 1, 8); }, tarrafa: g => { for (let y = 2; y < 11; y++) for (let x = 1; x < 11; x++) if ((x + y) % 2 === 0 && Math.abs(x - 6) < y / 2 + 1) g('#c8c0a8', x, y, 1, 1); g('#7a6a4a', 5, 1, 2, 2); }, minhoca: g => { g('#c86a6a', 2, 6, 3, 2); g('#d87a7a', 4, 5, 3, 2); g('#c86a6a', 6, 6, 3, 2); g('#b85a5a', 8, 5, 2, 2); }, massa: g => { g('#e8d8a8', 3, 4, 6, 5); g('#f8ecc0', 4, 4, 3, 2); }, sambura: g => { g('#c8a058', 2, 3, 8, 8); for (let y = 4; y < 11; y += 2) g('#9a7a3a', 2, y, 8, 1); g('#8a6a2a', 3, 1, 6, 2); }, binoculo: g => { g('#2a2a2e', 1, 4, 4, 6); g('#2a2a2e', 7, 4, 4, 6); g('#4a4a52', 5, 5, 2, 2); g('#6ab0e0', 2, 5, 2, 2); g('#6ab0e0', 8, 5, 2, 2); }, peixeAssado: g => { g('#a86a2a', 1, 4, 9, 4); g('#c88a3a', 2, 4, 6, 1); g('#7a4a1a', 9, 3, 2, 6); g('#2a1a10', 3, 5, 1, 1); g('#f0f0f0', 0, 9, 12, 2); }, caldoPeixe: g => { g('#8a5a2a', 1, 5, 10, 6); g('#e8b050', 2, 5, 8, 2); g('#f0d080', 3, 5, 2, 1); } }[id];
+  if (!X1) return _ic2(id); const k = 'itx2:' + id; let u = icCache.get(k); if (u) return u; const [c, g] = mkC(12, 12); X1((col, x, y, w, h) => { g.fillStyle = col; g.fillRect(x, y, w, h); }); u = c.toDataURL(); icCache.set(k, u); return u; }; }
+// ---------- estado ----------
+function initAguas(s) { s.pesca = s.pesca || {}; s.aves = s.aves || {}; s.fishS = s.fishS || {}; for (const k of ['riacho', 'rio', 'acude', 'pardo', 'lagoa', 'brejo', 'barragem']) if (s.fishS[k] === undefined) s.fishS[k] = 1; if (!s.boat || s.aguaV !== 2) s.boat = Object.assign(s.boat || { own: 0, rent: 0 }, boatHome()); s.aguaV = 2; }
+function boatHome() { return { x: (PARDO.pier + 1.5) * TS, y: (PARDO.top(PARDO.pier) + 1.6) * TS }; }
+function aguasDay() { if (!S.fishS) initAguas(S); for (const k in S.fishS) S.fishS[k] = Math.min(1, S.fishS[k] + (k === 'pardo' ? 0.12 : 0.07)); if (S.boat && !S.boat.own && S.boat.rent < S.day && !P.boat) Object.assign(S.boat, boatHome()); }
+function rodOf() { return has('molinete') ? 'molinete' : has('vara') ? 'vara' : null; }
+const ROD = { vara: { reach: 3, max: 4, reel: 1, n: 'vara de bambu' }, molinete: { reach: 6, max: 18, reel: 1.35, n: 'molinete' } };
+function baitHave(b) { return b === 'nada' ? 1 : b === 'viva' ? (S.inv.px_piaba || 0) : (S.inv[b] || 0); }
+function fishTimeK(F) { const h = hour(), crep = (h >= 5 && h < 7.5) || (h >= 16.5 && h < 19), night = h >= 19 || h < 5; if (F.t === 'noite') return night ? 1.6 : crep ? 1 : 0.35; if (F.t === 'crep') return crep ? 2 : night ? 1 : 0.55; return night ? 0.45 : crep ? 1.4 : 1; }
+function pickFish(kind, depth, bait, rod) {
+  const L = []; let tot = 0; const se = season(), mon = calDate().m, piracema = mon === 10 || mon === 11 || mon === 0;
+  for (const k of FISH_K) { const F = FISH[k]; if (!F.hab.includes(kind)) continue; let w = F.r * fishTimeK(F) * (F.b[bait] || (bait === 'nada' ? 0.15 : 0.35)) * (depth >= F.d ? 1 : 0.15);
+    if (k === 'curimata' && piracema && (kind === 'pardo' || kind === 'rio')) w *= 3; if ((k === 'dourado' || k === 'surubim') && rod !== 'molinete') w *= 0.35; if (isRain() && S.weather !== 'tempestade') w *= 1.2; L.push([k, w]); tot += w; }
+  if (!tot) return null; let r = Math.random() * tot; for (const [k, w] of L) { r -= w; if (r <= 0) return k; } return L[L.length - 1][0];
+}
+function rollKg(F) { const u = Math.pow(Math.random(), 1.8); return Math.round((F.kg[0] + (F.kg[1] - F.kg[0]) * u) * 100) / 100; }
+// ---------- pesca: estado e minijogo ----------
+const FS = { on: false, st: 'aim', pow: 0, pd: 1, t: 0, bx: 0, by: 0, sx: 0, sy: 0, fk: null, kg: 0, ten: 0, prog: 0, hold: false, slack: 0, bait: 'minhoca', msg: '', nib: 0, wk: 'acude', dx: 1, dy: 0, card: null };
+function nearWater(maxR) { let best = null, bd = 1e9; const tx = Math.floor(P.x / TS), ty = Math.floor(P.y / TS), R0 = maxR || 2; for (let dy = -R0; dy <= R0; dy++) for (let dx = -R0; dx <= R0; dx++) { if (gt(tx + dx, ty + dy) !== G.WATER) continue; const cx = (tx + dx + 0.5) * TS, cy = (ty + dy + 0.5) * TS, d = hyp(cx - P.x, cy - P.y); if (d < bd) { bd = d; best = [cx, cy, d]; } } return best; }
+function fishUI() { let el = $('fishUI'); if (!el) { el = document.createElement('div'); el.id = 'fishUI'; document.body.appendChild(el);
+    el.addEventListener('pointerdown', e => { const b = e.target.closest('[data-f]'); if (!b) return; e.preventDefault(); AU.init(); const k = b.dataset.f; if (k === 'main') fishPress(true); else if (k === 'bait') fishBait(); else if (k === 'exit') stopFishing(); else if (k === 'net') castNet(); else if (k === 'keep') fishKeep(true); else if (k === 'free') fishKeep(false); });
+    el.addEventListener('pointerup', e => { if (e.target.closest('[data-f="main"]')) fishPress(false); }); el.addEventListener('pointerleave', () => { if (FS.hold) fishPress(false); }); }
+  return el; }
+function startFishing() {
+  const rod = rodOf(); if (!rod) return say('Você precisa de uma vara de pescar. Compre na barraca do Seu Bené, no Porto do Pardo, ou na Casa do Agro.', 3600);
+  if (P.mnt) return say('Desça do cavalo para pescar.', 1800);
+  let dx, dy; if (P.boat) { const v = { 0: [0, 1], 1: [0, -1], 2: [-1, 0], 3: [1, 0] }[P.dir]; dx = v[0]; dy = v[1]; } else { const w = nearWater(2); if (!w) return say('Chegue mais perto da água.', 1500); const ax = w[0] - P.x, ay = w[1] - P.y; if (Math.abs(ax) > Math.abs(ay)) { dx = Math.sign(ax); dy = 0; P.dir = dx > 0 ? 3 : 2; } else { dx = 0; dy = Math.sign(ay); P.dir = dy > 0 ? 0 : 1; } }
+  Object.assign(FS, { on: true, st: 'aim', pow: 0, pd: 1, t: 0, dx, dy, hold: false, msg: 'Segure e solte para lançar: quanto mais cheia a barra, mais longe.', card: null, rod });
+  if (!baitHave(FS.bait)) FS.bait = BAITS.map(b => b[0]).find(b => baitHave(b)) || 'nada';
+  document.body.classList.add('fsh'); P._vx = P._vy = 0; P._mv = 0; P._auto = null; tip('pesca', 'Pescaria: lance, espere a boia afundar e toque em FISGAR na hora. Depois segure para puxar sem estourar a linha (barra vermelha).'); renderFishUI();
+}
+function stopFishing() { FS.on = false; FS.st = 'aim'; FS.hold = false; document.body.classList.remove('fsh'); const el = $('fishUI'); if (el) el.style.display = 'none'; }
+function fishBait() { if (FS.st !== 'aim') return; const L = BAITS.map(b => b[0]).filter(b => baitHave(b)); const i = L.indexOf(FS.bait); FS.bait = L[(i + 1) % L.length] || 'nada'; AU.click(); renderFishUI(); }
+function renderFishUI() {
+  const el = fishUI(); el.style.display = 'block'; const bn = BAITS.find(b => b[0] === FS.bait)[1], bq = FS.bait === 'nada' ? '' : ' (' + Math.floor(baitHave(FS.bait)) + ')';
+  if (FS.card) { const c = FS.card, F = FISH[c.k], rec = (S.pesca[c.k] || {}).max || 0;
+    el.innerHTML = `<div class="fcard"><div class="fimg">${fishImg(c.k, 4)}</div><div style="flex:1;min-width:0"><b class="fnm">${F.n}</b> <span class="fkg">${c.kg.toFixed(2).replace('.', ',')} kg</span>${c.novo ? ' <span class="tag">nova na caderneta!</span>' : ''}${c.rec ? ' <span class="tag">recorde!</span>' : ''}<div class="mut">${F.tx}</div><div class="mut">Vale cerca de ${fmt2(c.kg * F.pk)} no Seu Bené.${rec ? ' Seu maior: ' + rec.toFixed(2).replace('.', ',') + ' kg.' : ''}</div></div></div><div class="frow"><button data-f="keep" class="fbig">Guardar no samburá</button><button data-f="free">Soltar de volta</button></div>`; return; }
+  const lbl = { aim: FS.hold ? 'Solte para lançar' : 'Lançar', fly: '…', wait: 'Puxar a linha', bite: 'FISGAR!', fight: FS.hold ? 'Puxando…' : 'Segure: puxar', done: '…' }[FS.st];
+  let bar = ''; if (FS.st === 'aim') bar = `<div class="fbar"><i style="width:${Math.round(FS.pow * 100)}%;background:#e8b040"></i></div>`;
+  if (FS.st === 'fight') { const t = FS.ten; bar = `<div class="fbar ften"><span class="fz"></span><i style="width:${Math.round(Math.min(1, t) * 100)}%;background:${t > 0.86 ? '#d03020' : t > 0.32 ? '#4a9a3a' : '#c8a040'}"></i></div><div class="fbar"><i style="width:${Math.round(FS.prog * 100)}%;background:#3a7ab0"></i></div>`; }
+  el.innerHTML = `<div class="fmsg">${FS.msg}</div>${bar}<div class="frow"><button data-f="main" class="fbig ${FS.st === 'bite' ? 'fhot' : ''}">${lbl}</button><button data-f="bait" ${FS.st !== 'aim' ? 'disabled' : ''}>Isca: ${bn}${bq}</button>${has('tarrafa') && !P.boat ? `<button data-f="net" ${FS.st !== 'aim' ? 'disabled' : ''}>Tarrafa</button>` : ''}<button data-f="exit">Sair</button></div>`;
+}
+function fishPress(down) {
+  if (!FS.on) return; if (FS.card) { if (down) fishKeep(true); return; }
+  if (FS.st === 'aim') { if (down) { FS.hold = true; FS.pow = 0; FS.pd = 1; } else if (FS.hold) { FS.hold = false; castLine(); } renderFishUI(); return; }
+  if (FS.st === 'wait' && down) { FS.st = 'aim'; FS.msg = 'Você recolheu a linha. A isca continua no anzol.'; AU.osc('square', 1400, 900, 0.05, 0.03); renderFishUI(); return; }
+  if (FS.st === 'bite' && down) { FS.st = 'fight'; FS.ten = 0.45; FS.prog = 0; FS.slack = 0; FS.hold = true; FS.msg = 'Fisgou! Segure para puxar, solte quando a linha ficar vermelha.'; AU.osc('square', 500, 300, 0.12, 0.08); buzz(30); useBait(); renderFishUI(); return; }
+  if (FS.st === 'fight') { FS.hold = down; return; }
+}
+function useBait() { if (FS.bait === 'viva') useInv('px_piaba', 1); else if (FS.bait !== 'nada') useInv(FS.bait, 1); if (!baitHave(FS.bait)) FS.bait = 'nada'; }
+function castLine() {
+  const R0 = ROD[FS.rod].reach, dist = (0.8 + FS.pow * (R0 - 0.8)) * TS; let bx = P.x + FS.dx * (dist + 6), by = P.y + FS.dy * (dist + 6) - (FS.dy ? 0 : 4);
+  const tx = Math.floor(bx / TS), ty = Math.floor(by / TS); if (gt(tx, ty) !== G.WATER) { FS.msg = 'A boia caiu no seco. Lance de novo ' + (FS.pow < 0.4 ? 'mais forte.' : 'mais fraco.'); AU.osc('square', 300, 200, 0.06, 0.04); renderFishUI(); return; }
+  FS.st = 'fly'; FS.t = 0; FS.bx = bx; FS.by = by; FS.sx = P.x; FS.sy = P.y; FS.wk = waterKind(tx, ty); FS.depth = wdepth[gi(tx, ty)] || 1; AU.nz(0.25, 0.06, 'bandpass', 1800, 1, { f1: 600 });
+}
+function fishTick(dt) {
+  if (!FS.on) return; if (input && hyp(input.x, input.y) > 0.6 && FS.st === 'aim' && !FS.card && !P.boat) { stopFishing(); return; }
+  P._vx = P._vy = 0; P._mv = 0; FS.t += dt;
+  if (FS.st === 'aim' && FS.hold) { FS.pow += FS.pd * dt * 0.9; if (FS.pow > 1) { FS.pow = 1; FS.pd = -1; } if (FS.pow < 0) { FS.pow = 0; FS.pd = 1; } if ((FS._r = (FS._r || 0) + dt) > 0.05) { FS._r = 0; renderFishUI(); } }
+  if (FS.st === 'fly' && FS.t > 0.55) { FS.st = 'wait'; FS.t = 0; AU.osc('sine', 700, 220, 0.12, 0.08); part(FS.bx, FS.by, 'ring', { vx: 0, vy: 0, m: 0.5 }); const stock = (S.fishS || {})[FS.wk] || 0.5, h = hour(), act = ((h >= 5 && h < 8) || (h >= 16 && h < 19)) ? 1.5 : 1;
+    FS.fk = pickFish(FS.wk, FS.depth + (P.boat ? 1 : 0), FS.bait, FS.rod); FS.biteT = FS.fk ? rnd(2.5, 9) / (stock * act) / (FS.bait === 'nada' ? 0.6 : 1) : 999; FS.nib = rint(0, 3); FS.msg = 'Espere a boia afundar… (' + WK_N[FS.wk] + ', ' + (FS.depth >= 3 ? 'fundo' : FS.depth >= 2 ? 'meia-água' : 'raso') + ')'; renderFishUI(); }
+  if (FS.st === 'wait') { if (FS.nib > 0 && FS.t > FS.biteT * (0.3 + 0.2 * FS.nib)) { FS.nib--; FS._nb = 0.25; AU.osc('sine', 900, 500, 0.05, 0.03); }
+    if (FS.t > FS.biteT) { FS.st = 'bite'; FS.t = 0; FS.win = 0.75 + (skill('lac') || 0) * 0.05; FS.msg = 'A boia afundou!'; AU.osc('sine', 1100, 300, 0.18, 0.1); buzz(40); renderFishUI(); }
+    if (FS.t > 40) { FS.st = 'aim'; FS.msg = 'Nada mordeu. Tente outra isca, outro lugar ou outra hora.'; renderFishUI(); } }
+  if (FS.st === 'bite' && FS.t > FS.win) { FS.st = 'aim'; FS.msg = 'Demorou! O peixe ' + (Math.random() < 0.5 ? 'comeu a isca e fugiu.' : 'soltou o anzol.'); useBait(); renderFishUI(); }
+  if (FS.st === 'fight') { const F = FISH[FS.fk]; if (!FS.kg) FS.kg = rollKg(F); const rod = ROD[FS.rod], power = F.f * Math.sqrt(FS.kg / ((F.kg[0] + F.kg[1]) / 2)) * (FS.kg > rod.max ? 1.8 : 1);
+    FS._surge = (FS._surge || 0) - dt; if (FS._surge <= 0) { FS._surge = rnd(0.8, 2.6) / Math.max(0.6, power * 0.5); FS.ten += rnd(0.05, 0.12) * power; if (power > 2 && Math.random() < 0.3) { part(FS.bx, FS.by, 'ring', { vx: 0, vy: 0, m: 0.5 }); AU.splash(); } }
+    FS.ten += (FS.hold ? 0.55 + power * 0.08 : -0.65) * dt; FS.ten = Math.max(0, FS.ten);
+    if (FS.ten > 0.32 && FS.ten <= 0.86) { FS.prog += dt * 0.16 * rod.reel / Math.max(0.7, power * 0.45) * (FS.hold ? 1.2 : 0.4); FS.slack = 0; } else if (FS.ten <= 0.32) { FS.prog -= dt * 0.05 * power; FS.slack += dt; } else FS.slack = 0;
+    FS.prog = cl(FS.prog, 0, 1); const sx = P.x + FS.dx * 10, sy = P.y + FS.dy * 8; FS.bx = lerp(FS.bx0 || (FS.bx0 = FS.bx), sx, FS.prog * 0.85) + Math.sin(FS.t * 2.3) * 8 * (1 - FS.prog); FS.by = lerp(FS.by0 || (FS.by0 = FS.by), sy, FS.prog * 0.85) + Math.cos(FS.t * 1.7) * 4 * (1 - FS.prog);
+    if ((FS._rc = (FS._rc || 0) - dt) <= 0 && FS.hold) { FS._rc = 0.09; AU.osc('square', 2200, 2000, 0.02, 0.015); }
+    if (FS.ten > 1 || (FS.fk === 'piranha' && FS.ten > 0.8 && Math.random() < dt * 0.4)) { lostFish(FS.fk === 'piranha' && FS.ten <= 1 ? 'A piranha cortou a linha com os dentes!' : 'Arrebentou a linha! ' + (FS.kg > rod.max ? 'Peixe grande demais para a ' + rod.n + '.' : 'Solte mais cedo quando ficar vermelho.')); AU.nz(0.12, 0.1, 'highpass', 3000, 1); return; }
+    if (FS.slack > 2.4) { lostFish('A linha ficou frouxa e o peixe escapou.'); return; }
+    if (FS.prog >= 1) { landFish(); return; }
+    if ((FS._r = (FS._r || 0) + dt) > 0.05) { FS._r = 0; renderFishUI(); } }
+}
+function lostFish(msg) { FS.st = 'aim'; FS.kg = 0; FS.bx0 = FS.by0 = 0; FS.hold = false; FS.msg = msg; AU.err && AU.err(); renderFishUI(); }
+function landFish() { const k = FS.fk, kg = FS.kg, rec = S.pesca[k] || { n: 0, max: 0, d: S.day }; FS.card = { k, kg, novo: !S.pesca[k], rec: !!S.pesca[k] && kg > rec.max }; FS.st = 'done'; FS.kg = 0; FS.bx0 = FS.by0 = 0; FS.hold = false; AU.splash(); AU.jingle && AU.jingle(); for (let i = 0; i < 6; i++) part(P.x + FS.dx * 10, P.y + FS.dy * 8 - 6, 'spark', { vx: rnd(-20, 20), vy: rnd(-30, -10), m: 0.5, c: '#d8f0ff' }); renderFishUI(); }
+function fishKeep(keep) { const c = FS.card; if (!c) return; const r = S.pesca[c.k] || { n: 0, max: 0, d: S.day, solt: 0 }; r.n++; if (c.kg > r.max) r.max = c.kg; if (!keep) r.solt = (r.solt || 0) + 1; S.pesca[c.k] = r; S.stats.peixes = (S.stats.peixes || 0) + 1;
+  if (keep) { if (!addInv('px_' + c.k, 1)) { say('Mochila cheia! O peixe foi solto.', 2000); } else { S.fishS[FS.wk] = Math.max(0.2, (S.fishS[FS.wk] || 1) - (FS.wk === 'pardo' ? 0.01 : 0.03)); } } else { toast('🐟 ' + FISH[c.k].n + ' solto de volta. O rio agradece.'); }
+  if (c.novo) toast('📖 Nova espécie na caderneta: ' + FISH[c.k].n + '!'); FS.card = null; FS.st = 'aim'; FS.msg = keep ? FISH[c.k].n + ' guardado.' : 'Pronto para lançar de novo.'; renderFishUI(); }
+// tarrafa: rede de arremesso na água rasa
+function castNet() { if (FS.st !== 'aim' || !has('tarrafa')) return; const tx = Math.floor((P.x + FS.dx * 2.2 * TS) / TS), ty = Math.floor((P.y + FS.dy * 2.2 * TS) / TS); if (gt(tx, ty) !== G.WATER) return (FS.msg = 'A tarrafa precisa cair na água.', renderFishUI());
+  if ((wdepth[gi(tx, ty)] || 1) > 2) return (FS.msg = 'Muito fundo para a tarrafa: jogue na água rasa da margem.', renderFishUI());
+  if (P.en < 6) return (FS.msg = 'Cansado demais para jogar a tarrafa.', renderFishUI());
+  const wk = waterKind(tx, ty); FS.st = 'net'; FS.t = 0; FS.netX = (tx + 0.5) * TS; FS.netY = (ty + 0.5) * TS; P.en = Math.max(0, P.en - 4); AU.nz(0.35, 0.08, 'bandpass', 1200, 1, { f1: 400 }); renderFishUI();
+  setTimeout(() => { if (!FS.on) return; const pool = ['piaba', 'piaba', 'acara', 'tilapia', 'pitu', 'traira', 'cascudo'].filter(k => FISH[k].hab.includes(wk)); const n = Math.random() < 0.15 ? 0 : rint(1, 4); const got = {}; for (let i = 0; i < n && pool.length; i++) { const k = pick(pool); if (k === 'traira' && Math.random() < 0.7) continue; got[k] = (got[k] || 0) + 1; }
+    let txt = []; for (const k in got) { if (addInv('px_' + k, got[k])) { const r = S.pesca[k] || { n: 0, max: 0, d: S.day }; const novo = !S.pesca[k]; r.n += got[k]; const kg = rollKg(FISH[k]); if (kg > r.max) r.max = kg; S.pesca[k] = r; if (novo) toast('📖 Nova espécie na caderneta: ' + FISH[k].n + '!'); txt.push(got[k] + ' ' + FISH[k].n.toLowerCase()); } }
+    S.fishS[wk] = Math.max(0.2, (S.fishS[wk] || 1) - 0.04); AU.splash(); FS.st = 'aim'; FS.msg = txt.length ? 'Tarrafa cheia: ' + txt.join(', ') + '.' : 'A tarrafa voltou vazia.'; renderFishUI(); }, 1800); }
+// vara, linha, boia e rede no mundo
+function fishFx() {
+  if (!FS.on) return; const px = ix(P), py = iy(P) - (P.boat ? 6 : 0), side = FS.dx !== 0, hx = px + FS.dx * 4, hy = py - 16, tipx = px + (side ? FS.dx * 18 : 3), tipy = py - (FS.dy < 0 ? 34 : FS.dy > 0 ? 24 : 30);
+  X.strokeStyle = FS.rod === 'molinete' ? '#2a2a30' : '#a8844a'; X.lineWidth = 1.2; X.beginPath(); X.moveTo(hx, hy); X.lineTo(tipx, tipy); X.stroke(); if (FS.rod === 'molinete') { X.fillStyle = '#c8c8d0'; X.fillRect(hx + FS.dx * 2 - 1, hy - 2, 3, 3); }
+  if (FS.st === 'net') { const u = Math.min(1, FS.t / 0.6); const r = 4 + u * 14; X.strokeStyle = 'rgba(230,225,205,0.8)'; X.beginPath(); X.ellipse(lerp(px, FS.netX, u), lerp(py - 20, FS.netY, u) - Math.sin(u * Math.PI) * 18, r, r * 0.45, 0, 0, 7); X.stroke(); FS.t += 0.016; return; }
+  if (FS.st === 'aim' || FS.st === 'done') { X.strokeStyle = 'rgba(240,240,230,0.7)'; X.lineWidth = 0.6; X.beginPath(); X.moveTo(tipx, tipy); X.lineTo(tipx + (side ? FS.dx * 2 : 0), tipy + 10); X.stroke(); return; }
+  let bx = FS.bx, by = FS.by; if (FS.st === 'fly') { const u = Math.min(1, FS.t / 0.55); bx = lerp(tipx, FS.bx, u); by = lerp(tipy, FS.by, u) - Math.sin(u * Math.PI) * 30; }
+  const sink = FS.st === 'bite' ? 3 : FS.st === 'fight' ? 2 : (FS._nb > 0 ? (FS._nb -= 0.016, 1.5) : Math.sin(FS.t * 3) * 0.6);
+  X.strokeStyle = 'rgba(240,240,230,0.75)'; X.lineWidth = 0.6; X.beginPath(); X.moveTo(tipx, tipy); const sag = FS.st === 'fight' ? (1 - Math.min(1, FS.ten)) * 14 : 10; X.quadraticCurveTo((tipx + bx) / 2, Math.max(tipy, by) + sag, bx, by + sink - 2); X.stroke();
+  if (FS.st !== 'fight') { X.fillStyle = '#e83a2a'; X.fillRect(Math.round(bx) - 1, Math.round(by + sink) - 4, 3, 2); X.fillStyle = '#f8f0e0'; X.fillRect(Math.round(bx) - 1, Math.round(by + sink) - 2, 3, 2); if (FS.st === 'wait' || FS.st === 'bite') { X.strokeStyle = 'rgba(220,245,255,0.55)'; X.beginPath(); X.ellipse(bx, by + 0.5, 3 + (FS.t * 2 % 3), 1.2, 0, 0, 7); X.stroke(); } if (FS.st === 'bite') { X.fillStyle = '#fff4c0'; X.fillRect(bx - 1, by - 16, 2, 6); X.fillRect(bx - 1, by - 8, 2, 2); } }
+  else { X.strokeStyle = 'rgba(220,245,255,0.7)'; X.beginPath(); X.ellipse(bx, by, 5 + Math.sin(FS.t * 9) * 1.5, 2, 0, 0, 7); X.stroke(); if (Math.random() < 0.15) part(bx + rnd(-4, 4), by - 2, 'spark', { vx: rnd(-14, 14), vy: rnd(-24, -8), m: 0.4, c: '#d8f0ff' });
+    if (FS.fk && FISH[FS.fk].f >= 4 && Math.sin(FS.t * 1.3) > 0.97) { const c = fishCanvas(FS.fk); X.save(); X.translate(bx, by - 14); X.rotate(Math.sin(FS.t * 6) * 0.4); X.drawImage(c, -c.width / 2, -c.height / 2); X.restore(); } }
+}
+// ---------- sombras e saltos de peixe ----------
+const FISHV = []; let fishVT = 0;
+function fishVisUpd(dt) {
+  if ((fishVT -= dt) <= 0) { fishVT = 0.6; const cx = cam.x + VW() / 2, cy = cam.y + VH() / 2; for (let i = FISHV.length - 1; i >= 0; i--) if (hyp(FISHV[i].x - cx, FISHV[i].y - cy) > 520) FISHV.splice(i, 1);
+    if (FISHV.length < 26) for (let k = 0; k < 6; k++) { const x = cx + rnd(-VW() * 0.6, VW() * 0.6), y = cy + rnd(-VH() * 0.6, VH() * 0.6), tx = Math.floor(x / TS), ty = Math.floor(y / TS); if (gt(tx, ty) !== G.WATER || (wdepth[gi(tx, ty)] || 0) < 1) continue; const wk = waterKind(tx, ty); if (Math.random() > ((S.fishS || {})[wk] || 0.6) * (wk === 'riacho' ? 0.4 : 0.9)) continue; const n = wk === 'brejo' || wk === 'riacho' ? 1 : rint(1, 3); for (let j = 0; j < n; j++) FISHV.push({ x: x + rnd(-8, 8), y: y + rnd(-6, 6), a: Math.random() * 6.28, s: wk === 'pardo' || wk === 'barragem' ? rnd(4, 8) : rnd(2.5, 5), t: rnd(1, 4), j: 0, wk }); } }
+  for (const f of FISHV) { f.t -= dt; if (f.t < 0) { f.t = rnd(1.5, 4); f.a += rnd(-1.4, 1.4); } const sp = 6 + f.s, nx = f.x + Math.cos(f.a) * sp * dt, ny = f.y + Math.sin(f.a) * sp * 0.6 * dt; if (gt(Math.floor(nx / TS), Math.floor(ny / TS)) === G.WATER) { f.x = nx; f.y = ny; } else f.a += Math.PI * 0.8;
+    if (FS.on && FS.st === 'wait' && hyp(f.x - FS.bx, f.y - FS.by) < 40) f.a = Math.atan2(FS.by - f.y, FS.bx - f.x);
+    if (f.j > 0) f.j -= dt; else { const h = hour(), k = ((h >= 5 && h < 8) || (h >= 16.5 && h < 19)) ? 0.03 : 0.006; if (Math.random() < dt * k * 10) { f.j = 0.7; AU.osc('sine', 500, 250, 0.08, 0.04 * AU.sp(f.x, f.y)); } } }
+}
+function drawFishShadows(vx0, vx1, vy0, vy1) {
+  for (const f of FISHV) { if (f.x < vx0 || f.x > vx1 || f.y < vy0 || f.y > vy1) continue;
+    if (f.j > 0) { const u = 1 - f.j / 0.7, z = Math.sin(u * Math.PI) * 10; X.fillStyle = '#c8d4dc'; X.save(); X.translate(f.x + Math.cos(f.a) * u * 10, f.y - z); X.rotate(Math.cos(u * Math.PI) * (Math.cos(f.a) > 0 ? -0.9 : 0.9)); X.beginPath(); X.ellipse(0, 0, f.s * 0.55, 1.3, 0, 0, 7); X.fill(); X.fillStyle = '#e8f0f4'; X.fillRect(-f.s * 0.3, -1, f.s * 0.5, 1); X.fillStyle = '#c8d4dc'; X.fillRect(-f.s * 0.55 - 2, -1, 2, 2); X.restore(); if (u < 0.1 || u > 0.9) { X.strokeStyle = 'rgba(230,245,255,0.7)'; X.beginPath(); X.ellipse(f.x + Math.cos(f.a) * (u > 0.5 ? 10 : 0), f.y, 4, 1.4, 0, 0, 7); X.stroke(); } continue; }
+    X.fillStyle = 'rgba(12,32,40,0.2)'; X.save(); X.translate(f.x, f.y); X.rotate(f.a); X.beginPath(); X.ellipse(0, 0, f.s, f.s * 0.35, 0, 0, 7); X.fill(); const w = Math.sin(drawT * 8 + f.x) * 1.2; X.beginPath(); X.moveTo(-f.s, 0); X.lineTo(-f.s - 3, -2 + w); X.lineTo(-f.s - 3, 2 + w); X.fill(); X.restore(); }
+}
+// ---------- canoa ----------
+function boatSpr(view) { return cached('canoa|' + view, 48, 16, g => { const p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+  if (view === 'side') { const L = 40, x0 = 4; for (let k = 0; k < L; k++) { const e = Math.min(k, L - 1 - k), hh = Math.min(6, 1 + e * 0.7); p(x0 + k, 12 - hh, 1, hh, k % 8 === 0 ? '#5a3418' : '#7a4a24'); p(x0 + k, 12 - hh, 1, 1, '#a8703e'); } p(x0 + 5, 8, L - 10, 1, '#3a2010'); }
+  else { p(18, 1, 12, 14, '#7a4a24'); p(19, 0, 10, 1, '#a8703e'); p(20, 2, 8, 11, '#4a2a14'); p(19, 14, 10, 2, '#5a3418'); } }); }
+function updBoat(dt, ix0, iy0, mag) {
+  const sp = 46 * (P.en < 5 ? 0.6 : 1); P._vx = P._vx || 0; P._vy = P._vy || 0; const tvx = mag ? ix0 / mag * sp * Math.min(1, mag * 1.2) : 0, tvy = mag ? iy0 / mag * sp * Math.min(1, mag * 1.2) : 0;
+  P._vx += (tvx - P._vx) * Math.min(1, dt * 1.6); P._vy += (tvy - P._vy) * Math.min(1, dt * 1.6); const ok = (x, y) => { const t = gt(Math.floor(x / TS), Math.floor(y / TS)); return t === G.WATER || t === G.BRIDGE; };
+  const nx = P.x + P._vx * dt, ny = P.y + P._vy * dt; if (ok(nx, P.y) && ok(nx + Math.sign(P._vx) * 10, P.y)) P.x = nx; else P._vx *= -0.2; if (ok(P.x, ny) && ok(P.x, ny + Math.sign(P._vy) * 5)) P.y = ny; else P._vy *= -0.2;
+  const v = hyp(P._vx, P._vy); P._mv = v; if (v > 4) { P.dir = Math.abs(P._vx) > Math.abs(P._vy) ? (P._vx > 0 ? 3 : 2) : (P._vy > 0 ? 0 : 1); P._dist = (P._dist || 0) + v * dt; if (mag) P.en = Math.max(0, P.en - dt * 0.05); if ((P._pd = (P._pd || 0) - dt) <= 0) { P._pd = 0.7; AU.nz(0.18, 0.025, 'bandpass', 700, 1); part(P.x + rnd(-8, 8), P.y, 'spark', { vx: rnd(-10, 10), vy: rnd(-14, -4), m: 0.35, c: '#d8f0ff' }); } }
+  S.boat.x = P.x; S.boat.y = P.y; P._st = 'idle';
+}
+function drawBoat(bx, by, dir, withP) {
+  const view = dir >= 2 ? 'side' : 'fb', c = boatSpr(view), flip = dir === 2, bob = Math.sin(drawT * 2) * 0.6, y = Math.round(by + bob);
+  X.strokeStyle = 'rgba(220,245,255,0.45)'; X.lineWidth = 1; X.beginPath(); X.ellipse(bx, y + 1, view === 'side' ? 22 : 8, view === 'side' ? 3 : 7, 0, 0, 7); X.stroke();
+  if (withP) { const ap = S.cf.ap, pf = Math.floor((P._dist || 0) / 14) % 2; X.save(); X.beginPath(); X.rect(bx - 40, y - 60, 80, 54); X.clip(); drawSpr(charSpr(ap, dir, 0, 'sit'), bx - 12, y - 30 + 8, dir === 2); X.restore();
+    if (!FS.on) { const pa = (P._mv || 0) > 4 ? (pf ? 1 : -1) : 0; X.strokeStyle = '#8a5a2a'; X.lineWidth = 1.4; X.beginPath(); X.moveTo(bx + (view === 'side' ? 2 : 6), y - 14); X.lineTo(bx + (view === 'side' ? 2 + pa * 9 : 9), y + 2); X.stroke(); X.fillStyle = '#8a5a2a'; X.fillRect(bx + (view === 'side' ? 1 + pa * 9 : 8), y, 3, 3); } }
+  X.save(); if (flip) { X.translate(bx, 0); X.scale(-1, 1); X.translate(-bx, 0); } X.drawImage(c, Math.round(bx - 24), y - 12); X.restore();
+}
+// ---------- barraca do Seu Bené (porto) ----------
+const BENE_AP = { sex: 'M', skin: 3, hair: 0, hairC: 4, hat: 3, shirt: 1, shirtC: 6, pants: 0, pantsC: 3, boots: 0, acc: 0, scarfC: 0, orn: 'none' };
+function fishSellRows(mul) { const L = FISH_K.filter(k => S.inv['px_' + k] > 0); if (!L.length) return '<p class="mut">Nenhum peixe fresco na mochila.</p>'; let tot = 0; const rows = L.map(k => { const n = S.inv['px_' + k], v = n * IT['px_' + k].p * mul; tot += v; return `<div class="card"><div class="row sp"><span>${fishImg(k, 2)}</span><span style="flex:1"><b>${FISH[k].n}</b> × ${n}</span><b>${fmt2(v)}</b>${btn('Vender', 'fishSell', k + '|' + mul)}</div></div>`; }).join(''); return rows + btn('Vender tudo (' + fmt2(tot) + ')', 'fishSellAll', String(mul)); }
+A.fishSell = v => { const [k, m] = v.split('|'), n = S.inv['px_' + k] || 0; if (!n) return; useInv('px_' + k, n); receive(n * IT['px_' + k].p * +m, 'Venda de ' + n + 'x ' + FISH[k].n, 'cash'); AU.chime(); renderModal(); };
+A.fishSellAll = m => { let t = 0, n = 0; for (const k of FISH_K) { const q = S.inv['px_' + k] || 0; if (!q) continue; useInv('px_' + k, q); t += q * IT['px_' + k].p * +m; n += q; } if (n) { receive(t, 'Venda de ' + n + ' peixes', 'cash'); AU.chime(); } renderModal(); };
+function openBene() { if (!S.flags.beneGift) { S.flags.beneGift = 1; addInv('sambura', 1, true); addInv('minhoca', 10, true); setTimeout(() => toast('🧺 Seu Bené te deu um samburá e 10 minhocas de boas-vindas!'), 300); } showModal('🐟 Barraca do Seu Bené', [['ven', 'Vender peixe'], ['eq', 'Equipamento'], ['can', 'Canoa'], ['dic', 'Dicas de pesca']], 'ven', t => {
+  let h = `<div class="dlg"><div>${charImg(BENE_AP, 2)}</div><div style="flex:1"><b>Seu Bené</b> <span class="mut">pescador do Pardo há 40 anos</span><p style="margin:2px 0">${pick(['"O rio dá, mas tem hora. De manhãzinha e no fim da tarde é que o peixe come."', '"Dourado só com isca viva, meu filho. Pega piaba na tarrafa primeiro."', '"Surubim é bicho da noite e do poço fundo. Paciência!"', '"Na piracema o curimatã sobe o rio que é uma beleza."', '"Peixe pequeno solta de volta, que ano que vem ele tá grande."'])}</p></div></div>`;
+  if (t === 'ven') h += '<p class="mut">Seu Bené paga o preço cheio. No Mercadinho de Itarantim pagam 80%.</p>' + fishSellRows(1);
+  if (t === 'eq') h += ['vara', 'molinete', 'sambura', 'tarrafa', 'minhoca', 'massa', 'binoculo'].map(id => shopRow(id)).join('');
+  if (t === 'can') { const b = S.boat; h += `<div class="card"><b>🛶 Canoa de madeira</b><p class="mut">Rema no Rio Pardo, na barragem e nos açudes grandes. Pesca no meio do rio, onde ficam dourado e surubim. Ela fica onde você desembarcar.</p>${b.own ? '<p>✅ A canoa é sua.</p>' : (b.rent >= S.day ? '<p>Alugada até o fim do dia.</p>' : btn('Alugar hoje (R$ 30)', 'boatRent')) + ' ' + btn('Comprar a canoa (R$ 1.200)', 'boatBuy')}</div>`; }
+  if (t === 'dic') h += FISH_K.map(k => { const F = FISH[k], r = S.pesca[k]; return `<div class="card"><div class="row sp"><span>${r ? fishImg(k, 2) : '<b style="font-size:20px;opacity:.5">?</b>'}</span><span style="flex:1"><b>${r ? F.n : '???'}</b><br><span class="mut">${r ? F.tx : 'Ainda não pescou.'} Onde: ${F.hab.map(w => WK_N[w]).join(', ')}. ${F.t === 'noite' ? 'De noite.' : F.t === 'crep' ? 'No lusco-fusco.' : 'De dia.'} Isca: ${Object.keys(F.b).sort((a, b) => F.b[b] - F.b[a]).map(b => BAITS.find(q => q[0] === b)[1].toLowerCase()).join(', ')}.</span></span></div></div>`; }).join('');
+  return h; }); }
+A.boatRent = () => { if (!pay(30, 'Aluguel da canoa')) return; S.boat.rent = S.day; toast('🛶 Canoa alugada! Ela está no trapiche.'); renderModal(); };
+A.boatBuy = () => { if (!pay(1200 * priceMul(), 'Canoa de madeira')) return; S.boat.own = 1; toast('🛶 A canoa agora é sua!'); AU.jingle(); renderModal(); };
+function boatBoard() { if (!S.boat.own && S.boat.rent < S.day) return say('A canoa é do Seu Bené: alugue na barraca (R$ 30 o dia) ou compre.', 3000); if (P.mnt) return say('Desça do cavalo primeiro.'); P.boat = true; P.x = S.boat.x; P.y = S.boat.y; P._vx = P._vy = 0; AU.splash(); tip('canoa', 'Na canoa: reme com o joystick, pesque em qualquer lugar e desembarque perto da margem ou de um trapiche.'); }
+function boatLand() { const tx = Math.floor(P.x / TS), ty = Math.floor(P.y / TS); let best = null, bd = 1e9; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const t = gt(tx + dx, ty + dy); if (t === G.WATER || t < 0 || solidT(tx + dx, ty + dy, 'foot')) continue; const d = dx * dx + dy * dy; if (d < bd) { bd = d; best = [tx + dx, ty + dy]; } } if (!best) return say('Chegue mais perto da margem.'); if (FS.on) stopFishing(); P.boat = false; S.boat.x = P.x; S.boat.y = P.y; P.x = (best[0] + 0.5) * TS; P.y = (best[1] + 0.6) * TS; P._vx = P._vy = 0; AU.splash(); }
+function aguasInteractables(add, foot) {
+  if (!S.boat) initAguas(S);
+  const rod = rodOf();
+  if (P.boat) { add({ k: 'pesca', label: '🎣 Pescar da canoa', x: P.x, y: P.y, r: 999, prio: 2, fn: startFishing }); const tx = Math.floor(P.x / TS), ty = Math.floor(P.y / TS); let land = false; for (let dy = -2; dy <= 2 && !land; dy++) for (let dx = -2; dx <= 2; dx++) { const t = gt(tx + dx, ty + dy); if (t >= 0 && t !== G.WATER && !solidT(tx + dx, ty + dy, 'foot')) { land = true; break; } } if (land) add({ k: 'land', label: '⛵ Desembarcar', x: P.x, y: P.y, r: 999, prio: 3, fn: boatLand }); return; }
+  if (foot) { const w = nearWater(1); if (w && w[2] < 30) add({ k: 'pesca', label: rod ? '🎣 Pescar' : '🎣 Pescar (precisa de vara)', x: w[0], y: w[1], r: 34, prio: rod ? 1 : -1, fn: startFishing }); }
+  { const x = 76.2 * TS, y = 162.2 * TS; add({ k: 'bene', label: '🐟 Barraca do Seu Bené', x, y, r: 30, prio: 4, hit: [x - 20, y - 34, x + 20, y + 4], fn: openBene }); }
+  if (foot && S.boat) { const d = hyp(S.boat.x - P.x, S.boat.y - P.y); if (d < 40) add({ k: 'boat', label: '🛶 Entrar na canoa', x: S.boat.x, y: S.boat.y, r: 40, prio: 4, fn: boatBoard }); }
+}
+// cozinha: assar peixe na fogueira, caldo no fogão de casa
+function fishCookHTML() { const L = FISH_K.filter(k => S.inv['px_' + k] > 0 && k !== 'piaba'); if (!L.length) return ''; return `<div class="card"><b>🐟 Assar peixe</b><p class="mut">Cada peixe fresco vira um peixe assado na brasa (+38 fome, +14 energia).</p><div class="row">${L.map(k => btn(FISH[k].n + ' (' + S.inv['px_' + k] + ')', 'fishRoast', k, fireState() === 'off')).join('')}</div>${fireState() === 'off' ? '<p class="mut">Acenda a fogueira primeiro.</p>' : ''}</div>`; }
+A.fishRoast = k => { if (!useInv('px_' + k, 1)) return; addInv(k === 'cascudo' || k === 'mandi' ? 'caldoPeixe' : 'peixeAssado', 1, true); AU.munch && AU.munch(); toast(k === 'cascudo' || k === 'mandi' ? '🍲 Caldo de ' + FISH[k].n.toLowerCase() + ' pronto!' : '🐟 ' + FISH[k].n + ' assado!'); renderModal(); };
+// minhoca: cavar na lama
+function digWorms() { if (P.mnt) return; act('hoe', 1.6, { x: P.x + (P.dir === 3 ? 10 : P.dir === 2 ? -10 : 0), y: P.y + 4 }, () => { const n = rint(2, 6); addInv('minhoca', n, true); toast('🪱 Cavou ' + n + ' minhocas.'); P.en = Math.max(0, P.en - 2); }); }
+
+/* ---------- AVES: do sertão, da caatinga e das águas ----------
+   hab: agua (nada), margem (beira d'água), campo, gado (anda com o gado), caatinga, ceu (plana alto), passa (bando que cruza o céu)
+   s: tamanho · cores: corpo, peito, asa, cabeça, bico, perna · bl: bico · ll: perna · nk: pescoço · tl: cauda */
+const BIRDS = {
+  garca: { n: 'Garça-branca-grande', hab: 'margem', s: 1.7, c: ['#f4f4f0', '#ffffff', '#e8e8e4', '#f4f4f0', '#e8c030', '#2a2a2a'], bl: 4, ll: 7, nk: 6, tl: 2, fl: [1, 3], shy: 70, call: 'garca', d: 'Alta e toda branca, pesca parada na beira d’água e voa devagar com o pescoço dobrado.' },
+  garcaVaq: { n: 'Garça-vaqueira', hab: 'gado', s: 1.05, c: ['#f4f4f0', '#ffffff', '#ece8e0', '#f0d8a8', '#e8b030', '#c8a040'], bl: 2, ll: 4, nk: 2, tl: 1.5, fl: [3, 7], shy: 40, call: 'garca', d: 'Anda junto do gado pegando os insetos que os bois espantam do capim. Dorme em bando nas árvores.' },
+  soco: { n: 'Socó-boi', hab: 'margem', s: 1.4, c: ['#8a6a4a', '#c8a070', '#6a4a30', '#3a2a1a', '#d8c060', '#c8b050'], bl: 3.5, ll: 5, nk: 3, tl: 2, fl: [1, 1], shy: 50, night: 1, call: 'soco', d: 'Fica imóvel na beira do brejo, quase invisível. Canta grosso de madrugada.' },
+  marreca: { n: 'Marreca-irerê', hab: 'agua', s: 1.1, c: ['#8a5a3a', '#4a3a2a', '#6a4a2e', '#f0ece0', '#2a2a2a', '#4a4a4a'], bl: 2, ll: 2, nk: 2, tl: 1.5, fl: [4, 10], shy: 80, swim: 1, call: 'marreca', d: 'Bandos que assobiam "i-rê-rê" ao levantar voo. Cara branca e corpo castanho.' },
+  bigua: { n: 'Biguá', hab: 'agua', s: 1.4, c: ['#1e1e22', '#2a2a2e', '#141418', '#1e1e22', '#d8a840', '#1e1e22'], bl: 3, ll: 2, nk: 3, tl: 3, fl: [1, 3], shy: 70, swim: 1, dive: 1, call: 'bigua', d: 'Mergulhador preto: some debaixo d’água e reaparece longe com peixe no bico. Seca as asas abertas.' },
+  jacana: { n: 'Jaçanã', hab: 'margem', s: 0.95, c: ['#6a2a1e', '#1e1a18', '#7a3420', '#1e1a18', '#e8d040', '#7a9a3a'], bl: 2, ll: 5, nk: 2, tl: 1, fl: [1, 3], shy: 50, lily: 1, call: 'jacana', d: 'Dedos compridíssimos para andar por cima do aguapé. Escudo amarelo na testa.' },
+  martim: { n: 'Martim-pescador', hab: 'margem', s: 0.95, c: ['#2a6aa0', '#c8602a', '#2a5a8a', '#2a6aa0', '#2a2a2a', '#3a3a3a'], bl: 3, ll: 1.5, nk: 1, tl: 1.5, fl: [1, 1], shy: 45, perch: 1, call: 'martim', d: 'Fica no galho de olho na água e mergulha de bico. Sai voando rente ao rio, gritando.' },
+  queroquero: { n: 'Quero-quero', hab: 'campo', s: 1.1, c: ['#9a9a90', '#f0f0ec', '#4a5a4a', '#5a5a58', '#c84a3a', '#c84a4a'], bl: 1.5, ll: 4, nk: 2, tl: 1.5, fl: [2, 2], shy: 60, alarm: 1, call: 'queroquero', d: 'Sentinela do pasto: grita "quero-quero" e dá rasantes em quem chega perto do ninho.' },
+  carcara: { n: 'Carcará', hab: 'campo', s: 1.5, c: ['#4a3a2a', '#e8dcc0', '#3a2a1e', '#f0e0c0', '#e8a040', '#e8c060'], bl: 2, ll: 4, nk: 2, tl: 3, fl: [1, 2], shy: 70, call: 'carcara', d: '"Carcará pega, mata e come." Gavião do sertão de boné preto e cara alaranjada; anda no chão atrás de bicho.' },
+  anu: { n: 'Anu-preto', hab: 'gado', s: 0.95, c: ['#1a1a1e', '#22222a', '#141418', '#1a1a1e', '#141418', '#1a1a1e'], bl: 2, ll: 3, nk: 1.5, tl: 4, fl: [3, 7], shy: 40, call: 'anu', d: 'Bando barulhento de rabo comprido que pousa nas cercas e nas costas do gado catando carrapato.' },
+  asaBranca: { n: 'Asa-branca', hab: 'caatinga', s: 1.0, c: ['#a88a7a', '#c8a898', '#8a6a5a', '#9a8a8a', '#2a2a2a', '#c86a6a'], bl: 1.4, ll: 2.5, nk: 1.5, tl: 2.5, fl: [3, 9], shy: 55, wing: '#f4f4f0', call: 'asaBranca', d: 'A pomba da canção de Luiz Gonzaga: some na seca e volta com as primeiras chuvas.' },
+  galoCampina: { n: 'Galo-de-campina', hab: 'caatinga', s: 0.8, c: ['#6a6a6e', '#f0f0ec', '#3a3a40', '#d02a2a', '#b8b8b0', '#5a5a5a'], bl: 1.4, ll: 2, nk: 1, tl: 2, fl: [1, 2], shy: 40, call: 'galo', d: 'Cardeal-do-nordeste: cabeça vermelha e canto bonito nos galhos da caatinga.' },
+  bemtevi: { n: 'Bem-te-vi', hab: 'campo', s: 0.85, c: ['#7a6a3a', '#f0d030', '#6a5a30', '#1e1a18', '#1e1a18', '#2a2a2a'], bl: 2, ll: 2, nk: 1, tl: 2, fl: [1, 2], shy: 40, call: 'bemtevi', d: 'Peito amarelo, faixa branca na cabeça e o canto que todo mundo conhece: "bem-te-vi!".' },
+  joao: { n: 'João-de-barro', hab: 'campo', s: 0.85, c: ['#b0703a', '#e8c8a0', '#9a6030', '#a86a38', '#5a4a3a', '#8a7a6a'], bl: 1.6, ll: 2.5, nk: 1, tl: 1.8, fl: [2, 2], shy: 30, home: 1, call: 'joao', d: 'O pedreiro das aves: faz casa de barro em mourão e galho. O casal canta em dueto.' },
+  urubu: { n: 'Urubu-de-cabeça-preta', hab: 'ceu', s: 1.7, c: ['#1e1e22', '#2a2a2e', '#141418', '#3a3a3e', '#a8a8a8', '#8a8a8a'], bl: 2, ll: 3, nk: 2, tl: 2, fl: [2, 5], shy: 0, call: null, d: 'Gari do sertão: plana em círculos sem bater as asas nas correntes de ar quente.' },
+  periquito: { n: 'Periquito-da-caatinga', hab: 'passa', s: 0.8, c: ['#5aa040', '#c8d040', '#3a8a30', '#5aa040', '#d8c8a0', '#7a7a6a'], bl: 1.4, ll: 2, nk: 1, tl: 3, fl: [6, 14], shy: 0, call: 'periquito', d: 'Bandos verdes e gritadores que cruzam o céu de manhã e no fim da tarde.' },
+  arara: { n: 'Arara-azul-de-lear', hab: 'passa', s: 1.9, c: ['#2a5ab8', '#3a6ac8', '#1e4a98', '#2a5ab8', '#2a2a2a', '#3a3a3a'], bl: 3, ll: 3, nk: 2, tl: 7, fl: [2, 2], shy: 0, rare: 1, call: 'arara', d: 'Raríssima, só existe na caatinga da Bahia. Passa em casal ao amanhecer, gritando alto. Que sorte!' }
+};
+const BIRD_K = Object.keys(BIRDS);
+// ---------- cantos (sintetizados) ----------
+function birdCall(k, x, y) { const v = AU.sp(x, y); if (v <= 0.02 || !AU.ok()) return; const o = (t, f0, f1, d, vol, opt) => AU.osc(t, f0, f1, d, vol * v, Object.assign({ bus: 'a' }, opt || {}));
+  switch (k) {
+    case 'queroquero': for (let i = 0; i < 3; i++) { o('square', 2100, 1700, 0.09, 0.05, { delay: i * 0.22, filt: 'bandpass', ff: 2200, q: 3 }); o('square', 1800, 2300, 0.08, 0.04, { delay: i * 0.22 + 0.1, filt: 'bandpass', ff: 2200, q: 3 }); } break;
+    case 'bemtevi': o('sine', 1900, 2000, 0.12, 0.06); o('sine', 2700, 2600, 0.12, 0.06, { delay: 0.18 }); o('sine', 2300, 1900, 0.3, 0.07, { delay: 0.36 }); break;
+    case 'marreca': for (let i = 0; i < 3; i++) o('sine', 2600, 3300, 0.14, 0.05, { delay: i * 0.17 }); break;
+    case 'garca': o('sawtooth', 320, 200, 0.28, 0.05, { filt: 'bandpass', ff: 600, q: 2 }); break;
+    case 'soco': o('sine', 180, 150, 0.4, 0.07); o('sine', 160, 140, 0.4, 0.06, { delay: 0.5 }); break;
+    case 'carcara': for (let i = 0; i < 6; i++) o('square', 700, 600, 0.04, 0.035, { delay: i * 0.06, filt: 'bandpass', ff: 900, q: 2 }); o('sawtooth', 900, 600, 0.25, 0.05, { delay: 0.42, filt: 'bandpass', ff: 1000, q: 2 }); break;
+    case 'asaBranca': o('sine', 520, 430, 0.35, 0.06, { vib: 6, vd: 10 }); o('sine', 470, 410, 0.5, 0.06, { delay: 0.45, vib: 6, vd: 10 }); break;
+    case 'periquito': for (let i = 0; i < 8; i++) o('square', rnd(2800, 4000), rnd(2600, 3800), 0.04, 0.025, { delay: i * rnd(0.05, 0.09), filt: 'bandpass', ff: 3200, q: 3 }); break;
+    case 'galo': [1800, 2300, 2000, 2600, 2200].forEach((f, i) => o('sine', f, f * 1.08, 0.1, 0.05, { delay: i * 0.13 })); break;
+    case 'anu': o('sine', 900, 1400, 0.22, 0.05); o('sine', 950, 1450, 0.22, 0.04, { delay: 0.35 }); break;
+    case 'martim': for (let i = 0; i < 8; i++) o('square', 3400, 3200, 0.03, 0.03, { delay: i * 0.045, filt: 'bandpass', ff: 3400, q: 4 }); break;
+    case 'bigua': o('sawtooth', 180, 140, 0.2, 0.05, { filt: 'lowpass', ff: 400 }); break;
+    case 'jacana': for (let i = 0; i < 4; i++) o('square', 2600, 2400, 0.05, 0.035, { delay: i * 0.1, filt: 'bandpass', ff: 2600, q: 3 }); break;
+    case 'joao': for (let i = 0; i < 9; i++) o('sine', 2300 - i * 40, 2250 - i * 40, 0.05, 0.04, { delay: i * (0.1 - i * 0.006) }); break;
+    case 'arara': o('sawtooth', 950, 700, 0.35, 0.08, { filt: 'bandpass', ff: 1200, q: 2 }); o('sawtooth', 1000, 720, 0.3, 0.07, { delay: 0.5, filt: 'bandpass', ff: 1200, q: 2 }); break;
+  } }
+// ---------- desenho ----------
+function birdSpr(k, pose, fr) {
+  const key = 'bd|' + k + '|' + pose + '|' + fr; let r = RIG.CACHE.get(key); if (r) return r;
+  const B = BIRDS[k], s = B.s, [cb, cp, cw, ch, ck, cl] = B.c, R = RIG.raw, C = R.C, T = R.tn; const W = 40, H = 34, gy = 30, cx = 20; R.begin(W, H);
+  const fill = (fn, col, m, o) => { R.mClear(); fn(); R.paint(T(col), m === undefined ? 1 : m, o || {}); };
+  const fly = pose === 'fly' || pose === 'glide', swim = pose === 'swim', perch = pose === 'perch';
+  const ll = fly || swim ? 0 : B.ll * s * 0.7, by = gy - ll - 2.2 * s, bl = 4 * s, bh = 2.1 * s, neck = pose === 'peck' ? 0.6 : 1;
+  if (!fly && !swim) { for (const dx of [-0.6, 0.8]) fill(() => R.limb(cx + dx * s, by + 1, cx + dx * s + (pose === 'walk' ? (fr % 2 ? 1 : -1) * dx : 0), gy, 1, 1), cl, 2); }
+  // cauda
+  fill(() => R.limb(cx - bl * 0.8, by - 0.3 * s, cx - bl * 0.8 - B.tl * s, by + (fly ? 0 : 0.8 * s), 1.4 * s, 0.7), cw, 1);
+  // corpo
+  fill(() => R.ell(cx, by, bl, bh), cb, 1, { fn: (x, y, c) => (y > by + 0.3 * s ? C(cp) : c) });
+  // asas
+  if (fly) { const up = pose === 'glide' ? 0 : [1, 0, -1, 0][fr % 4], wl = (k === 'urubu' || k === 'garca' || k === 'arara' ? 9 : 6) * s; fill(() => { R.limb(cx + 0.5, by - 0.5, cx - 1 - wl * 0.3, by - wl * 0.6 * up - (up ? 0 : 0.5), 2 * s, 1); R.limb(cx + 0.5, by - 0.5, cx + 1.2, by - wl * 0.8 * up - 1, 1.6 * s, 1); }, cw, 1, { fn: B.wing ? (x, y, c) => (y < by - 1 ? C(B.wing) : c) : undefined }); if (up < 0) fill(() => R.limb(cx, by, cx - wl * 0.35, by + wl * 0.55, 1.8 * s, 1), cw, 1); }
+  else fill(() => R.ell(cx - 0.6 * s, by - 0.4 * s, bl * 0.72, bh * 0.75), cw, 1, { fn: B.wing ? (x, y, c) => (x < cx - bl * 0.5 ? C(B.wing) : c) : undefined });
+  // pescoço e cabeça
+  const nk = B.nk * s * neck, hx = cx + bl * 0.75 + (pose === 'peck' ? 2 * s : fly && k === 'garca' ? 1 : 0.4 * s), hy = pose === 'peck' ? by + 1.5 * s : by - (fly && k === 'garca' ? 1 : nk) - 0.6 * s;
+  if (nk > 1.2) fill(() => R.limb(cx + bl * 0.6, by - 0.5 * s, hx, hy + 0.6, 1.1 * s, 0.9 * s), k === 'garcaVaq' ? cb : cb, 1);
+  fill(() => R.ell(hx, hy, 1.4 * s, 1.2 * s), ch, 1, { fn: k === 'marreca' ? (x, y, c) => (x > hx - 0.3 ? C('#f8f4ec') : C('#1e1a18')) : k === 'bemtevi' ? (x, y, c) => (y === Math.round(hy) ? C('#f4f4f0') : c) : k === 'carcara' ? (x, y, c) => (y < hy - 0.3 ? C('#1e1a18') : x > hx ? C('#e8a040') : c) : undefined });
+  fill(() => R.limb(hx + 1 * s, hy + 0.2, hx + 1 * s + B.bl * s * (pose === 'peck' ? 0.8 : 1), hy + (pose === 'peck' ? 2 : 0.6), 1, 0.6), ck, 2);
+  R.dot(hx + 0.4 * s, hy - 0.3, C('#100a08'));
+  if (k === 'jacana') R.dot(hx + 0.8 * s, hy - 1.2, C('#e8d040'));
+  if (k === 'queroquero') { R.dot(hx - 1 * s, hy - 1.2 * s, C('#1e1a18')); R.dot(hx - 1.6 * s, hy - 1.6 * s, C('#1e1a18')); R.dot(hx + 0.4, hy + 0.8, C('#1e1a18')); }
+  R.outline(0.4); r = { b: R.toCanvas(), f: null, w: W, h: H, ox: cx, oy: gy, seat: [cx, gy] }; RIG.CACHE.set(key, r); return r;
+}
+// ---------- população: nasce perto da câmera, conforme o lugar e a hora ----------
+const AVES = []; let aveT = 0, aveId = 1;
+function tileHab(tx, ty) { const g = gt(tx, ty); if (g < 0) return null; if (g === G.WATER) { const d = wdepth[gi(tx, ty)] || 1; return d >= 2 ? 'agua' : 'margem'; } if (g === G.SAND) { for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (gt(tx + dx, ty + dy) === G.WATER) return 'margem'; return 'campo'; } if (g === G.PAST || g === G.GRASS) return 'campo'; if (g === G.DRY || g === G.ROCK) return 'caatinga'; if (g === G.MUD) return 'margem'; return null; }
+function spawnBirds() {
+  const cx = cam.x + VW() / 2, cy = cam.y + VH() / 2, h = hour(), night = h >= 19.2 || h < 5, se = season(), mon = calDate().m;
+  for (let i = AVES.length - 1; i >= 0; i--) { const a = AVES[i]; if (hyp(a.x - cx, a.y - cy) > (a.st === 'pass' ? 900 : Math.max(420, Math.max(VW(), VH()) * 1.1)) || a.gone) AVES.splice(i, 1); }
+  if (AVES.length > 46) return;
+  // bandos de passagem e urubus planando
+  if (!night && Math.random() < 0.08) { const k = Math.random() < 0.06 && h < 8 && (P.x > 120 * TS || P.y > 95 * TS) ? 'arara' : Math.random() < 0.5 ? 'periquito' : (h < 8 || h > 16.5) && Math.random() < 0.6 ? 'garcaVaq' : 'marreca';
+    const B = BIRDS[k], n = rint(B.fl[0], B.fl[1]), ang = Math.random() * 6.28, sx = cx - Math.cos(ang) * 520, sy = cy - Math.sin(ang) * 360, gid = aveId++;
+    for (let j = 0; j < n; j++) AVES.push({ id: aveId++, k, x: sx + rnd(-30, 30) - j * 8 * Math.cos(ang), y: sy + rnd(-20, 20) - j * 6 * Math.sin(ang), z: rnd(60, 90), st: 'pass', vx: Math.cos(ang) * rnd(70, 85), vy: Math.sin(ang) * rnd(48, 60), f: Math.cos(ang) > 0 ? 1 : -1, gid, ph: Math.random() * 4 });
+    if (k === 'arara') { toast('🦜 Um casal de araras-azuis-de-lear passou no céu! Raríssimo.'); birdSeen(k, true); } }
+  if (!night && h > 8.5 && h < 16.5 && !AVES.some(a => a.k === 'urubu') && Math.random() < 0.25) { const ccx = cx + rnd(-200, 200), ccy = cy + rnd(-150, 150), n = rint(2, 5); for (let j = 0; j < n; j++) AVES.push({ id: aveId++, k: 'urubu', x: ccx, y: ccy, z: rnd(70, 110), st: 'circle', cx: ccx, cy: ccy, rr: rnd(40, 80), an: Math.random() * 6.28, w: rnd(0.25, 0.4) * (Math.random() < 0.5 ? 1 : -1), f: 1 }); }
+  // aves de chão e de água: amostra casas em volta
+  for (let tries = 0; tries < 8; tries++) {
+    const a0 = Math.random() * 6.28, d0 = rnd(50, Math.max(160, Math.max(VW(), VH()) * 0.62)), x = cx + Math.cos(a0) * d0, y = cy + Math.sin(a0) * d0 * 0.75, tx = Math.floor(x / TS), ty = Math.floor(y / TS), hb = tileHab(tx, ty); if (!hb) continue;
+    if (ty >= 28 && ty <= 62 && tx >= 68 && tx <= 145) continue; // cidade: só pombo e bem-te-vi não estão aqui
+    let L = BIRD_K.filter(k => { const B = BIRDS[k]; if (B.hab !== hb && !(B.hab === 'gado' && hb === 'campo')) return false; if (B.hab === 'ceu' || B.hab === 'passa') return false; if (night && !B.night) return false; if (!night && B.night && h > 7 && h < 17) return false; return true; });
+    if (hb === 'campo' && !near(x, y, 90).some(b => b.sp === 'boi')) L = L.filter(k => BIRDS[k].hab !== 'gado'); else if (hb === 'campo') L = L.concat(['garcaVaq', 'garcaVaq', 'anu']);
+    if (!se && mon >= 6 && mon <= 9) L = L.filter(k => k !== 'asaBranca' || Math.random() < 0.25); // a asa-branca some na seca
+    if (L.includes('jacana') && !WPLANTS.some(w => hyp(w.x - x, w.y - y) < 40)) L = L.filter(k => k !== 'jacana');
+    if (L.includes('joao') && !(tx < 60 && ty < 90)) L = L.filter(k => k !== 'joao');
+    if (!L.length) continue; const k = pick(L), B = BIRDS[k], n = rint(B.fl[0], B.fl[1]), gid = aveId++;
+    if (AVES.filter(a => a.k === k).length > 10) continue;
+    const cow = B.hab === 'gado' ? near(x, y, 90).find(b => b.sp === 'boi') : null;
+    for (let j = 0; j < n; j++) { const bx = x + rnd(-14, 14), by = y + rnd(-10, 10); if (!B.swim && gt(Math.floor(bx / TS), Math.floor(by / TS)) === G.WATER && (wdepth[gi(Math.floor(bx / TS), Math.floor(by / TS))] || 1) > 1) continue;
+      AVES.push({ id: aveId++, k, x: bx, y: by, z: B.perch ? 9 : 0, st: B.swim ? 'swim' : B.perch ? 'perch' : 'idle', t: rnd(1, 4), f: Math.random() < 0.5 ? 1 : -1, gid, cow: cow ? cow.id : null, hx: bx, hy: by, ph: Math.random() * 4 }); }
+    break;
+  }
+}
+function birdSeen(k, force) { if (!S.aves) S.aves = {}; if (S.aves[k]) return; S.aves[k] = S.day; toast('🪶 Nova ave na caderneta: ' + BIRDS[k].n + '!'); if (!force) AU.chime(); }
+function birdThreat(a) { let best = null, bd = 1e9; const cand = [{ x: P.x, y: P.y, k: P.mnt ? 1.3 : P.boat ? 0.8 : 1, mv: P._mv > 6 }]; for (const d of S.animals) if (d.sp === 'cao' && d.own === 'player' && !d._hid && (d._mv || 0) > 10) cand.push({ x: d.x, y: d.y, k: 1.1, mv: 1 }); for (const c of cand) { const d = hyp(c.x - a.x, c.y - a.y) / c.k; if (d < bd) { bd = d; best = c; } } return [best, bd]; }
+function updBirds(dt) {
+  if (!S || mode === 'title') return; if ((aveT -= dt) <= 0) { aveT = 1.4; spawnBirds(); }
+  const cx = cam.x + VW() / 2, cy = cam.y + VH() / 2, seeR = has('binoculo') ? 220 : 90;
+  for (const a of AVES) { const B = BIRDS[a.k]; a.ph = (a.ph || 0) + dt; a.t -= dt;
+    if (!S.aves[a.k] && a.st !== 'dive' && hyp(a.x - P.x, a.y - P.y) < seeR && a.x > cam.x && a.x < cam.x + VW() && a.y - a.z > cam.y && a.y < cam.y + VH()) birdSeen(a.k);
+    if ((a.cT = (a.cT || rnd(2, 12)) - dt) <= 0) { a.cT = rnd(6, 18); if (B.call && hyp(a.x - cx, a.y - cy) < 300 && (a.id % 3 === 0 || B.fl[1] <= 2)) birdCall(B.call, a.x, a.y); }
+    if (a.st === 'pass') { a.x += a.vx * dt; a.y += a.vy * dt; a.f = a.vx > 0 ? 1 : -1; continue; }
+    if (a.st === 'circle') { a.an += a.w * dt; a.x = a.cx + Math.cos(a.an) * a.rr; a.y = a.cy + Math.sin(a.an) * a.rr * 0.6; a.f = Math.sin(a.an) * a.w < 0 ? 1 : -1; if (hour() > 17) a.gone = 1; continue; }
+    // perigo: levanta voo
+    if (a.st !== 'fly' && a.st !== 'dive' && B.shy) { const [th, d] = birdThreat(a); if (th && d < B.shy * (th.mv ? 1 : 0.6)) {
+      if (B.alarm && !a.alT) { a.st = 'alarm'; a.alT = rnd(5, 8); a.t = a.alT; birdCall(B.call, a.x, a.y); }
+      else if (B.dive && a.st === 'swim' && Math.random() < 0.5) { a.st = 'dive'; a.t = rnd(2.5, 5); AU.splash(); }
+      else if (a.st !== 'alarm') { const ang = Math.atan2(a.y - th.y, a.x - th.x) + rnd(-0.6, 0.6), sp = B.s > 1.4 ? 46 : 64; a.st = 'fly'; a.vx = Math.cos(ang) * sp; a.vy = Math.sin(ang) * sp * 0.7; a.t = rnd(2.5, 5); a.f = a.vx > 0 ? 1 : -1; for (const o of AVES) if (o !== a && o.gid === a.gid && o.st !== 'fly' && o.st !== 'dive') { o.st = 'fly'; o.vx = a.vx * rnd(0.85, 1.15); o.vy = a.vy * rnd(0.85, 1.15); o.t = a.t * rnd(0.9, 1.1); o.f = a.f; } if (B.call) birdCall(B.call, a.x, a.y); if (B.swim) AU.splash(); } } }
+    switch (a.st) {
+      case 'fly': { a.z = Math.min(a.k === 'garca' ? 26 : 34, a.z + dt * 40); a.x += a.vx * dt; a.y += a.vy * dt; if (a.t <= 0) { const tx = Math.floor(a.x / TS), ty = Math.floor(a.y / TS), hb = tileHab(tx, ty); const ok = B.swim ? hb === 'agua' || hb === 'margem' : hb === B.hab || (B.hab === 'gado' && hb === 'campo'); if (ok && !(gt(tx, ty) === G.WATER && !B.swim && (wdepth[gi(tx, ty)] || 1) > 1)) { a.st = 'land'; } else { a.t = 1.2; if (Math.random() < 0.1) a.vx = -a.vx; } } break; }
+      case 'land': { a.z = Math.max(0, a.z - dt * 30); a.x += a.vx * dt * 0.4; a.y += a.vy * dt * 0.4; if (a.z <= (B.perch ? 9 : 0)) { a.st = B.swim && gt(Math.floor(a.x / TS), Math.floor(a.y / TS)) === G.WATER ? 'swim' : B.perch ? 'perch' : 'idle'; a.t = rnd(2, 5); a.hx = a.x; a.hy = a.y; } break; }
+      case 'alarm': { const [th] = birdThreat(a), t0 = a.ph * 2.2; a.z = 10 + Math.sin(a.ph * 3) * 5; const tx = (th ? th.x : a.hx) + Math.cos(t0) * 34, ty = (th ? th.y : a.hy) + Math.sin(t0) * 22; a.x += (tx - a.x) * Math.min(1, dt * 3); a.y += (ty - a.y) * Math.min(1, dt * 3); a.f = Math.cos(t0) < 0 ? 1 : -1; if ((a._sc = (a._sc || 0) - dt) <= 0) { a._sc = 1.1; birdCall(B.call, a.x, a.y); } if (a.t <= 0) { a.st = 'land'; a.vx = (a.hx - a.x) / 2; a.vy = (a.hy - a.y) / 2; setTimeout(() => { a.alT = 0; }, 15000); } break; }
+      case 'dive': if (a.t <= 0) { a.x += rnd(-50, 50); a.y += rnd(-20, 20); if (gt(Math.floor(a.x / TS), Math.floor(a.y / TS)) !== G.WATER) { a.x = a.hx; a.y = a.hy; } a.st = 'swim'; a.t = rnd(3, 7); part(a.x, a.y, 'ring', { vx: 0, vy: 0, m: 0.4 }); } break;
+      case 'swim': { a.x += Math.cos(a.ph * 0.3 + a.id) * 4 * dt; a.y += Math.sin(a.ph * 0.23 + a.id) * 2 * dt; if (gt(Math.floor(a.x / TS), Math.floor(a.y / TS)) !== G.WATER) { a.x = a.hx; a.y = a.hy; } if (B.dive && a.t <= 0) { a.st = 'dive'; a.t = rnd(2, 4); part(a.x, a.y, 'ring', { vx: 0, vy: 0, m: 0.4 }); } if (a.t <= 0) a.t = rnd(3, 8); break; }
+      case 'perch': { a.z = 9; if (a.k === 'martim' && a.t <= 0) { a.st = 'hover'; a.t = 1.2; a.tx = a.x + a.f * rnd(10, 26); a.ty = a.y + rnd(-6, 6); } else if (a.t <= 0) a.t = rnd(3, 8); break; }
+      case 'hover': { a.x += (a.tx - a.x) * dt * 2; a.z = 9 + Math.sin(a.t * 6) * 2; if (a.t <= 0) { a.st = 'plunge'; a.t = 0.6; } break; }
+      case 'plunge': { a.z = Math.max(0, a.z - dt * 40); if (a.t <= 0) { if (gt(Math.floor(a.x / TS), Math.floor(a.y / TS)) === G.WATER) { AU.splash(); part(a.x, a.y, 'ring', { vx: 0, vy: 0, m: 0.5 }); for (let i = 0; i < 3; i++) part(a.x, a.y - 2, 'spark', { vx: rnd(-14, 14), vy: rnd(-24, -8), m: 0.4, c: '#d8f0ff' }); } a.st = 'land'; a.z = 4; a.vx = (a.hx - a.x) * 1.5; a.vy = (a.hy - a.y) * 1.5; a.fish = 3; } break; }
+      default: { // idle / walk / peck
+        if (B.hab === 'gado' && a.cow) { const c = byId(a.cow); if (c && hyp(c.x - a.x, c.y - a.y) > 18) { const d = hyp(c.x - a.x, c.y - a.y); a.x += (c.x - 10 * (c.f || 1) - a.x) / d * 22 * dt; a.y += (c.y + 4 - a.y) / d * 22 * dt; a.st = 'walk'; a.f = c.x > a.x ? 1 : -1; break; } if (a.k === 'anu' && c && Math.random() < dt * 0.05) { a.st = 'land'; a.z = 0; } }
+        if (a.t <= 0) { const r = Math.random(); a.st = r < 0.35 ? 'peck' : r < 0.65 ? 'walk' : 'idle'; a.t = rnd(1, 3.5); if (a.st === 'walk') a.f = Math.random() < 0.5 ? 1 : -1; if (a.k === 'garca' && Math.random() < 0.2) { a.st = 'peck'; a.t = 0.6; a.fish = Math.random() < 0.4 ? 2 : 0; } }
+        if (a.st === 'walk') { const sp = B.s * 6, nx = a.x + a.f * sp * dt; const tt = gt(Math.floor(nx / TS), Math.floor(a.y / TS)); if (tt === G.WATER && (wdepth[gi(Math.floor(nx / TS), Math.floor(a.y / TS))] || 1) > 1 && !B.swim) a.f = -a.f; else if (hyp(nx - a.hx, a.y - a.hy) > 60) a.f = -a.f; else a.x = nx; }
+        if (a.fish > 0) a.fish -= dt; }
+    }
+  }
+}
+function drawBirds(add, inV) {
+  for (const a of AVES) { if (!inV(a.x, a.y - a.z, 40)) continue; const B = BIRDS[a.k];
+    add(a.z > 14 ? a.y + 400 : a.y, () => { if (a.st === 'dive') { return; } const fly = a.z > 2 && a.st !== 'perch' && a.st !== 'hover' || a.st === 'pass' || a.st === 'circle', pose = fly ? (a.st === 'circle' || (a.st === 'pass' && B.s > 1.5) ? 'glide' : 'fly') : a.st === 'swim' ? 'swim' : a.st === 'perch' || a.st === 'hover' ? 'perch' : a.st === 'peck' ? 'peck' : a.st === 'walk' ? 'walk' : 'idle';
+      const fr = fly ? Math.floor(a.ph * (B.s > 1.4 ? 5 : 9) + a.id) % 4 : Math.floor(a.ph * 4) % 2, r = birdSpr(a.k, pose, fr), x = Math.round(a.x), y = Math.round(a.y - a.z);
+      if (a.z > 2) { X.fillStyle = `rgba(20,12,4,${Math.max(0.05, 0.22 - a.z * 0.002)})`; X.beginPath(); X.ellipse(x, Math.round(a.y), B.s * 4, B.s * 1.4, 0, 0, 7); X.fill(); }
+      else if (pose === 'swim') { X.strokeStyle = 'rgba(220,245,255,0.55)'; X.lineWidth = 1; X.beginPath(); X.ellipse(x, y, B.s * 5, B.s * 1.6, 0, 0, 7); X.stroke(); }
+      else shadowE(x, y, B.s * 3);
+      if (pose === 'swim') { X.save(); X.beginPath(); X.rect(x - 30, y - 40, 60, 40 - 2); X.clip(); drawRig(r, x, y + B.s * 2.5, a.f < 0, 'b'); X.restore(); } else drawRig(r, x, y, a.f < 0, 'b');
+      if (a.fish > 0 && a.st !== 'swim') { X.fillStyle = '#c8d4dc'; X.fillRect(x + a.f * (B.bl * B.s + 5) - 1, y - (B.ll * B.s * 0.7 + B.nk * B.s + 4), 3, 1); }
+      if (a.st === 'perch' || a.st === 'hover') { X.fillStyle = '#6a4a2a'; X.fillRect(x - 6, y + 1, 12, 1); X.fillRect(x + 4, y + 1, 1, 9); } }, a.x, { w: 60, h: 60, b: a.y });
+  }
+}
+
+// ---------- caderneta da natureza ----------
+function birdImg(k) { const r = birdSpr(k, 'idle', 0); return sprHTML(r.b, 2, 'bdi|' + k); }
+function natHTML() {
+  const pk = FISH_K.filter(k => S.pesca[k]).length, ak = BIRD_K.filter(k => S.aves[k]).length;
+  let h = `<div class="card"><b>📖 Caderneta da natureza</b><p class="mut">Peixes pescados: <b>${pk}/${FISH_K.length}</b> · Aves avistadas: <b>${ak}/${BIRD_K.length}</b> · Total de peixes: ${S.stats.peixes || 0}. Chegue perto das aves (ou use o binóculo) para anotar; pesque para registrar os peixes.</p></div>`;
+  h += '<h3>Peixes</h3>' + FISH_K.map(k => { const F = FISH[k], r = S.pesca[k]; return `<div class="card"><div class="row sp"><span style="min-width:64px;text-align:center">${r ? fishImg(k, 2) : '<b style="opacity:.4;font-size:22px">?</b>'}</span><span style="flex:1"><b>${r ? F.n : '???'}</b>${r ? ` <span class="mut">· ${r.n} pescado(s) · recorde ${r.max.toFixed(2).replace('.', ',')} kg${r.solt ? ' · ' + r.solt + ' solto(s)' : ''}</span><br><span class="mut">${F.tx}</span>` : `<br><span class="mut">Vive em: ${F.hab.map(w => WK_N[w]).join(', ')}.</span>`}</span></div></div>`; }).join('');
+  h += '<h3>Aves</h3>' + BIRD_K.map(k => { const B = BIRDS[k], d = S.aves[k]; return `<div class="card"><div class="row sp"><span style="min-width:64px;text-align:center">${d ? birdImg(k) : '<b style="opacity:.4;font-size:22px">?</b>'}</span><span style="flex:1"><b>${d ? B.n : '???'}</b>${d ? ` <span class="mut">· vista no dia ${d}</span><br><span class="mut">${B.d}</span>` : `<br><span class="mut">${{ margem: 'Beira d’água.', agua: 'Na água dos açudes, lagoas e rio.', campo: 'Nos pastos e campos.', gado: 'Perto do gado.', caatinga: 'Na caatinga seca.', ceu: 'Planando alto no céu.', passa: 'Passa em bando pelo céu.' }[B.hab]}${B.rare ? ' Raríssima.' : ''}${B.night ? ' Ativa no escuro.' : ''}</span>`}</span></div></div>`; }).join('');
+  return h;
+}
+// ---------- primeira chegada ao Rio Pardo ----------
+function csPardo() {
+  S.flags.pardo = 1; if (!cenasOn()) { say('Você chegou ao Rio Pardo! Porto de pescadores a oeste da ponte, lagoa e barragem ao sul.', 5000); return; }
+  cutscene([
+    { fade: 0, cam: [91, PARDO.top(91) + 4], snap: 1, z: 1.25, dof: 0.4, txt: '🌊 O Rio Pardo: largo, de água escura, descendo da serra para o mar.', d: 3.6, upd: (dt, u) => { cam.fx = (91 - 14 + u * 28) * TS; } },
+    { cam: [72, 160], z: 1.6, spd: 1.2, txt: 'O Porto do Pardo: palhoças, canoas e redes secando. Seu Bené vende vara, isca, aluga canoa e compra o seu peixe.', d: 4.2 },
+    { cam: [22, 190], z: 1.4, spd: 1.2, txt: 'A Lagoa da Vereda, no buritizal: jaçanã no aguapé, traíra e acará na beira.', d: 3.6 },
+    { cam: [152, 186], z: 1.2, spd: 1.2, txt: 'E a Barragem do Pardo: tucunaré, tambaqui e o sangradouro que desce para o rio.', d: 3.6 },
+    { clr: 1, d: 0.1 }
+  ], () => say('Dica: pesque de manhãzinha e no fim da tarde. Veja a Caderneta da natureza no Menu.', 5000));
+}
+let aguaChk = 0;
+function aguasTick(dt) {
+  if (!S || !S.pesca) return; fishTick(dt); fishVisUpd(dt); updBirds(dt);
+  if ((aguaChk -= dt) <= 0) { aguaChk = 1; if (!S.flags.pardo && P.y > 151 * TS && mode === 'play' && !P._act) csPardo(); }
+}
+function drawParkedBoat(add, inV) {
+  { const bx = 76.2 * TS, by = 162.5 * TS, h = hour(); if (h >= 5.5 && h < 18.5 && inV(bx, by, 30)) add(by, () => { drawPerson(BENE_AP, bx + 4, by, 0, (drawT % 4) < 0.15 ? 3 : 0, 'idle'); if (Math.random() < 0.002 && hyp(P.x - bx, P.y - by) < 90) say('Seu Bené: ' + pick(['Ô moço, peixe fresquinho aqui!', 'Vai uma vara aí? Hoje o rio tá pra peixe.', 'Quer alugar a canoa?']), 2600); }, bx, { w: 40, h: 50 }); } if (!S.boat || P.boat || !inV(S.boat.x, S.boat.y, 40)) return; add(S.boat.y, () => drawBoat(S.boat.x, S.boat.y, 3, false), S.boat.x, { w: 60, h: 40 }); }
+
 /* ---------- lojas ---------- */
 function shopCart() { return hyp(S.cart.x - P.x, S.cart.y - P.y) < 110 || P.cart; }
 function buyItem(id, n, dest) {
@@ -7605,7 +8141,7 @@ function openAgro() { showModal('🌿 Casa do Agro', [['ins', 'Insumos'], ['sel'
   if (t === 'ins') h += ['racao', 'milho', 'sal', 'palma', 'silagem', 'galaoV', 'galao', 'lenha', 'carvao'].map(id => shopRow(id, { frete: 1 })).join('');
   if (t === 'gen') h += geneticaTab();
   if (t === 'sem') h += sementesTab();
-  if (t === 'sel') { h += ['escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho'].map(id => shopRow(id)).join(''); h += SADDLES.filter(s => s.p).map(s => `<div class="card"><b>${s.n}</b> — ${fmt(s.p)}<p class="mut">${s.d}</p>${S.saddles.includes(s.id) ? '✅ Você já tem' : btn('Comprar', 'buySad', s.id)}</div>`).join(''); }
+  if (t === 'sel') { h += ['escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho', 'vara', 'minhoca', 'binoculo'].map(id => shopRow(id)).join(''); h += SADDLES.filter(s => s.p).map(s => `<div class="card"><b>${s.n}</b> — ${fmt(s.p)}<p class="mut">${s.d}</p>${S.saddles.includes(s.id) ? '✅ Você já tem' : btn('Comprar', 'buySad', s.id)}</div>`).join(''); }
   if (t === 'ani') h += feiraTab();
   if (t === 'boi') h += oxTab();
   if (t === 'vet') h += ['vacina', 'vacRaiva', 'pouron', 'vermifugo', 'remedio', 'mataBicheira', 'iodo', 'soro', 'brinco', 'mamadeira', 'balde', 'ferroMarca'].map(id => shopRow(id)).join('') + '<p class="mut">Brucelose: a vacina das bezerras (3 a 8 meses) é aplicada pela veterinária Joana, pelo Manejo da ficha ou no brete.</p>' + '' + `<div class="card"><b>Consulta veterinária</b> — ${fmt(150)}<p class="mut">Joana visita a fazenda e trata todos os animais doentes hoje.</p>${btn('Chamar veterinária', 'vetCall')}</div>`;
@@ -7623,6 +8159,7 @@ function openMercadinho() { showModal('🧺 Mercadinho Itarantim', [['com', 'Com
   let h = keeperBanner('mercadinho');
   if (t === 'com') h += ['rapadura', 'queijo', 'cafe', 'farinha'].map(id => shopRow(id)).join('');
   if (t === 'var') h += ['violao', 'viola', 'lampiao', 'galaoV'].map(id => shopRow(id)).join('');
+  if (t === 'ven') h += '<h3>Peixe fresco (80% do preço do porto)</h3>' + fishSellRows(0.8);
   if (t === 'ven') { const o = S.inv.ovo || 0, l = S.inv.leite || 0; h += `<div class="card">🥚 Ovos na mochila: <b>${o}</b> × ${fmt2(IT.ovo.p)} ${btn('Vender todos', 'sellP', 'ovo', !o)}</div><div class="card">🥛 Leite na mochila: <b>${l}</b> L × ${fmt2(IT.leite.p)} ${btn('Vender todo', 'sellP', 'leite', !l)}</div><p class="mut">Recolha ovos no galinheiro e leite na Sala de Ordenha.</p>`; h += '<h3>Da sua horta</h3>' + ['alface', 'couve', 'cheiro', 'tomate', 'pimenta', 'abobora', 'feijaoV'].map(k => `<div class="card">${iic(k, 18)} ${IT[k].n}: <b>${S.inv[k] || 0}</b> × ${fmt2(IT[k].p)} ${btn('Vender todos', 'sellP', k, !S.inv[k])}</div>`).join(''); }
   return h; }); }
 A.sellP = v => { const n = S.inv[v] || 0; if (!n) return; useInv(v, n); receive(n * IT[v].p, 'Venda de ' + n + 'x ' + IT[v].n, 'cash'); addFr('dito', 5); renderModal(); };
@@ -7823,7 +8360,7 @@ function openFire() { showModal('Fogueira', null, null, () => {
   h += `<p class="mut">Lugares na roda: ${livres} livre(s), ${ocup} ocupado(s). Lenha: ${lenha}.</p><div class="row">`;
   if (st === 'off') h += btn('Acender (1 lenha)', 'fireOn', '', !lenha);
   else h += btn('Apagar', 'fireOff', '', st === 'dying' && S.fireOutReq) + btn('Sentar na roda', 'fireSit', '', !livres) + btn('Tocar ' + (has('viola') ? 'viola' : 'violão'), 'play', '', !can);
-  h += btn('Chamar os peões para a roda', 'fireCall', '', !S.workers.length || S.fireCall === S.day) + '</div>';
+  h += btn('Chamar os peões para a roda', 'fireCall', '', !S.workers.length || S.fireCall === S.day) + '</div>' + fishCookHTML();
   if (!can && st !== 'off') h += '<p class="mut">Compre violão ou viola caipira no Mercadinho.</p>';
   h += '<p class="mut">Dica: segure o dedo 3 segundos sobre a fogueira (apagada) para mudar ela de lugar.</p>';
   return h;
@@ -9386,6 +9923,7 @@ function drawMounted(h, ap, x, y, dir, an, fr) {
 function mountGait(h) { const spd = P._mv || 0; if (spd < 2.5) return ['idle', 0]; const an = spd > 56 ? 'gallop' : spd > 27 ? 'trot' : 'walk'; const cyc = RIG.cycleLen(rigBreed(h), an, rigK(h)) || 20; return [an, Math.floor(((P._dist || 0) / cyc % 1) * RIG.frames(an)) % RIG.frames(an)]; }
 function drawPlayer() {
   const ap = S.cf.ap, x = ix(P), y = iy(P);
+  if (P.boat) return drawBoat(x, y, P.dir, true);
   if (P.mnt) { const h = byId(P.mnt); if (!h) { P.mnt = null; return; } let [an, fr] = mountGait(h); if (P._idleT > 0.4 && an === 'idle') { const t = drawT % 7; fr = t < 5.6 ? 0 : t < 6 ? 1 : t < 6.5 ? 3 : 0; } if (h._react && h._react.t > 0) { an = h._react.a; fr = h._react.f; } if (typeof waterDepthAt === 'function') { const wd = waterDepthAt(P.x, P.y); if (wd > 0.05) return drawMountedWading(h, ap, x, y, P.dir, an, fr, wd); } drawMounted(h, ap, x, y, P.dir, an, fr); return; }
   if (P.cart) return;
   let [pose, fr] = playerPose(), dir = P.dir;
@@ -9433,7 +9971,7 @@ function drawFire(x, y, big) {
   if (Math.random() < 0.08) AU.crackle(x, y);
 }
 const BUILDER_AP = [{ sex: 'M', skin: 4, hair: 1, hairC: 0, hat: 5, shirt: 1, shirtC: 5, pants: 1, pantsC: 1, boots: 0, acc: 0, scarfC: 0, orn: 'none' }, { sex: 'M', skin: 2, hair: 0, hairC: 1, hat: 1, shirt: 1, shirtC: 3, pants: 0, pantsC: 0, boots: 0, acc: 0, scarfC: 0, orn: 'none' }];
-const TREES = new Set(['mata1', 'mata2', 'barriguda', 'umbu', 'juazeiro', 'manga', 'caju', 'inga', 'ipe', 'coqueiro', 'licuri', 'palmeira']);
+const TREES = new Set(['buriti', 'mata1', 'mata2', 'barriguda', 'umbu', 'juazeiro', 'manga', 'caju', 'inga', 'ipe', 'coqueiro', 'licuri', 'palmeira']);
 // capim em blocos de 16×16 casas pré-desenhados (2 quadros de vento): 1 desenho por bloco em vez de 1 por casa.
 // O bloco só é redesenhado quando o nível do capim de alguma casa muda (checado no máximo a cada 1,2 s).
 const GCH = new Map(), GCS = 16;
@@ -9472,7 +10010,7 @@ function collectItems(tx0, tx1, ty0, ty1, vw, vh, se, vx0, vy0) {
       if (!l.done && hour() >= 7 && hour() < 17 && !isRain()) BUILDER_AP.forEach((ap, i) => { const bx = x0 + 20 + i * 70, by = y1 + 4; add(by, () => drawPerson(ap, bx, by, i ? 2 : 3, Math.floor(drawT * 3 + i) % 2, 'hammer'), bx); if (Math.random() < dt * 1.2) { AU.hammer(bx, by); dust(bx + (i ? -10 : 10), by - 6, 1, '#b8a888'); } }); } }
   TROUGHS.forEach((t, i) => { const x = t.x * TS, y = t.y * TS; if (!inV(x, y, 40)) return; add(y + 15, () => X.drawImage(troughSpr(t, S.tr[i] / trCap(i)), x - 2, y - 2), x + t.w * 8, { w: t.w * 16 + 16, h: 40, b: y + 16 }); });
   for (const a of S.animals) { if (a.id === P.mnt || a._wr || !inV(a.x, a.y, 40)) continue; add(iy(a), () => drawAnimal(a), ix(a), { w: 110, h: 100 }); }
-  aucDrawLot(add); drawCSX(add); drawCSA(add); drawAgro(add, inV); drawCityDeco(add, inV); drawTraffic(add, inV);
+  aucDrawLot(add); drawCSX(add); drawCSA(add); drawAgro(add, inV); drawCityDeco(add, inV); drawTraffic(add, inV); drawBirds(add, inV); drawParkedBoat(add, inV);
   cineDrawActors(add, inV);
   for (const e of npcs) { if (e.hidden || !inV(e.x, e.y, 30)) continue; add(iy(e), () => { const [pz, fr] = npcPose(e); X.globalAlpha = e.alpha === undefined ? 1 : e.alpha; drawPerson(e.d.ap, ix(e), iy(e), e.dir, fr, pz); X.globalAlpha = 1; if (e.emote && e.et > 0) emote(ix(e), iy(e) - 34, e.emote); }, ix(e), { w: 90, h: 100 }); }
   for (const w of S.workers) { if (w.x === undefined || !inV(w.x, w.y, 30)) continue; if (w._mnt) { const h = workerHorse(w); if (h) { add(w.y, () => { const sp = h._mv || 0, an = sp < 2 ? 'idle' : sp > 40 ? 'trot' : 'walk', cyc = RIG.cycleLen(rigBreed(h), an === 'idle' ? 'walk' : an, rigK(h)) || 20; drawMounted(h, w.ap, w.x, w.y, w.dir || 0, an, an === 'idle' ? 0 : Math.floor(((h._dist || 0) / cyc % 1) * 8) % 8); }, w.x, { w: 120, h: 120 }); continue; } } if (w._sleep) continue; add(iy(w), () => { const wx = ix(w), wy = iy(w); const pz = w._pose === 'walk' ? 'walk' : w._pose || 'idle'; drawPerson(w.ap, wx, wy, w.dir || 0, pz === 'walk' ? Math.floor((w._ph || 0) / 22 * 8 / 0.22) % 8 : Math.floor(drawT * 3) % 2, pz === 'carry' && w._pose === 'walk' ? 'carryW' : pz); if (w.task && w._pose !== 'walk' && !w._wait) { X.fillStyle = '#2b1608'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), 16, 3); X.fillStyle = '#7ad040'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), Math.round(16 * (w.task.prog || 0)), 3); } }, ix(w), { w: 90, h: 100 }); }
@@ -9493,9 +10031,11 @@ function groundLayer(tx0, tx1, ty0, ty1, se, wind) {
     if (g === G.WATER) drawPondShore(tx, ty);
     if (g === G.MUD) { const ak = AKEYS[areaId[i]]; const d = (S.dirt[ak] || 0); const n = Math.floor(d / 22); for (let k = 0; k < n; k++) { X.fillStyle = k % 2 ? '#4a3018' : '#5e4020'; X.fillRect(tx * TS + Math.floor(H2(tx, ty, k) * 13), ty * TS + Math.floor(H2(ty, tx, k + 9) * 13), 3, 2); } }
   }
+  drawAguasGround(tx0, tx1, ty0, ty1);
   drawEventDecor(false);
 }
 function worldFx(dt) {
+  fishFx();
   const px = ix(P), py = iy(P);
   if (lasso.t) { const a = lasso.t, hx = px + (P.mnt ? 4 : 0), hy = py - (P.mnt ? 26 : 16), ax = ix(a), ay = iy(a) - 14; X.strokeStyle = '#e8d8a8'; X.lineWidth = 1; X.beginPath(); X.moveTo(hx, hy); const d = hyp(ax - hx, ay - hy); X.quadraticCurveTo((hx + ax) / 2, (hy + ay) / 2 + Math.max(0, 34 - d) * 0.4 + 4, ax, ay); X.stroke(); }
   if (lasso.anim > 0) { lasso.anim -= dt; X.strokeStyle = '#e8d8a8'; X.beginPath(); X.ellipse(px, py - 40, 10, 4, 0, 0, 7); X.stroke(); }
@@ -10115,7 +10655,7 @@ const SAVE = {
     v = o.v || v || 1; while (v < SAVE_V && MIGR[v]) v = MIGR[v](o); o.v = SAVE_V;
     const base = newState(); for (const k in base) if (o[k] === undefined) o[k] = base[k];
     for (const k in base.dep) if (o.dep[k] === undefined) o.dep[k] = 0;
-    S = o; P = S.p; initVeh(S); initAgro(S); if (!S.caoV) { S.animals.forEach(a => { if (a.sp !== 'cao') return; if (!a.dc) a.dc = { col: '#8a4a1e', colT: 'couro', bnd: '' }; if (!a.xp) a.xp = { h: 0, g: 0, t: 0, o: 0 }; if (a.en === undefined) a.en = 100; const cs = (RIG.BR[a.br] || {}).coats; if (cs && !cs.includes(a.coat)) a.coat = cs[0]; }); S.caoV = 1; } if (!S.gadoV) { S.animals.forEach(a => { if (a.own === 'player' && a.sp === 'boi' && a.sex === 'M' && a.age >= 24) a.cast = 1; }); S.gadoV = 2; } lasso.t = null; parts = []; rings = []; if (S.cf && S.cf.ap) delete S.cf.ap.tool; if (!S.chest) S.chest = {}; if (!S.esc) S.esc = []; S.esc = []; S.animals.forEach(a => { if (!a.hist) a.hist = []; if (a._st === 'route') a._st = null; });
+    S = o; P = S.p; initVeh(S); initAgro(S); initAguas(S); if (FS.on) stopFishing(); AVES.length = 0; FISHV.length = 0; if (P.boat && gt(Math.floor(P.x / TS), Math.floor(P.y / TS)) !== G.WATER) P.boat = false; if (!S.caoV) { S.animals.forEach(a => { if (a.sp !== 'cao') return; if (!a.dc) a.dc = { col: '#8a4a1e', colT: 'couro', bnd: '' }; if (!a.xp) a.xp = { h: 0, g: 0, t: 0, o: 0 }; if (a.en === undefined) a.en = 100; const cs = (RIG.BR[a.br] || {}).coats; if (cs && !cs.includes(a.coat)) a.coat = cs[0]; }); S.caoV = 1; } if (!S.gadoV) { S.animals.forEach(a => { if (a.own === 'player' && a.sp === 'boi' && a.sex === 'M' && a.age >= 24) a.cast = 1; }); S.gadoV = 2; } lasso.t = null; parts = []; rings = []; if (S.cf && S.cf.ap) delete S.cf.ap.tool; if (!S.chest) S.chest = {}; if (!S.esc) S.esc = []; S.esc = []; S.animals.forEach(a => { if (!a.hist) a.hist = []; if (a._st === 'route') a._st = null; });
     genMap(); agroMap(); genCityDeco(); initGrass(); if (S.grass) { const u = new Uint8Array(MW * MH); decodeU8(S.grass, u); for (let i = 0; i < u.length; i++) if (ground[i] === G.PAST) grass[i] = u[i]; }
     GATES.forEach((g, i) => { g.open = !!S.gates[i]; g.anim = g.open ? 1 : 0; });
     while (S.tr.length < TROUGHS.length) S.tr.push(TROUGHS[S.tr.length].cap * 0.5);
@@ -10318,7 +10858,7 @@ function finishWardrobe() { S.cf.ap = Object.assign({}, CF.ap); $('setup').style
 /* ---------- novo jogo: começo pequeno ---------- */
 function newGame(cf) {
   $('setup').style.display = 'none'; document.body.classList.remove('ovl');
-  S = newState(); P = S.p; initVeh(S); initAgro(S); lasso.t = null; parts = [];
+  S = newState(); P = S.p; initVeh(S); initAgro(S); initAguas(S); if (FS.on) stopFishing(); AVES.length = 0; FISHV.length = 0; lasso.t = null; parts = [];
   S.cf = { name: cf.name, st: cf.st, sk: cf.sk, ap: Object.assign({}, cf.ap), hn: cf.hn, aj: cf.aj, mt: cf.mt };
   S.saddles = [...new Set(['nord', SADDLES[cf.sd].id])]; S.saddleSel = SADDLES[cf.sd].id;
   genMap(); agroMap(); genCityDeco(); initGrass(); S.tr = TROUGHS.map(t => t.cap * (t.k === 'agua' ? 0.7 : 0.5)); S.gates = GATES.map(g => g.open ? 1 : 0);
@@ -10569,14 +11109,16 @@ addEventListener('keydown', e => {
   keys[e.code] = true; AU.init();
   if (MOVE.edit) { if (e.code === 'Escape') placeCancel(); else if (e.code === 'Enter') placeConfirm(); else { const k = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1], KeyA: [-1, 0], KeyD: [1, 0], KeyW: [0, -1], KeyS: [0, 1] }[e.code]; if (k) { MOVE.edit.cx += k[0]; MOVE.edit.cy += k[1]; MOVE.edit.dirty = 1; } } e.preventDefault(); return; }
   if (e.code === 'F3') { e.preventDefault(); dbgToggle(); return; } if (e.code === 'F2') { e.preventDefault(); PERF.toggle(); return; }
-  if (e.code === 'Escape') { if (M.open) closeModal(); else if (SH.a) closeSheet(); else if (inst.on) stopInst(); else if (mode === 'play') openMenu(); return; }
+  if (e.code === 'Escape') { if (FS.on && !M.open) { stopFishing(); return; } if (M.open) closeModal(); else if (SH.a) closeSheet(); else if (inst.on) stopInst(); else if (mode === 'play') openMenu(); return; }
   if (mode !== 'play' || M.open) return;
+  if (FS.on && mode === 'play' && !M.open && (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter')) { e.preventDefault(); if (!e.repeat) fishPress(true); return; }
+  if (FS.on && e.code === 'KeyB') { fishBait(); return; }
   if (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); doAction(); }
   if (!IN.on) { if (e.code === 'KeyQ') doAboio(); if (e.code === 'KeyF') doLasso(); if (e.code === 'KeyR') mountToggle(); if (e.code === 'KeyG') attack(); if (e.code === 'KeyC' && mode === 'play' && !M.open) callDogs(); if (e.code === 'KeyV' && !e.repeat) holdKey(); }
   if (e.code === 'KeyI') openBag(); if (e.code === 'KeyM') openMenu();
   if (e.code === 'Equal' || e.code === 'NumpadAdd') zoomAt(cam.uz * 1.12, W / 2, H / 2); if (e.code === 'Minus' || e.code === 'NumpadSubtract') zoomAt(cam.uz / 1.12, W / 2, H / 2);
 });
-addEventListener('keyup', e => { keys[e.code] = false; if (e.code === 'KeyV') holdEnd('kb'); });
+addEventListener('keyup', e => { keys[e.code] = false; if (FS.on && (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter')) fishPress(false); if (e.code === 'KeyV') holdEnd('kb'); });
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; input.x = input.y = 0; input.gal = false; });
 function keyInput() {
   if (jid !== null) return; let x = 0, y = 0;
@@ -10698,7 +11240,8 @@ function interactables(forTap) {
   for (const k of ['norte', 'sul']) { const s = EXP[k].sign, x = (s[0] - 1.6) * TS, y = s[1] * TS + 6; add({ k: 'sign', label: '🪧 ' + (S.exp[k] ? EXP[k].n : 'Terreno à venda'), x, y, r: 26, prio: 2, hit: [x - 12, y - 30, x + 12, y], fn: () => openSign(k) }); }
   for (const k in LOTS) { if ((LOTS[k].exp && !S.exp[LOTS[k].exp]) || !lotOwned(k)) continue; const r = LOTS[k].r, x = (r[0] + r[2] + 1) / 2 * TS, y = (r[3] + 1.4) * TS; add({ k: 'lot', label: '🏗️ Lote ' + k + (S.lots[k] ? ': ' + BUILD[S.lots[k].b].n : ''), x, y, r: 28, prio: 1, hit: S.lots[k] ? [r[0] * TS, r[1] * TS - 20, (r[2] + 1) * TS, (r[3] + 1) * TS] : null, fn: () => openLot(k) }); }
   if (foot) for (const v of vehs()) add({ k: 'cart' + (v.kind || ''), label: v.kind === 'boi' ? '🐂 Carro de boi' : '🛒 Carroça', x: v.x, y: v.y, r: 28, prio: 2, hit: [v.x - 20, v.y - 24, v.x + 20, v.y + 4], fn: () => { useVeh(v); openCart(); } });
-  storyInteractables(add); misInteractables(add); aucInteractables(add);
+  storyInteractables(add); misInteractables(add); aucInteractables(add); aguasInteractables(add, foot);
+  if (foot && !P.boat && ground[gi(Math.floor(P.x / TS), Math.floor(P.y / TS))] === G.MUD && !areaAt(P.x, P.y)) add({ k: 'worm', label: '🪱 Cavar minhoca', x: P.x, y: P.y, r: 999, prio: -4, fn: digWorms });
   if (foot) { const ak = areaAt(P.x, P.y); if (ak && S.dirt[ak] > 20) add({ k: 'clean', label: '🧹 Limpar ' + AREAS[ak].n, x: P.x, y: P.y, r: 999, prio: -3, fn: () => cleanCurral(ak) }); }
   return L;
 }
@@ -10722,7 +11265,7 @@ const STEP = 1 / 60; let acc = 0, lastT = 0, saveT = 0;
 function tick(dt) {
   drawT += dt;
   if (mode === 'play' && !paused) {
-    holdTick(); placeTick(dt); INV_CAP = invCapNow(); const gm = updTime(dt); agroTick(gm); updWeather(dt, gm); updMissions(dt); updAuction(dt); updDirector(dt); if (VQ.on) updVaquejada(dt); else if (IN.on) updInterior(dt); else updPlayer(dt); updAnimals(dt, gm); updTraffic(dt); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
+    holdTick(); placeTick(dt); INV_CAP = invCapNow(); const gm = updTime(dt); agroTick(gm); updWeather(dt, gm); updMissions(dt); updAuction(dt); updDirector(dt); if (VQ.on) updVaquejada(dt); else if (IN.on) updInterior(dt); else updPlayer(dt); updAnimals(dt, gm); updTraffic(dt); aguasTick(dt); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
     { const h = P.mnt ? byId(P.mnt) : null; if (h && h._react && (h._react.t -= dt) <= 0) h._react = null; }
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);
