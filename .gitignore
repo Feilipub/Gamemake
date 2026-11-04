@@ -175,3 +175,9 @@ $RECYCLE.BIN/
 # the project root. Anchored so a reports/ folder elsewhere stays tracked.
 /reports/
 /test-results/
+
+# Terra de Crinas (MonoGame): saídas de build; a arte é gerada por tools/asset-pipeline/export_assets.js
+game/**/bin/
+game/**/obj/
+game/Shared/Assets/
+!game/**/*.csproj

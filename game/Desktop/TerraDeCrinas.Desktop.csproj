@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>TerraDeCrinas</AssemblyName>
+    <RootNamespace>Crinas</RootNamespace>
+    <Nullable>disable</Nullable>
+    <RollForward>Major</RollForward>
+    <TieredPGO>true</TieredPGO>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.2.1105" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/**/*.cs" />
+    <EmbeddedResource Include="../Shared/Assets/*" LogicalName="Assets/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

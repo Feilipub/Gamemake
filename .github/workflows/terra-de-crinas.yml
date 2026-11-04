@@ -1,0 +1,81 @@
+# Terra de Crinas: testa a lógica, gera a arte (cavalos + fonte), compila o computador e o APK Android
+# e publica o APK como Release "crinas-N" (download direto no celular).
+name: Terra de Crinas
+
+on:
+  push:
+    branches: [main, "claude/**"]
+    paths:
+      - "game/**"
+      - "tools/**"
+      - ".github/workflows/terra-de-crinas.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Testes da lógica (cavalos, mundo, salvamento)
+        working-directory: game
+        run: dotnet test Tests/TerraDeCrinas.Tests.csproj -c Release
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Gerar a arte (atlas dos cavalos e fonte)
+        run: |
+          mkdir -p /tmp/pw && cd /tmp/pw && npm init -y >/dev/null && npm i --no-save playwright@1.47.2 @fontsource/pixelify-sans@5
+          npx playwright install --with-deps chromium
+          cd "$GITHUB_WORKSPACE"
+          NODE_PATH=/tmp/pw/node_modules node tools/asset-pipeline/export_assets.js game/Shared/Assets
+          ls -la game/Shared/Assets
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Suporte a Android do .NET 8
+        working-directory: game
+        run: dotnet --version && dotnet workload install android
+
+      - name: Compilar a versão de computador
+        working-directory: game
+        run: dotnet build Desktop/TerraDeCrinas.Desktop.csproj -c Release
+
+      - name: Gerar o APK
+        run: |
+          cd game
+          dotnet publish Android/TerraDeCrinas.Android.csproj -c Release -f net8.0-android \
+            -p:ApplicationVersion=${{ github.run_number }} -p:ApplicationDisplayVersion=0.1.${{ github.run_number }}
+          cd ..
+          mkdir -p build/apk
+          apk=$(find game/Android/bin/Release -name '*-Signed.apk' | head -1)
+          echo "APK: $apk"
+          cp "$apk" build/apk/TerraDeCrinas.apk
+          test -s build/apk/TerraDeCrinas.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TerraDeCrinas-apk
+          path: build/apk/TerraDeCrinas.apk
+
+      - name: Publicar como Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "crinas-${{ github.run_number }}" build/apk/TerraDeCrinas.apk \
+            --prerelease --target "${{ github.sha }}" \
+            --title "Terra de Crinas — teste #${{ github.run_number }}" \
+            --notes "Fase 1 (fundação): menu, criação de personagem, escolha do primeiro cavalo, vale aberto em pedaços, montar e desmontar, passo/trote/galope/disparada/ré, personalidade que muda o comportamento, ficha do cavalo, dia e noite e salvamento. Gerado de ${GITHUB_REF_NAME} (${GITHUB_SHA::7})."
