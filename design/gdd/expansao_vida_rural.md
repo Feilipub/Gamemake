@@ -253,3 +253,15 @@ O mundo passou de 110 para 150 linhas (`MH`); os interiores das casas ficam abai
 GMD = (peso atual − peso anterior) / (dias entre pesagens × 30), já que 1 dia de jogo vale cerca de 1 mês do animal.
 
 Teste: `tests/web/lida_test.js` (23 verificações).
+
+### Pessoas no esqueleto dos animais
+
+As pessoas passaram a ser desenhadas pelo mesmo esqueleto (`RIG`) dos bois e cavalos (`PRIG.draw`):
+- cabeça, tronco, braços e pernas são elipses, cápsulas e polígonos com volume em faixas (luz quente em cima, sombra fria embaixo, membros iluminados a oeste);
+- uma linha separa as partes que se cobrem, e o contorno seletivo é tingido pela cor da peça;
+- a cabeça ficou menor (proporção menos "cabeçuda"), mais perto dos animais;
+- continuam todas as opções do editor (sexo, corpo, pele, 13 cabelos, barbas, olhos, 8 camisas, 5 calças, 4 botas, 7 chapéus, ornamentos e acessórios) e todas as poses (andar, correr, montar, sentar, agachar, ferramentas, viola).
+
+Em Opções › Desenho das pessoas dá para voltar ao desenho **Clássico**. Os retratos dos diálogos não mudaram.
+
+Evidência: `production/qa/evidence/personagens-classico-x-novo.png`, `personagens-novo-com-cavalo.png`, `retiro-mapa.png`, `retiro-brete.png`, `lida-caderneta.png`, `lida-balanca.png`.

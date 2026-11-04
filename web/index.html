@@ -514,7 +514,7 @@ const shownTips = {};
 function tip(k, t) { if (S && S.flags['tip_' + k]) return; if (S) S.flags['tip_' + k] = 1; say(t, 6500); }
 
 /* ============ CONFIGURAÇÕES, ÍCONES E MOLDURAS PIXEL ============ */
-const SET = { fx: 'alta', tspd: 'normal', q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on', cine: 'on', lean: 'on' };
+const SET = { fx: 'alta', tspd: 'normal', q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on', cine: 'on', lean: 'on', chr: 'rig' };
 try { Object.assign(SET, JSON.parse(localStorage.getItem('lida_set') || '{}')); } catch (e) { }
 setTimeout(() => applyTimeSpeed(), 0);
 function saveSet() { try { localStorage.setItem('lida_set', JSON.stringify(SET)); } catch (e) { } document.documentElement.style.setProperty('--ctl', SET.ctl); document.body && document.body.classList.toggle('tapmode', SET.mode === 'touch'); }
@@ -3298,7 +3298,8 @@ function grassTile(lvl, v, fr, se) {
 function apKey(a) { return [a.sex, a.skin, a.hair, a.hairC, a.hat, a.shirt, a.shirtC, a.pants, a.pantsC, a.boots, a.acc, a.scarfC, a.orn || 'none', a.tool || '', a.beard || 0, a.beardC === undefined ? '' : a.beardC, a.eyeC === undefined ? '' : a.eyeC, a.gloves || 0, a.belt || 0].join(','); }
 function charSpr(ap, dir, fr, pose) {
   const d = dir === 2 ? 3 : dir;
-  return cached('C' + apKey(ap) + '|' + d + '|' + fr + '|' + pose, 24, 34, g => drawChar(g, ap, d, fr, pose));
+  const rig = SET.chr !== 'classico';
+  return cached('C' + (rig ? 'r' : '') + apKey(ap) + '|' + d + '|' + fr + '|' + pose, 24, 34, g => rig ? PRIG.draw(g, ap, d, fr, pose) : drawChar(g, ap, d, fr, pose), !rig);
 }
 // parâmetros corporais de cada pose/quadro
 function poseQ(pose, fr) {
@@ -4407,7 +4408,192 @@ const RIG = (() => {
   function frames(a) { return GAIT[a] ? GAIT[a].n : FR[a] || 4; }
   function cycleLen(br, a, k) { const s = spec(br), g = GAIT[a]; if (!g) return 1; return (g.str * s.L * (k || 1)) / g.duty; } // distância percorrida por ciclo (px)
   const raw = { begin, mClear, ell, cap, poly, chain, limb, paint, dot, dotIf, outline, toCanvas, T, tn, C, mixU, mul, hsh, nz, get W() { return Wd; }, get H() { return Ht; } };
-  return { get, spec, COATS, BR, frames, cycleLen, GAIT, tones: tn, C, hsh, cartSpr, raw, CACHE };
+  return { get, spec, COATS, BR, frames, cycleLen, GAIT, tones: tn, C, hsh, cartSpr, raw, CACHE, P: { begin, mClear, ell, cap, poly, chain, paint, dot, dotIf, outline, toCanvas, tn, C, mixU, mul } };
+})();
+/* ============ PESSOAS NO ESQUELETO DOS ANIMAIS (RIG) ============
+   Mesmo método dos bois e cavalos: cada parte do corpo é uma forma (elipse, cápsula, polígono) pintada com volume em faixas
+   (luz quente no alto, sombra fria embaixo, membros com luz a oeste), linha de separação onde uma parte cobre outra e
+   contorno seletivo no fim. Mantém tudo do editor: sexo, corpo, pele, cabelo, barba, olhos, roupas, calças, botas,
+   chapéus, ornamentos e acessórios, e todas as poses. SET.chr = 'classico' volta ao desenho antigo. */
+const PRIG = (() => {
+  const R = RIG.P, EYE = ['#4a2c1a', '#6a4024', '#8a5a2e', '#a87a2c', '#4c8a3e', '#3a78c0', '#7a8a96', '#2a1a12'];
+  const LEA = '#8a5226', VEST = '#6a4a2c', DEN = '#3e5e8c';
+  function draw(g, ap, dir, fr, pose) {
+    const Q = poseQ(pose, fr), side = dir === 3, back = dir === 1, fem = ap.sex === 'F', body = ap.body || 0;
+    const bw = [1, 1.16, 0.86][body] || 1, by = Q.by;
+    const sk = SKINS[ap.skin] || SKINS[2], hc = HAIRC[ap.hairC] || HAIRC[1], bcl = HAIRC[ap.beardC !== undefined ? ap.beardC : ap.hairC] || hc;
+    const st = ap.shirt | 0, shc = st === 4 ? '#f0eadc' : SHIRTC[ap.shirtC] || SHIRTC[0], pc = PANTSC[ap.pantsC] || PANTSC[0];
+    const bootC = ap.boots === 2 ? '#9a6630' : ap.boots === 3 ? '#7a4422' : '#4a2c16';
+    const H0 = HATS[ap.hat], hat = H0 && H0.id !== 'none' ? H0 : null, O = ORN[ap.orn || 'none'] || ORN.none;
+    const T = R.tn, C = R.C, SK = T(sk), HR = T(hc), SH = T(st === 2 ? LEA : st === 5 ? DEN : shc), PN = T(pc), BT = T(bootC);
+    const SLV = st === 2 ? T(LEA) : st === 5 ? T(DEN) : T(shc);
+    R.begin(24, 34);
+    const cx = 12, lean = side ? Q.lean : 0;
+    const hipY = 21.6 + by, shY = 15.2 + by, hy = 10.2 + by; // quadril, ombro, centro da cabeça
+    const sw = 4.4 * bw * (fem ? 0.9 : 1), ww = (fem ? 3.9 : 3.5) * bw; // meia largura do ombro e da cintura
+    const ride = Q.legs === 'ride', sit = Q.legs === 'sit' || Q.legs === 'sitg', crouch = Q.legs === 'crouch', tuck = Q.legs === 'tuck';
+    const skirt = ap.pants === 4, wide = ap.pants === 2;
+    const plaid = (x, y, c, t) => (st === 0 && ((x >> 1) + (y >> 1)) % 2 === 0) ? R.mixU(c, t.s, 0.3) : (st === 0 && x % 4 === 0 && y % 2 === 0) ? R.mixU(c, t.l, 0.3) : null;
+    const straw = (x, y, c, t) => ((x + y * 2) % 3 === 0) ? R.mixU(c, t.s, 0.3) : null;
+    /* ---------- cabelo comprido atrás do corpo ---------- */
+    const hair = ap.hair || 0, longH = hair === 4 || hair === 6 || (hair === 9 && fem);
+    if (longH && hair !== 12) { R.mClear(); if (side) R.cap(cx - 1.4, hy, cx - 2.2, hy + 7.5, 2.6, 2); else R.cap(cx, hy, cx, hy + 7.2, 3.9, 3.4); R.paint(HR, 1, { lay: 0 }); }
+    if (hair === 5 && !side && back) { R.mClear(); R.cap(cx, hy + 1, cx, hy + 7, 1.4, 0.9); R.paint(HR, 2, { lay: 0 }); }
+    /* ---------- pernas ---------- */
+    const legs = [];
+    if (ride) {
+      if (side) legs.push([[cx, hipY], [cx + 3.4, hipY + 1.4], [cx + 2.6, 27.4], 1]);
+      else { legs.push([[cx - 2.2, hipY], [cx - 5.2, hipY + 2.4], [cx - 6, 27.2], 0]); legs.push([[cx + 2.2, hipY], [cx + 5.2, hipY + 2.4], [cx + 6, 27.2], 0]); }
+    } else if (sit) {
+      if (Q.legs === 'sitg') { if (side) legs.push([[cx, hipY], [cx + 3.6, hipY + 1.6], [cx - 0.5, hipY + 2.6], 1]); else { legs.push([[cx - 1.8, hipY], [cx - 4.8, hipY + 2.2], [cx + 0.6, hipY + 3.2], 0]); legs.push([[cx + 1.8, hipY], [cx + 4.8, hipY + 2.2], [cx - 0.6, hipY + 3.2], 0]); } }
+      else if (side) legs.push([[cx, hipY], [cx + 4, hipY + 0.4], [cx + 4.2, 29.4], 1]);
+      else { legs.push([[cx - 1.8, hipY], [cx - 2, hipY + 2.6], [cx - 2, 29.3], 0]); legs.push([[cx + 1.8, hipY], [cx + 2, hipY + 2.6], [cx + 2, 29.3], 0]); }
+    } else if (side) {
+      const k = Q.run ? 1.15 : 0.95, fx = cx + Q.sN * k, bx = cx + Q.sF * k, kn = crouch ? 2.6 : tuck ? 2 : 0;
+      legs.push([[cx - 0.6, hipY], [(cx + bx) / 2 + 0.6 + kn, (hipY + 29) / 2 - kn * 0.4], [bx, 29.1 - Q.liftF * 1.2 - (tuck ? 2.5 : 0)], 0]); // perna de trás
+      legs.push([[cx + 0.4, hipY], [(cx + fx) / 2 + 0.6 + kn, (hipY + 29) / 2 - kn * 0.4], [fx, 29.1 - Q.liftN * 1.2 - (tuck ? 2.5 : 0)], 1]); // perna da frente
+    } else {
+      const sp = crouch ? 3 : 1.9;
+      for (const [s0, lf] of [[-1, Q.lL], [1, Q.lR]]) { const ax = cx + s0 * (sp + (crouch ? 0.6 : 0)), ay = 29.1 - lf * 0.9 - (tuck ? 2.5 : 0); legs.push([[cx + s0 * 1.8, hipY], [cx + s0 * (sp + (crouch ? 1.4 : 0.1)), (hipY + ay) / 2 + (crouch ? -0.4 : 0)], [ax, ay], 0]); }
+    }
+    const thick = (wide ? 2 : 1.55) * (body === 1 ? 1.12 : body === 2 ? 0.9 : 1);
+    for (const [hp, kn, an, near] of legs) {
+      R.mClear(); R.chain([hp, kn, an], [thick, thick * 0.9, wide ? 1.7 : 1.35]); R.paint(near || !side ? PN : T(R.mul(C(pc), 0.8)), 2, { edge: !!near, lay: near ? 1 : 0 });
+      if (ap.pants === 3) { R.mClear(); R.cap(kn[0], kn[1] + 0.4, an[0], an[1] - 0.6, 1.9, 1.7); R.paint(T(LEA), 2, { lay: near ? 1 : 0, fn: (x, y, c, t) => (y % 3 === 0 ? R.mixU(c, t.l, 0.35) : null) }); }
+      // bota / alpercata
+      const fx2 = an[0] + (side ? 0.9 : 0), fy = an[1] + 0.6; R.mClear(); R.ell(fx2, fy, side ? 2.4 : 1.9, 1.25);
+      if (ap.boots === 1 || ap.boots === 3) R.cap(an[0], an[1] - 2.4, an[0], an[1], 1.45, 1.4);
+      R.paint(ap.boots === 2 ? SK : BT, 1, { lay: near ? 1 : 0, edge: true });
+      if (ap.boots === 2) { R.mClear(); R.ell(fx2, fy + 0.5, side ? 2.4 : 1.9, 0.7); R.paint(BT, 0, { lay: near ? 1 : 0 }); }
+      if (ap.boots === 3) R.dotIf(an[0] + (side ? -0.6 : 0), an[1] - 1.6, C('#c8904a'));
+    }
+    /* ---------- saia ---------- */
+    if (skirt) { R.mClear(); const bot = sit ? hipY + 3.5 : ride ? 26.5 : 28.2; R.poly([[cx - ww, hipY - 0.6], [cx + ww, hipY - 0.6], [cx + ww + 2.2, bot], [cx - ww - 2.2, bot]]); R.paint(PN, 1, { lay: 1, edge: true, fn: (x, y, c, t) => (y - Math.round(hipY)) % 4 === 3 ? R.mixU(c, t.s, 0.4) : null }); }
+    /* ---------- braços: alvo das mãos por pose ---------- */
+    const sho = s0 => side ? [cx + 0.2 + lean + s0 * 0.4, shY + 0.9] : [cx + s0 * (sw - 0.7), shY + 0.9];
+    function hand(s0) { // s0: -1 esquerda (ou de trás, de lado), 1 direita (ou da frente)
+      const [x0, y0] = sho(s0), a = Q.arms, sw2 = s0 < 0 ? Q.aL : Q.aR, t = fr % 2;
+      if (side) {
+        switch (a) {
+          case 'carry': case 'push': case 'reins': return [x0 + 4.2, y0 + (a === 'reins' ? 4.6 : 3.4)];
+          case 'rest': return [x0 + 2.6, hipY + 0.6]; case 'play': return [x0 + 3.4, y0 + 4];
+          case 'down': case 'pet': return [x0 + 4, y0 + 7.4]; case 'up': return [x0 + 1, y0 - 6]; case 'out': return [x0 + 3, y0 + 1];
+          case 'reach': return [x0 + 4.6, y0 + (fr ? -1 : 1)]; case 'eat': return [x0 + 2.4, hy + 2.4];
+          case 'throw': return fr ? [x0 + 4.4, y0 - 2] : [x0 - 3, y0 - 3]; case 'wave': return [x0 + 1.5, y0 - 5.5 + t];
+          case 'hammer': case 'brush': case 'feed': case 'sweep': case 'grill': return [x0 + 3.8, y0 + 3.6 + (t ? 1.4 : -0.4)];
+          default: return [x0 + sw2 * 1.5 * (s0 > 0 ? 1 : -1), y0 + 6.2];
+        }
+      }
+      switch (a) {
+        case 'carry': case 'push': return [cx + s0 * 2.2, y0 + 3.6]; case 'reins': return [cx + s0 * 2, hipY - 0.6];
+        case 'rest': return [cx + s0 * 2.6, hipY + 0.8]; case 'play': return s0 < 0 ? [cx - 1, y0 + 3] : [cx + 3, y0 + 4.4];
+        case 'down': case 'pet': return [cx + s0 * 3.4, y0 + 7.6]; case 'up': return [x0 + s0 * 1.6, y0 - 6.4]; case 'out': return [x0 + s0 * 4.2, y0 + 2];
+        case 'reach': return s0 > 0 ? [x0 + 2, y0 - 4.5 + t] : [x0 - 0.6, y0 + 6.2]; case 'eat': return s0 > 0 ? [cx + 1, hy + 2.6] : [x0 - 0.6, y0 + 6.2];
+        case 'throw': return s0 > 0 ? (fr ? [x0 + 2.6, y0 - 4] : [x0 + 1.4, y0 - 5.4]) : [x0 - 0.8, y0 + 6];
+        case 'wave': return s0 > 0 ? [x0 + 2 + t, y0 - 5.6] : [x0 - 0.6, y0 + 6.2];
+        case 'hammer': case 'brush': case 'feed': case 'sweep': case 'grill': return s0 > 0 ? [cx + 3, y0 + 3.8 + (t ? 1.4 : -0.6)] : [x0 - 0.5, y0 + 6.2];
+        default: return [x0 + s0 * 0.7, y0 + 6.3 + (back ? 0 : sw2 * 0.25)];
+      }
+    }
+    const short = st === 1;
+    function arm(s0, lay, dark) {
+      const [x0, y0] = sho(s0), [hx, hy2] = hand(s0); const mx = (x0 + hx) / 2 + (side ? -0.6 : s0 * 0.6), my = (y0 + hy2) / 2 + 0.3;
+      const tone = dark ? T(R.mul(SLV.b, 0.8)) : SLV, skT = dark ? T(R.mul(SK.b, 0.85)) : SK;
+      R.mClear(); R.cap(x0, y0, mx, my, 1.45 * bw, 1.25); if (!short) R.cap(mx, my, hx, hy2, 1.25, 1.05); R.paint(tone, 2, { lay, edge: true });
+      if (short) { R.mClear(); R.cap(mx, my, hx, hy2, 1.1, 0.95); R.paint(skT, 2, { lay, edge: true }); }
+      R.mClear(); R.ell(hx, hy2 + 0.3, 1.3, 1.25); R.paint(ap.gloves ? T(LEA) : skT, 1, { lay, sh2: false });
+      return [hx, hy2];
+    }
+    /* ---------- tronco ---------- */
+    if (side) arm(-1, 0, true); // braço de trás
+    else if (back) { arm(-1, 0); arm(1, 0); }
+    const tl = side ? lean : 0;
+    R.mClear(); R.cap(cx + (side ? 0.4 + tl : 0), shY - 2.2, cx + (side ? 0.2 + tl : 0), shY, 1.2); R.paint(SK, 2, { lay: 1 });
+    R.mClear();
+    if (side) R.poly([[cx - 3 + tl, shY], [cx + 2.8 + tl, shY], [cx + 2.6, hipY + 0.4], [cx - 2.8, hipY + 0.4]]);
+    else R.poly([[cx - sw, shY + 0.6], [cx - sw + 1, shY - 0.4], [cx + sw - 1, shY - 0.4], [cx + sw, shY + 0.6], [cx + ww, hipY + 0.4], [cx - ww, hipY + 0.4]]);
+    R.paint(SH, 1, { lay: 1, edge: true, fn: (x, y, c, t) => {
+      if (st === 0) return plaid(x, y, c, t);
+      if (st === 3 && !back && x === cx && y > shY && (y % 2)) return C('#f0ece0');
+      if (st === 4 && !back && y <= shY + 2 && (x + y) % 2 === 0) return C(shc);
+      if (st === 5 && !back && !side && x === cx - 1) return R.mixU(c, t.d, 0.5);
+      if (st === 7 && !back && !side && y === Math.round(shY + 2) && (x === cx - 3 || x === cx + 2)) return t.s;
+      if (st === 2 && (y + x) % 5 === 0) return R.mixU(c, t.l, 0.3);
+      return null; } });
+    if (st === 6) { R.mClear(); if (side) R.poly([[cx - 2.8 + tl, shY + 0.4], [cx + 1 + tl, shY + 0.4], [cx + 0.6, hipY], [cx - 2.6, hipY]]); else { R.poly([[cx - sw + 0.4, shY + 0.6], [cx - 1.2, shY + 0.6], [cx - 1, hipY], [cx - ww, hipY]]); R.poly([[cx + 1, shY + 0.6], [cx + sw - 0.4, shY + 0.6], [cx + ww, hipY], [cx + 1, hipY]]); } R.paint(T(VEST), 1, { lay: 1, edge: true }); }
+    if (st === 5 && !back) { R.mClear(); R.poly(side ? [[cx + 0.6 + tl, shY + 0.6], [cx + 2.6 + tl, shY + 0.6], [cx + 2.4, hipY], [cx + 1, hipY]] : [[cx - 1.2, shY + 0.4], [cx + 1.2, shY + 0.4], [cx + 1, hipY], [cx - 1, hipY]]); R.paint(T(SHIRTC[ap.shirtC] || '#e8e2d0'), 1, { lay: 1 }); }
+    if (st === 2 && !back) { R.mClear(); R.ell(cx + (side ? 1.2 : 0), shY + 3, side ? 1.8 : 3.2, 2.2); R.paint(T(R.mul(C(LEA), 0.82)), 1, { lay: 1, edge: true }); } // peitoral do gibão
+    // cinto e fivela
+    if (!skirt || ap.belt) { R.mClear(); R.poly(side ? [[cx - 2.9, hipY - 1], [cx + 2.7, hipY - 1], [cx + 2.7, hipY], [cx - 2.9, hipY]] : [[cx - ww - 0.2, hipY - 1], [cx + ww + 0.2, hipY - 1], [cx + ww + 0.2, hipY], [cx - ww - 0.2, hipY]]); R.paint(T('#3a2414'), 0, { lay: 1 }); if (!back) R.dot(side ? cx + 2.2 : cx, hipY - 0.6, C(ap.acc === 2 || ap.belt ? '#e8c040' : '#a88a50'), 1); }
+    if (ap.tool && (pose === 'play')) { R.mClear(); R.ell(cx + (side ? 2.6 : 1.2), shY + 4.4, 3, 2.2, 0.35); R.cap(cx + (side ? 4 : 3), shY + 3.2, cx + (side ? 8 : 7.4), shY, 0.6); R.paint(T(ap.tool === 'viola' ? '#7a3e1a' : '#d0904c'), 1, { lay: 1, edge: true }); R.dot(cx + (side ? 2.6 : 1.2), shY + 4.4, C('#2a1a10'), 1); }
+    if (side) arm(1, 1); else if (!back) { arm(-1, 1); arm(1, 1); }
+    // ferramenta na mão
+    if (['hammer', 'sweep', 'brush'].includes(Q.arms)) { const [hx, hy2] = hand(1); R.mClear(); if (Q.arms === 'sweep') R.cap(hx, hy2 - 3, hx + 1, hy2 + 6, 0.5); else R.cap(hx, hy2, hx + (side ? 2.4 : 1.6), hy2 - 3, 0.5); R.paint(T('#8a6a44'), 0, { lay: 1 }); if (Q.arms === 'hammer') { R.mClear(); R.ell(hx + (side ? 2.6 : 1.8), hy2 - 3.4, 1.4, 0.8); R.paint(T('#8a8a92'), 1, { lay: 1 }); } }
+    /* ---------- pescoço, cabeça, rosto ---------- */
+    const hx0 = cx + (side ? 0.4 + tl : 0), rx = side ? 3.5 : 3.7, ry = 3.9 + (ap.face === 3 ? 0.3 : 0), rxF = rx + (ap.face === 4 ? 0.3 : ap.face === 3 ? -0.3 : 0);
+    R.mClear(); R.ell(hx0, hy, rxF, ry); if (!side && ap.face === 2) R.poly([[hx0 - rxF + 0.4, hy + 1], [hx0 + rxF - 0.4, hy + 1], [hx0 + rxF - 0.8, hy + 3.4], [hx0 - rxF + 0.8, hy + 3.4]]);
+    if (side) R.ell(hx0 + 2.4, hy + 1.4, 1.2, 1); // nariz/queixo de perfil
+    R.paint(SK, 1, { lay: 1, edge: false, sh2: false });
+    if (!back) { // orelhas
+      if (side) R.dot(hx0 - 0.8, hy + 0.6, R.mul(SK.b, 0.78), 1); else { R.dot(hx0 - rxF - 0.2, hy + 0.6, SK.s, 1); R.dot(hx0 + rxF - 0.2, hy + 0.6, SK.s, 1); }
+    }
+    const eyeC = C(EYE[ap.eyeC !== undefined ? ap.eyeC : 1] || EYE[1]), dk = C('#24140c'), brow = R.mul(C(hc), 0.75), ex = ap.expr || 0;
+    if (!back && !Q.blink) {
+      if (side) { R.dot(hx0 + 1.6, hy + 0.5, dk, 1); R.dot(hx0 + 2.6, hy - 0.6, R.mixU(brow, SK.b, 0.5), 1); }
+      else { for (const s0 of [-1, 1]) { const ex0 = hx0 + s0 * 1.5 - 0.5; R.dot(ex0, hy + 0.5, dk, 1); if (ap.eyes === 4 || fem) R.dot(ex0, hy - 0.5 + 1, eyeC, 1); R.dot(ex0 + (s0 < 0 ? -0.6 : 0.6), hy - 0.6 + (ex === 4 ? 0.4 : 0), R.mixU(brow, SK.b, ap.brows === 1 ? 0.15 : 0.45), 1); } }
+    } else if (!back) { if (side) R.dot(hx0 + 1.8, hy + 0.5, R.mul(SK.b, 0.6), 1); else for (const s0 of [-1, 1]) R.dot(hx0 + s0 * 1.5 - 0.5, hy + 0.5, R.mul(SK.b, 0.6), 1); }
+    if (!back) { // nariz e boca
+      if (!side) R.dot(hx0 - 0.5, hy + 1.7, R.mul(SK.b, 0.88), 1);
+      const my = hy + 2.7, mc = ex === 1 ? R.mixU(SK.b, C('#8a3a2a'), 0.6) : R.mul(SK.b, 0.74);
+      if (side) R.dot(hx0 + 2, my, mc, 1); else { R.dot(hx0 - 0.5, my, mc, 1); if (ex === 1 || ap.mouth === 2) { R.dot(hx0 - 1.5, my - 0.4, R.mixU(mc, SK.b, 0.5), 1); R.dot(hx0 + 0.5, my - 0.4, R.mixU(mc, SK.b, 0.5), 1); } if (ex === 3) R.dot(hx0 - 0.5, my + 0.6, mc, 1); }
+      if (fem && !side) { R.dot(hx0 - 2.5, hy + 1.8, R.mixU(SK.b, C('#e06060'), 0.35), 1); R.dot(hx0 + 1.5, hy + 1.8, R.mixU(SK.b, C('#e06060'), 0.35), 1); }
+      if (ap.acc === 5) { if (side) { R.dot(hx0 + 1.8, hy + 0.4, C('#1a1a1a'), 1); R.dot(hx0 + 0.8, hy + 0.4, C('#1a1a1a'), 1); } else for (let x = -3; x <= 2; x++) R.dot(hx0 + x, hy + 0.5, C(x === -1 || x === 0 ? '#3a3a3a' : '#1a1a1a'), 1); }
+    }
+    const beard = ap.beard || 0;
+    if (beard && !back) { const BC = T(bcl);
+      if (beard >= 7) { R.mClear(); R.ell(hx0 + (side ? 1.6 : -0.5), hy + 2.1, side ? 1.2 : beard === 8 ? 2 : 1.6, 0.6); R.paint(BC, 0, { lay: 1 }); if (beard === 9) { R.mClear(); R.ell(hx0 + (side ? 1.6 : -0.5), hy + 3.6, 0.8, 0.8); R.paint(BC, 1, { lay: 1 }); } }
+      else if (beard === 6) { R.mClear(); R.ell(hx0 + (side ? 1.6 : -0.5), hy + 3.5, 1, 1); R.paint(BC, 1, { lay: 1 }); }
+      else { const L2 = [0, 0.6, 1.1, 1.6, 2.4, 1.2][beard]; R.mClear(); if (side) R.ell(hx0 + 0.8, hy + 2.6 + L2 * 0.3, 2.2, 1.2 + L2 * 0.5); else R.ell(hx0, hy + 2.6 + L2 * 0.35, rxF - 0.2, 1.1 + L2 * 0.6); R.paint(BC, 1, { lay: 1, sh2: false, fn: (x, y, c, t) => y < hy + 2.3 && Math.abs(x + 0.5 - hx0) < 1.2 && !side ? SK.b : beard === 1 && (x + y) % 2 ? R.mixU(c, SK.b, 0.4) : null }); if (!side) R.dot(hx0 - 0.5, hy + 2.7, R.mul(C(bcl), 0.5), 1); }
+    }
+    /* ---------- cabelo ---------- */
+    if (hair !== 12) {
+      R.mClear(); const top = hy - ry + 0.2;
+      const big = hair === 3 ? 1.3 : hair === 2 || hair === 9 ? 0.6 : 0;
+      if (back) { R.ell(hx0, hy - 0.4 - big * 0.3, rxF + 0.3 + big, ry + 0.1 + big * 0.6); }
+      else if (side) { R.ell(hx0 - 1.5, hy - 0.5, 2.4 + big, ry - 0.5 + big * 0.5); R.ell(hx0 + 0.3, top + 1, rx - 0.5 + big * 0.5, 1.4 + big * 0.4); if (hair === 11) R.cap(hx0 + 0.6, hy, hx0 + 0.6, hy + 1.8, 0.6); }
+      else { R.ell(hx0, top + 1.1, rxF + 0.2 + big, 1.8 + big * 0.6); if (hair === 11 || hair === 8 || longH || hair === 3) { R.cap(hx0 - rxF + 0.3, hy - 1.4, hx0 - rxF + 0.3, hy + (longH ? 3 : 1.4), 0.9); R.cap(hx0 + rxF - 0.7, hy - 1.4, hx0 + rxF - 0.7, hy + (longH ? 3 : 1.4), 0.9); } if (hair === 10) R.ell(hx0 + 0.6, top + 0.4, 2.2, 1.2); }
+      const HRt = hair === 1 ? T(R.mixU(C(hc), SK.b, 0.45)) : HR;
+      R.paint(HRt, 1, { lay: 1, edge: false, fn: (x, y, c, t) => (hair === 2 || hair === 3) && (x * 3 + y * 5) % 4 === 0 ? t.s : (hair === 9 && (x + y) % 3 === 0) ? t.l : null });
+      if (hair === 7) { R.mClear(); R.ell(hx0 + (side ? -1.6 : 0), top - 0.6, 1.6, 1.4); R.paint(HR, 1, { lay: 1, edge: true }); }
+      if (hair === 5 && side) { R.mClear(); R.cap(hx0 - 2.6, hy - 1, hx0 - 4.4, hy + 3.6, 1.3, 0.8); R.paint(HR, 2, { lay: 1, edge: true }); }
+      if (hair === 6 && !back) { R.mClear(); R.cap(hx0 + (side ? -1.6 : 2.6), hy + 1, hx0 + (side ? -2 : 3.2), hy + 7.6, 1, 0.7); R.paint(HR, 2, { lay: 1, edge: true, fn: (x, y, c, t) => y % 2 ? t.s : null }); }
+    }
+    /* ---------- chapéu ---------- */
+    if (hat) {
+      const HT = T(hat.c), id = hat.id, lag = Q.hatLag ? 0.6 : 0, hy2 = hy - ry + 0.7 - lag, bandC = O.band || ['#4a2a14'];
+      if (id === 'bone') { R.mClear(); R.ell(hx0, hy2, rxF + 0.3, 2.2); R.paint(HT, 1, { lay: 1, edge: true }); R.mClear(); if (side) R.ell(hx0 + 3.2, hy2 + 1.2, 2.2, 0.7); else if (!back) R.ell(hx0, hy2 + 1.6, 2.8, 0.8); R.paint(T(R.mul(C(hat.c), 0.8)), 3, { lay: 1, edge: true }); if (!back) R.dot(hx0 - (side ? -0.4 : 0.5), hy2 - 0.6, C('#f0ece0'), 1); }
+      else if (id === 'boina') { R.mClear(); R.ell(hx0 + (side ? -0.4 : 0.6), hy2 - 0.2, rxF + 0.9, 1.7, side ? 0 : -0.12); R.paint(HT, 1, { lay: 1, edge: true }); }
+      else {
+        const brimW = id === 'pantaneiro' || id === 'rodeio' ? 6.6 : id === 'palha' ? 6.4 : id === 'couro' ? 6.2 : 5.8, crownH = id === 'feltro' || id === 'rodeio' ? 3.3 : id === 'couro' ? 2.6 : 2.9;
+        const fn = id === 'palha' ? straw : null;
+        // aba de trás, copa, aba da frente (a aba de couro sertanejo é a meia-lua virada para cima)
+        R.mClear(); R.ell(hx0, hy2 + 0.2, side ? brimW - 0.6 : brimW, side ? 1 : 1.35); R.paint(T(R.mul(C(hat.c), 0.82)), 1, { lay: 1, edge: true, fn });
+        R.mClear(); R.ell(hx0 + (side ? -0.2 : 0), hy2 - crownH * 0.5, side ? 2.9 : 3.3, crownH * 0.75); R.poly([[hx0 - 3, hy2 - 0.2], [hx0 + 3, hy2 - 0.2], [hx0 + 2.6, hy2 - crownH], [hx0 - 2.6, hy2 - crownH]]);
+        R.paint(HT, 1, { lay: 1, edge: false, fn: (x, y, c, t) => { if (Math.abs(y - (hy2 - 0.6)) < 0.5) return C(bandC[Math.abs(x) % bandC.length]); if (id === 'rodeio' && Math.abs(x + 0.5 - hx0) < 0.6 && y < hy2 - crownH + 1.2) return t.s; return fn ? fn(x, y, c, t) : null; } });
+        if (id === 'couro' && !back) { R.mClear(); if (side) R.poly([[hx0 + 1.4, hy2 + 0.2], [hx0 + 5.2, hy2 - 1.6], [hx0 + 4.6, hy2 + 0.8]]); else R.poly([[hx0 - 5.6, hy2 - 0.6], [hx0 + 5.6, hy2 - 0.6], [hx0 + 3.2, hy2 + 1], [hx0 - 3.2, hy2 + 1]]); R.paint(T(R.mixU(C(hat.c), C('#ffe0a0'), 0.12)), 3, { lay: 1, edge: true, fn: (x, y, c, t) => (x + y) % 4 === 0 ? t.l : null }); if (!side) for (const s0 of [-1, 1]) R.dot(hx0 + s0 * 2.4 - 0.5, hy2 - 0.2, C('#e8c040'), 1); }
+        if (O.stars && !back) R.dot(hx0 - 0.5, hy2 - 1.6, C('#f0d020'), 1);
+        if (O.feather) { R.mClear(); R.cap(hx0 + 2.4, hy2 - 0.8, hx0 + 3.6, hy2 - 4.2, 0.6, 0.3); R.paint(T('#f0ece0'), 2, { lay: 1 }); }
+        if (O.ribbons && !back) for (let k = 0; k < 3; k++) R.dot(hx0 + 2.6 + (side ? 1 : 0), hy2 + 1 + k, C(bandC[k % bandC.length]), 1);
+      }
+    }
+    // lenço / colar
+    if (ap.acc === 1 && !back) { R.mClear(); R.poly(side ? [[hx0 - 0.6, shY - 0.6], [hx0 + 2, shY - 0.6], [hx0 + 1.6, shY + 1.8]] : [[cx - 2.6, shY - 0.6], [cx + 2.6, shY - 0.6], [cx, shY + 2.2]]); R.paint(T(SCARFC[ap.scarfC] || SCARFC[0]), 1, { lay: 1, edge: true }); }
+    if (ap.acc === 4 && !back) for (let k = -2; k <= 2; k++) R.dot(cx + k + (side ? 1 : 0), shY + 0.4 + Math.abs(k) * -0.3 + 0.6, C(k % 2 ? '#8a3a1a' : '#e8c070'), 1);
+    if (ap.acc === 3) { const [hx, hy2] = hand(-1); R.dot(hx, hy2 - 1, C('#e03030'), 1); R.dot(hx + 1, hy2 - 1, C('#2050c0'), 1); }
+    R.outline(0.5);
+    const cv = R.toCanvas(); if (cv) g.drawImage(cv, 0, 0);
+  }
+  return { draw };
 })();
 
 /* ============ ÁUDIO (síntese procedural) ============ */
@@ -6975,7 +7161,7 @@ function cfgHTML(inGame) {
   const opt = (k, v, l) => `<button data-a="setOpt" data-v="${k}|${v}" class="${SET[k] === v ? 'on' : ''}">${l}</button>`;
   let h = volHTML();
   h += `<div class="card"><b>Velocidade do tempo</b><div class="ch">${opt('tspd', 'lento', 'Lento (dia de 36 min)')}${opt('tspd', 'normal', 'Normal (24 min)')}${opt('tspd', 'rapido', 'Rápido (16 min)')}</div></div>`;
-  h += `<div class="card"><b>Efeitos gráficos</b><div class="ch">${opt('fx', 'alta', 'Alta (luz, bloom, água, calor, raios de sol, neblina)')}${opt('fx', 'media', 'Média (luz, bloom, água, calor)')}${opt('fx', 'baixa', 'Baixa (sem shader)')}</div><p class="mut">Se o aparelho não acompanhar, o jogo desce a qualidade sozinho.</p><b>Profundidade 2.5D (copas e telhados inclinam com a câmera)</b><div class="ch">${opt('lean', 'on', 'Ligada')}${opt('lean', 'off', 'Desligada')}</div><b>Apresentação ao chegar num lugar novo</b><div class="ch">${opt('cine', 'on', 'Mostrar')}${opt('cine', 'off', 'Pular')}</div></div>`;
+  h += `<div class="card"><b>Efeitos gráficos</b><div class="ch">${opt('fx', 'alta', 'Alta (luz, bloom, água, calor, raios de sol, neblina)')}${opt('fx', 'media', 'Média (luz, bloom, água, calor)')}${opt('fx', 'baixa', 'Baixa (sem shader)')}</div><p class="mut">Se o aparelho não acompanhar, o jogo desce a qualidade sozinho.</p><b>Desenho das pessoas</b><div class="ch">${opt('chr', 'rig', 'Novo (mesmo estilo dos animais)')}${opt('chr', 'classico', 'Clássico')}</div><b>Profundidade 2.5D (copas e telhados inclinam com a câmera)</b><div class="ch">${opt('lean', 'on', 'Ligada')}${opt('lean', 'off', 'Desligada')}</div><b>Apresentação ao chegar num lugar novo</b><div class="ch">${opt('cine', 'on', 'Mostrar')}${opt('cine', 'off', 'Pular')}</div></div>`;
   h += `<div class="card"><b>Gráficos</b><div class="ch">${opt('q', 'alta', 'Alta resolução')}${opt('q', 'media', 'Desempenho')}</div><b>Modo de controle</b><div class="ch">${opt('mode', 'joy', 'Joystick')}${opt('mode', 'touch', 'Toque na tela')}</div><p class="mut">${SET.mode === 'touch' ? 'Toque no chão para ir até lá; toque duas vezes para correr ou galopar. Os botões de ação continuam na tela.' : 'Joystick virtual (ou WASD/setas no teclado). Segure “Correr” para correr ou galopar.'}</p><b>Tamanho dos botões</b><div class="ch">${opt('ctl', 1, 'Normal')}${opt('ctl', 1.2, 'Grandes')}</div><b>Orientação da tela</b><div class="ch">${opt('ori', 'livre', 'Livre')}${opt('ori', 'retrato', 'Retrato')}${opt('ori', 'paisagem', 'Paisagem')}</div><p class="mut">Travar a orientação só funciona em tela cheia no celular.</p><div class="row">${btn('Tela cheia', 'fs')}</div><b>Cenas dos leilões</b><div class="ch">${opt('aucCs', 'on', 'Mostrar')}${opt('aucCs', 'off', 'Pular sempre')}</div><b>Vibração</b><div class="ch">${opt('vib', true, 'Ligada')}${opt('vib', false, 'Desligada')}</div><b>Zoom</b><p class="mut">Use dois dedos na tela (pinça) ou a rodinha do mouse.</p><div class="row">${btn('Zoom padrão', 'zoomReset')}</div></div>`;
   if (inGame) h += `<div class="card"><div class="row">${ibtn('disk', 'Salvar', 'saveNow')}${ibtn('play', 'Carregar', 'loadNow')}${ibtn('scroll', 'Ajuda', 'help')}${ibtn('book', 'Créditos', 'credits')}${ibtn('farm', 'Tela inicial', 'toTitle')}</div><p class="mut" id="saveInfo">Partida ${SAVE.slot}. Salvamento automático às 6h, ao dormir e a cada 60 s, com cópia de segurança.</p></div>`;
   { const ms = MUS.missingList(), tr = Object.keys(MUS.files).map(k => `<li>${k.toUpperCase()} — <code>${MUS.files[k]}</code> ${MUS.missing[k] ? '<b style="color:#b02020">faltando</b>' : MUS.el && MUS.el[k] ? 'ok' : 'carrega no primeiro toque'}</li>`).join('');
