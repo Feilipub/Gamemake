@@ -185,3 +185,8 @@ android-app/.gradle/
 android-app/app/build/
 android-app/build/
 android-app/local.properties
+
+# MonoGame: saídas de build e arte exportada do jogo web (gerada no CI por tools/asset-pipeline/export_monogame.js)
+monogame/**/bin/
+monogame/**/obj/
+monogame/Shared/Assets/
