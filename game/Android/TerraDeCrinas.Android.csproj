@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
+    <OutputType>Exe</OutputType>
+    <ApplicationId>br.rfgames.terradecrinas</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>0.1</ApplicationDisplayVersion>
+    <ApplicationTitle>Terra de Crinas</ApplicationTitle>
+    <RootNamespace>Crinas</RootNamespace>
+    <AssemblyName>TerraDeCrinas</AssemblyName>
+    <Nullable>disable</Nullable>
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <CheckEolWorkloads>false</CheckEolWorkloads>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.Android" Version="3.8.2.1105" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/**/*.cs" />
+    <EmbeddedResource Include="../Shared/Assets/*" LogicalName="Assets/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>
