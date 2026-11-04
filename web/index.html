@@ -8874,8 +8874,8 @@ function render(dt) {
   if (P.inside) { const RB = roomById(P.inside);
     if (RB) { for (const f of FURN) { if (f.r !== RB.id) continue; const [c, up] = furnSpr(f.t, f.w, f.h, RB.H.wall); const sx2 = f.tx * TS, sy2 = f.ty * TS - up; add(f.wall ? -1e9 + f.ty : f.t === 'tapete' ? -1e8 : f.y - (f.t === 'rede' ? 30 : 0), () => X.drawImage(c, sx2, sy2)); }
       const op = roomOwnerPos(RB); if (op) add(op.y, () => drawPerson(op.e.d.ap, op.x, op.y, op.dir, op.pose === 'feed' ? Math.floor(drawT * 2) % 2 : 0, op.pose)); } }
-  add(iy(P) + 0.5, drawPlayer); FISH.draw(add); if (!P.inside) drawPOIs(add, inV);
-  L.sort((a, b) => a.y - b.y); for (const o of L) o.f(); ambFx(dt); FLOCK.draw();
+  add(iy(P) + 0.5, drawPlayer); FISH.draw(add); if (!P.inside) { drawPOIs(add, inV); LIFE.update(dt); LIFE.ground(add, inV); }
+  L.sort((a, b) => a.y - b.y); for (const o of L) o.f(); ambFx(dt); LIFE.air(); FLOCK.draw();
   forestOverlay(tx0, ty0, tx1, ty1); drawEventDecor(true); drawMemGlints(); misMarkers(); questMarkers(); drawMoveFx(); drawDebugCol();
   for (const e of npcs) if (!e.hidden && e.bt > 0 && inV(e.x, e.y, 30)) drawBubble(e);
   const px = ix(P), py = iy(P);
@@ -10123,7 +10123,7 @@ function interactables(forTap) {
   for (const k of ['norte', 'sul']) { const s = EXP[k].sign, x = (s[0] - 1.6) * TS, y = s[1] * TS + 6; add({ k: 'sign', label: '🪧 ' + (S.exp[k] ? EXP[k].n : 'Terreno à venda'), x, y, r: 26, prio: 2, hit: [x - 12, y - 30, x + 12, y], fn: () => openSign(k) }); }
   for (const k in LOTS) { if ((LOTS[k].exp && !S.exp[LOTS[k].exp]) || !lotOwned(k)) continue; const r = LOTS[k].r, x = (r[0] + r[2] + 1) / 2 * TS, y = (r[3] + 1.4) * TS; add({ k: 'lot', label: '🏗️ Lote ' + k + (S.lots[k] ? ': ' + BUILD[S.lots[k].b].n : ''), x, y, r: 28, prio: 1, hit: S.lots[k] ? [r[0] * TS, r[1] * TS - 20, (r[2] + 1) * TS, (r[3] + 1) * TS] : null, fn: () => openLot(k) }); }
   if (foot) add({ k: 'cart', label: '🛒 Carroça', x: S.cart.x, y: S.cart.y, r: 28, prio: 2, hit: [S.cart.x - 18, S.cart.y - 22, S.cart.x + 18, S.cart.y + 4], fn: openCart });
-  storyInteractables(add); misInteractables(add); aucInteractables(add); rocaInteractables(add, foot); fishInteractables(add, foot); exploreInteractables(add, foot); pomarInteractables(add, foot); bicoInteractables(add, foot); jobInteractables(add, foot);
+  storyInteractables(add); misInteractables(add); aucInteractables(add); rocaInteractables(add, foot); fishInteractables(add, foot); exploreInteractables(add, foot); lifeInteractables(add, foot); pomarInteractables(add, foot); bicoInteractables(add, foot); jobInteractables(add, foot);
   if (Math.abs(P.y - 44 * TS) < 60) { if (Math.abs(P.x - 110.6 * TS) < 50) add({ k: 'viagem', label: '🛤️ Viajar para a Região das Serras', x: 110.8 * TS, y: 44 * TS, r: 40, prio: 6, hit: [109.5 * TS, 41.5 * TS, 112 * TS, 46 * TS], fn: () => travelAsk('go') }); if (Math.abs(P.x - 118.8 * TS) < 50) add({ k: 'viagem', label: '🛤️ Voltar para Itarantim', x: 118.8 * TS, y: 44 * TS, r: 40, prio: 6, hit: [117.5 * TS, 41.5 * TS, 120 * TS, 46 * TS], fn: () => travelAsk('back') }); }
   if (foot) { const e = objPos('esterqueira') || { x: 52.6 * TS, y: 94.8 * TS }, n = Math.floor(S.esterco || 0); add({ k: 'esterco', label: n ? '💩 Recolher esterco (' + n + ' saco' + (n > 1 ? 's' : '') + ')' : 'Esterqueira (vazia)', x: e.x, y: e.y + 6, r: 24, prio: 2, hit: [e.x - 18, e.y - 20, e.x + 18, e.y + 6], fn: () => n ? act('pickup', 1.2, { x: e.x, y: e.y }, collectManure) : say('A esterqueira enche com o esterco do chiqueiro e do aprisco, dia a dia.') }); }
   if (foot) { const ak = areaAt(P.x, P.y); if (ak && S.dirt[ak] > 20) add({ k: 'clean', label: '🧹 Limpar ' + AREAS[ak].n, x: P.x, y: P.y, r: 999, prio: -3, fn: () => cleanCurral(ak) }); }
@@ -10297,6 +10297,65 @@ function miranteView() { if (CINE.on) return; const pts = [[12 * TS, 30 * TS], [
 function relicHTML() { const L = relS(); return `<h3>Relíquias e lembranças</h3><p class="mut">Algumas brilham só quando você está perto. Os lugares da exploração guardam as cartas do avô.</p><div class="cgrid">` + Object.keys(RELICS).map(k => L[k] ? `<div class="card" style="text-align:center"><img src="${relicIconURL(k)}" width="36" height="36" style="image-rendering:pixelated"><br><b>${RELICS[k].n}</b><br><span class="mut">Dia ${L[k]}</span></div>` : `<div class="card dim" style="text-align:center"><div style="font-size:24px;opacity:.4">?</div><span class="mut">${RELICS[k].at ? POI[RELICS[k].at].n : 'Em algum lugar do mapa'}</span></div>`).join('') + '</div>' + (Object.keys(L).filter(k => k.startsWith('carta')).length ? '<h3>Cartas do avô</h3>' + ['carta1', 'carta2', 'carta3', 'carta4'].filter(k => L[k]).map(k => `<div class="card"><b>${RELICS[k].n}</b><p>${esc(RELICS[k].t)}</p></div>`).join('') : '') + `<h3>Lugares descobertos</h3><p class="mut">${Object.keys(POI).map(k => POI[k].n).join(' · ')}</p>`; }
 IT.medalhaAvo = { i: '', n: 'Medalha da Vaquejada de 1974', kg: 0.1, p: 0, d: 'Do avô Tião. Lembrança de família — não se vende.', c: 'ferr' };
 ICON_EXTRA.medalhaAvo = p => { p(4, 0, 4, 4, '#2a6ab0'); p(5, 0, 2, 4, '#c03030'); p(2, 4, 8, 7, '#d8a830'); p(3, 5, 6, 5, '#f0c850'); p(5, 6, 2, 3, '#a87820'); };
+/* ===================== VIDA AMBIENTAL =====================
+   Borboletas (de dia, sem chuva, perto de flor e capim), abelhas em volta das flores e frutíferas, sapos na beira
+   d'água à noite e na chuva (fogem do vaqueiro), patos nadando no açude da fazenda e dois gatos da casa com rotina
+   própria: dormem ao sol, se lambem, passeiam, caçam à noite e aceitam carinho e peixe. Só o que está perto da
+   câmera é simulado; longe, nada roda. */
+Object.assign(AU, {
+  croak(x, y) { const v = 0.05 * this.sp(x, y); this.osc('square', 160, 120, 0.12, v, { filt: 'lowpass', ff: 500 }); this.osc('square', 150, 110, 0.12, v, { filt: 'lowpass', ff: 500, delay: 0.16 }); },
+  quack(x, y) { const v = 0.08 * this.sp(x, y); this.osc('sawtooth', 520, 380, 0.14, v, { filt: 'bandpass', ff: 900, q: 3 }); },
+  meow(x, y) { const v = 0.07 * this.sp(x, y); this.osc('sine', 600, 900, 0.18, v, { vib: 9, vd: 30 }); this.osc('sine', 900, 520, 0.3, v, { delay: 0.18 }); },
+  purr() { this.nz(0.9, 0.035, 'lowpass', 120, 1, { att: 0.2 }); }
+});
+const CAT_SPOTS = [[6.5, 30.6], [9.2, 30.4], [4.6, 30.8], [12.4, 31.2], [16.5, 33.2], [10.5, 33.4], [14, 29.4]]; // varanda, baú, umbuzeiro, terreiro...
+function catsS() { if (!Array.isArray(S.cats)) S.cats = [{ n: 'Mingau', c: '#ece4d4', d: '#c8bca8', aff: 2 }, { n: 'Frajola', c: '#2a2624', d: '#f0ece4', aff: 1, tux: 1 }]; return S.cats; }
+function catSpr(c, pose, fr, flip) { return cached('cat|' + c.n + '|' + pose + '|' + fr + '|' + (flip ? 1 : 0), 14, 10, g => { const p = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(flip ? 14 - x - w : x, y, w, h); };
+  const B = c.c, D = c.d, E = c.tux ? '#9ad04a' : '#6aa040';
+  if (pose === 'sleep') { p(3, 4, 8, 5, B); p(2, 5, 10, 3, B); p(9, 3, 3, 3, B); p(9, 2, 1, 1, B); p(11, 2, 1, 1, B); p(4, 7, 7, 2, D); p(2, 6, 3, 1, D); p(10, 4, 1, 1, '#2a2a2a'); return; }
+  if (pose === 'sit') { p(5, 3, 5, 6, B); p(4, 7, 7, 2, B); p(8, 0, 4, 4, B); p(8, 0, 1, 1, B); p(11, 0, 1, 1, B); p(9, 2, 1, 1, E); p(11, 2, 1, 1, E); p(6, 5, 3, 3, D); p(2, 7, 3, 1, B); p(1, 6, 1, 1, B); return; }
+  const lg = fr % 2; p(3, 3, 8, 3, B); p(9, 1, 4, 3, B); p(9, 0, 1, 1, B); p(12, 0, 1, 1, B); p(11, 2, 1, 1, E); p(4, 5, 6, 1, D); p(1, 1 + lg, 2, 1, B); p(0, 0 + lg, 1, 1, B);
+  p(4 + lg, 6, 1, 3, B); p(9 - lg, 6, 1, 3, B); p(6 - lg, 6, 1, 2, D); p(8 + lg, 6, 1, 2, D); }, true); }
+const LIFE = { bf: [], bees: [], frogs: [], ducks: null, t: 0,
+  free(x, y) { return !boxHit(x, y, [3, 2, 1], 'a'); },
+  update(dt) { if (P.inside || mode !== 'play') return; const vw = VW(), vh = VH(), h = hour(), day = h > 6.5 && h < 17.5, rain = isRain(), low = SET.fx === 'baixa', inView = (x, y, m) => x > cam.x - m && x < cam.x + vw + m && y > cam.y - m && y < cam.y + vh + m;
+    // borboletas
+    if (day && !rain && !low && this.bf.length < 7 && Math.random() < dt * 1.5) { const x = cam.x + Math.random() * vw, y = cam.y + Math.random() * vh, t = gt(Math.floor(x / TS), Math.floor(y / TS)); if (t === G.GRASS || t === G.PAST) this.bf.push({ x, y, z: 8, a: Math.random() * 6.28, l: 0, m: 14 + Math.random() * 14, c: pick(['#f4d030', '#f4d030', '#f08a2a', '#f4f0e8', '#7ab0e8']), rest: 0 }); }
+    for (const b of this.bf) { b.l += dt; if (b.rest > 0) { b.rest -= dt; b.z = Math.max(1, b.z - dt * 20); continue; } b.a += (Math.random() - 0.5) * 6 * dt; b.x += Math.cos(b.a) * 16 * dt; b.y += Math.sin(b.a) * 10 * dt; b.z = 7 + Math.sin(b.l * 3) * 3; if (Math.random() < dt * 0.15) b.rest = 1.5 + Math.random() * 2.5; if (hyp(b.x - P.x, b.y - P.y) < 18) { b.a = Math.atan2(b.y - P.y, b.x - P.x); b.rest = 0; } }
+    this.bf = this.bf.filter(b => b.l < b.m && inView(b.x, b.y, 60) && (day || b.l < 1));
+    // abelhas: zumbem em volta de flores e frutíferas floridas
+    if ((this.t -= dt) <= 0) { this.t = 1.2; this.anch = day && !rain && !low ? PROPS.filter(q => (q.t === 'flor' || q.t === 'ipe' || q.t === 'umbu' || q.t === 'caju' || q.t === 'manga' || q.t === 'canteiro') && inView(q.x, q.y, 20)).slice(0, 8) : []; while (this.bees.length > this.anch.length * 3) this.bees.pop(); while (this.bees.length < this.anch.length * 3) this.bees.push({ k: this.bees.length, ph: Math.random() * 6.28, r: 4 + Math.random() * 10 }); }
+    // sapos: beira d'água, à noite ou na chuva
+    if ((!day || rain) && this.frogs.length < 5 && Math.random() < dt * 0.8) for (let tr = 0; tr < 14; tr++) { const x = cam.x + Math.random() * vw, y = cam.y + Math.random() * vh, tx = Math.floor(x / TS), ty = Math.floor(y / TS), t = gt(tx, ty); if (t !== G.WATER && t >= 0 && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => gt(tx + a, ty + b) === G.WATER) && this.free(x, y)) { this.frogs.push({ x, y, hop: 0, vx: 0, vy: 0, l: 0, m: 30 + Math.random() * 30, c: Math.random() < 0.5 ? '#6a8a3a' : '#8a7a4a' }); break; } }
+    for (const f of this.frogs) { f.l += dt; if (f.hop > 0) { f.hop -= dt; f.x += f.vx * dt; f.y += f.vy * dt; if (f.hop <= 0 && gt(Math.floor(f.x / TS), Math.floor(f.y / TS)) === G.WATER) { part(f.x, f.y, 'ring'); f.l = f.m; } continue; }
+      const dp = hyp(f.x - P.x, f.y - P.y); if (dp < 26 || Math.random() < dt * 0.15) { const a = dp < 26 ? Math.atan2(f.y - P.y, f.x - P.x) : Math.random() * 6.28; f.vx = Math.cos(a) * 40; f.vy = Math.sin(a) * 30; f.hop = 0.3; }
+      if (Math.random() < dt * 0.12 && hyp(f.x - P.x, f.y - P.y) < 140) AU.croak(f.x, f.y); }
+    this.frogs = this.frogs.filter(f => f.l < f.m && inView(f.x, f.y, 80));
+    // patos do açude da fazenda
+    if (!this.ducks) { this.ducks = []; for (let i = 0; i < 4; i++) this.ducks.push({ x: (31 + i * 1.2) * TS, y: (25 + (i % 2)) * TS, a: Math.random() * 6.28, ph: i }); }
+    for (const d of this.ducks) { if (!inView(d.x, d.y, 200)) continue; d.a += (Math.random() - 0.5) * 2 * dt; const nx = d.x + Math.cos(d.a) * 7 * dt, ny = d.y + Math.sin(d.a) * 5 * dt; if (waterKind(Math.floor(nx / TS), Math.floor(ny / TS)) === 'acude' && waterDepthAt(nx, ny) > 0.25) { d.x = nx; d.y = ny; } else d.a += Math.PI * (0.6 + Math.random() * 0.4);
+      if (hyp(d.x - P.x, d.y - P.y) < 30) d.a = Math.atan2(d.y - P.y, d.x - P.x); if (Math.random() < dt * 0.05) AU.quack(d.x, d.y); if (Math.random() < dt * 0.6) part(d.x - Math.cos(d.a) * 4, d.y + 1, 'ring'); }
+    // gatos da casa
+    for (const c of catsS()) { if (c.x === undefined) { const s = pick(CAT_SPOTS); c.x = s[0] * TS; c.y = s[1] * TS; c.st = 'sleep'; c.t = 10 + Math.random() * 20; c.f = 1; }
+      if (!inView(c.x, c.y, 300)) continue; c.t -= dt;
+      const follow = c.aff >= 6 && hyp(P.x - 8 * TS, P.y - 30 * TS) < 10 * TS && hyp(c.x - P.x, c.y - P.y) > 26;
+      if (c.st === 'walk' || follow) { const tx = follow ? P.x + 14 : c.tx, ty = follow ? P.y + 4 : c.ty, d = hyp(tx - c.x, ty - c.y); if (d < 3) { c.st = h > 19 || h < 5 ? 'sit' : Math.random() < 0.6 ? 'sleep' : 'sit'; c.t = 8 + Math.random() * 25; } else { const sp = (follow ? 30 : 16) * dt, nx = c.x + (tx - c.x) / d * sp, ny = c.y + (ty - c.y) / d * sp; if (this.free(nx, ny)) { c.x = nx; c.y = ny; } else { c.st = 'sit'; c.t = 3; } c.f = tx < c.x ? 1 : 0; c.fr = Math.floor(drawT * 6) % 2; } }
+      else if (c.t <= 0) { const s = pick(CAT_SPOTS); c.tx = s[0] * TS + rnd(-6, 6); c.ty = s[1] * TS + rnd(-4, 4); c.st = 'walk'; if (Math.random() < 0.3) AU.meow(c.x, c.y); } }
+  },
+  ground(add, inV) { if (P.inside) return;
+    for (const f of this.frogs) add(f.y, () => { const up = f.hop > 0 ? Math.sin(f.hop / 0.3 * Math.PI) * 4 : 0, x = Math.round(f.x), y = Math.round(f.y - up); X.fillStyle = 'rgba(20,12,4,0.25)'; X.fillRect(x - 2, Math.round(f.y), 4, 1); X.fillStyle = f.c; X.fillRect(x - 2, y - 2, 4, 2); X.fillRect(x - 1, y - 3, 3, 1); X.fillStyle = '#e8d870'; X.fillRect(x - 1, y - 3, 1, 1); X.fillRect(x + 1, y - 3, 1, 1); });
+    for (const d of (this.ducks || [])) { if (!inV(d.x, d.y, 20)) continue; add(d.y, () => { const x = Math.round(d.x), y = Math.round(d.y + Math.sin(drawT * 2 + d.ph) * 0.5), fl = Math.cos(d.a) < 0; X.fillStyle = 'rgba(255,255,255,0.25)'; X.fillRect(x - 5, y + 1, 10, 1); X.fillStyle = '#f4f0e8'; X.fillRect(x - 4, y - 3, 8, 3); X.fillRect(fl ? x - 5 : x + 2, y - 6, 3, 3); X.fillStyle = '#d8d0c0'; X.fillRect(x - 3, y - 2, 4, 1); X.fillStyle = '#f0902a'; X.fillRect(fl ? x - 7 : x + 5, y - 5, 2, 1); X.fillStyle = '#1a1a1a'; X.fillRect(fl ? x - 4 : x + 3, y - 5, 1, 1); }); }
+    for (const c of catsS()) { if (c.x === undefined || !inV(c.x, c.y, 20)) continue; add(c.y, () => { const pose = c.st === 'walk' ? 'walk' : c.st, s = catSpr(c, pose, c.fr || 0, c.f); X.fillStyle = 'rgba(20,12,4,0.22)'; X.beginPath(); X.ellipse(c.x, c.y, 5, 1.5, 0, 0, 7); X.fill(); X.drawImage(s, Math.round(c.x - 7), Math.round(c.y - 9)); if (c.st === 'sleep' && Math.sin(drawT * 1.2 + c.x) > 0.6) { X.fillStyle = '#f4f0e8'; X.font = '6px sans-serif'; X.fillText('z', c.x + 4, c.y - 9 - (drawT * 3 % 4)); } }); }
+  },
+  air() { if (P.inside) return;
+    for (const b of this.bf) { const x = Math.round(b.x), y = Math.round(b.y - b.z), op = Math.sin(drawT * 18 + b.x) > 0 || b.rest > 0; X.fillStyle = 'rgba(20,12,4,0.15)'; X.fillRect(x, Math.round(b.y), 2, 1); X.fillStyle = b.c; if (op) { X.fillRect(x - 2, y - 1, 2, 2); X.fillRect(x + 1, y - 1, 2, 2); } else { X.fillRect(x - 1, y - 2, 1, 2); X.fillRect(x + 1, y - 2, 1, 2); } X.fillStyle = '#2a2a2a'; X.fillRect(x, y - 1, 1, 2); }
+    for (const e of this.bees) { const q = this.anch[Math.floor(e.k / 3)]; if (!q) continue; const t = drawT * 3 + e.ph, x = Math.round(q.x + Math.cos(t * 1.7) * e.r), y = Math.round(q.y - 10 - Math.abs(Math.sin(t * 2.3)) * e.r * 0.7); X.fillStyle = '#f0c020'; X.fillRect(x, y, 2, 1); X.fillStyle = '#2a2010'; X.fillRect(x + 1, y, 1, 1); X.fillStyle = 'rgba(255,255,255,0.7)'; X.fillRect(x, y - 1, 1, 1); }
+  }
+};
+function lifeInteractables(add, foot) { if (!foot || P.inside) return; for (const c of catsS()) { if (c.x === undefined) continue; const d = hyp(c.x - P.x, c.y - P.y); if (d > 24) continue; const fish = Object.keys(S.inv).filter(k => k.startsWith('pe_')).sort((a, b) => IT[a].p - IT[b].p)[0];
+    add({ k: 'cat', label: fish && c.fed !== S.day ? '🐟 Dar peixe ao ' + c.n : '🐈 Carinho no ' + c.n + ' (' + '♥'.repeat(Math.min(10, Math.floor(c.aff))) + ')', x: c.x, y: c.y, r: 26, prio: 3, fn: () => {
+      if (fish && c.fed !== S.day) { act('pet', 1, c, () => { useInv(fish); c.fed = S.day; c.aff = Math.min(10, c.aff + 2); c.st = 'sit'; c.t = 6; AU.meow(c.x, c.y); toast('🐈 ' + c.n + ' comeu o ' + IT[fish].n.toLowerCase() + ' e ronronou.' + (c.aff >= 6 ? ' Agora ele te segue pela casa.' : '')); }); return; }
+      act('pet', 1.2, c, () => { if (c.pet !== S.day) { c.pet = S.day; c.aff = Math.min(10, c.aff + 0.5); P.en = Math.min(100, P.en + 2); } c.st = 'sleep'; c.t = 12; AU.purr(); toast('🐈 ' + c.n + ' ronrona.'); }); } }); } }
 /* ===================== PESCA =====================
    Espécies do sertão baiano por lugar (açude, rio, riacho da mata), horário e tempo. Vara e isca de verdade (mochila),
    fisgada no tempo certo e briga com a linha (tensão). O peixe vai para a mochila, pode ser vendido no Mercadinho,
