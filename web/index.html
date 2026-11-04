@@ -8400,6 +8400,12 @@ const FARMS = {
   lagoa: { n: 'Haras Lagoa Seca', own: 'graca', prod: 'Cavalos Mangalarga Marchador', size: 'média', hist: 'Um haras pequeno e caprichado, famoso pela marcha dos cavalos.', goal: 'Ganhar o concurso de marcha da feira agropecuária', money: 90000, workers: 3, herd: { cavalo: 34, boi: 12 } },
   umburana: { n: 'Sítio Umburana', own: 'prea', prod: 'Cabras, jumentos e roça', size: 'pequena', hist: 'Sítio de família, terra pouca e muito trabalho. Seu Zé conheceu Tiãozinho nas feiras de sábado.', goal: 'Comprar a primeira vaca de leite', money: 4200, workers: 0, herd: { cabra: 26, jumento: 3, boi: 0 } }
 };
+/* equilíbrio do caixa das fazendas vizinhas: fazenda que junta muito dinheiro reinveste o excedente (família, máquinas,
+   terra fora do mapa, impostos) e quem fica sem caixa corta gastos e recebe ajuda (crédito rural). O caixa fica entre
+   ~40% e ~170% do valor inicial, em vez de crescer sem fim ou zerar. */
+function farmBalance(st, base, n, news) { const hi = base * 1.6, lo = base * 0.35;
+  if (st.money > hi) { const d = Math.round((st.money - hi) * 0.06); st.money -= d; if (d > base * 0.02 && Math.random() < 0.08) news && news(n + ' reinvestiu na propriedade (' + fmt(d) + ').'); }
+  else if (st.money < lo) { const d = Math.round((lo - st.money) * 0.08); st.money += d; if (Math.random() < 0.06) news && news(n + ' pegou crédito rural e apertou os gastos.'); } }
 function regionInit() { if (S.region && S.region.farms) return; S.region = { farms: {}, news: [], demand: { boi: 1, cavalo: 1, cabra: 1, jumento: 1 } }; for (const k in FARMS) { const F = FARMS[k]; S.region.farms[k] = { money: F.money, workers: F.workers, herd: Object.assign({}, F.herd || {}), built: [] }; } }
 function farmHerd(k) { const F = FARMS[k]; if (!F.near) return S.region.farms[k].herd; const h = {}; for (const a of S.animals) if (a.own === F.own) h[a.sp] = (h[a.sp] || 0) + 1; return h; }
 function regionNews(t) { S.region.news.unshift({ d: S.day, t }); if (S.region.news.length > 14) S.region.news.pop(); }
@@ -8410,6 +8416,7 @@ function regionDay() {
   for (const k in FARMS) {
     const F = FARMS[k], st = R.farms[k], hd = farmHerd(k), heads = Object.values(hd).reduce((s, v) => s + v, 0);
     st.money += Math.round(heads * (F.prod.includes('Cavalos') ? 22 : 14) * (se ? 0.85 : 1.05) - st.workers * 180 / 7);
+    farmBalance(st, F.money, F.n, regionNews);
     const r = Math.random();
     if (F.near) {
       if (r < 0.05 && st.money > 9000) { const sp = F.own === 'felipe' ? 'boi' : pick(['cavalo', 'cavalo', 'burro', 'jumento']); if ((hd[sp] || 0) < (sp === 'boi' ? 9 : 6)) { const a = mkAnimal(sp, sp === 'boi' ? pick(['nelore', 'nelore', 'guzera', 'tabapua']) : sp === 'cavalo' ? pick(['mm', 'qm', 'campolina']) : sp === 'burro' ? 'burro' : 'pega', { own: F.own }); const p = randIn(k); a.x = p[0]; a.y = p[1]; S.animals.push(a); st.money -= Math.round(animalValue(a)); regionNews(`${NPCDEF[F.own].n} comprou ${sp === 'boi' ? 'um boi ' + breedOf(a).n : 'um animal novo'} para a ${F.n}.`); } }
@@ -8780,7 +8787,7 @@ function rfarmS() { if (!S.rfarm) { S.rfarm = {}; for (const k in RFARMS) S.rfar
 function rfarmDay() { const R = rfarmS(), se = season();
   for (const k in RFARMS) { const F = RFARMS[k], st = R[k], own = S.animals.filter(a => a.own === F.own), heads = own.length;
     const inc = heads * (k === 'f4' ? 160 : k === 'f2' ? 70 : 45) * (se ? 0.85 : 1.05), cost = st.staff * F.wage / 7 + heads * (k === 'f4' ? 40 : 18) * (se ? 1.3 : 1) + (k === 'f4' ? 2500 : 0);
-    st.money = Math.round(st.money + inc - cost);
+    st.money = Math.round(st.money + inc - cost); farmBalance(st, F.money, F.n, t => rfNews(k, t));
     const cap = k === 'f4' ? 22 : k === 'f2' ? 20 : 16, r = Math.random(), arr = S.arroba || 300;
     if (st.money > (k === 'f4' ? 200000 : 18000) && heads < cap && r < 0.3) { const a = rfarmSpawn(k); if (a) { st.money -= animalValue(a); rfNews(k, `${NPCDEF[F.own].n} comprou ${catName(a).toLowerCase()} ${breedOf(a).n}.`); } }
     else if (heads > 6 && (arr > 330 || st.money < 3000) && r < 0.25) { const L = own.filter(a => !a.vip && !a.loan), a = L.length ? pick(L) : null; if (a) { S.animals = S.animals.filter(b => b !== a); st.money += animalValue(a); rfNews(k, `${F.n} vendeu ${a.n} (${breedOf(a).n}) — ${arr > 330 ? 'arroba boa' : 'apertou o caixa'}.`); } }
