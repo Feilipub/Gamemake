@@ -323,7 +323,7 @@ body.lan .sw2 .pvbox{position:sticky;top:0}
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 150, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '5.6.0', SAVE_V = 9;
+const GAME_V = '5.7.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -377,7 +377,7 @@ const shownTips = {};
 function tip(k, t) { if (S && S.flags['tip_' + k]) return; if (S) S.flags['tip_' + k] = 1; say(t, 6500); }
 
 /* ============ CONFIGURAÇÕES, ÍCONES E MOLDURAS PIXEL ============ */
-const SET = { q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on' };
+const SET = { q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on', cenas: true };
 try { Object.assign(SET, JSON.parse(localStorage.getItem('lida_set') || '{}')); } catch (e) { }
 function saveSet() { try { localStorage.setItem('lida_set', JSON.stringify(SET)); } catch (e) { } document.documentElement.style.setProperty('--ctl', SET.ctl); document.body && document.body.classList.toggle('tapmode', SET.mode === 'touch'); }
 function buzz(ms) { if (SET.vib && navigator.vibrate) try { navigator.vibrate(ms || 8); } catch (e) { } }
@@ -3935,13 +3935,13 @@ function cattleDayAfter() {
   // ladrão de gado: leva gado sem marca dos pastos
   const loose = alive.filter(a => !a.marca && a.age >= 12 && !a.main && a.area && AREAS[a.area].k === 'pasto');
   const guard = myAnimals('cao').some(d => d.skills.includes('Guarda')) ? 0.4 : 1;
-  if (S.day > 15 && loose.length >= 6 && Math.random() < 0.025 * guard) { const n = Math.min(loose.length, rint(1, 2)); const took = []; for (let i = 0; i < n; i++) { const a = loose.splice(rint(0, loose.length - 1), 1)[0]; took.push(a.n); S.animals = S.animals.filter(x => x !== a); } S.obito = S.obito || []; took.forEach(n2 => S.obito.unshift({ d: S.day, n: n2, c: 'roubado', cause: 'ladrão de gado' })); toast('🚨 Ladrões de gado levaram ' + took.join(' e ') + ' à noite! Gado marcado a ferro o ladrão não leva.'); ledger('Abigeato: ' + took.join(', '), 0); }
+  if (S.day > 15 && loose.length >= 6 && Math.random() < 0.025 * guard) { const n = Math.min(loose.length, rint(1, 2)); const took = [], tc = []; for (let i = 0; i < n; i++) { const a = loose.splice(rint(0, loose.length - 1), 1)[0]; took.push(a.n); tc.push({ id: a.id, sp: a.sp, br: a.br, coat: a.coat, sex: a.sex, age: a.age, wt: a.wt, n: a.n, x: a.x, y: a.y, f: a.f, gen: a.gen, mk: a.mk, skills: [], traits: a.traits }); S.animals = S.animals.filter(x => x !== a); } if (cenasOn()) S.pend.push({ k: 'theft', names: took, c: tc }); S.obito = S.obito || []; took.forEach(n2 => S.obito.unshift({ d: S.day, n: n2, c: 'roubado', cause: 'ladrão de gado' })); toast('🚨 Ladrões de gado levaram ' + took.join(' e ') + ' à noite! Gado marcado a ferro o ladrão não leva.'); ledger('Abigeato: ' + took.join(', '), 0); }
   // gado fugido para a Mata dos Fundos
   const esc = alive.filter(a => !a.main && !a._fug && a.age >= 8 && a.area && AREAS[a.area].k === 'pasto');
   if (S.day > 4 && esc.length && Math.random() < 0.02) {
     const a = esc.find(b => hasT(b, 'agitado') || hasT(b, 'independente') || hasT(b, 'arisco')) || pick(esc);
     for (let k = 0; k < 20; k++) { const c = pick(FOREST.clear), x = (c[0] + rnd(-c[2], c[2])) * TS, y = (c[1] + rnd(-c[2], c[2])) * TS; if (!hitAt(x, y, 5)) { a.x = x; a.y = y; a._px = x; a._py = y; a._fug = 1; a._st = null; a.area = null; break; } }
-    if (a._fug) { S.fugN = (S.fugN || 0) + 1; toast('🔎 Na contagem da manhã faltou ' + a.n + '. O rastro vai para a Mata dos Fundos: vá campear e traga de volta!'); hist(a, 'Fugiu para a mata'); }
+    if (a._fug) { S.fugN = (S.fugN || 0) + 1; if (cenasOn()) S.pend.push({ k: 'escape', id: a.id }); toast('🔎 Na contagem da manhã faltou ' + a.n + '. O rastro vai para a Mata dos Fundos: vá campear e traga de volta!'); hist(a, 'Fugiu para a mata'); }
   }
 }
 function birthCalf(m, o) {
@@ -4423,7 +4423,7 @@ function layEggs() {
 }
 function deliveries() {
   const now = S.delivery.filter(d => d.day <= S.day); S.delivery = S.delivery.filter(d => d.day > S.day);
-  now.forEach(d => { const a = byId(d.id); if (!a) return; a.own = 'player'; a.newArr = 1; const p = randIn(d.to || 'receb'); a.x = p[0]; a.y = p[1]; a._st = null; toast('🚚 ' + a.n + ' chegou ao ' + AREAS[d.to || 'receb'].n); });
+  const tIds = []; now.forEach(d => { const a = byId(d.id); if (!a) return; if ((d.to || 'receb') === 'receb' && cenasOn()) { tIds.push(a.id); a._hid = true; } a.own = 'player'; a.newArr = 1; const p = randIn(d.to || 'receb'); a.x = p[0]; a.y = p[1]; a._st = null; toast('🚚 ' + a.n + ' chegou ao ' + AREAS[d.to || 'receb'].n); }); if (tIds.length) S.pend.push({ k: 'truckIn', ids: tIds });
   if (S.frete && S.fretePend) { for (const k in S.fretePend) S.dep[k] = (S.dep[k] || 0) + S.fretePend[k]; S.fretePend = null; toast('🚚 Entrega da Casa do Agro no depósito.'); }
 }
 function dayTick() { storyCheck(); regionDay(); missionDay(); socialDay();
@@ -4834,6 +4834,85 @@ function autoStep(dt) {
 }
 /* ---------- ações animadas (máquina de estados) ---------- */
 const ACT_POSE = { slash: 'throw', shoot: 'reach', saddle: 'carry', unsaddle: 'carry', travel: 'carry', hitch: 'carry', brush: 'brush', feed: 'feed', water: 'feed', vacc: 'feed', fill: 'feed', pet: 'pet', exam: 'pet', gate: 'push', pickup: 'pickup', door: 'reach', reach: 'reach', call: 'wave', eat: 'eat', throw: 'throw', train: 'wave', sweep: 'sweep', hammer: 'hammer' };
+/* ============ AÇÕES COM FERRAMENTA: o que o vaqueiro segura, efeitos e a reação do animal ============ */
+// pose do corpo, ferramenta, momento do contato (0..1), reação do animal e som
+const ACTFX = {
+  inject: { pose: 'reach', tool: 'syringe', hit: 0.55, react: 'scared', rt: 0.5, moo: 0.9 },
+  cure: { pose: 'reach', tool: 'syringe', hit: 0.55, react: 'scared', rt: 0.4 },
+  pouron: { pose: 'pour', tool: 'pourBottle', hit: 0.3 },
+  brand: { pose: 'reach', tool: 'iron', hit: 0.5, react: 'scared', rt: 1.1, moo: 0.85, sizzle: 1 },
+  milk: { pose: 'crouch', tool: 'bucket' },
+  bottle: { pose: 'reach', tool: 'bottle', react: 'suck', rt: 9 },
+  calve: { pose: 'crouch', tool: null },
+  iodo: { pose: 'crouch', tool: 'iodine', hit: 0.5 },
+  castra: { pose: 'crouch', tool: 'pliers', hit: 0.55, react: 'scared', rt: 0.9, moo: 0.8 },
+  dehorn: { pose: 'reach', tool: 'pliers', hit: 0.55, react: 'scared', rt: 0.9, moo: 1.2 },
+  tag: { pose: 'reach', tool: 'tagger', hit: 0.6, react: 'scared', rt: 0.4, click: 1 },
+  spray: { pose: 'reach', tool: 'spray', hit: 0.25 },
+  insem: { pose: 'crouch', tool: 'pipette', hit: 0.5 },
+  wean: { pose: 'push', tool: 'rope', hit: 0.6, react: 'moo', rt: 1.2, moo: 1.4 },
+  tame: { pose: 'push', tool: 'yoke', hit: 0.3, react: 'moo', rt: 0.8, moo: 0.8 },
+  calving: { pose: 'crouch', tool: null }
+};
+Object.keys(ACTFX).forEach(k => { ACT_POSE[k] = ACTFX[k].pose; });
+const TOOLC = { vacina: '#4ac0d0', vacRaiva: '#d04040', vermifugo: '#8a5ad0', remedio: '#f0e0a0', soro: '#5ab05a', bruce: '#60c060' };
+// a cada quadro da ação: contato, partículas, sons e reação
+function actFxUpd(A, dt) {
+  const F = ACTFX[A.k]; if (!F) return; const a = A.a, u = A.t / A.dur;
+  if (F.hit !== undefined && !A.fxHit && u >= F.hit) {
+    A.fxHit = 1;
+    if (a && F.react) a._fx = { pose: F.react, t0: drawT, until: drawT + (F.rt || 0.6) };
+    if (a && F.moo && a.sp === 'boi') AU.moo(a.x, a.y, F.moo * (a.age < 12 ? 1.5 : 1));
+    if (F.sizzle) { AU.nz(0.7, 0.07, 'highpass', 2600, 1); for (let i = 0; i < 10; i++) part(a.x + rnd(-6, 6), a.y - 16 + rnd(-3, 3), 'smoke', { vx: rnd(-6, 6), vy: rnd(-22, -10), m: rnd(0.8, 1.6), c: 'rgba(200,200,200,0.55)', s: 2 }); }
+    if (F.click) AU.nz(0.05, 0.08, 'bandpass', 2400, 4);
+    if (A.k === 'tag' || A.k === 'inject' || A.k === 'cure') AU.nz(0.04, 0.03, 'bandpass', 3200, 6);
+  }
+  if (!a) return;
+  if (A.k === 'pouron' && u > 0.3 && u < 0.85 && Math.random() < dt * 22) { const k = (u - 0.3) / 0.55, s = a.f || 1; part(a.x + s * lerp(10, -10, k), a.y - 22, 'drop', { vx: 0, vy: 12, m: 0.35, c: '#5aa03a' }); }
+  if (A.k === 'spray' && u > 0.25 && u < 0.8 && Math.random() < dt * 26) { const [hx, hy] = handPos(P, ACTFX.spray.pose); part(hx, hy, 'smoke', { vx: (a.x - hx) * 1.6, vy: rnd(-6, 4), m: 0.5, c: 'rgba(230,240,230,0.7)', s: 1 }); }
+  if (A.k === 'milk' && Math.random() < dt * 7) { const s = a.f || 1; part(a.x - s * 3, a.y - 8, 'drop', { vx: rnd(-2, 2), vy: 30, m: 0.25, c: '#ffffff' }); if (Math.random() < 0.3) AU.nz(0.05, 0.02, 'bandpass', 1800, 3); }
+  if (A.k === 'iodo' && u > 0.5 && u < 0.8 && Math.random() < dt * 12) part(a.x, a.y - 6, 'drop', { vx: rnd(-3, 3), vy: 16, m: 0.3, c: '#8a3a10' });
+  if (A.k === 'bottle' && Math.random() < dt * 3) heart(a.x, a.y - 18);
+  if (A.k === 'calve' && Math.random() < dt * 4) dust(P.x, P.y, 1);
+  if (A.k === 'insem' || A.k === 'calve' || A.k === 'castra' || A.k === 'iodo') { if (!a._fx || a._fx.until < drawT) a._fx = { pose: 'idle', t0: drawT, until: drawT + 0.3 }; }
+}
+function handPos(p, pose) { const dir = p.dir, low = pose === 'crouch' ? 4 : 0, x = ix(p), y = iy(p); if (dir === 2 || dir === 3) return [x + (dir === 3 ? 7 : -7), y - 13 + low]; return [x + (dir === 0 ? 5 : -5), y - 12 + low]; }
+// desenha a ferramenta na mão (por cima do vaqueiro)
+function drawActFX(A) {
+  const F = ACTFX[A.k]; if (!F || !F.tool) return; const u = A.t / A.dur, a = A.a, [hx0, hy0] = handPos(P, F.pose), s = P.dir === 2 ? -1 : 1, side = P.dir >= 2;
+  const R = (x, y, w, h, c) => { X.fillStyle = c; X.fillRect(Math.round(x), Math.round(y), w, h); };
+  const hx = Math.round(hx0), hy = Math.round(hy0), push = F.hit !== undefined ? (u < F.hit ? u / F.hit * 2 : 2) : 0, dx = side ? s : 0;
+  switch (F.tool) {
+    case 'syringe': { const c = TOOLC[A.opt.it] || '#4ac0d0', x0 = hx + dx * push; if (side) { R(x0 - (s < 0 ? 5 : 0), hy - 1, 5, 2, '#e8eef4'); R(x0 + (s > 0 ? 1 : -4), hy - 1, 3, 1, c); R(s > 0 ? x0 + 5 : x0 - 7, hy, 2, 1, '#b0b0b8'); R(s > 0 ? x0 - 2 : x0 + 5, hy - 1, 2, 2, '#888890'); } else { R(hx - 1, hy - 4, 2, 5, '#e8eef4'); R(hx - 1, hy - 3, 1, 3, c); R(hx - 1, hy + 1, 1, 2, '#b0b0b8'); } break; }
+    case 'iron': { const hot = Math.floor(drawT * 10) % 2 ? '#ff6a20' : '#ffc040', L = 9, x0 = hx + dx * push; if (side) { R(s > 0 ? x0 : x0 - L, hy - 1, L, 1, '#4a4a52'); R(s > 0 ? x0 + L : x0 - L - 2, hy - 2, 2, 3, hot); R(s > 0 ? x0 - 2 : x0, hy - 2, 2, 3, '#6a4422'); } else { R(hx, hy - 9, 1, 9, '#4a4a52'); R(hx - 1, hy - 11, 3, 2, hot); } if (Math.random() < 0.15) part(side ? (s > 0 ? x0 + L + 1 : x0 - L - 1) : hx, hy - (side ? 1 : 10), 'spark', { vx: rnd(-6, 6), vy: rnd(-16, -6), m: 0.4, c: '#ffd060' }); break; }
+    case 'bucket': { const bx = hx + (side ? s * 3 : 0), by = iy(P) - 5; R(bx - 3, by, 6, 5, '#a8a8b0'); R(bx - 3, by, 6, 1, '#6a6a72'); R(bx - 2, by + 1, 4, 1, u > 0.3 ? '#ffffff' : '#c8c8d0'); R(bx - 4, by - 2, 8, 1, '#5a5a62'); break; }
+    case 'bottle': { const x0 = hx + dx * 2; R(x0 - 1, hy - 3, 3, 5, '#f4f4f0'); R(x0 - 1, hy - 1, 3, 3, '#e8e2d0'); R(side ? x0 + s * 2 : x0, hy - 4, 1, 2, '#c87040'); break; }
+    case 'pourBottle': { const x0 = hx + dx * 1, tilt = u > 0.3 && u < 0.85; R(x0 - 1, hy - 4, 3, 5, '#3a8a3a'); R(x0 - 1, hy - 2, 3, 2, '#f0e8c8'); R(tilt ? x0 + s * 2 : x0, hy - 5, 1, 1, '#2a2a2a'); break; }
+    case 'spray': { R(hx - 1, hy - 4, 2, 5, '#5a5a62'); R(hx - 1, hy - 2, 2, 2, '#e0b030'); R(hx + (side ? s : 0), hy - 5, 1, 1, '#c03030'); break; }
+    case 'tagger': { const x0 = hx + dx * push; R(x0 - 1, hy - 1, 4, 1, '#7a7a82'); R(x0 - 1, hy + 1, 4, 1, '#7a7a82'); R(side ? x0 + s * 3 : x0 + 1, hy - 1, 2, 2, '#f0c020'); break; }
+    case 'pliers': { const x0 = hx + dx * push; R(x0 - 1, hy - 1, 4, 1, '#8a8a92'); R(x0 - 1, hy, 1, 2, '#c03030'); R(x0 + 2, hy, 1, 2, '#c03030'); break; }
+    case 'iodine': { R(hx - 1, hy - 3, 3, 4, '#8a3a10'); R(hx - 1, hy - 4, 3, 1, '#3a2410'); break; }
+    case 'pipette': { R(side ? (s > 0 ? hx : hx - 10) : hx, side ? hy : hy - 10, side ? 10 : 1, side ? 1 : 10, '#a8d8f0'); R(side ? (s > 0 ? hx - 2 : hx + 1) : hx - 1, side ? hy - 1 : hy, 2, 2, '#e8eef4'); break; }
+    case 'rope': { if (!a) break; X.strokeStyle = '#c8a060'; X.lineWidth = 1; X.beginPath(); X.moveTo(hx, hy); X.quadraticCurveTo((hx + ix(a)) / 2, Math.max(hy, iy(a) - 10) + 6, ix(a) + (a.f || 1) * 8, iy(a) - 12); X.stroke(); break; }
+    case 'yoke': { if (!a) break; const k = rigK(a), sp = RIG.spec(rigBreed(a)), nx = Math.round(ix(a) + (a.f || 1) * sp.L * 0.34 * k), ny = Math.round(iy(a) - sp.H * k - 2); R(nx - 1, ny - 1, 3, 9, '#6a4020'); R(nx, ny, 1, 8, '#9a6a38'); R(nx - 3, ny + 2, 1, 5, '#3a2410'); R(nx + 3, ny + 2, 1, 5, '#3a2410'); break; }
+  }
+}
+// reação do animal (sobrepõe a pose da IA)
+function fxPose(a) {
+  const F = a._fx; if (!F || F.until < drawT) { if (F) a._fx = null; return null; }
+  const t = drawT - F.t0;
+  switch (F.pose) {
+    case 'scared': return ['scared', Math.floor(drawT * 7) % 2];
+    case 'moo': return [a.sp === 'boi' || a.sp === 'cabra' ? 'moo' : 'neigh', Math.min(3, Math.floor(t * 4))];
+    case 'lie': return ['lie', Math.floor(drawT * 0.8) % 2];
+    case 'sniff': return ['sniff', Math.floor(drawT * 3) % 2];
+    case 'suck': return ['idle', 0];
+    case 'drink': return ['drink', Math.floor(drawT * 2.4) % 2];
+    case 'walk': return ['walk', Math.floor(drawT * 9) % 8];
+    case 'idle': return ['idle', 0];
+  }
+  return null;
+}
 function act(k, dur, a, done, opt) {
   if (P._act) return false; opt = opt || {};
   P._act = { k, t: 0, dur, a, done, opt }; cam.taz = opt.zoom === false ? 1 : (opt.zoom || 1.35); P._vx = P._vy = 0; P._auto = null;
@@ -4841,7 +4920,7 @@ function act(k, dur, a, done, opt) {
   return true;
 }
 function updAct(dt) {
-  const A = P._act; A.t += dt; const u = Math.min(1, A.t / A.dur), a = A.a;
+  const A = P._act; A.t += dt; const u = Math.min(1, A.t / A.dur), a = A.a; actFxUpd(A, dt);
   if (A.opt.int && A.t > 0.2 && hyp(input.x, input.y) > 0.4) { P._act = null; cam.taz = 1; return; }
   if (A.k === 'mount' && a) { const sx = A.opt.sx, sy = A.opt.sy; if (u < 0.22) { P.x = sx; P.y = sy; } else if (u < 0.62) { const k = (u - 0.22) / 0.4; P.x = lerp(sx, a.x, k); P.y = lerp(sy, a.y, k); } else { P.x = a.x; P.y = a.y; } if (!A.s1 && u > 0.22) { A.s1 = 1; AU.jump(); } if (!A.s2 && u > 0.62) { A.s2 = 1; AU.saddleCreak(); dust(a.x, a.y, 3); } }
   if (A.k === 'dismount' && a) { const ex = A.opt.ex, ey = A.opt.ey; if (u < 0.3) { P.x = a.x; P.y = a.y; } else if (u < 0.65) { const k = (u - 0.3) / 0.35; P.x = lerp(a.x, ex, k); P.y = lerp(a.y, ey, k); } else { P.x = ex; P.y = ey; } if (!A.s1 && u > 0.65) { A.s1 = 1; AU.step(true); dust(ex, ey, 3); } }
@@ -6093,7 +6172,7 @@ function volHTML() { return '<div class="card"><b>Áudio</b>' + [['m', 'Volume g
 function cfgHTML(inGame) {
   const opt = (k, v, l) => `<button data-a="setOpt" data-v="${k}|${v}" class="${SET[k] === v ? 'on' : ''}">${l}</button>`;
   let h = volHTML();
-  h += `<div class="card"><b>Visual</b><p class="mut">HD-2D: câmera em perspectiva com profundidade, sombras do sol, luz das fogueiras e desfoque nas bordas, mantendo a pixel art. Clássico: o 2D de antes.</p><div class="ch">${opt('view', 'hd2d', 'HD-2D (3D)')}${opt('view', '2d', 'Clássico 2D')}</div><b>Desfoque de profundidade</b><div class="ch">${opt('dof', true, 'Ligado')}${opt('dof', false, 'Desligado')}</div></div>`;
+  h += `<div class="card"><b>Visual</b><p class="mut">HD-2D: câmera em perspectiva com profundidade, sombras do sol, luz das fogueiras e desfoque nas bordas, mantendo a pixel art. Clássico: o 2D de antes.</p><div class="ch">${opt('view', 'hd2d', 'HD-2D (3D)')}${opt('view', '2d', 'Clássico 2D')}</div><b>Desfoque de profundidade</b><div class="ch">${opt('dof', true, 'Ligado')}${opt('dof', false, 'Desligado')}</div><b>Cenas curtas da lida</b><p class="mut">Caminhão boiadeiro, parto, brete, ladrão de gado… Desligue para ir direto ao resultado.</p><div class="ch">${opt('cenas', true, 'Ligadas')}${opt('cenas', false, 'Desligadas')}</div></div>`;
   h += `<div class="card"><b>Conversas com IA</b><p class="mut">Na versão publicada, os moradores podem responder perguntas livres usando o Claude (pede sua permissão na primeira vez). Sem internet ou sem permissão, eles usam as falas do próprio jogo.</p><div class="ch">${opt('ia', true, 'Ligada')}${opt('ia', false, 'Desligada')}</div><b>Limite por dia</b><div class="ch">${opt('iaMax', 15, '15')}${opt('iaMax', 30, '30')}${opt('iaMax', 60, '60')}</div></div>`;
   h += `<div class="card"><b>Gráficos</b><div class="ch">${opt('q', 'alta', 'Alta resolução')}${opt('q', 'media', 'Desempenho')}</div><b>Modo de controle</b><div class="ch">${opt('mode', 'joy', 'Joystick')}${opt('mode', 'touch', 'Toque na tela')}</div><p class="mut">${SET.mode === 'touch' ? 'Toque no chão para ir até lá; toque duas vezes para correr ou galopar. Os botões de ação continuam na tela.' : 'Joystick virtual (ou WASD/setas no teclado). Segure “Correr” para correr ou galopar.'}</p><b>Tamanho dos botões</b><div class="ch">${opt('ctl', 1, 'Normal')}${opt('ctl', 1.2, 'Grandes')}</div><b>Orientação da tela</b><div class="ch">${opt('ori', 'livre', 'Livre')}${opt('ori', 'retrato', 'Retrato')}${opt('ori', 'paisagem', 'Paisagem')}</div><p class="mut">Travar a orientação só funciona em tela cheia no celular.</p><div class="row">${btn('Tela cheia', 'fs')}</div><b>Cenas dos leilões</b><div class="ch">${opt('aucCs', 'on', 'Mostrar')}${opt('aucCs', 'off', 'Pular sempre')}</div><b>Vibração</b><div class="ch">${opt('vib', true, 'Ligada')}${opt('vib', false, 'Desligada')}</div><b>Zoom</b><p class="mut">Use dois dedos na tela (pinça) ou a rodinha do mouse.</p><div class="row">${btn('Zoom padrão', 'zoomReset')}</div></div>`;
   if (inGame) h += `<div class="card"><div class="row">${ibtn('disk', 'Salvar', 'saveNow')}${ibtn('play', 'Carregar', 'loadNow')}${ibtn('scroll', 'Ajuda', 'help')}${ibtn('book', 'Créditos', 'credits')}${ibtn('farm', 'Tela inicial', 'toTitle')}</div><p class="mut" id="saveInfo">Partida ${SAVE.slot}. Salvamento automático às 6h, ao dormir e a cada 60 s, com cópia de segurança.</p></div>`;
@@ -6305,7 +6384,7 @@ $('ap').addEventListener('click', e => { const b = e.target.closest('[data-a]');
 A.shClose = () => closeSheet();
 A.saNo = () => { SH.conf = null; renderSheet(); };
 A.saTo = k => { const a = SH.a; SH.sub = null; renderSheet(); escort(a, k); };
-A.saSell = () => { const a = SH.a; const p = a.area === 'curral' ? frigPrice(a) : Math.round(frigPrice(a) - 80); soldRecord(a, p, 'frigorífico'); if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; unhitchId(a.id); if (P.mnt === a.id) return; S.animals = S.animals.filter(x => x !== a); S.stats.sold++; receive(p, 'Venda de ' + a.n + (a.area === 'curral' ? '' : ' (com frete)')); toast('💰 ' + a.n + ' vendido(a) por ' + fmt(p)); closeSheet(); };
+A.saSell = () => { const a = SH.a; const p = a.area === 'curral' ? frigPrice(a) : Math.round(frigPrice(a) - 80); soldRecord(a, p, 'frigorífico'); const CC = cenasOn() && a.id !== P.mnt ? Object.assign({}, a, { own: 'player', _cs: 1, _sx: a.x, _sy: a.y, _px: undefined, _py: undefined, _hid: false }) : null; if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; unhitchId(a.id); if (P.mnt === a.id) return; S.animals = S.animals.filter(x => x !== a); S.stats.sold++; receive(p, 'Venda de ' + a.n + (a.area === 'curral' ? '' : ' (com frete)')); toast('💰 ' + a.n + ' vendido(a) por ' + fmt(p)); closeSheet(); if (CC) csTruckOut([CC], p, esc(a.n) + ' vendido(a).'); };
 function nearPost(a) { const t = a || P; let b = -1, bd = 46; POSTS.forEach((p, i) => { const d = hyp(p.x - t.x, p.y - t.y); if (d < bd) { bd = d; b = i; } }); return b; }
 // executa a ação: caminha até o animal e toca a animação correspondente
 function doAnimal(a, k, dur, fn, opt) {
@@ -6343,14 +6422,14 @@ A.sa = k => {
     case 'travel': return doAnimal(a, 'travel', 1.8, () => { if (!useInv('alforje')) return; a.travel = true; a._stam = 100; hist(a, 'Preparado para viagem'); toast('🎒 ' + a.n + ' pronto para viagem: fôlego rende mais.'); });
     case 'hitch': { if (S.veh) useVeh(S.veh.carroca); if (hyp(S.cart.x - a.x, S.cart.y - a.y) > 160) return say('Leve ' + a.n + ' pelo cabresto até a carroça (perto do galpão).', 3000); P.lead = a.id; a._st = 'led'; return approach(S.cart, 26, () => A.hitch(a.id)); }
     case 'hitchOx': { useVeh(S.veh.boi); if (hyp(S.cart.x - a.x, S.cart.y - a.y) > 160) return say('Leve ' + a.n + ' pelo cabresto até o carro de boi.', 3000); P.lead = a.id; a._st = 'led'; return approach(S.cart, 30, () => A.hitch(a.id)); }
-    case 'tame': return doAnimal(a, 'train', 3, () => { P.en = Math.max(0, P.en - 6); if (a.tameD === S.day) return toast('Já treinou na canga hoje. Amanhã tem mais.'); a.tameD = S.day; const B = CATTLE[a.br] || {}, tp = a.temp === 'dócil' || a.temp === 'calmo' ? 1.25 : a.temp === 'arisco' || a.temp === 'nervoso' ? 0.7 : 1; const g = Math.round(20 * (B.carro || 1) * tp * (0.85 + (a.aff || 0) / 300)); a.carro = Math.min(100, (a.carro || 0) + g); bond(a, 4); a.cond = cl(a.cond + 3, 0, 100); if (a.carro >= 100) { if (!a.skills.includes('Boi de carro')) a.skills.push('Boi de carro'); hist(a, 'Amansado para o carro de boi'); toast('🐂 ' + a.n + ' agora é boi de carro!'); AU.jingle(); } else { hist(a, 'Treino de canga (' + a.carro + '%)'); toast('🐂 Treino de canga: ' + a.n + ' ' + a.carro + '%'); } AU.moo(a.x, a.y, 0.8); });
+    case 'tame': return doAnimal(a, 'tame', 3, () => { P.en = Math.max(0, P.en - 6); if (a.tameD === S.day) return toast('Já treinou na canga hoje. Amanhã tem mais.'); a.tameD = S.day; const B = CATTLE[a.br] || {}, tp = a.temp === 'dócil' || a.temp === 'calmo' ? 1.25 : a.temp === 'arisco' || a.temp === 'nervoso' ? 0.7 : 1; const g = Math.round(20 * (B.carro || 1) * tp * (0.85 + (a.aff || 0) / 300)); a.carro = Math.min(100, (a.carro || 0) + g); bond(a, 4); a.cond = cl(a.cond + 3, 0, 100); if (a.carro >= 100) { if (!a.skills.includes('Boi de carro')) a.skills.push('Boi de carro'); hist(a, 'Amansado para o carro de boi'); toast('🐂 ' + a.n + ' agora é boi de carro!'); AU.jingle(); } else { hist(a, 'Treino de canga (' + a.carro + '%)'); toast('🐂 Treino de canga: ' + a.n + ' ' + a.carro + '%'); } AU.moo(a.x, a.y, 0.8); });
     case 'custom': SH.sub = SH.sub === 'custom' ? null : 'custom'; return renderSheet();
     case 'manejo': SH.sub = SH.sub === 'manejo' ? null : 'manejo'; return renderSheet();
     case 'tie': { const i = nearPost(a); if (i < 0) return; return doAnimal(a, 'reach', 0.5, () => { a._st = 'tied'; a.tie = i; if (P.lead === a.id) P.lead = null; if (lasso.t === a) lasso.t = null; say(a.n + ' amarrado(a) no mourão.', 1800); }, { zoom: false }); }
     case 'untie': return doAnimal(a, 'reach', 0.4, () => { a._st = null; a.tie = null; }, { zoom: false });
-    case 'cure': if (a.sp === 'boi') { const it = dzCure(a); if (!it) return say(dzOf(a).n + ' não tem cura. Vacine o resto do rebanho.'); return doAnimal(a, 'vacc', 1.4, () => { if (!useInv(it)) return; cureDz(a); hist(a, 'Tratado: ' + dzOf(a).n); toast('💊 ' + a.n + ' está se recuperando.'); AU.chime(); }); }
-      return doAnimal(a, 'vacc', 1.4, () => { if (!useInv('remedio')) return; a.sick = 0; a.hp = cl(a.hp + 25, 0, 100); hist(a, 'Tratado com remédio'); toast('💊 ' + a.n + ' está se recuperando.'); AU.chime(); });
-    case 'vacc': return doAnimal(a, 'vacc', 1.2, () => { if (!useInv('vacina')) return; a.vacc = S.day + 28; hist(a, 'Vacinado'); toast('💉 ' + a.n + ' vacinado(a) por 28 dias.'); });
+    case 'cure': if (a.sp === 'boi') { const it = dzCure(a); if (!it) return say(dzOf(a).n + ' não tem cura. Vacine o resto do rebanho.'); return doAnimal(a, 'cure', 1.4, () => { if (!useInv(it)) return; cureDz(a); hist(a, 'Tratado: ' + dzOf(a).n); toast('💊 ' + a.n + ' está se recuperando.'); AU.chime(); }); }
+      return doAnimal(a, 'cure', 1.4, () => { if (!useInv('remedio')) return; a.sick = 0; a.hp = cl(a.hp + 25, 0, 100); hist(a, 'Tratado com remédio'); toast('💊 ' + a.n + ' está se recuperando.'); AU.chime(); });
+    case 'vacc': return doAnimal(a, 'inject', 1.3, () => { if (!useInv('vacina')) return; a.vacc = S.day + 28; hist(a, 'Vacinado'); toast('💉 ' + a.n + ' vacinado(a) por 28 dias.'); });
     case 'sell': SH.conf = 'sell'; return renderSheet();
   }
 };
@@ -6429,27 +6508,27 @@ A.mnj = k => {
   const a = SH.a; if (!a) return;
   const done = (msg, snd) => { toast(msg); if (snd !== false) AU.moo(a.x, a.y, a.age < 12 ? 1.5 : 1); };
   switch (k) {
-    case 'parto': return doAnimal(a, 'exam', 2.6, () => { if (a.labor) finishLabor(a, true); P.en = Math.max(0, P.en - 8); });
-    case 'mama': return doAnimal(a, 'feed', 1.8, () => { if (!useInv('leite', 2)) return; a.mamD = S.day; a.hp = cl(a.hp + 15, 0, 100); a.wt = (a.wt || 30) + 1.5; bond(a, 8); heart(a.x, a.y - 16); done('🍼 ' + a.n + ' mamou na mamadeira.'); });
-    case 'iodo': return doAnimal(a, 'vacc', 1.0, () => { if (!useInv('iodo')) return; a.umb = 0; hist(a, 'Umbigo curado com iodo'); done('Umbigo de ' + a.n + ' curado.', false); });
-    case 'ordenha': return doAnimal(a, 'feed', 2.4, () => { const B = CATTLE[a.br] || {}, h = hour(), L = Math.max(1, Math.round((B.milk || 0.4) * 6 * (a.hap / 100 + 0.2) * (h >= 4 && h <= 10 ? 1 : 0.6))); if (!addInv('leite', L)) return; a.milkD = S.day; P.en = Math.max(0, P.en - 3); if ((S.dirt[a.area] || 0) > 60 && Math.random() < 0.12) sicken(a, 'mastite'); hist(a, 'Ordenhada à mão: ' + L + ' L'); done('🥛 +' + L + ' L de leite de ' + a.n + '.'); });
+    case 'parto': if (cenasOn()) return doAnimal(a, 'calve', 1.0, () => { if (!a.labor) return; P.en = Math.max(0, P.en - 8); closeSheet(); csParto(a); }); return doAnimal(a, 'calve', 2.6, () => { if (a.labor) finishLabor(a, true); P.en = Math.max(0, P.en - 8); });
+    case 'mama': return doAnimal(a, 'bottle', 2.2, () => { if (!useInv('leite', 2)) return; a.mamD = S.day; a.hp = cl(a.hp + 15, 0, 100); a.wt = (a.wt || 30) + 1.5; bond(a, 8); heart(a.x, a.y - 16); done('🍼 ' + a.n + ' mamou na mamadeira.'); });
+    case 'iodo': return doAnimal(a, 'iodo', 1.4, () => { if (!useInv('iodo')) return; a.umb = 0; hist(a, 'Umbigo curado com iodo'); done('Umbigo de ' + a.n + ' curado.', false); });
+    case 'ordenha': return doAnimal(a, 'milk', 3.0, () => { const B = CATTLE[a.br] || {}, h = hour(), L = Math.max(1, Math.round((B.milk || 0.4) * 6 * (a.hap / 100 + 0.2) * (h >= 4 && h <= 10 ? 1 : 0.6))); if (!addInv('leite', L)) return; a.milkD = S.day; P.en = Math.max(0, P.en - 3); if ((S.dirt[a.area] || 0) > 60 && Math.random() < 0.12) sicken(a, 'mastite'); hist(a, 'Ordenhada à mão: ' + L + ' L'); done('🥛 +' + L + ' L de leite de ' + a.n + '.'); });
     case 'ia': SH.sub = 'ia'; return renderSheet();
-    case 'pouron': return doAnimal(a, 'vacc', 1.0, () => { if (!useInv('pouron')) return; a.carr = 0; a.mosca = 0; a.carrP = S.day + 10; hist(a, 'Pour-on carrapaticida'); done('Pour-on em ' + a.n + ': sem carrapato por 10 dias.', false); });
-    case 'verm': return doAnimal(a, 'vacc', 1.0, () => { if (!useInv('vermifugo')) return; a.verme = 0; a.vermP = S.day + 28; if (a.dz === 'verminose') cureDz(a); hist(a, 'Vermifugado'); done(a.n + ' vermifugado(a).'); });
-    case 'raiva': return doAnimal(a, 'vacc', 1.0, () => { if (!useInv('vacRaiva')) return; a.vRaiva = S.day + 14; hist(a, 'Vacina antirrábica'); done('💉 ' + a.n + ' vacinado(a) contra a raiva por 1 ano.'); });
-    case 'bruce': if (!pay(25, 'Vacina de brucelose (veterinária)')) return; return doAnimal(a, 'vacc', 1.2, () => { a.bruce = S.day; addFr && addFr('joana', 2); hist(a, 'Vacinada contra brucelose (Joana)'); done('💉 Joana vacinou ' + a.n + ' contra brucelose e emitiu o atestado.'); });
-    case 'brinco': return doAnimal(a, 'vacc', 1.0, () => { if (!useInv('brinco')) return; S.brincoN = (S.brincoN || 0) + 1; a.brinco = S.brincoN; hist(a, 'Brinco nº ' + a.brinco); done(a.n + ' recebeu o brinco nº ' + String(a.brinco).padStart(3, '0') + '.'); });
-    case 'marca': return doAnimal(a, 'vacc', 2.0, () => { a.marca = brandOf(); wound(a); hist(a, 'Marcado a ferro: ' + a.marca); dust(a.x, a.y - 10, 2, '#888888'); done('🔥 ' + a.n + ' marcado(a) com o ferro ' + a.marca + '.'); });
-    case 'cast': return doAnimal(a, 'vacc', 2.0, () => { a.cast = 1; a.repro = 0; wound(a); if (a.traits) a.traits = a.traits.filter(t => t !== 'dominante' && t !== 'territorial'); hist(a, 'Castrado'); done(a.n + ' castrado: vai ser boi manso e de carne melhor.'); });
+    case 'pouron': return doAnimal(a, 'pouron', 1.8, () => { if (!useInv('pouron')) return; a.carr = 0; a.mosca = 0; a.carrP = S.day + 10; hist(a, 'Pour-on carrapaticida'); done('Pour-on em ' + a.n + ': sem carrapato por 10 dias.', false); });
+    case 'verm': return doAnimal(a, 'inject', 1.2, () => { if (!useInv('vermifugo')) return; a.verme = 0; a.vermP = S.day + 28; if (a.dz === 'verminose') cureDz(a); hist(a, 'Vermifugado'); done(a.n + ' vermifugado(a).'); }, { it: 'vermifugo' });
+    case 'raiva': return doAnimal(a, 'inject', 1.2, () => { if (!useInv('vacRaiva')) return; a.vRaiva = S.day + 14; hist(a, 'Vacina antirrábica'); done('💉 ' + a.n + ' vacinado(a) contra a raiva por 1 ano.'); }, { it: 'vacRaiva' });
+    case 'bruce': if (!pay(25, 'Vacina de brucelose (veterinária)')) return; return doAnimal(a, 'inject', 1.4, () => { a.bruce = S.day; addFr && addFr('joana', 2); hist(a, 'Vacinada contra brucelose (Joana)'); done('💉 Joana vacinou ' + a.n + ' contra brucelose e emitiu o atestado.'); }, { it: 'bruce' });
+    case 'brinco': return doAnimal(a, 'tag', 1.3, () => { if (!useInv('brinco')) return; S.brincoN = (S.brincoN || 0) + 1; a.brinco = S.brincoN; hist(a, 'Brinco nº ' + a.brinco); done(a.n + ' recebeu o brinco nº ' + String(a.brinco).padStart(3, '0') + '.'); });
+    case 'marca': return doAnimal(a, 'brand', 2.2, () => { a.marca = brandOf(); wound(a); hist(a, 'Marcado a ferro: ' + a.marca); dust(a.x, a.y - 10, 2, '#888888'); done('🔥 ' + a.n + ' marcado(a) com o ferro ' + a.marca + '.'); });
+    case 'cast': return doAnimal(a, 'castra', 2.0, () => { a.cast = 1; a.repro = 0; wound(a); if (a.traits) a.traits = a.traits.filter(t => t !== 'dominante' && t !== 'territorial'); hist(a, 'Castrado'); done(a.n + ' castrado: vai ser boi manso e de carne melhor.'); });
     case 'repro': a.repro = !a.repro; toast(a.repro ? a.n + ' separado como touro reprodutor.' : a.n + ' voltou a ser animal comum.'); return renderSheet();
-    case 'desc': return doAnimal(a, 'vacc', 1.6, () => { a.mocho = 1; wound(a); hist(a, 'Descornado'); done(a.n + ' descornado: não vai machucar os outros.'); });
-    case 'desm': return doAnimal(a, 'reach', 0.8, () => { a.desm = 1; a.desmD = S.day; const m = byId(a.maeId); if (m) { m.lact = Math.min(m.lact, 1); m.cond = cl(m.cond + 10, 0, 100); } hist(a, 'Desmamado'); done(a.n + ' desmamado. Ele vai berrar pela mãe uns dias; leve para outro pasto.'); });
-    case 'spray': return doAnimal(a, 'vacc', 0.8, () => { if (!useInv('mataBicheira')) return; a.woundP = S.day; done('Ferida de ' + a.n + ' protegida contra a mosca.', false); });
+    case 'desc': return doAnimal(a, 'dehorn', 1.8, () => { a.mocho = 1; wound(a); hist(a, 'Descornado'); done(a.n + ' descornado: não vai machucar os outros.'); });
+    case 'desm': return doAnimal(a, 'wean', 1.6, () => { a.desm = 1; a.desmD = S.day; const m = byId(a.maeId); if (m) { m.lact = Math.min(m.lact, 1); m.cond = cl(m.cond + 10, 0, 100); } hist(a, 'Desmamado'); done(a.n + ' desmamado. Ele vai berrar pela mãe uns dias; leve para outro pasto.'); });
+    case 'spray': return doAnimal(a, 'spray', 1.4, () => { if (!useInv('mataBicheira')) return; a.woundP = S.day; done('Ferida de ' + a.n + ' protegida contra a mosca.', false); });
   }
 };
 function iaHTML(a) { const L = Object.keys(SEMEN).filter(k => (S.semen || {})[k] > 0); return `<div class="card"><b>Inseminar ${esc(a.n)}</b><p class="mut">Escolha o touro (dose de sêmen do botijão). Chance de emprenhar ≈ ${Math.round(iaChance(a) * 100)}%.</p><div class="row">${L.map(k => btn(SEMEN[k][0] + ' (' + S.semen[k] + ')', 'iaDo', k)).join('') || '<span class="mut">Sem sêmen. Compre na Casa do Agro › Genética.</span>'}</div></div>`; }
 function iaChance(a) { return cl(0.55 * (a.hap / 80) * (ecc(a) >= 3 ? 1 : ecc(a) >= 2.5 ? 0.8 : 0.5) * (1 + skill('pec') * 0.04), 0.1, 0.8); }
-A.iaDo = k => { const a = SH.a; if (!a || !(S.semen[k] > 0)) return; SH.sub = null; doAnimal(a, 'vacc', 2.2, () => { S.semen[k]--; if (a.cio === S.day && Math.random() < iaChance(a)) { a.preg = 7; a._pai = null; a._paiN = 'Touro ' + SEMEN[k][0] + ' (IA)'; a._paiSp = 'boi'; a._paiBr = k; a._paiGen = rint(78, 92); a._ia = 1; } a.cio = 0; hist(a, 'Inseminada com ' + SEMEN[k][0]); toast('💉 ' + a.n + ' inseminada com ' + SEMEN[k][0] + '. Faça o toque em alguns dias para confirmar.'); }); };
+A.iaDo = k => { const a = SH.a; if (!a || !(S.semen[k] > 0)) return; SH.sub = null; doAnimal(a, 'insem', 2.4, () => { S.semen[k]--; if (a.cio === S.day && Math.random() < iaChance(a)) { a.preg = 7; a._pai = null; a._paiN = 'Touro ' + SEMEN[k][0] + ' (IA)'; a._paiSp = 'boi'; a._paiBr = k; a._paiGen = rint(78, 92); a._ia = 1; } a.cio = 0; hist(a, 'Inseminada com ' + SEMEN[k][0]); toast('💉 ' + a.n + ' inseminada com ' + SEMEN[k][0] + '. Faça o toque em alguns dias para confirmar.'); }); };
 /* ---------- brete: manejo do lote inteiro do curral ---------- */
 function breteLot() { return myAnimals('boi').filter(a => a.area === 'curral' && !isHitched(a.id)); }
 function openBrete() {
@@ -6481,8 +6560,8 @@ function openBrete() {
 A.brtPeso = () => { closeModal(); openBalanca(); };
 A.brtCad = () => { closeModal(); openMenu('gad'); };
 A.brt = k => {
-  const L = breteLot(), tr = built('tronco'), eK = tr ? 0.35 : 1.1; let n = 0, skip = 0;
-  const use = (it, a, fn) => { if (it && !useInv(it)) { skip++; return; } fn(a); n++; };
+  const L = breteLot(), tr = built('tronco'), eK = tr ? 0.35 : 1.1; let n = 0, skip = 0; const done = [];
+  const use = (it, a, fn) => { if (it && !useInv(it)) { skip++; return; } fn(a); n++; done.push(a); };
   for (const a of L) {
     switch (k) {
       case 'pouron': if ((a.carr || 0) > 10 || (a.mosca || 0) > 10) use('pouron', a, b => { b.carr = 0; b.mosca = 0; b.carrP = S.day + 10; }); break;
@@ -6499,7 +6578,7 @@ A.brt = k => {
       case 'cure': if (a.sick && dzCure(a)) use(dzCure(a), a, b => cureDz(b)); break;
     }
   }
-  if (n) { P.en = Math.max(0, P.en - n * eK); S.min = Math.min(23 * 60, S.min + n * (tr ? 1 : 3)); if (!tr) L.forEach(a => { a.hap = cl(a.hap - 4, 5, 100); }); const names = { pouron: 'pour-on', verm: 'vermífugo', vac: 'vacina polivalente', raiva: 'vacina antirrábica', bruce: 'brucelose', brinco: 'brinco', marca: 'marca a ferro', iodo: 'iodo no umbigo', cast: 'castração', desm: 'desmama', spray: 'mata-bicheira', cure: 'tratamento' }; L.forEach(a => hist(a, 'Manejo no brete: ' + names[k])); AU.moo(P.x, P.y, 0.9); toast('🐂 Brete: ' + names[k] + ' em ' + n + ' animal(is).' + (skip ? ' Faltou insumo para ' + skip + '.' : '')); }
+  if (n) { P.en = Math.max(0, P.en - n * eK); S.min = Math.min(23 * 60, S.min + n * (tr ? 1 : 3)); if (!tr) L.forEach(a => { a.hap = cl(a.hap - 4, 5, 100); }); const names = { pouron: 'pour-on', verm: 'vermífugo', vac: 'vacina polivalente', raiva: 'vacina antirrábica', bruce: 'brucelose', brinco: 'brinco', marca: 'marca a ferro', iodo: 'iodo no umbigo', cast: 'castração', desm: 'desmama', spray: 'mata-bicheira', cure: 'tratamento' }; L.forEach(a => hist(a, 'Manejo no brete: ' + names[k])); AU.moo(P.x, P.y, 0.9); toast('🐂 Brete: ' + names[k] + ' em ' + n + ' animal(is).' + (skip ? ' Faltou insumo para ' + skip + '.' : '')); if (cenasOn()) { closeModal(); return csBrete(k, names[k], done); } }
   else if (skip) toast('Faltou insumo: compre na Casa do Agro.');
   renderModal();
 };
@@ -6626,7 +6705,7 @@ function oxTab() {
   h += '<div class="card"><b>Amansar seus próprios bois</b><p class="mut">Qualquer boi macho adulto pode aprender a canga: abra a ficha dele e use <b>Amansar p/ carro</b> uma vez por dia. Caracu, Franqueiro, Crioulo Lageano, Mocho Nacional e Tucura aprendem mais rápido; bois dóceis e com vínculo também.</p></div>';
   return h;
 }
-A.buyOxCart = () => { if (S.veh.boi.own) return; if (!pay(OXCART_P * priceMul(), 'Carro de boi (carpintaria)')) return; Object.assign(S.veh.boi, newOxCart(), { own: true }); toast('🐂 O carro de boi chegou à fazenda!'); AU.jingle(); renderModal(); };
+A.buyOxCart = () => { if (S.veh.boi.own) return; if (!pay(OXCART_P * priceMul(), 'Carro de boi (carpintaria)')) return; Object.assign(S.veh.boi, newOxCart(), { own: true }); toast('🐂 O carro de boi chegou à fazenda!'); AU.jingle(); if (cenasOn()) { closeModal(); return csOxCart(); } renderModal(); };
 A.buyOxPair = v => { const pr = S.oxStock.list[+v]; if (!pr) return; const cost = (animalValue(pr[0]) + animalValue(pr[1])) * 1.05 * priceMul(); if (!pay(cost, 'Junta de bois ' + pr[0].n + ' e ' + pr[1].n)) return; for (const a of pr) { a.own = 'delivery'; a.x = a.y = -999; markBought(a, cost / 2); S.animals.push(a); S.delivery.push({ id: a.id, day: S.day + 1, to: 'receb' }); } S.oxStock.list.splice(+v, 1); toast('🐂 Junta comprada! Chega amanhã cedo no Recebimento.'); renderModal(); };
 function openAgro() { showModal('🌿 Casa do Agro', [['ins', 'Insumos'], ['sel', 'Selaria'], ['ani', 'Feira de animais'], ['boi', 'Carro de boi'], ['vet', 'Veterinária'], ['gen', 'Genética']], 'ins', t => {
   let h = keeperBanner('agro'); if (!shopCart()) h += '<p class="mut">💡 Estacione a carroça aqui perto para levar sacos pesados, ou peça entrega.</p>';
@@ -7412,6 +7491,105 @@ function truckSpr(col) { return cached('truck|' + col, 70, 40, g => { const p = 
   [[26, 10, '#e8e0d0'], [37, 9, '#9a4a24'], [48, 11, '#c9984e'], [57, 9, '#eae4d8']].forEach(([x, y, c]) => { p(x, y, 6, 4, c); p(x - 1, y - 2, 1, 2, '#e8dcc0'); p(x + 6, y - 2, 1, 2, '#e8dcc0'); p(x + 2, y + 2, 2, 1, '#2a1a10'); });
   for (const wx of [10, 30, 56]) { p(wx - 4, 28, 9, 9, '#1a1a1e'); p(wx - 2, 30, 5, 5, '#5a5a62'); p(wx - 1, 31, 3, 3, '#9a9aa2'); } }); }
 function drawCSX(add) { for (const t of CSX) add(t.y, () => { const c = truckSpr(t.col); X.save(); if (t.f > 0) { X.translate(Math.round(t.x), 0); X.scale(-1, 1); X.drawImage(c, -35, Math.round(t.y) - 38); } else X.drawImage(c, Math.round(t.x) - 35, Math.round(t.y) - 38); X.restore(); if (t.mv && Math.random() < 0.3) dust(t.x + 30 * (t.f > 0 ? -1 : 1), t.y, 1); }, t.x, { w: 170, h: 110 }); }
+/* ============ CENAS CURTAS DA LIDA: caminhão boiadeiro, parto, brete, ladrão, fujão, carro de boi ============ */
+const CSA = []; // figurantes animais das cenas (cópias desenhadas com o rig)
+const cenasOn = () => SET.cenas !== false;
+function csClone(a) { const c = Object.assign({}, a); c.own = 'player'; c._hid = false; c._cs = 1; c._dist = c._dist || 0; c._px = undefined; c._py = undefined; CSA.push(c); return c; }
+function csMove(c, x, y, dt) { const dx = x - c.x, dy = y - c.y, d = hyp(dx, dy); c._mv = dt > 0 ? d / dt : 0; if (d > 0.05) { c._hx = dx / d; c._hy = dy / d; c._dist = (c._dist || 0) + d; if (Math.abs(dx) > 0.2) c.f = dx > 0 ? 1 : -1; c._pose = 'walk'; } else { c._pose = 'idle'; c._mv = 0; } c.x = x; c.y = y; }
+function csWalk(c, pts, u, dt) { const [x, y] = pathLerp(pts, cl(u, 0, 1)); csMove(c, x, y, dt); }
+function csClear() { CSA.length = 0; CSX.length = 0; CINE.actors.length = 0; }
+const T2 = (x, y) => [x * TS, y * TS];
+const RAMP = () => FARM.embarque.p, ROADY = 44.7;
+// caminhão: chega pela estrada (leste) e para com a traseira na rampa do embarcadouro
+function truckAt(t, x) { t.x = x; }
+/* ---------- entrega da feira/leilão: o caminhão chega e o gado desce para o Recebimento ---------- */
+function csTruckIn(ids) {
+  const L = ids.map(byId).filter(Boolean); if (!L.length) return;
+  const [rx] = RAMP(), stopX = rx * TS - 26, y = ROADY * TS, t = { x: stopX + 360, y, f: -1, col: pick(['#c83a2a', '#2a5a9a', '#e0b030', '#3a7a3a']), mv: 1 };
+  const finals = L.map(a => [a.x, a.y]); L.forEach(a => { a._hid = true; });
+  const C = L.slice(0, 8).map(a => { const c = csClone(a); c.x = stopX + 26; c.y = y - 6; return c; });
+  const steps = [{ fade: 0, cam: [rx - 2, 42.5], snap: 1, z: 1.6, txt: '🚚 O caminhão boiadeiro chegou com ' + (L.length === 1 ? L[0].n : L.length + ' animais') + '!', d: 2.4, fn: () => { CSX.push(t); }, upd: (dt, u) => { t.x = lerp(stopX + 360, stopX, Math.min(1, u * 1.15)); t.mv = u < 0.87 ? 1 : 0; if (Math.random() < dt * 3) AU.cartRattle(); } }];
+  steps.push({ txt: 'O motorista abaixa a rampa e o gado desce para o curral de Recebimento.', d: 1.2 + C.length * 0.6, upd: (dt, u) => { C.forEach((c, i) => { const s0 = i / (C.length + 1), k = cl((u - s0) / 0.45, 0, 1); const gate = T2(54.5, 42.6), inside = finals[i]; csWalk(c, [[stopX + 26, y - 6], [gate[0] + 10, y - 14], gate, inside], k, dt); if (k > 0 && k < 1 && Math.random() < dt * 0.8 && c.sp === 'boi') AU.moo(c.x, c.y, c.age < 12 ? 1.5 : 1); }); } });
+  steps.push({ txt: L.length > C.length ? '…e mais ' + (L.length - C.length) + '. Todos no Recebimento.' : 'Entregue! Deixe os novos uns dias na quarentena antes de juntar com o rebanho.', d: 2.2, upd: (dt, u) => { t.x = stopX - u * 380; t.mv = 1; C.forEach(c => { c._pose = 'idle'; c._mv = 0; }); } });
+  steps.push({ clr: 1, d: 0.1 });
+  cutscene(steps, () => { L.forEach(a => { a._hid = false; }); csClear(); });
+}
+/* ---------- venda: o caminhão vem buscar no embarcadouro ---------- */
+function csTruckOut(clones, total, label) {
+  const [rx] = RAMP(), stopX = rx * TS - 26, y = ROADY * TS, t = { x: stopX + 360, y, f: -1, col: '#7a7a82', mv: 1 };
+  const C = clones.slice(0, 8); C.forEach(c => CSA.push(c));
+  const gate = T2(44.5, 42.7);
+  cutscene([
+    { fade: 0, cam: [rx - 5, 42.5], snap: 1, z: 1.5, txt: '🚛 O caminhão do frigorífico encosta no embarcadouro.', d: 2.2, fn: () => CSX.push(t), upd: (dt, u) => { t.x = lerp(stopX + 360, stopX, Math.min(1, u * 1.15)); t.mv = u < 0.87 ? 1 : 0; } },
+    { txt: 'O gado sobe a rampa…', d: 1.2 + C.length * 0.55, upd: (dt, u) => { C.forEach((c, i) => { const s0 = i / (C.length + 1), k = cl((u - s0) / 0.5, 0, 1); csWalk(c, [[c._sx, c._sy], gate, [gate[0], y - 12], [stopX + 22, y - 12], [stopX + 6, y - 6]], k, dt); c._csHide = k >= 1; }); } },
+    { txt: label + ' Pagamento: <b>' + fmt(total) + '</b> na conta.', d: 2.4, fn: () => { C.forEach(c => { c._csHide = 1; }); AU.coin && AU.coin(); }, upd: (dt, u) => { t.x = stopX - u * 380; t.mv = 1; } },
+    { clr: 1, d: 0.1 }
+  ], () => csClear());
+}
+/* ---------- parto difícil assistido ---------- */
+function csParto(m) {
+  const open = (x0, y0) => !PROPS.some(q => TREES.has(q.t) && hyp(q.x - x0, q.y - y0) < 56) && !hitAt(x0, y0, 6) && !hitAt(x0 - 16, y0 + 3, 4);
+  if (!open(m.x, m.y)) { for (let i = 0; i < 40; i++) { const q = m.area && AREAS[m.area] ? randIn(m.area) : [m.x + rnd(-80, 80), m.y + rnd(-60, 60)]; if (open(q[0], q[1])) { m.x = q[0]; m.y = q[1]; m._px = m.x; m._py = m.y; break; } } }
+  const s = m.f || 1, x = m.x, y = m.y;
+  const pAct = () => { P._act = { k: 'calving', t: 0, dur: 99, a: m, opt: {} }; };
+  cutscene([
+    { fade: 0, cam: [x / TS, y / TS - 0.6], snap: 0, z: 2.3, pitch: 40, dof: 0.5, txt: esc(m.n) + ' está deitada, num parto difícil. O bezerro está atravessado…', d: 2.8, fn: () => { P.mnt = null; P.cart = false; P.x = x - s * 15; P.y = y + 3; P.dir = s > 0 ? 3 : 2; pAct(); m._fx = { pose: 'lie', t0: drawT, until: drawT + 60 }; AU.moo(x, y, 1.15); } },
+    { txt: 'Com calma, você ajeita o bezerro e puxa junto com a força da vaca.', d: 2.8, upd: (dt) => { if (Math.random() < dt * 1.4) AU.moo(x, y, 1.2); if (Math.random() < dt * 4) dust(P.x, P.y, 1); } },
+    { txt: 'Mais uma força…', d: 1.6, fn: () => { m._fx = { pose: 'scared', t0: drawT, until: drawT + 1.4 }; AU.moo(x, y, 1.3); } },
+    { txt: '', d: 0.2, fn: () => { m._fx = { pose: 'lie', t0: drawT, until: drawT + 60 }; finishLabor(m, true); const c = S.animals.filter(b => b.maeId === m.id).pop(); if (c) { c.x = x - s * 12; c.y = y + 5; c._fx = { pose: 'lie', t0: drawT, until: drawT + 4 }; CS._calf = c; } P._act = null; for (let i = 0; i < 8; i++) heart(x - s * 12 + rnd(-6, 6), y - 10); AU.chime(); } },
+    { txt: () => '', d: 0 },
+    { txt: 'Nasceu! A mãe se levanta e lambe o bezerro, que já tenta ficar de pé.', d: 3.2, fn: () => { m._fx = { pose: 'sniff', t0: drawT, until: drawT + 3.4 }; } },
+    { clr: 1, d: 0.1 }
+  ].filter(st => typeof st.txt !== 'function'), () => { P._act = null; m._fx = null; if (CS._calf) CS._calf._fx = null; CS._calf = null; csClear(); });
+}
+/* ---------- brete: o lote passa pelo tronco, um por um ---------- */
+const BRETE_FX = { pouron: 'pouron', verm: 'inject', vac: 'inject', raiva: 'inject', bruce: 'inject', brinco: 'tag', marca: 'brand', iodo: 'iodo', cast: 'castra', desm: 'wean', spray: 'spray', cure: 'cure' };
+const BRETE_IT = { verm: 'vermifugo', vac: 'vacina', raiva: 'vacRaiva', bruce: 'bruce', cure: 'remedio' };
+function csBrete(k, name, L) {
+  const [bx, by] = fpx('balanca'), inP = [bx - 3.2 * TS, by - 0.4 * TS], st = [bx - 0.2 * TS, by + 0.2 * TS], outP = [bx - 3.2 * TS, by + 2.2 * TS];
+  const show = L.slice(0, 5); L.forEach(a => { a._hid = true; }); const C = show.map(a => { const c = csClone(a); c.x = inP[0]; c.y = inP[1]; return c; });
+  const fk = BRETE_FX[k] || 'inject';
+  const steps = [{ fade: 0, cam: [bx / TS - 1, by / TS], snap: 1, z: 2.1, txt: '🐂 Brete: ' + name + ' em ' + L.length + ' animal(is).' + (built('tronco') ? ' O tronco segura firme.' : ' Sem tronco: é no laço e na força.'), d: 1.6, fn: () => { P.mnt = null; P.cart = false; P.x = bx + 16; P.y = by + 4; P.dir = 2; } }];
+  C.forEach((c, i) => steps.push({ txt: '🐂 ' + name + ': ' + esc(c.n) + ' (' + (i + 1) + '/' + L.length + ')', d: 1.5, fn: () => { P._act = { k: fk, t: 0, dur: 1, a: c, opt: { it: BRETE_IT[k] } }; }, upd: (dt, u) => {
+    if (u < 0.3) csWalk(c, [inP, st], u / 0.3, dt); else if (u < 0.7) { csMove(c, st[0], st[1], dt); c.f = 1; P._act.t = (u - 0.3) / 0.4; actFxUpd(P._act, dt); } else { P._act.t = 1; csWalk(c, [st, outP], (u - 0.7) / 0.3, dt); } } }));
+  if (L.length > C.length) steps.push({ txt: '…e mais ' + (L.length - C.length) + ' animais passam pelo brete.', d: 1.6, fn: () => { P._act = null; }, upd: (dt) => { if (Math.random() < dt * 2) AU.moo(bx, by, 0.9); } });
+  steps.push({ clr: 1, d: 0.1, fn: () => { P._act = null; } });
+  cutscene(steps, () => { P._act = null; L.forEach(a => { a._hid = false; }); csClear(); });
+}
+/* ---------- ladrão de gado na madrugada ---------- */
+function csTheft(p) {
+  const C = (p.c || []).map(o => { const c = csClone(o); c.x = o.x; c.y = o.y; c._sx = o.x; c._sy = o.y; return c; }); if (!C.length) return;
+  const cx = C[0].x, ty = ROADY * TS, t = { x: cx + 40, y: ty, f: -1, col: '#2a2a30', mv: 0 }, m0 = S.min;
+  cutscene([
+    { fade: 1, d: 0.6 },
+    { fade: 0, grade: 'noite', cam: [cx / TS, C[0].y / TS - 1.5], snap: 1, z: 1.5, txt: 'Madrugada… uma lanterna corta o escuro no pasto.', d: 2.4, fn: () => { S.min = 2 * 60 + 40; CSX.push(t); AU.nz(1.2, 0.03, 'lowpass', 300, 1); } },
+    { txt: 'Ladrões de gado tocam ' + p.names.join(' e ') + ' até um caminhão sem luz.', d: 3.2, upd: (dt, u) => { C.forEach((c, i) => csWalk(c, [[c._sx, c._sy], [t.x + 20 - i * 6, ty - 10]], u, dt)); if (Math.random() < dt * 0.7) AU.moo(cx, ty, 0.9); } },
+    { txt: 'O motor ronca e o caminhão some na estrada.', d: 2, fn: () => { C.forEach(c => { c._csHide = 1; }); }, upd: (dt, u) => { t.x = cx + 40 + u * 420; t.f = 1; t.mv = 1; } },
+    { fade: 1, d: 0.7 },
+    { fade: 0, grade: null, txt: 'De manhã, faltam ' + p.names.join(' e ') + '. Gado marcado a ferro o ladrão não leva!', d: 3.2, fn: () => { S.min = m0; CSX.length = 0; CSA.length = 0; } },
+    { clr: 1, d: 0.1 }
+  ], () => { S.min = m0; csClear(); });
+}
+/* ---------- gado fugido para a mata ---------- */
+function csEscape(a) {
+  if (!a || !S.animals.includes(a)) return;
+  cutscene([
+    { fade: 0, cam: [a.x / TS, a.y / TS - 0.5], snap: 1, z: 1.8, txt: '🔎 Na contagem da manhã faltou ' + esc(a.n) + '…', d: 2.4 },
+    { txt: 'O rastro vai para a Mata dos Fundos. Campeie e traga de volta no cabresto ou no laço.', d: 3, fn: () => { a._fx = { pose: 'walk', t0: drawT, until: drawT + 2.5 }; } },
+    { clr: 1, d: 0.1 }
+  ]);
+}
+/* ---------- o carpinteiro entrega o carro de boi ---------- */
+function csOxCart() {
+  const c = S.veh.boi; const ap = (typeof BUILDER_AP !== 'undefined' && BUILDER_AP[1]) || S.cf.ap;
+  const actor = { ap, x: c.x - 30, y: c.y + 10, dir: 3, fr: 0, pose: 'idle', alpha: 1 }; CINE.actors.push(actor);
+  cutscene([
+    { fade: 0, cam: [c.x / TS + 0.5, c.y / TS - 0.5], snap: 1, z: 1.9, pitch: 40, txt: '🐂 O carpinteiro chegou com o carro de boi novo, de madeira de lei!', d: 2.8, fn: () => { for (let i = 0; i < 16; i++) part(c.x + rnd(-30, 30), c.y - rnd(0, 26), 'spark', { vx: rnd(-14, 14), vy: rnd(-30, -10), m: 1, c: pick(['#ffe060', '#ffffff', '#ff9040']) }); AU.hammer && AU.hammer(c.x, c.y); }, upd: (dt) => { actor.fr = Math.floor(drawT * 2) % 2; actor.pose = 'hammer'; if (Math.random() < dt * 1.5) AU.hammer && AU.hammer(c.x, c.y); } },
+    { txt: 'Rodas maciças que cantam na estrada e lugar para 1.200 kg. Agora é pôr uma junta de bois na canga.', d: 3.4, upd: (dt, u) => { actor.pose = 'walk'; actor.dir = 2; actor.x -= dt * 26; actor.fr = Math.floor(drawT * 8) % 8; actor.alpha = 1 - u; } },
+    { clr: 1, d: 0.1 }
+  ], () => csClear());
+}
+function drawCSA(add) { for (const c of CSA) { if (c._csHide) continue; add(c.y, () => drawAnimal(c), c.x, { w: 110, h: 100 }); } }
 const AUC_SAY = {
   gado: ['Boa tarde, Itarantim! Hoje é dia de boi gordo e garrote bom!', 'Quem tem pasto, prepare o bolso: lote de primeira entrando!'],
   cavalos: ['Senhoras e senhores, olhem essa marcha! Hoje o leilão é de cavalo!', 'Cavalo bom não se pergunta o preço, se pergunta o nome!'],
@@ -8241,6 +8419,7 @@ function rigView(a) {
 }
 function gaitFor(a, spd) { const eqs = a.sp === 'cavalo' || a.sp === 'burro' || a.sp === 'jumento'; const wk = a.sp === 'boi' ? 15 : eqs ? 24 : a.sp === 'cao' || a.sp === 'fauna' ? 30 : 16; return spd > wk * 2.15 ? 'gallop' : spd > wk * 1.05 ? 'trot' : 'walk'; }
 function rigAnim(a, br, k) {
+  { const fp = a._fx ? fxPose(a) : null; if (fp) return fp; }
   const pose = a._pose || 'idle', t = drawT + a.id * 0.37, spd = a._mv || 0;
   if (pose === 'walk' || pose === 'run' || spd > 3) { const an = pose === 'run' && spd > 6 ? (spd > 34 ? 'gallop' : 'trot') : gaitFor(a, spd); const cyc = RIG.cycleLen(br, an, k) || 20; return [an, Math.floor(((a._dist || 0) / cyc % 1) * RIG.frames(an)) % RIG.frames(an)]; }
   if (pose === 'graze' || pose === 'eat') return ['eat', Math.floor(t * 2.2) % 4];
@@ -8323,7 +8502,7 @@ function drawPlayer() {
   if (P._turn > 0 && !A) dir = (P.dir >= 2) ? 0 : (P._pdir === 2 || P._pdir === 3 ? P._pdir : 3);
   if (A && A.k === 'mount' && pose === 'ride') return;
   if (typeof waterDepthAt === 'function' && !yo) { const wd = waterDepthAt(P.x, P.y); if (wd > 0.05) return drawPlayerWading(ap, x, y, dir, fr, pose, wd); }
-  shadowE(x, y, 6); drawSpr(charSpr(ap, dir, fr, pose), x - 12, y - 30 + yo, dir === 2);
+  shadowE(x, y, 6); drawSpr(charSpr(ap, dir, fr, pose), x - 12, y - 30 + yo, dir === 2); if (A && ACTFX[A.k]) drawActFX(A);
   if (A && (A.k === 'saddle' || A.k === 'unsaddle')) { const u = A.t / A.dur, sd = SADDLES.find(s => s.id === (S.saddleSel || 'nord')); const sx = lerp(x, A.a.x, A.k === 'saddle' ? u : 1 - u), sy = lerp(y - 18, A.a.y - 30, A.k === 'saddle' ? u : 1 - u) - Math.sin(u * Math.PI) * 6; X.fillStyle = sd.c; X.fillRect(Math.round(sx - 4), Math.round(sy), 8, 4); X.fillStyle = '#a83a2a'; X.fillRect(Math.round(sx - 5), Math.round(sy + 3), 10, 2); }
   if (typeof drawWeapon === 'function') drawWeapon(x, y, dir);
 }
@@ -8397,7 +8576,7 @@ function collectItems(tx0, tx1, ty0, ty1, vw, vh, se, vx0, vy0) {
       if (!l.done && hour() >= 7 && hour() < 17 && !isRain()) BUILDER_AP.forEach((ap, i) => { const bx = x0 + 20 + i * 70, by = y1 + 4; add(by, () => drawPerson(ap, bx, by, i ? 2 : 3, Math.floor(drawT * 3 + i) % 2, 'hammer'), bx); if (Math.random() < dt * 1.2) { AU.hammer(bx, by); dust(bx + (i ? -10 : 10), by - 6, 1, '#b8a888'); } }); } }
   TROUGHS.forEach((t, i) => { const x = t.x * TS, y = t.y * TS; if (!inV(x, y, 40)) return; add(y + 15, () => X.drawImage(troughSpr(t, S.tr[i] / trCap(i)), x - 2, y - 2), x + t.w * 8, { w: t.w * 16 + 16, h: 40, b: y + 16 }); });
   for (const a of S.animals) { if (a.id === P.mnt || a._wr || !inV(a.x, a.y, 40)) continue; add(iy(a), () => drawAnimal(a), ix(a), { w: 110, h: 100 }); }
-  aucDrawLot(add); drawCSX(add);
+  aucDrawLot(add); drawCSX(add); drawCSA(add);
   cineDrawActors(add, inV);
   for (const e of npcs) { if (e.hidden || !inV(e.x, e.y, 30)) continue; add(iy(e), () => { const [pz, fr] = npcPose(e); X.globalAlpha = e.alpha === undefined ? 1 : e.alpha; drawPerson(e.d.ap, ix(e), iy(e), e.dir, fr, pz); X.globalAlpha = 1; if (e.emote && e.et > 0) emote(ix(e), iy(e) - 34, e.emote); }, ix(e), { w: 90, h: 100 }); }
   for (const w of S.workers) { if (w.x === undefined || !inV(w.x, w.y, 30)) continue; if (w._mnt) { const h = workerHorse(w); if (h) { add(w.y, () => { const sp = h._mv || 0, an = sp < 2 ? 'idle' : sp > 40 ? 'trot' : 'walk', cyc = RIG.cycleLen(rigBreed(h), an === 'idle' ? 'walk' : an, rigK(h)) || 20; drawMounted(h, w.ap, w.x, w.y, w.dir || 0, an, an === 'idle' ? 0 : Math.floor(((h._dist || 0) / cyc % 1) * 8) % 8); }, w.x, { w: 120, h: 120 }); continue; } } if (w._sleep) continue; add(iy(w), () => { const wx = ix(w), wy = iy(w); const pz = w._pose === 'walk' ? 'walk' : w._pose || 'idle'; drawPerson(w.ap, wx, wy, w.dir || 0, pz === 'walk' ? Math.floor((w._ph || 0) / 22 * 8 / 0.22) % 8 : Math.floor(drawT * 3) % 2, pz === 'carry' && w._pose === 'walk' ? 'carryW' : pz); if (w.task && w._pose !== 'walk' && !w._wait) { X.fillStyle = '#2b1608'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), 16, 3); X.fillStyle = '#7ad040'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), Math.round(16 * (w.task.prog || 0)), 3); } }, ix(w), { w: 90, h: 100 }); }
@@ -9554,7 +9733,7 @@ function openSell(emb) {
   });
 }
 A.sellT = v => { M.sel[v] = M.sel[v] === false ? true : false; renderModal(); };
-A.sellGo = () => { const L = myAnimals().filter(a => a.area === 'curral' && !a.main && a.sp !== 'cao' && M.sel[a.id] !== false); let tot = 0; L.forEach(a => { tot += Math.round(frigPrice(a) * (M.emb ? embMul() : 1)); if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; }); S.animals = S.animals.filter(a => !L.includes(a)); S.stats.sold += L.length; receive(tot, (M.emb ? 'Embarque de ' : 'Venda de ') + L.length + ' animal(is)'); if (M.emb) { AU.cartRattle && AU.cartRattle(); dust(50 * TS, 39 * TS, 8); } checkRank && checkRank(); say('Vendeu ' + L.length + ' animal(is) por ' + fmt(tot) + '!', 4000); M.sel = {}; renderModal(); };
+A.sellGo = () => { const L = myAnimals().filter(a => a.area === 'curral' && !a.main && a.sp !== 'cao' && M.sel[a.id] !== false); let tot = 0; L.forEach(a => soldRecord(a, Math.round(frigPrice(a) * (M.emb ? embMul() : 1)), M.emb ? 'embarque' : 'frigorífico')); const CL = cenasOn() ? L.map(a => Object.assign({}, a, { own: 'player', _cs: 1, _sx: a.x, _sy: a.y, _px: undefined, _py: undefined, _hid: false })) : null; L.forEach(a => { tot += Math.round(frigPrice(a) * (M.emb ? embMul() : 1)); if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; }); S.animals = S.animals.filter(a => !L.includes(a)); S.stats.sold += L.length; receive(tot, (M.emb ? 'Embarque de ' : 'Venda de ') + L.length + ' animal(is)'); if (M.emb) { AU.cartRattle && AU.cartRattle(); dust(50 * TS, 39 * TS, 8); } checkRank && checkRank(); say('Vendeu ' + L.length + ' animal(is) por ' + fmt(tot) + '!', 4000); M.sel = {}; if (CL && CL.length) { closeModal(); return csTruckOut(CL, tot, 'Vendido(s): ' + L.length + ' animal(is).'); } renderModal(); };
 A.newOk = () => { closeModal(); openSetup(false); };
 A.newNo = () => closeModal();
 /* ---------- sistema de interação contextual (com prioridades) ---------- */
@@ -9605,7 +9784,7 @@ function tick(dt) {
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);
     updGrill(dt); updInst(dt); if ((ctxT -= dt) < 0) { ctxT = 0.12; computeCtx(); }
-    if (S.pend.length && !M.open && !P._act) { const p = S.pend.shift(); if (p.k === 'obraFim') csObraFim(p.lot); }
+    if (S.pend.length && !M.open && !P._act) { const p = S.pend.shift(); if (p.k === 'obraFim') csObraFim(p.lot); else if (p.k === 'truckIn') csTruckIn(p.ids); else if (p.k === 'theft') csTheft(p); else if (p.k === 'escape') csEscape(byId(p.id)); }
     if (S.mach && !S.mach.told && machState() === 'done') { S.mach.told = 1; S.mach.busy = false; toast('⚙️ A forrageira terminou: ração pronta!'); AU.chime(); }
     if ((saveT += dt) > 60) { saveT = 0; SAVE.save('auto', true); }
   } else if (mode === 'cs') { updCS(dt); updGates(dt); buildGrid(); for (const a of S.animals) updAnimal(a, dt, 0, []); for (const e of npcs) if (e.et > 0) e.et -= dt; }
