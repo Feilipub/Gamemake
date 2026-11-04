@@ -4640,7 +4640,7 @@ function cattleAgio(a) { const w = a.wt || 300; let k = 1 + 0.25 * cl((300 - w) 
 function animalValue(a) {
   const st = stars(a), q = 0.82 + st * 0.08;
   if (a.sp === 'boi') return Math.round(a.wt / 15 * S.arroba * q * (CATTLE[a.br].p || 1) * cattleAgio(a)); // ágio do bezerro some aos poucos com o peso; boi gordo tem prêmio
-  if (a.sp === 'cavalo') return Math.round((HORSES[a.br].cost * 420 + 2500) * q * (a.age < 12 ? 0.6 : 1));
+  if (a.sp === 'cavalo') return Math.round((HORSES[a.br].cost * 420 + 2500) * q * (a.age < 12 ? 0.6 : 1) * (a.hx ? 1 + Math.max(0, hxTotal(a) - 5) * 0.025 : 1));
   if (a.sp === 'burro') return Math.round(4200 * q); if (a.sp === 'jumento') return Math.round(1800 * q);
   if (a.sp === 'galinha') return Math.round((a.sex === 'M' ? 70 : 55) * q); if (a.sp === 'cao') return Math.round(600 * q);
   if (a.sp === 'porco') return Math.round(Math.max(a.age < 5 ? 160 : 0, (a.wt || 80) * 7.5 * q * ((PIGS[a.br] || {}).p || 1)));
@@ -5031,7 +5031,7 @@ function deliveries() {
   now.forEach(d => { const a = byId(d.id); if (!a) return; a.own = 'player'; if (S.firsts && S.firsts.compra && !S.firsts.cs_compra) setTimeout(() => csPrimeiraCompra(a), 900); a.newArr = 1; const to = ownDest(d.to, a); const p = randIn(to); a.x = p[0]; a.y = p[1]; a.area = to; a._st = null; toast('🚚 ' + a.n + ' chegou ao ' + AREAS[to].n); });
   if (S.frete && S.fretePend) { for (const k in S.fretePend) S.dep[k] = (S.dep[k] || 0) + S.fretePend[k]; S.fretePend = null; toast('🚚 Entrega da Casa do Agro no depósito.'); }
 }
-function dayTick() { rocaGrowTick(); { const bd = bdayToday(); if (bd.length) toast('🎂 Hoje é aniversário de ' + bd.map(id => NPCDEF[id].n).join(' e ') + '! Presente hoje vale o dobro.'); } aucExpire(); storyCheck(); regionDay(); missionDay(); bicoDay(); if (S.reg && S.reg.pop) { rfarmDay(); jobDay(); } qRefresh();
+function dayTick() { rocaGrowTick(); hxDay(); { const bd = bdayToday(); if (bd.length) toast('🎂 Hoje é aniversário de ' + bd.map(id => NPCDEF[id].n).join(' e ') + '! Presente hoje vale o dobro.'); } aucExpire(); storyCheck(); regionDay(); missionDay(); bicoDay(); if (S.reg && S.reg.pop) { rfarmDay(); jobDay(); } qRefresh();
   wildDayTick(); rollOffer(); setTimeout(() => S && eventAnnounce(), 2500); if (S.offer && S.offer.day < S.day - 1) S.offer = null;
   S.day++;
   const se = season();
@@ -5409,10 +5409,11 @@ function updPlayer(dt) {
     const st = horseStats(horse); B = st.B; const sd = st.sd; hb = HB.horse; if (horse._stam === undefined) horse._stam = 100;
     gallop = galOn && horse._stam > 6 && mag > 0.35; if (gallop && horse.sp === 'jumento' && horse.temp === 'teimoso') { if (horse._balk === undefined || (horse._balkT -= dt) < 0) { horse._balkT = 4; horse._balk = Math.random() < 0.25; if (horse._balk) say(horse.n + ' empacou: jegue teimoso não quer correr agora!', 1800); } if (horse._balk) gallop = false; }
     const stim = S.cf.aj, perkM = perk() === 'pantano' ? 0.7 : 1, trav = horse.travel ? 0.7 : 1;
-    maxV = gallop ? B.v[2] * 0.95 * sd.ac * (stim === 0 ? 1.1 : 1) * (1 + skill('mon') * 0.03) * (0.85 + horse.cond / 650) : B.v[0] * 1.05;
-    acc = gallop ? 70 * (B.ac || 2) * sd.ac : 220; dec = gallop ? 170 : 300; maxV *= 1 - mudAt(P.x, P.y) * 0.22; { const wd = waterDepthAt(P.x, P.y); if (wd > 0.05) maxV *= 1 - wd * 0.5; }
+    if (horse._balkT > 0) { horse._balkT -= dt; gallop = false; }
+    maxV = gallop ? B.v[2] * 0.95 * sd.ac * (stim === 0 ? 1.1 : 1) * (1 + skill('mon') * 0.03) * (0.85 + horse.cond / 650) * hxSpeed(horse) : B.v[0] * 1.05;
+    acc = (gallop ? 70 * (B.ac || 2) * sd.ac : 220) * hxAcc(horse); dec = (gallop ? 170 : 300) * (htal(horse, 'parceiro') ? 1.4 : 1); maxV *= 1 - mudAt(P.x, P.y) * 0.22; { const wd = waterDepthAt(P.x, P.y); if (wd > 0.05) maxV *= 1 - wd * 0.5; }
     const sp = hyp(P._vx, P._vy);
-    if (sp > B.v[0] * 1.3) horse._stam -= dt * B.cost * 0.75 * sd.cost * (stim === 0 ? 1.25 : stim === 2 ? 0.8 : 1) * perkM * trav; else horse._stam = Math.min(100, horse._stam + dt * B.rec * 0.45 * sd.rec);
+    if (sp > B.v[0] * 1.3) horse._stam -= dt * B.cost * 0.75 * sd.cost * (stim === 0 ? 1.25 : stim === 2 ? 0.8 : 1) * perkM * trav * hxDrain(horse); else horse._stam = Math.min(100, horse._stam + dt * B.rec * 0.45 * sd.rec * hxRec(horse));
     if (horse._stam < 15 && gallop) tip('stam', 'O fôlego do cavalo está acabando. Solte o Galope para ele recuperar.');
   } else {
     const run = galOn && P.en > 4 && mag > 0.5; maxV = (run ? 58 : 36) * (1 - mudAt(P.x, P.y) * 0.3); maxV *= P.en < 5 ? 0.65 : P.en < 12 ? 0.8 : P.en < 25 ? 0.92 : 1; /* cansaço deixa o passo mais lento aos poucos */ { const wd = waterDepthAt(P.x, P.y); if (wd > 0.05) { maxV *= 1 - wd * 0.6; if (wd > 0.82) P.en = Math.max(0, P.en - dt * 0.3); } } acc = run ? 520 : 620; dec = 760; hb = HB.foot;
@@ -5439,7 +5440,7 @@ function updPlayer(dt) {
   if (horse) { state = spd > B.v[0] * 1.25 ? 'gallop' : spd > 3 ? 'walk' : 'idle'; P._gal = state === 'gallop' ? 2 : state === 'walk' ? 1 : 0; }
   else { state = spd < 2.5 ? 'idle' : spd > 44 ? 'run' : 'walk'; P._gal = 0; }
   const stride = horse ? (state === 'gallop' ? 46 : 28) : (state === 'run' ? 34 : 22);
-  P._dist = (P._dist || 0) + moved; P._cyc = (P._dist / stride) % 1; P._st = state;
+  P._dist = (P._dist || 0) + moved; P._cyc = (P._dist / stride) % 1; P._st = state; if (horse) hxRide(horse, dt, state, moved);
   const c2 = Math.floor(P._cyc * 2);
   if (state !== 'idle' && c2 !== P._lastC) { P._lastC = c2;
     const g = gt(Math.floor(P.x / TS), Math.floor(P.y / TS)), soft = g === G.DIRT || g === G.DRY || g === G.MUD || g === G.FLOOR || g === G.SAND;
@@ -5526,7 +5527,7 @@ function playerPose() {
 }
 function nearestOwn(f, R) { let b = null, bd = R; for (const a of S.animals) { if (a.own !== 'player' || !f(a) || a.id === P.mnt) continue; const d = hyp(a.x - P.x, a.y - P.y); if (d < bd) { bd = d; b = a; } } return b; }
 /* ---------- montar / desmontar ---------- */
-function mountHorse(h) {
+function mountHorse(h) { if (isHorse(h) && h.own === 'player' && h.mood && h.mood !== 'tranquilo') setTimeout(() => toast(hmood(h).ic + ' ' + h.n + ' está ' + hmood(h).n.toLowerCase() + ' hoje.'), 1200);
   if (!h || P._act) return; if (P.mnt) { if (P.mnt === h.id) return; return dismount(() => mountHorse(h)); } if (h.sick) return say(h.n + ' está doente. Trate antes de montar.'); if (h.age < 12) return say(h.n + ' ainda é potro. Não aguenta peso.');
   if (P.lead === h.id) P.lead = null; if (lasso.t === h) lasso.t = null;
   const side = () => ({ x: h.x - h.f * 13, y: h.y + 2 });
@@ -5546,6 +5547,7 @@ function mountToggle() {
   const m = mainHorse(); const h = nearestOwn(a => (a.sp === 'cavalo' || a.sp === 'burro' || a.sp === 'jumento') && a.age >= 12 && S.cart.hitch !== a.id, 40);
   if (h) return mountHorse(h);
   { const lh = loanedHorse(); if (lh && hyp(lh.x - P.x, lh.y - P.y) < 40) return mountHorse(lh); }
+  if (m && m.own === 'player' && m._st !== 'tied' && htal(m, 'assovio') && hyp(m.x - P.x, m.y - P.y) > 260) { const a0 = Math.random() * 6.28; let done = false; for (let k = 0; k < 12 && !done; k++) { const a = a0 + k * 0.52; for (let r = 150; r < 260 && !done; r += 20) { const x = P.x + Math.cos(a) * r, y = P.y + Math.sin(a) * r; if (x > 16 && y > 16 && x < WPX - 16 && y < HPX - 16 && !boxHit(x, y, HB.horse, 'a')) { m.x = x; m.y = y; done = true; } } } } // tenta 12 direções até achar chão livre
   if (m && m.own === 'player' && m._st !== 'tied') { m._st = 'come'; m._t = 25; act('call', 0.6, null, null, { zoom: false }); AU.whistle(); say('Você assobiou. ' + m.n + ' vem vindo!', 2500); }
   else if (m && m._st === 'tied') { say(m.n + ' está amarrado(a) no mourão. Vou até lá.'); mountHorse(m); }
 }
@@ -5565,7 +5567,7 @@ function doLasso() {
   const R = 72 * (h ? sd.lr : 0.8) * (1 + skill('lac') * 0.08) * (perk() === 'laco' ? 1.25 : 1);
   let t = null, bd = R; for (const a of S.animals) { if (a.id === P.mnt || a.sp === 'galinha' || a.sp === 'cao' || S.cart.hitch === a.id) continue; const d = hyp(a.x - P.x, a.y - P.y); if (d < bd && (a.own === 'player' || a.own.startsWith('quest'))) { bd = d; t = a; } }
   lasso.anim = 0.5; AU.lasso();
-  if (t) { lasso.t = t; t._st = 'lasso'; t.tie = null; bond(t, -2); if (P.lead === t.id) P.lead = null; say('Laçou ' + t.n + '! Leve até onde quiser.', 2500); P.en = Math.max(0, P.en - 1.5); buzz(20); }
+  if (t) { if (P.mnt) hxGain(byId(P.mnt), 'lida', 4); lasso.t = t; t._st = 'lasso'; t.tie = null; bond(t, -2); if (P.lead === t.id) P.lead = null; say('Laçou ' + t.n + '! Leve até onde quiser.', 2500); P.en = Math.max(0, P.en - 1.5); buzz(20); }
   else say('Nenhum animal ao alcance do laço (' + Math.round(R / TS) + ' m).', 1800);
 }
 /* ---------- porteiras ---------- */
@@ -5649,8 +5651,8 @@ function pressureSources() {
   const L = [];
   if (!P.cart && mode === 'play') {
     const h = P.mnt ? byId(P.mnt) : null, gal = P._gal === 2;
-    const R = h ? 64 * (1 + skill('lid') * 0.08) * (S.cf.aj === 1 && gal ? 1.3 : 1) : 26;
-    L.push({ x: P.x, y: P.y, R, k: h ? (gal ? 1.5 : P._mv > 6 ? 1.1 : 0.75) : (P._mv > 30 ? 0.9 : 0.6), vx: P._vx || 0, vy: P._vy || 0, who: 'p', mv: P._mv > 6 });
+    const R = h ? 64 * (1 + skill('lid') * 0.08) * (S.cf.aj === 1 && gal ? 1.3 : 1) * (1 + (hl(h, 'lida') - 1) * 0.04) * (htal(h, 'faro') ? 1.2 : 1) : 26;
+    L.push({ x: P.x, y: P.y, R, k: h ? (gal ? 1.5 : P._mv > 6 ? 1.1 : 0.75) * (htal(h, 'vaquejada') ? 1.3 : 1) : (P._mv > 30 ? 0.9 : 0.6), vx: P._vx || 0, vy: P._vy || 0, who: 'p', mv: P._mv > 6 });
   }
   for (const a of S.animals) if (a.sp === 'cao' && a.own === 'player' && (a._st === 'work' || a._st === 'run' || a._barkT > 0)) { const B = DOGS[a.br] || DOGS.caramelo; L.push({ x: a.x, y: a.y, R: (a._barkT > 0 ? 52 : 34) * (0.8 + B.herd * 0.2), k: 0.85 * B.herd, vx: a._vx || 0, vy: a._vy || 0, who: 'd', mv: true }); }
   for (const w of S.workers) if (w._herd) L.push({ x: w.x, y: w.y, R: w._mnt ? 44 : 30, k: w._mnt ? 1 : 0.7, vx: 0, vy: 0, who: 'w' });
@@ -7056,6 +7058,7 @@ function sheetStats(a) {
   const eqn = a.sp === 'cavalo' || a.sp === 'burro' || a.sp === 'jumento';
   const rows = [['Saúde', a.hp, 'r'], ['Fome (saciedade)', a.food, 'y'], ['Sede (hidratação)', a.water, 'w'], ...(eqn ? [['Energia', a.id === P.mnt ? (a._stam === undefined ? 100 : a._stam) : Math.min(100, (a._stam === undefined ? 100 : a._stam)), 'y'], ['Vínculo com você', a.aff || 0, 'r']] : [['Energia', cl((a.food * 0.5 + a.water * 0.5) * (hour() > 20 || hour() < 5 ? 0.75 : 1), 0, 100), 'y'], ['Felicidade', a.hap, ''], ['Vínculo com você', a.aff || 0, 'r']]), ['Condicionamento', a.cond, ''], ['Genética', a.gen, ''], ['Desenvolvimento', dev(a), ''], ['Cuidados', a.care, '']];
   let h = `<div class="row sp"><span class="stars">${starStr(st)}</span><span class="mut">${Math.round(score(a))} pts · ${fmt(animalValue(a))}</span></div><div class="sg">` + rows.map(([n, v, c]) => `<span>${n}</span>${bar(v, c)}<b>${Math.round(v)}</b>`).join('') + '</div>';
+  if (isHorse(a) && a.age >= 12) h += horseSkillsHTML(a);
   if (a.traits && a.traits.length) h += `<div class="card" style="margin:4px 0;padding:5px 8px"><b>Personalidade:</b> ${esc(traitNames(a))}${a === herdLeader(a) && (a.sp === 'boi' || a.sp === 'cabra') ? ' · <b>líder do grupo</b>' : ''}<br><span class="mut">${esc(traitDesc(a))}</span></div>`;
   h += `<div class="row sp mut" style="margin-top:4px"><span>${ageStr(a)}${a.wt ? ' · ' + Math.round(a.wt) + ' kg' : ''}</span><span>${prodStr(a)}</span></div>`;
   const co = a.coat && RIG.COATS[a.coat] ? RIG.COATS[a.coat].n : ''; const sp2 = (SPECIES[a.sp] || {})[a.br];
@@ -7069,6 +7072,7 @@ function sheetActions(a) {
   if (!own) { const who = a.own.startsWith('quest') ? NPCDEF[a.own.split(':')[1]].n : NPCDEF[a.own] ? NPCDEF[a.own].n : ''; return `<p class="mut">${a.own.startsWith('quest') ? 'Animal fujão de ' + who + '. Laçe e leve até o pasto dele.' : 'Pertence a ' + who + '. Para comprar, negocie com o dono.'}</p><div class="ag">${ibtn('eye', 'Examinar', 'sa', 'exam')}</div>`; }
   const L = [];
   const isH = a.sp === 'cavalo' || a.sp === 'burro', big = a.sp !== 'galinha' && a.sp !== 'cao';
+  if (isH && a.own === 'player' && a.age >= 12) L.push(['train', 'Treinar', 'htrain']);
   if (isH) { if (P.mnt === a.id) L.push(['mount', 'Desmontar', 'dismount']); else L.push(['mount', 'Montar', 'mount', a.age < 12 || a.sick]); L.push(['saddle', a.saddle ? 'Tirar sela' : 'Selar', a.saddle ? 'unsaddle' : 'saddle', P.mnt === a.id]); }
   const food = a.sp === 'boi' ? 'racao' : a.sp === 'galinha' ? 'milho' : a.sp === 'cao' ? 'racaoCao' : 'milho';
   L.push(['feed', 'Alimentar', 'feed']);
@@ -7142,7 +7146,7 @@ A.sa = k => {
     case 'milkGoat': return doAnimal(a, 'feed', 2.0, () => { if (a.milkD === S.day) return; const L2 = Math.max(0.5, Math.round(((GOATS[a.br] || {}).milk || 0.6) * 2.2 * (a.hap / 100 + 0.3) * (a.food > 40 ? 1 : 0.6) * 2) / 2); a.milkD = S.day; addInv('leiteCabra', L2, true); questEvent('produce', 'leiteCabra'); bond(a, 2); hist(a, 'Ordenhada: ' + L2 + ' L'); toast('🥛 ' + a.n + ': ' + L2 + ' L de leite de cabra.'); S.stats.milkG = (S.stats.milkG || 0) + L2; });
     case 'water': return doAnimal(a, 'water', 1.4, () => { if (!useInv('galao')) return; questEvent('water', 'animal'); addInv('galaoV', 1, true); a.water = 100; a.hap = cl(a.hap + 2, 0, 100); if (a.sp === 'galinha') { const i = trIdx('galin', 'agua'); if (i >= 0) S.tr[i] = trCap(i); } hist(a, 'Bebeu água do galão'); AU.splash(); });
     case 'pet': return doAnimal(a, 'pet', 1.0, () => { questEvent('pet', a.sp); if (a.petD !== S.day) { a.petD = S.day; a.hap = cl(a.hap + 5, 0, 100); a.care = cl(a.care + 2, 0, 100); bond(a, 5); AU.chime(); } heart(a.x, a.y - 22); sound(); });
-    case 'brush': return doAnimal(a, 'brush', 2.2, () => { if (a.brushed !== S.day) { a.hap = cl(a.hap + 10, 0, 100); a.care = cl(a.care + 6, 0, 100); hist(a, 'Escovado'); bond(a, 6); } a.brushed = S.day; heart(a.x, a.y - 22); sound(); P.en = Math.max(0, P.en - 2); }, { int: 1 });
+    case 'brush': return doAnimal(a, 'brush', 2.2, () => { if (a.brushed !== S.day) { a.hap = cl(a.hap + 10, 0, 100); a.care = cl(a.care + 6, 0, 100); hist(a, 'Escovado'); bond(a, a.mood === 'carente' ? 12 : 6); if (isHorse(a)) { hxGain(a, 'doma', 4); if (a.mood === 'carente') { a.mood = 'tranquilo'; toast('🐴 ' + a.n + ' ficou mais tranquilo com o carinho.'); } } } a.brushed = S.day; heart(a.x, a.y - 22); sound(); P.en = Math.max(0, P.en - 2); }, { int: 1 });
     case 'lead': if (P.lead === a.id) { P.lead = null; a._st = null; renderSheet(); return; } return doAnimal(a, 'reach', 0.4, () => { P.lead = a.id; a.tie = null; a._st = 'led'; if (lasso.t === a) lasso.t = null; say('Conduzindo ' + a.n + ' pelo cabresto.', 2000); }, { zoom: false });
     case 'curral': return escort(a, 'curral');
     case 'transfer': SH.sub = SH.sub === 'transfer' ? null : 'transfer'; return renderSheet();
@@ -7153,6 +7157,7 @@ A.sa = k => {
     case 'follow': { if (a._st === 'follow') { a._st = null; say(a.n + ' ficou à vontade.', 1800); } else { a._st = 'follow'; a._t = 1e9; a.tie = null; AU.whistle(); say(a.n + ' vai seguir você.', 1800); } renderSheet(); return; }
     case 'stay': { if (a._st === 'stay') { a._st = null; } else { a._st = 'stay'; a._home = [a.x, a.y]; a._t = 1e9; say(a.n + ' vai ficar por aqui.', 1800); } renderSheet(); return; }
     case 'play': { const ang = { 0: [0, 1], 1: [0, -1], 2: [-1, 0], 3: [1, 0] }[P.dir]; return act('throw', 0.7, null, () => { }, { zoom: false, onThrow: () => { let tx = P.x + ang[0] * 70, ty = P.y + ang[1] * 60; for (let i = 0; i < 6 && hitAt(tx, ty, 4); i++) { tx = lerp(tx, P.x, 0.3); ty = lerp(ty, P.y, 0.3); } for (let i = 0; i < 8; i++) part(lerp(P.x, tx, i / 8), lerp(P.y - 20, ty, i / 8) - Math.sin(i / 8 * Math.PI) * 20, 'dust', { vx: 0, vy: 0, m: 0.25 + i * 0.04, c: '#8a5a2a', s: 2 }); a._st = 'fetch'; a._tg = [tx, ty]; a._t = 4; AU.bark(a.x, a.y); if (a.playD !== S.day) { a.playD = S.day; a.hap = cl(a.hap + 10, 0, 100); a.cond = cl(a.cond + 2, 0, 100); hist(a, 'Brincou de buscar o graveto'); } } }); }
+    case 'htrain': if (P.mnt === a.id) { say('Desmonte para treinar.', 1800); return; } return openHorseTrain(a);
     case 'train': return doAnimal(a, 'train', 3, () => { P.en = Math.max(0, P.en - 4); if (a.trainD !== S.day) { a.trainD = S.day; a.cond = cl(a.cond + 6, 0, 100); a.care = cl(a.care + 3, 0, 100); const pool = ['Obediente', 'Boiadeiro', 'Guarda', 'Rastreador'].filter(s => !a.skills.includes(s)); if (pool.length && Math.random() < 0.25) { const s = pool[0]; a.skills.push(s); toast('🎓 ' + a.n + ' aprendeu: ' + s + '!'); hist(a, 'Aprendeu ' + s); AU.jingle(); } else { hist(a, 'Treinou obediência'); toast('🐕 Treino feito (+condicionamento)'); } } else toast('Já treinou hoje. Amanhã tem mais!'); a._st = 'sitc'; a._t = 2; });
     case 'travel': return doAnimal(a, 'travel', 1.8, () => { if (!useInv('alforje')) return; a.travel = true; a._stam = 100; hist(a, 'Preparado para viagem'); toast('🎒 ' + a.n + ' pronto para viagem: fôlego rende mais.'); });
     case 'hitch': { if (hyp(S.cart.x - a.x, S.cart.y - a.y) > 160) return say('Leve ' + a.n + ' pelo cabresto até a carroça (perto do galpão).', 3000); P.lead = a.id; a._st = 'led'; return approach(S.cart, 26, () => A.hitch(a.id)); }
@@ -10629,9 +10634,9 @@ function jumpTarget() { const h = P.mnt && byId(P.mnt); if (!h || P._act || P._j
   return null; }
 function doJump(j) { const h = byId(P.mnt); if (!h || !j) return; h.jumps = h.jumps || 0;
   const tempo = { nervoso: 0.12, arisco: 0.08, teimoso: 0.14, calmo: -0.04, 'dócil': -0.03 }[h.temp] || 0, emb = (P._mv || 0) > 40 ? -0.05 : 0.05;
-  const refuse = Math.max(0.03, 0.2 + tempo + emb - h.jumps * 0.015 - (hasT && hasT(h, 'corajoso') ? 0.06 : 0));
+  let refuse = Math.max(0.03, 0.2 + tempo + emb - h.jumps * 0.015 - (hasT && hasT(h, 'corajoso') ? 0.06 : 0) - (hl(h, 'salto') - 1) * 0.02 + (hmood(h).balk ? 0.08 : 0)); if (htal(h, 'limpo')) refuse *= 0.5; if (htal(h, 'asas')) refuse = Math.min(refuse, 0.02);
   if (Math.random() < refuse) { P._vx = P._vy = 0; h._react = { a: 'idle', f: 0, t: 0.9 }; h._stam = Math.max(0, (h._stam || 0) - 4); AU.neigh && AU.neigh(h.x, h.y); toast('🐎 ' + h.n + ' refugou na cerca! Mais embalo e treino ajudam.'); return; }
-  P._jump = { t: 0, d: 0.62, x0: P.x, y0: P.y, x1: j.x, y1: j.y, hgt: 12, spd: P._mv }; h._stam = Math.max(0, (h._stam || 0) - 10); h.jumps++; S.stats.jumps = (S.stats.jumps || 0) + 1; AU.jump && AU.jump(); questEvent && questEvent('jump', h.id, 1);
+  P._jump = { t: 0, d: 0.62, x0: P.x, y0: P.y, x1: j.x, y1: j.y, hgt: htal(h, 'asas') ? 16 : 12, spd: P._mv }; hxGain(h, 'salto', 12); h._stam = Math.max(0, (h._stam || 0) - 10); h.jumps++; S.stats.jumps = (S.stats.jumps || 0) + 1; AU.jump && AU.jump(); questEvent && questEvent('jump', h.id, 1);
   if (h.jumps === 1 || h.jumps % 10 === 0) toast('🐎 Salto! ' + h.n + ' já saltou ' + h.jumps + (h.jumps > 1 ? ' vezes' : ' vez') + '.'); }
 function jumpUpdate(dt) { const J = P._jump; if (!J) return false; J.t += dt; const u = Math.min(1, J.t / J.d); P.x = lerp(J.x0, J.x1, u); P.y = lerp(J.y0, J.y1, u); P._jz = Math.sin(u * Math.PI) * J.hgt; P._mv = J.spd; const h = byId(P.mnt); if (h) { h.x = P.x; h.y = P.y; }
   if (u >= 1) { P._jump = null; P._jz = 0; dust(P.x, P.y, 4); AU.step && AU.step(true); AU.saddleCreak && AU.saddleCreak(); } return true; }
@@ -10702,6 +10707,97 @@ function songFesta() { const h = hour(); let want = null;
   if (!want && S.event && S.event.day === S.day && h >= 18 && h < 21.6) { const c = typeof objPos === 'function' && objPos('churrasqueira'); if (c && hyp(P.x - c.x, P.y - c.y) < 8 * TS) want = 'baiao'; } // churrasco na fazenda
   if (want && SONG.cur !== want) { MUS.duckT = 0.15; SONG.play(want, { loops: -99 }); SONG.festa = 1; }
   else if (!want && SONG.festa) { SONG.festa = 0; MUS.duckT = 1; SONG.stop(2); } }
+/* ===================== PROGRESSÃO DO CAVALO =====================
+   Cinco habilidades (Velocidade, Fôlego, Lida com gado, Salto e Doma) de nível 1 a 10. Sobem com o uso de verdade
+   (galopar, cavalgar cansado, tocar o gado montado, saltar, laçar, escovar) e com treinos diários na ficha.
+   Cada habilidade abre dois talentos (níveis 4 e 8), que mudam o jeito de jogar. A personalidade (traços) e o humor
+   do dia mudam o desempenho e a velocidade de aprendizado. Cavalo bem treinado vale mais no mercado. */
+const HSK = {
+  vel: { n: 'Velocidade', e: l => 'Galope +' + Math.round((l - 1) * 1.5) + '%' },
+  fol: { n: 'Fôlego', e: l => 'Cansa ' + Math.round((l - 1) * 4.5) + '% menos · recupera +' + (l - 1) * 5 + '%' },
+  lida: { n: 'Lida com gado', e: l => 'Alcance sobre o gado +' + (l - 1) * 4 + '%' },
+  salto: { n: 'Salto', e: l => 'Refuga ' + (l - 1) * 2 + ' pontos menos' },
+  doma: { n: 'Doma', e: l => 'Arranca e vira +' + (l - 1) * 3 + '%' }
+};
+const HTAL = {
+  arrancada: { k: 'vel', l: 4, n: 'Arrancada', d: 'Chega ao galope 25% mais rápido.' },
+  vento: { k: 'vel', l: 8, n: 'Vento do Sertão', d: 'Galope máximo +6% além do nível.' },
+  segundo: { k: 'fol', l: 4, n: 'Segundo Fôlego', d: 'Quando o fôlego zera, recupera 35 de uma vez (1 vez por cavalgada).' },
+  incansavel: { k: 'fol', l: 8, n: 'Incansável', d: 'Gasta 20% menos fôlego no galope.' },
+  faro: { k: 'lida', l: 4, n: 'Faro de Gado', d: 'O gado sente o cavalo de 20% mais longe.' },
+  vaquejada: { k: 'lida', l: 8, n: 'Cavalo de Vaquejada', d: 'O gado obedece 30% mais firme à pressão do cavalo.' },
+  limpo: { k: 'salto', l: 4, n: 'Pulo Limpo', d: 'Refuga metade das vezes.' },
+  asas: { k: 'salto', l: 8, n: 'Asas', d: 'Salta mais longe e mais alto; quase nunca refuga.' },
+  assovio: { k: 'doma', l: 4, n: 'Vem no Assovio', d: 'Atende ao assovio de qualquer lugar e vem a galope.' },
+  parceiro: { k: 'doma', l: 8, n: 'Parceiro', d: 'Não se assusta com trovão nem bicho; freia 40% mais rápido.' }
+};
+const HMOOD = { animado: { n: 'Animado', ic: '😄', v: 1.05, x: 1.15 }, tranquilo: { n: 'Tranquilo', ic: '🙂', v: 1, x: 1 }, cansado: { n: 'Cansado', ic: '😩', v: 0.92, x: 0.7 }, birrento: { n: 'Birrento', ic: '😤', v: 1, x: 0.85, balk: 1 }, carente: { n: 'Carente', ic: '🥺', v: 0.97, x: 0.9 } };
+const HX_NEED = l => 60 + l * 45; // xp para passar do nível l para l+1
+const isHorse = h => h && (h.sp === 'cavalo' || h.sp === 'burro' || h.sp === 'jumento');
+// níveis iniciais pela raça e pelos talentos de nascença
+function hxS(h) { if (h.hx) return h.hx; const hx = {}; for (const k in HSK) hx[k] = { l: 1, x: 0 };
+  const B = { qm: { vel: 2, lida: 3 }, mm: { fol: 3, doma: 2 }, arabe: { vel: 3, fol: 2 }, crioulo: { fol: 3, lida: 2 }, campolina: { doma: 2, fol: 2 }, nordestino: { fol: 2, lida: 2 }, paint: { lida: 2 }, appaloosa: { lida: 2, salto: 2 }, pampa: { salto: 2 }, pantaneiro: { fol: 2, lida: 2 }, lusitano: { salto: 2, doma: 2 } }[h.br] || {};
+  for (const k in B) hx[k].l = B[k]; const SK = { 'Fôlego': 'fol', 'Arrancada': 'vel', 'Coragem': 'salto', 'Faro de Gado': 'lida', 'Marcha Macia': 'doma' };
+  for (const s of h.skills || []) if (SK[s]) hx[SK[s]].l = Math.min(10, hx[SK[s]].l + 1);
+  if (h.jumps) hx.salto.x = Math.min(HX_NEED(hx.salto.l) - 1, h.jumps * 12); h.hx = hx; return hx; }
+const hl = (h, k) => (isHorse(h) ? hxS(h)[k].l : 1);
+const htal = (h, t) => isHorse(h) && hl(h, HTAL[t].k) >= HTAL[t].l;
+const hmood = h => HMOOD[(h && h.mood) || 'tranquilo'] || HMOOD.tranquilo;
+// quanto o cavalo aprende: personalidade, humor e vínculo com o dono
+function hxMul(h, k) { let m = hmood(h).x * ((h.aff || 0) >= 60 ? 1.2 : 1); if (hasT(h, 'curioso')) m *= 1.15; if (hasT(h, 'obediente') && k === 'doma') m *= 1.25; if (hasT(h, 'teimoso') && k === 'doma') m *= 0.8; if (hasT(h, 'preguicoso') && (k === 'vel' || k === 'fol')) m *= 0.8; if (hasT(h, 'agitado') && k === 'vel') m *= 1.2; if (hasT(h, 'corajoso') && k === 'salto') m *= 1.2; return m; }
+function hxGain(h, k, amt) { if (!isHorse(h) || h.own !== 'player' && !(h.loan && h.loan.to === 'player')) return; if (h.own !== 'player') amt *= 0.5; const s = hxS(h)[k]; if (s.l >= 10) return; s.x += amt * hxMul(h, k);
+  while (s.l < 10 && s.x >= HX_NEED(s.l)) { s.x -= HX_NEED(s.l); s.l++; hist(h, HSK[k].n + ' subiu para o nível ' + s.l); AU.jingle && AU.jingle(); toast('🐎 ' + h.n + ': ' + HSK[k].n + ' nível ' + s.l + '!');
+    for (const t in HTAL) if (HTAL[t].k === k && HTAL[t].l === s.l) setTimeout(() => toast('🏅 ' + h.n + ' aprendeu o talento ' + HTAL[t].n + ': ' + HTAL[t].d), 900); S.stats.hxUp = (S.stats.hxUp || 0) + 1; questEvent && questEvent('hxup', k, s.l); }
+  if (s.l >= 10) s.x = 0; }
+const hxTotal = h => Object.values(hxS(h)).reduce((t, s) => t + s.l, 0);
+// humor do dia: comida, água, saúde, escovação recente, vínculo, cansaço de ontem e personalidade
+function hxDay() { for (const h of S.animals) { if (h.own !== 'player' || !isHorse(h) || h.age < 12) continue; hxS(h);
+    const brushed = h.brushed !== undefined && S.day - h.brushed <= 2, tired = (h.rideKm || 0) > 900;
+    let m = 'tranquilo'; if (tired || h.hp < 50) m = 'cansado'; else if ((h.aff || 0) < 30 && !brushed) m = 'carente'; else if (hasT(h, 'teimoso') && Math.random() < 0.3) m = 'birrento'; else if (brushed && h.food > 55 && h.water > 55 && h.hap > 65) m = 'animado'; else if (Math.random() < (hasT(h, 'agitado') ? 0.35 : 0.15)) m = 'animado';
+    h.mood = m; h.rideKm = 0; h._sf = 0; } }
+// efeitos na montaria (chamados em updPlayer)
+function hxSpeed(h) { if (!isHorse(h)) return 1; return (1 + (hl(h, 'vel') - 1) * 0.015 + (htal(h, 'vento') ? 0.06 : 0) + (hasT(h, 'agitado') ? 0.05 : 0)) * hmood(h).v; }
+function hxAcc(h) { if (!isHorse(h)) return 1; return (1 + (hl(h, 'doma') - 1) * 0.03) * (htal(h, 'arrancada') ? 1.25 : 1) * (hasT(h, 'obediente') ? 1.1 : 1); }
+function hxDrain(h) { if (!isHorse(h)) return 1; return (1 - (hl(h, 'fol') - 1) * 0.045) * (htal(h, 'incansavel') ? 0.8 : 1) * (hasT(h, 'agitado') ? 1.1 : 1); }
+function hxRec(h) { if (!isHorse(h)) return 1; return (1 + (hl(h, 'fol') - 1) * 0.05) * (hasT(h, 'preguicoso') ? 0.85 : 1); }
+// a cada quadro montado: experiência pelo uso e efeitos de personalidade
+function hxRide(h, dt, state, moved) { if (!isHorse(h)) return;
+  h.rideKm = (h.rideKm || 0) + moved / 16;
+  if (state === 'gallop') { hxGain(h, 'vel', moved / 40); hxGain(h, 'fol', moved / ((h._stam || 100) < 50 ? 55 : 130)); } else if (state === 'walk') hxGain(h, 'doma', moved / 220);
+  if (htal(h, 'segundo') && (h._stam || 0) < 4 && !h._sf) { h._sf = 1; h._stam = 35; toast('💨 Segundo fôlego! ' + h.n + ' achou força de novo.'); }
+  if ((h._hxT = (h._hxT || 0) - dt) <= 0) { h._hxT = 1; // uma vez por segundo
+    if (P._mv > 6 && S.animals.some(a => a.own === 'player' && (a.sp === 'boi' || RUM(a.sp)) && hyp(a.x - P.x, a.y - P.y) < 70 && hyp(a._vx || 0, a._vy || 0) > 4)) hxGain(h, 'lida', 1.6); // tocando o gado montado
+    // susto: trovão ou onça perto, conforme a personalidade e a doma
+    const fearful = hasT(h, 'medroso') || hasT(h, 'arisco'); if (fearful && !htal(h, 'parceiro') && !hasT(h, 'corajoso')) { const thunder = S.wx && S.wx.flash > 0.5, onca = typeof WILD !== 'undefined' && WILD.some(w => w.k === 'onca' && hyp(w.x - P.x, w.y - P.y) < 140);
+      if ((thunder || onca) && Math.random() < 0.5 - hl(h, 'doma') * 0.04) { P._vx = P._vy = 0; h._react = { a: 'idle', f: 0, t: 1.2 }; AU.neigh && AU.neigh(h.x, h.y); toast('😱 ' + h.n + ' se assustou com ' + (thunder ? 'o trovão' : 'a onça') + '!'); hxGain(h, 'doma', 4); } }
+    // birrento ou teimoso: às vezes não quer galopar (a doma diminui)
+    if ((hmood(h).balk || hasT(h, 'teimoso')) && P._gal === 2 && Math.random() < 0.08 - hl(h, 'doma') * 0.007) { h._balkT = 1.5; say(h.n + ' empacou um instante. Doma resolve isso.', 1600); } } }
+// treino diário na ficha do cavalo
+const HTRAIN = [
+  { k: 'vel', n: 'Galope na estrada', d: 'Tiros de galope de 200 metros.', st: 35, en: 6, xp: 26, also: ['fol', 8] },
+  { k: 'fol', n: 'Trote longo', d: 'Uma hora de trote pela estrada do riacho.', st: 40, en: 7, xp: 26 },
+  { k: 'lida', n: 'Apartação', d: 'Separar um garrote do lote, ida e volta.', st: 30, en: 6, xp: 26, need: () => S.animals.filter(a => a.own === 'player' && a.sp === 'boi').length >= 3, why: 'Precisa de pelo menos 3 bois seus.' },
+  { k: 'salto', n: 'Saltos na baliza', d: 'Tronco baixo, depois mais alto.', st: 30, en: 5, xp: 26 },
+  { k: 'doma', n: 'Rédea e doma', d: 'Parar, recuar, virar no lugar.', st: 15, en: 5, xp: 26, bond: 3 }
+];
+function trainPlace() { const h2 = typeof owned === 'function' && owned('haras'); return h2 ? 1.4 : 1; }
+function openHorseTrain(h) { showModal('🏇 Treinar ' + h.n, null, null, () => { const T = h.train || {}, coach = h.coachD === S.day;
+  let s = `<p class="mut">Cada treino uma vez por dia. ${trainPlace() > 1 ? 'No haras rende 40% a mais. ' : 'Com o Haras (Terreno do Curral Grande) rende 40% a mais. '}${coach ? '<b>Aula do Sr. Ryan hoje: treino em dobro.</b>' : ''} Humor hoje: ${hmood(h).ic} ${hmood(h).n} · fôlego ${Math.round(h._stam === undefined ? 100 : h._stam)}</p>`;
+  s += HTRAIN.map((t, i) => { const done = T[t.k] === S.day, need = t.need && !t.need(), tired = (h._stam === undefined ? 100 : h._stam) < t.st, pe = P.en < t.en; return `<div class="card"><div class="row sp"><span style="flex:1"><b>${t.n}</b> → ${HSK[t.k].n} (nível ${hl(h, t.k)})<br><span class="mut">${t.d} Gasta ${t.st} de fôlego do cavalo e ${t.en} da sua energia.${need ? ' ' + t.why : ''}</span></span>${btn(done ? 'Feito hoje' : 'Treinar', 'hTrain', h.id + '|' + i, done || need || tired || pe)}</div></div>`; }).join('');
+  s += `<div class="card"><b>Aula com o Sr. Ryan</b> — ${fmt(250)}<p class="mut">O criador de cavalos acompanha os treinos de hoje: experiência em dobro.</p>${btn(coach ? 'Contratado hoje' : 'Contratar aula', 'hCoach', h.id, coach || !canPay(250))}</div>`;
+  return s; }); }
+A.hTrain = v => { const [id, i] = v.split('|'), h = byId(+id), t = HTRAIN[+i]; if (!h || !t) return; h.train = h.train || {}; if (h.train[t.k] === S.day) return; closeModal();
+  doAnimal(h, 'train', 2.6, () => { h.train[t.k] = S.day; h._stam = Math.max(0, (h._stam === undefined ? 100 : h._stam) - t.st); P.en = Math.max(0, P.en - t.en); const mul = trainPlace() * (h.coachD === S.day ? 2 : 1);
+    hxGain(h, t.k, t.xp * mul); if (t.also) hxGain(h, t.also[0], t.also[1] * mul); if (t.bond) bond(h, t.bond); h.cond = cl((h.cond || 0) + 3, 0, 100); hist(h, 'Treino: ' + t.n); toast('🏇 ' + t.n + ': +' + Math.round(t.xp * mul * hxMul(h, t.k)) + ' de experiência em ' + HSK[t.k].n + '.'); }); };
+A.hCoach = v => { const h = byId(+v); if (!h || h.coachD === S.day || !pay(250, 'Aula de equitação (Sr. Ryan)')) return; h.coachD = S.day; addFr('ryan', 6); toast('🤠 Sr. Ryan: "Hoje a gente tira o melhor dele."'); renderModal(); };
+// cartão na ficha: habilidades, talentos, humor e efeito da personalidade
+function horseSkillsHTML(h) { const hx = hxS(h), md = hmood(h);
+  let s = `<div class="card" style="margin:4px 0;padding:6px 8px"><div class="row sp"><b>🏇 Habilidades</b><span>${md.ic} ${md.n}</span></div>`;
+  for (const k in HSK) { const v = hx[k], need = HX_NEED(v.l), pct = v.l >= 10 ? 100 : Math.round(v.x / need * 100); s += `<div style="margin-top:3px"><div class="row sp"><span>${HSK[k].n} <b>${v.l}</b>/10</span><span class="mut">${HSK[k].e(v.l)}</span></div>${bar(pct, 'y')}</div>`; }
+  s += '<div style="margin-top:6px"><b>Talentos</b></div><div class="row" style="flex-wrap:wrap;gap:4px">' + Object.keys(HTAL).map(t => { const T = HTAL[t], on = htal(h, t); return `<span class="tag" title="${esc(T.d)}" style="opacity:${on ? 1 : 0.45}">${on ? '🏅' : '🔒'} ${esc(T.n)} <small>(${HSK[T.k].n.split(' ')[0]} ${T.l})</small></span>`; }).join('') + '</div>';
+  const fx = []; if (hasT(h, 'agitado')) fx.push('galope +5%, cansa 10% mais'); if (hasT(h, 'preguicoso')) fx.push('recupera o fôlego mais devagar'); if (hasT(h, 'curioso')) fx.push('aprende 15% mais rápido'); if (hasT(h, 'obediente')) fx.push('doma rende mais, arranca melhor'); if (hasT(h, 'teimoso')) fx.push('às vezes empaca no galope'); if (hasT(h, 'medroso') || hasT(h, 'arisco')) fx.push('assusta com trovão e onça'); if (hasT(h, 'corajoso')) fx.push('não se assusta, salta melhor');
+  if (fx.length) s += `<p class="mut" style="margin:4px 0 0">Jeito: ${esc(fx.join(' · '))}.</p>`;
+  s += `<p class="mut" style="margin:2px 0 0">Valor de mercado com o treino: +${Math.max(0, Math.round((hxTotal(h) - 5) * 2.5))}%.</p></div>`; return s; }
 /* ===================== PESCA =====================
    Espécies do sertão baiano por lugar (açude, rio, riacho da mata), horário e tempo. Vara e isca de verdade (mochila),
    fisgada no tempo certo e briga com a linha (tensão). O peixe vai para a mochila, pode ser vendido no Mercadinho,

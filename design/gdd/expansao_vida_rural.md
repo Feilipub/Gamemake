@@ -179,3 +179,38 @@ nas estradas, missões e memória dos NPCs.
 ### Ainda não feito
 - Redesenho dos personagens (rostos e roupas): os sprites são os da etapa anterior.
 - O caixa da fazenda vizinha Serra cresce rápido demais (observado: ~579 mil → ~1,07 milhão em 20 dias).
+
+## Progressão do cavalo
+
+- **Habilidades** (nível 1–10): Velocidade, Fôlego, Lida com gado, Salto e Doma.
+  - O nível inicial vem da raça (Quarto de Milha: Lida 3; Mangalarga: Fôlego 3…) e dos talentos de nascença.
+  - O cavalo ganha experiência pelo uso: galopar, galopar cansado, cavalgar, tocar o gado montado, laçar montado, saltar e escovar.
+  - Também ganha com 5 treinos diários na ficha. O Haras rende +40% e a aula do Sr. Ryan (R$ 250) dobra a experiência do dia.
+- **Experiência por nível:** 60 + 45 × nível.
+- **Talentos** (nível 4 e nível 8 de cada habilidade):
+
+  | Habilidade | Nível 4 | Nível 8 |
+  |---|---|---|
+  | Velocidade | Arrancada | Vento do Sertão |
+  | Fôlego | Segundo Fôlego | Incansável |
+  | Lida com gado | Faro de Gado | Cavalo de Vaquejada |
+  | Salto | Pulo Limpo | Asas |
+  | Doma | Vem no Assovio | Parceiro |
+
+- **Efeitos por nível:**
+  - Velocidade: galope +1,5%.
+  - Fôlego: gasto −4,5% e recuperação +5%.
+  - Lida com gado: alcance +4%.
+  - Salto: refugo −2 pontos.
+  - Doma: arrancada +3%.
+- **Humor do dia:** animado, tranquilo, cansado, birrento ou carente. Depende de escovação, comida, saúde, vínculo, quanto cavalgou ontem e personalidade. Muda a velocidade e o aprendizado.
+- **Personalidade com efeito:**
+  - Curioso aprende mais rápido.
+  - Agitado galopa mais e cansa mais.
+  - Preguiçoso recupera o fôlego devagar.
+  - Obediente rende mais na doma.
+  - Teimoso às vezes empaca.
+  - Medroso e arisco se assustam com trovão e onça.
+  - Corajoso salta melhor e não se assusta.
+- **Valor de mercado:** +2,5% por nível acima do inicial.
+- **Teste:** `tests/web/cavalo_test.js`, 18/18.
