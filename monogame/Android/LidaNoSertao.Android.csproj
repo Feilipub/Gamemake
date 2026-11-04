@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Lida no Sertão — versão MonoGame para Android. O código do jogo é o mesmo do desktop (../Shared). -->
+  <PropertyGroup>
+    <TargetFramework>net8.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Lida</RootNamespace>
+    <AssemblyName>LidaNoSertao</AssemblyName>
+    <ApplicationId>br.rfgames.lidanosertao.mono</ApplicationId>
+    <ApplicationTitle>Lida no Sertão (MonoGame)</ApplicationTitle>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>0.1</ApplicationDisplayVersion>
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.Android" Version="3.8.2.1105" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/**/*.cs" />
+    <EmbeddedResource Include="../Shared/Assets/*" LogicalName="Assets/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>
