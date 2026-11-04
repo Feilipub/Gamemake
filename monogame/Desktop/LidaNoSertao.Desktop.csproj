@@ -17,5 +17,6 @@
     <Compile Include="../Shared/**/*.cs" />
     <!-- mapa e arte exportados do jogo web (tools/asset-pipeline/export_monogame.js) -->
     <EmbeddedResource Include="../Shared/Assets/*" LogicalName="Assets/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="../Shared/Art/*.png" LogicalName="Assets/%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

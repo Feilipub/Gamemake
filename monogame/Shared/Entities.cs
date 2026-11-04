@@ -63,7 +63,7 @@ namespace Lida
         {
             T += dt; var area = w.AreaAt(Pos.X, Pos.Y);
             // cachorro segue o vaqueiro de perto
-            if (Sp == "cao" && Own == "player") { var to = pl.Pos + new Vector2(-18 * (pl.Dir == 3 ? 1 : pl.Dir == 2 ? -1 : 0), -12); MoveTo(w, to, (to - Pos).Length() > 60 ? 90 : 55, dt, 14); return; }
+            if (Sp == "cao" && Own == "player") { var to = pl.Pos + new Vector2(pl.Dir == 2 ? 22 : -22, 3); MoveTo(w, to, (to - Pos).Length() > 60 ? 90 : 55, dt, 14); return; }
             // vaqueiro perto: o gado se afasta (zona de fuga)
             var away = Pos - pl.Pos; float d = away.Length();
             if (d < 42 && Sp != "galinha" && !(Main && Sp == "cavalo"))

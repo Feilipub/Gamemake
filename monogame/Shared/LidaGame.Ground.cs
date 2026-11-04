@@ -7,13 +7,15 @@ namespace Lida
 {
     public partial class LidaGame
     {
-        readonly TerrainArt[] terrain = new TerrainArt[2]; HeroArt hero;
+        readonly TerrainArt[] terrain = new TerrainArt[2]; HeroArt hero; Texture2D heroSheet; int heroScale = 0; // 0 = vaqueiro desenhado; 1 ou 2 = folha pronta (teste)
 
         byte[] gsm; // chão suavizado só para o desenho (manchas de 1 ladrilho somem no tipo de volta)
 
         void GroundInit()
         {
-            hero = new HeroArt(GraphicsDevice); terrain[season] = new TerrainArt(GraphicsDevice, season);
+            hero = new HeroArt(GraphicsDevice); using (var st = Sprites.Res("heroi_vaqueiro.png")) heroSheet = Texture2D.FromStream(GraphicsDevice, st);
+            for (int i = 0; i < args.Length; i++) if (args[i] == "--hs" && i + 1 < args.Length) heroScale = int.Parse(args[i + 1]);
+            terrain[season] = new TerrainArt(GraphicsDevice, season);
             int W = world.MW, H = world.MH; gsm = new byte[W * H];
             for (int y = 0; y < H; y++) for (int x = 0; x < W; x++) { int g = world.Ground[y * W + x]; if (g == G.DIRT && x >= 112) g = TerrainArt.GRAVEL; gsm[y * W + x] = (byte)(g >= TerrainArt.NT ? G.GRASS : g); }
             Span<int> cnt = stackalloc int[TerrainArt.NT];
@@ -66,7 +68,17 @@ namespace Lida
                 }
         }
 
+        /// <summary>Vaqueiro com a folha pronta (Ninja Adventure, CC0): colunas = direção, linhas 0..3 = passos.</summary>
         void DrawHero(Color tint)
+        {
+            if (heroScale == 0) { DrawHeroDrawn(tint); return; }
+            int col = pl.Dir == 0 ? 0 : pl.Dir == 1 ? 1 : pl.Dir == 2 ? 2 : 3;
+            int row = !pl.Moving ? 0 : (int)(pl.Dist / (pl.Running ? 6f : 4.5f)) % 4;
+            float k = heroScale; spr.Shadow(sb, pl.Pos.X, pl.Pos.Y, 5 * k, 2 * k, 0.35f);
+            sb.Draw(heroSheet, new Vector2((float)Math.Round(pl.Pos.X), (float)Math.Round(pl.Pos.Y) + 1), new Rectangle(col * 16, row * 16, 16, 16), tint, 0, new Vector2(8, 16), k, SpriteEffects.None, 0);
+        }
+
+        void DrawHeroDrawn(Color tint)
         {
             int row = pl.Dir == 0 ? 0 : pl.Dir == 1 ? 1 : 2; int fr = !pl.Moving ? 0 : 1 + (int)(pl.Dist / (pl.Running ? 7f : 5.5f)) % 4;
             spr.Shadow(sb, pl.Pos.X, pl.Pos.Y, 7, 2.5f, 0.35f);

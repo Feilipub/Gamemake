@@ -20,5 +20,6 @@
   <ItemGroup>
     <Compile Include="../Shared/**/*.cs" />
     <EmbeddedResource Include="../Shared/Assets/*" LogicalName="Assets/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="../Shared/Art/*.png" LogicalName="Assets/%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>
