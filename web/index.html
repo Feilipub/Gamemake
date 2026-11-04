@@ -5910,7 +5910,7 @@ function updEscorts(dt) {
 }
 /* ---------- animais: atualização com nível de detalhe ---------- */
 function updAnimals(dt, gm) {
-  buildGrid(); updPulses(dt); pegaUpd(dt); const th = pressureSources();
+  buildGrid(); updPulses(dt); pegaUpd(dt); HC.m.clear(); const th = pressureSources();
   const cx = cam.x + VW() / 2, cy = cam.y + VH() / 2, R = Math.max(VW(), VH()) * 0.75 + 160;
   for (const a of S.animals) {
     const far = hyp(a.x - cx, a.y - cy) > R && a.id !== P.mnt && lasso.t !== a && P.lead !== a.id && S.cart.hitch !== a.id && a._st !== 'route' && a.sp !== 'cao';
@@ -5967,17 +5967,24 @@ function gatePull(a, vx, vy) { // porteira aberta à frente atrai o animal condu
   if (a._gc > 0 && a._gG === g && a._gS) s = a._gS; // já decidiu atravessar: mantém o sentido (antes virava em cima da porteira)
   const lat = g.h ? a.x - gx : a.y - gy; // desvio lateral em relação ao vão
   let tx, ty;
-  if (Math.abs(side) > 8 && Math.abs(lat) > 7) { const ap = Math.min(30, Math.abs(side) * 0.5); tx = gx + nx * s * ap; ty = gy + ny * s * ap; } // primeiro se alinha com o vão (funil): o ponto fica sempre entre o boi e a porteira
+  if (Math.abs(side) > 8 && Math.abs(lat) > 7) { const ap = Math.max(Math.abs(lat) > 18 ? 22 : 8, Math.min(30, Math.abs(side) * 0.5)); /* longe do eixo do vão: recua para alinhar antes (não fica empurrando o mourão) */ tx = gx + nx * s * ap; ty = gy + ny * s * ap; } // primeiro se alinha com o vão (funil): o ponto fica sempre entre o boi e a porteira
   else { tx = gx - nx * s * 22; ty = gy - ny * s * 22; } // depois atravessa
+  if (bd < 48 && (a._mv || 0) < 5 && !(a._gc > 0)) a._jam = (a._jam || 0) + 1 / 60; else a._jam = 0; // travado na boca da porteira (contra o mourão): depois de 1,5 s se alinha com o vão e passa
+  if (a._jam > 1.5) { a._jam = 0; a._gc = 2.5; a._gG = g; a._gS = s; a._gT = [gx - nx * s * 34, gy - ny * s * 34]; if (Math.abs(lat) > 10) { if (g.h) a.x += Math.sign(gx - a.x) * 3; else a.y += Math.sign(gy - a.y) * 3; } }
   if (bd < 62 && Math.abs(lat) < 18 && !(a._gc > 0 && a._gG === g)) { a._gc = 2.5; a._gG = g; a._gS = s; a._gT = [gx - nx * s * 34, gy - ny * s * 34]; } // na boca da porteira: compromete a passar
   const d = hyp(tx - a.x, ty - a.y) || 1, k = (1 - bd / GR2) * 3.4 + 0.9; a._gNear = bd < 100 ? 0.3 : 0; /* perto da porteira o rebanho afrouxa e entra em fila */ return [(tx - a.x) / d * k, (ty - a.y) / d * k];
 }
+const HC = { f: -1, m: new Map() };
+function groupCenter(a) { // centro do grupo de que o animal faz parte (vizinhos encadeados até ~110 px), guardado por quadro
+  const c = HC.m.get(a); if (c) return c;
+  const G = [a], seen = new Set([a]); for (let i = 0; i < G.length && G.length < 40; i++) for (const b of near(G[i].x, G[i].y, 60)) if (!seen.has(b) && b.sp === a.sp && b.own === a.own && !b._hid && !b._cut === !a._cut && free(b) && hyp(b.x - a.x, b.y - a.y) < 110) { seen.add(b); G.push(b); }
+  let x = 0, y = 0; for (const b of G) { x += b.x; y += b.y; } const r = [x / G.length, y / G.length, G.length]; for (const b of G) HC.m.set(b, r); return r; }
 function herdMates(a) { const own = a.own; return near(a.x, a.y, 74).filter(b => b !== a && b.sp === a.sp && b.own === own && !b._hid && b._st !== 'route' && b._st !== 'tied' && !b._cut === !a._cut && free(b)); }
 function updHerdAnimal(a, dt, gm, srcs) {
   const SP = HSP[a.sp] || HSP.boi, tmp = a.temp, nerv = (tmp === 'nervoso' || tmp === 'arisco' ? 1.3 : tmp === 'dócil' || tmp === 'calmo' ? 0.8 : 1) * tmod(a, 'fear'), flight = tmod(a, 'flight'), obey = tmod(a, 'obey');
   if (a._vx === undefined) { a._vx = 0; a._vy = 0; a._fear = 0; }
   // ---- pressão ----
-  let px = 0, py = 0, pmag = 0, alertSrc = null, panic = 0;
+  let px = 0, py = 0, pmag = 0, alertSrc = null, panic = 0, close = 1; a._drv = null;
   for (const s of srcs) {
     const dx = a.x - s.x, dy = a.y - s.y, d = hyp(dx, dy) || 0.1, R = s.R * (a.age < 8 ? 0.8 : 1) * Math.sqrt(nerv) * flight * (s.who === 'p' && a.own === 'player' ? 1.25 - (a.aff || 0) / 200 : 1);
     if (d < R) {
@@ -5986,21 +5993,28 @@ function updHerdAnimal(a, dt, gm, srcs) {
       const hx = a._hx || 0, hy = a._hy || 0, front = (-(dx) * hx + -(dy) * hy) / d; // >0: fonte à frente
       let fx = dx / d, fy = dy / d;
       // o vaqueiro dá a direção: o boi que está à frente dele no sentido em que ele anda segue esse rumo, em vez de só fugir em linha reta
-      if (s.who === 'p') { const sv = hyp(s.vx || 0, s.vy || 0); if (sv > 10) { const hx2 = s.vx / sv, hy2 = s.vy / sv, ahead = (dx * hx2 + dy * hy2) / d; if (ahead > 0.6) { const w = Math.min(0.4, (ahead - 0.6) * 1.0); fx = fx * (1 - w) + hx2 * w; fy = fy * (1 - w) + hy2 * w; const fl = hyp(fx, fy) || 1; fx /= fl; fy /= fl; } } }
+      if (s.who === 'p' && (a._gNear || a._gc > 0)) { const sv = hyp(s.vx || 0, s.vy || 0); if (sv > 10) { const hx2 = s.vx / sv, hy2 = s.vy / sv, ahead = (dx * hx2 + dy * hy2) / d; if (ahead > 0.6) { const w = Math.min(0.4, (ahead - 0.6) * 1.0); fx = fx * (1 - w) + hx2 * w; fy = fy * (1 - w) + hy2 * w; const fl = hyp(fx, fy) || 1; fx /= fl; fy /= fl; } } } // perto da porteira aberta: empurrão direto (o funil da porteira faz o resto)
+      else if (s.who === 'p' || s.who === 'd' || s.who === 'w') { // tocada em bloco: o rebanho anda do vaqueiro para o centro do grupo (e no rumo em que ele vai), em vez de cada boi fugir em linha reta e o rebanho rachar
+        const G1 = groupCenter(a), BH0 = herdCenter(a), G0 = BH0 ? [(BH0.x * 3 + G1[0]) / 4, (BH0.y * 3 + G1[1]) / 4, Math.max(G1[2], 2)] : G1, gdx = G0[0] - s.x, gdy = G0[1] - s.y, gl = hyp(gdx, gdy) || 1; let Dx = gdx / gl, Dy = gdy / gl; // rumo comum do rebanho inteiro
+        const sv = hyp(s.vx || 0, s.vy || 0); if (sv > 10) { const hx2 = s.vx / sv, hy2 = s.vy / sv; if (hx2 * Dx + hy2 * Dy > -0.1) { Dx = Dx * 0.55 + hx2 * 0.45; Dy = Dy * 0.55 + hy2 * 0.45; const l2 = hyp(Dx, Dy) || 1; Dx /= l2; Dy /= l2; } }
+        if (s.who === 'p') a._drv = [Dx, Dy, G0[0], G0[1]]; const wr = G0[2] > 1 ? (d < R * 0.35 ? 0.4 : 0.12) : 0.6; fx = fx * wr + Dx * (1 - wr); fy = fy * wr + Dy * (1 - wr);
+        const BH = s.who === 'p' ? herdCenter(a) : null; if (BH) { let Bx = BH.x - s.x, By = BH.y - s.y; const Bl = hyp(Bx, By) || 1; Bx /= Bl; By /= Bl; // boi que ficou atrás do cavalo: contorna pelo lado e volta para o rebanho
+          if ((a.x - s.x) * Bx + (a.y - s.y) * By < -6 && Bl > 30) { const sd = (Bx * (a.y - s.y) - By * (a.x - s.x)) >= 0 ? 1 : -1; fx = -By * sd * 0.85 + Bx * 0.45 + (dx / d) * 0.15; fy = Bx * sd * 0.85 + By * 0.45 + (dy / d) * 0.15; a._drv = null; } }
+        const fl = hyp(fx, fy) || 1; fx /= fl; fy /= fl; }
       if (front > 0.6 && hyp(a._vx, a._vy) > 4) { const sd = (hx * fy - hy * fx) >= 0 ? 1 : -1; fx += -hy * sd * 0.8; fy += hx * sd * 0.8; }
-      px += fx * k; py += fy * k; pmag += k; if (s.who === 'x') panic = Math.max(panic, 1);
-      if (s.k > 1.3 && d < R * 0.6) panic = Math.max(panic, 0.6 + (s.k - 1.3));
+      px += fx * k; py += fy * k; pmag += k; close = Math.min(close, d / R); if (s.who === 'x') panic = Math.max(panic, 1);
+      if (s.k > 1.3 && d < R * 0.3) panic = Math.max(panic, 0.4 + (s.k - 1.3)); // só assusta de verdade se o cavalo passa colado a galope
     } else if (d < R * 1.6 && !alertSrc) alertSrc = s;
   }
-  a._fear = cl(a._fear + (pmag * 0.9 * nerv + panic - 0.35) * dt * (pmag > 0 ? 1.4 : 0.6), 0, 1);
+  a._fear = cl(a._fear + (pmag * 0.3 * nerv + panic - 0.4) * dt * (pmag > 0 ? 1 : 0.8), 0, 1); // o medo sobe devagar: o gado tocado anda junto; só dispara com o cavalo colado a galope
   // contágio: vizinhos sendo tocados puxam o animal junto (o rebanho anda como um corpo só)
   if (pmag <= 0.05 && a._st !== 'follow') {
     let vx2 = 0, vy2 = 0, nd = 0;
-    for (const b of near(a.x, a.y, 48)) if (b !== a && b.sp === a.sp && b.own === a.own && b._st === 'driven' && !b._cut === !a._cut && hyp(b._vx || 0, b._vy || 0) > 7) { vx2 += b._vx; vy2 += b._vy; nd++; }
-    if (nd) { const vm = hyp(vx2, vy2) || 1; px = vx2 / vm * 0.55; py = vy2 / vm * 0.55; pmag = 0.36; }
+    for (const b of near(a.x, a.y, 80)) if (b !== a && b.sp === a.sp && b.own === a.own && b._st === 'driven' && !b._cut === !a._cut && hyp(b._vx || 0, b._vy || 0) > 6) { vx2 += b._vx; vy2 += b._vy; nd++; }
+    if (nd) { const vm = hyp(vx2, vy2) || 1; px = vx2 / vm * 0.7; py = vy2 / vm * 0.7; pmag = 0.5; }
   }
   const pressured = pmag > 0.05;
-  if (pressured) { a._pt = 0; a._st = 'driven'; a._calm = 2 + Math.random(); }
+  if (pressured) { a._pt = 0; a._st = 'driven'; a._calm = 3.5 + Math.random(); }
   else if (a._st === 'driven') { a._calm -= dt; if (a._gc > 0) a._calm = Math.max(a._calm, 0.4); if (a._calm <= 0) { a._st = null; a._t = 0; } }
   if (a._gc > 0) { a._gc -= dt; if ((a._gT && hyp(a._gT[0] - a.x, a._gT[1] - a.y) < 10) || !a._gG || hyp(a._gG.x * TS - a.x, a._gG.y * TS - a.y) > 120) a._gc = 0; }
   // ---- vizinhos ----
@@ -6013,6 +6027,7 @@ function updHerdAnimal(a, dt, gm, srcs) {
   // ---- comportamento calmo (pasto, água, sombra, descanso) quando não pressionado ----
   let tx = 0, ty = 0, want = 0;
   if (!pressured && a._st !== 'driven') {
+    if (a._st !== 'regroup' && (a._rgT = (a._rgT || 0) - dt) < 0) { a._rgT = 0.6 + Math.random() * 0.4; const BH = herdCenter(a); if (BH && hyp(BH.x - a.x, BH.y - a.y) > (a._dist && a._pt < 30 ? 50 : 70) && (!a.area || areaAt(BH.x, BH.y) === a.area)) { a._st = 'regroup'; a._tg = [BH.x, BH.y]; a._t = 10; } } // instinto de rebanho: quem ficou longe volta para junto dos outros
     if (n === 0 && Math.random() < dt * 0.4) { const far = near(a.x, a.y, 220).filter(b => b !== a && b.sp === a.sp && b.own === a.own && !b._hid && !b._cut); if (far.length) { let fx = 0, fy = 0; for (const b of far) { fx += b.x; fy += b.y; } fx /= far.length; fy /= far.length; if (hyp(fx - a.x, fy - a.y) > 60 && (!a.area || areaAt(fx, fy) === a.area)) { a._st = 'regroup'; a._tg = [fx, fy]; a._t = 12; } } }
     if (a._st === 'regroup') { tx = a._tg[0] - a.x; ty = a._tg[1] - a.y; const d = hyp(tx, ty); want = SP.walk * 1.2; if (d < 26 || (a._t -= dt) < 0) { a._st = null; } else { tx /= d; ty /= d; } a._pose = 'walk'; }
     else { calmStep(a, dt, gm); return finishHerd(a, dt, 0, 0, 0, sx, sy, hb, SP, alertSrc); }
@@ -6020,14 +6035,19 @@ function updHerdAnimal(a, dt, gm, srcs) {
   // ---- conduzido / assustado ----
   let dvx = 0, dvy = 0;
   if (pressured || a._st === 'driven') {
-    const disp = a._fear > 0.78 ? 1 : 0; // dispersão por susto
-    const wc = (disp ? 0.08 : a._gNear ? 0.15 : 0.5) * tmod(a, 'coh'), wa = disp ? 0.1 : 0.55;
+    const disp = a._fear > 0.93 ? 1 : 0; // dispersão por susto (raro: só com muito medo)
+    const wc = (disp ? 0.08 : a._gNear ? 0.15 : 0.9) * tmod(a, 'coh'), wa = disp ? 0.1 : 0.7;
     dvx += px * 1.6; dvy += py * 1.6;
     if (a._gc > 0 && a._gT) { const gdx = a._gT[0] - a.x, gdy = a._gT[1] - a.y, gl = hyp(gdx, gdy) || 1; dvx += gdx / gl * 1.5; dvy += gdy / gl * 1.5; } // segue pela porteira sem voltar para o rebanho
-    if (n) { const mx = cx / n - a.x, my = cy / n - a.y, md = hyp(mx, my) || 1; if (md > pers * 0.9) { dvx += mx / md * wc; dvy += my / md * wc; } const vm = hyp(ax, ay) || 1; if (vm > n * 2) { dvx += ax / vm * wa; dvy += ay / vm * wa; } }
+    if (n) { const mx = cx / n - a.x, my = cy / n - a.y, md = hyp(mx, my) || 1; if (md > pers * 0.9) { const kk = md > pers * 2.4 && !a._gNear ? 2 : 1; dvx += mx / md * wc * kk; dvy += my / md * wc * kk; } const vm = hyp(ax, ay) || 1; if (vm > n * 2) { dvx += ax / vm * wa; dvy += ay / vm * wa; } }
+    { const BC = (pressured || a._st === 'driven') && !a._gNear && !(a._gc > 0) ? herdCenter(a) : null; // amontoar: boi separado volta para o grosso do rebanho, contornando o vaqueiro
+      if (BC) { let bx = BC.x - a.x, by = BC.y - a.y; const bd = hyp(bx, by) || 1; if (bd > 38) { bx /= bd; by /= bd; const qx = P.x - a.x, qy = P.y - a.y, qd = hyp(qx, qy) || 1; if ((qx * bx + qy * by) / qd > 0.7 && qd < bd) { const sd = (bx * qy - by * qx) >= 0 ? -1 : 1; bx += -by * sd * 0.9; by += bx * sd * 0.9; const l3 = hyp(bx, by) || 1; bx /= l3; by /= l3; } const wb = Math.min(1.8, (bd - 38) / 40 + 0.3); dvx += bx * wb; dvy += by * wb; } } }
     if (disp) { a._jit = a._jit || Math.random() * 6.28; a._jit += (Math.random() - 0.5) * dt * 4; dvx += Math.cos(a._jit) * 0.5; dvy += Math.sin(a._jit) * 0.5; }
     const dl = hyp(dvx, dvy) || 1; tx = dvx / dl; ty = dvy / dl;
-    want = pressured ? (a._fear > 0.7 || pmag > 1.6 ? SP.run : pmag > 0.55 ? SP.trot : SP.walk * 1.4) : a._gc > 0 ? SP.walk * 1.5 : SP.walk;
+    // passo do grupo: só corre quem está colado no cavalo ou em pânico; trota se o vaqueiro está perto; o resto anda
+    want = pressured ? (a._fear > 0.7 || pmag > 2.4 ? SP.run : pmag > 0.55 ? SP.trot : SP.walk * 1.4) : a._gc > 0 ? SP.walk * 1.5 : SP.walk; // empurrado forte trota; só dispara com medo de verdade
+    { const dv = a._drv || (a._lastDrv && a._lastDrv.t > 0 ? a._lastDrv.d : null); if (a._drv) a._lastDrv = { d: a._drv, t: 3 }; else if (a._lastDrv) a._lastDrv.t -= dt;
+      if (dv && !(a._gc > 0) && !a._gNear) { const ahead = (a.x - dv[2]) * dv[0] + (a.y - dv[3]) * dv[1]; if (ahead > 34) { want *= Math.max(0.25, 1 - (ahead - 34) / 40); } } } // os da frente esperam o grupo
     want *= (a.age < 8 ? 0.85 : 1) * (a.spdF || 1) * tmod(a, 'spd') * (a === ldr && pressured ? 1.12 : 1);
     // teimoso: empaca um instante no meio da tocada
     if (hasT(a, 'teimoso') && pressured && !(a._halt > 0) && Math.random() < dt * 0.22) { a._halt = 0.7 + Math.random() * 0.6; if (a.sp === 'boi') AU.moo(a.x, a.y, 0.8); }
