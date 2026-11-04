@@ -308,6 +308,11 @@ body.lan .steps .sS{display:inline}
 .mh h2{font-size:19px;color:#5a2408;text-shadow:0 1px 0 #fff4cc,0 0 1px rgba(90,36,8,.3);letter-spacing:.5px}
 #mic img{filter:drop-shadow(0 1px 0 #fff4cc)}
 #mc.swap{animation:swapIn .16s ease}
+#fishUI{position:absolute;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:12;display:none;flex-direction:column;align-items:center;gap:6px;border:12px solid transparent;border-image:var(--pnD) 8 fill / 12px stretch;image-rendering:pixelated;padding:4px 8px;color:#ffe9a8;min-width:230px}
+#fishUI .fm{font-size:13px;text-align:center;text-shadow:0 1px 0 #000}#fishUI.hot .fm{color:#ffd040;animation:pulse .5s infinite}
+#fishUI canvas{width:220px;height:48px;image-rendering:pixelated}#fishUI button{min-height:52px!important;font-size:16px!important;width:100%;touch-action:none}
+body.fishing .pad,body.fishing #joy{opacity:.25;pointer-events:none}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:6px}.card.dim{opacity:.6}
 #app::before,#app::after{content:'';position:absolute;left:0;right:0;height:0;background:#0a0604;z-index:7;pointer-events:none;transition:height .6s ease}#app::before{top:0}#app::after{bottom:0}
 body.cine #app::before,body.cine #app::after{height:11vh}body.cine .pad,body.cine #joy,body.cine #hotbar,body.cine #bar{opacity:0;pointer-events:none;transition:opacity .4s}
 @keyframes swapIn{from{opacity:.25;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -579,9 +584,11 @@ function icURL(name) {
 }
 const ic = (name, s) => `<img class="ic" src="${icURL(name)}" width="${s || 20}" height="${s || 20}" alt="">`;
 // ícones de itens (procedurais 12x12)
+const ICON_EXTRA = {}; // ícones de itens registrados pelos módulos (pesca, roçado, coleção...)
 function itemIconURL(id) {
   const key = 'it:' + id; let u = icCache.get(key); if (u) return u;
   const [c, g] = mkC(12, 12); const p = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+  if (ICON_EXTRA[id]) { ICON_EXTRA[id](p, g); outline(g, 12, 12); u = c.toDataURL(); icCache.set(key, u); return u; }
   const sack = (col, lab) => { p(3, 1, 6, 2, shade(col, -.2)); p(2, 3, 8, 8, col); p(1, 5, 10, 5, col); p(2, 10, 8, 1, shade(col, -.25)); p(4, 5, 4, 3, lab); p(3, 2, 1, 1, '#5a3a1a'); p(8, 2, 1, 1, '#5a3a1a'); };
   const jug = full => { p(3, 1, 3, 2, '#3a5a8a'); p(2, 3, 8, 8, full ? '#4a8ad0' : '#c8ccd0'); p(2, 3, 8, 1, '#a8c8e8'); p(8, 4, 2, 3, '#3a5a8a'); if (full) p(3, 6, 4, 4, '#2a6ab0'); };
   const meat = (col, fat) => { p(2, 3, 8, 6, col); p(1, 4, 10, 4, col); p(2, 3, 8, 1, fat); p(3, 5, 2, 1, shade(col, .2)); p(6, 6, 3, 1, shade(col, -.2)); };
@@ -5310,6 +5317,7 @@ function updPlayer(dt) {
   if (inst.on) { P._vx = P._vy = 0; P._st = 'play'; return; }
   if (MOVE.edit) { P._vx = P._vy = 0; P._st = 'idle'; P._mv = 0; return; }
   if (AUC.on) { P._vx = P._vy = 0; P._st = 'idle'; P._mv = 0; P.dir = 1; return; }
+  if (FISH.on) { P._vx = P._vy = 0; P._st = 'idle'; P._mv = 0; return; }
   if (CINE.on) { P._vx *= 0.8; P._vy *= 0.8; P._st = 'idle'; P._mv = 0; return; }
   let ix = input.x, iy = input.y, mag = hyp(ix, iy); if (mag > 1) { ix /= mag; iy /= mag; mag = 1; }
   if (mag < 0.18) { ix = iy = 0; mag = 0; }
@@ -7471,8 +7479,9 @@ const AGRO_USE = { boi: 'Cria, recria e engorda; venda por arroba', cavalo: 'Mon
 const AGRO_CARE = { boi: 'Pasto com descanso, água e sal mineral no cocho; vacina a cada 28 dias.', cavalo: 'Escovar, selar com cuidado e treinar; milho e água no haras.', burro: 'Rústico: pasto, água e pouco milho.', jumento: 'Rústico: pasto e água; ótimo para puxar a carroça.', cabra: 'Aprisco seco e alto, pasto de caatinga, água limpa; ordenhar as que pariram.', porco: 'Chiqueiro com sombra e lama, ração de suínos e água à vontade; limpar o chiqueiro.', galinha: 'Galinheiro fechado à noite e milho no cocho.', cao: 'Ração de cão, carinho e treino.' };
 function agroWeek() { return Math.floor((S.day - 1) / 7); }
 function agroRestock() {
-  if (S.agro && S.agro.wk === agroWeek()) return; const se = season(), wk = agroWeek();
-  const inv = {}, mul = {}; for (const k in AGRO_ITEMS) for (const id of AGRO_ITEMS[k]) { inv[id] = IT[id].kg >= 8 ? rint(10, 30) : rint(6, 20); const trato = IT[id].c === 'trato'; mul[id] = Math.round((0.92 + Math.random() * 0.18 + (trato && se ? 0.1 : 0) - (trato && !se ? 0.04 : 0)) * 100) / 100; }
+  if (S.agro && S.agro.wk === agroWeek()) { if (S.agro.inv) for (const k in AGRO_ITEMS) for (const id of AGRO_ITEMS[k]) if (S.agro.inv[id] === undefined) { S.agro.inv[id] = IT[id].c === 'pesca' ? rint(40, 80) : rint(6, 20); if (S.agro.mul) S.agro.mul[id] = 1; } return; } // item novo numa semana já aberta: entra no estoque sem esperar a segunda
+  const se = season(), wk = agroWeek();
+  const inv = {}, mul = {}; for (const k in AGRO_ITEMS) for (const id of AGRO_ITEMS[k]) { inv[id] = IT[id].c === 'pesca' ? rint(40, 80) : IT[id].kg >= 8 ? rint(10, 30) : rint(6, 20); const trato = IT[id].c === 'trato'; mul[id] = Math.round((0.92 + Math.random() * 0.18 + (trato && se ? 0.1 : 0) - (trato && !se ? 0.04 : 0)) * 100) / 100; }
   if (typeof FRUITS !== 'undefined') for (const k in FRUITS) { const id = FRUITS[k].muda; inv[id] = rint(4, 12); mul[id] = Math.round((0.95 + Math.random() * 0.12) * 100) / 100; }
   inv.kitCocho = 3; inv.kitBoia = 2;
   S.agro = { wk, inv, mul, list: genAgroAnimals(wk) };
@@ -7538,7 +7547,7 @@ function openMercadinho() { showModal('🧺 Mercadinho Itarantim', [['com', 'Com
   let h = keeperBanner('mercadinho');
   if (t === 'com') h += ['rapadura', 'queijo', 'cafe', 'farinha'].map(id => shopRow(id)).join('');
   if (t === 'var') h += ['violao', 'viola', 'lampiao', 'galaoV'].map(id => shopRow(id)).join('');
-  if (t === 'ven') { const o = S.inv.ovo || 0, l = S.inv.leite || 0; h += `<div class="card">🥚 Ovos na mochila: <b>${o}</b> × ${fmt2(IT.ovo.p)} ${btn('Vender todos', 'sellP', 'ovo', !o)}</div><div class="card">🥛 Leite na mochila: <b>${l}</b> L × ${fmt2(IT.leite.p)} ${btn('Vender todo', 'sellP', 'leite', !l)}</div><p class="mut">Recolha ovos no galinheiro e leite na Sala de Ordenha.</p>`; h += '<h3>Frutas e leite de cabra</h3>' + [...Object.keys(FRUITS).map(k => FRUITS[k].item), 'leiteCabra'].map(id => { const n = S.inv[id] || 0, pr = mercPrice(id); return `<div class="card"><div class="row sp">${iic(id, 22)}<span style="flex:1">${IT[id].n}<br><span class="mut">Mochila: ${n}${S.dep[id] ? ' · depósito: ' + S.dep[id] : ''}</span></span><b>${fmt2(pr)}</b></div>${btn('Vender tudo da mochila', 'sellF', id, !n)}</div>`; }).join(''); }
+  if (t === 'ven') { const o = S.inv.ovo || 0, l = S.inv.leite || 0; h += `<div class="card">🥚 Ovos na mochila: <b>${o}</b> × ${fmt2(IT.ovo.p)} ${btn('Vender todos', 'sellP', 'ovo', !o)}</div><div class="card">🥛 Leite na mochila: <b>${l}</b> L × ${fmt2(IT.leite.p)} ${btn('Vender todo', 'sellP', 'leite', !l)}</div><p class="mut">Recolha ovos no galinheiro e leite na Sala de Ordenha.</p>`; { const pe = Object.keys(FISHD).map(k => 'pe_' + k).filter(id => S.inv[id]); h += '<h3>Peixe fresco</h3>' + (pe.length ? pe.map(id => `<div class="card"><div class="row sp">${iic(id, 22)}<span style="flex:1">${IT[id].n}<br><span class="mut">Mochila: ${S.inv[id]} · ${fmt2(mercPrice(id))} cada</span></span>${btn('Vender', 'sellF', id)}</div></div>`).join('') : '<p class="mut">Nenhum peixe na mochila. Vara e isca na Casa do Agro.</p>'); } h += '<h3>Frutas e leite de cabra</h3>' + [...Object.keys(FRUITS).map(k => FRUITS[k].item), 'leiteCabra'].map(id => { const n = S.inv[id] || 0, pr = mercPrice(id); return `<div class="card"><div class="row sp">${iic(id, 22)}<span style="flex:1">${IT[id].n}<br><span class="mut">Mochila: ${n}${S.dep[id] ? ' · depósito: ' + S.dep[id] : ''}</span></span><b>${fmt2(pr)}</b></div>${btn('Vender tudo da mochila', 'sellF', id, !n)}</div>`; }).join(''); }
   return h; }); }
 function mercPrice(id) { const F = Object.values(FRUITS).find(f => f.item === id); const off = F && !fruitInSeason(F) ? 1.35 : 1; return Math.round(IT[id].p * off * (1 + ((S.day * 7 + id.length) % 11 - 5) / 100) * 100) / 100; } // fruta fora de época vale mais
 A.sellF = v => { const n = S.inv[v] || 0; if (!n) return; const pr = mercPrice(v); useInv(v, n); receive(Math.round(n * pr * 100) / 100, 'Venda de ' + n + 'x ' + IT[v].n, 'cash'); addFr('dito', 3); questEvent('sell', v, n); S.stats.fruitSold = (S.stats.fruitSold || 0) + n; renderModal(); };
@@ -8838,7 +8847,7 @@ function render(dt) {
   if (P.inside) { const RB = roomById(P.inside);
     if (RB) { for (const f of FURN) { if (f.r !== RB.id) continue; const [c, up] = furnSpr(f.t, f.w, f.h, RB.H.wall); const sx2 = f.tx * TS, sy2 = f.ty * TS - up; add(f.wall ? -1e9 + f.ty : f.t === 'tapete' ? -1e8 : f.y - (f.t === 'rede' ? 30 : 0), () => X.drawImage(c, sx2, sy2)); }
       const op = roomOwnerPos(RB); if (op) add(op.y, () => drawPerson(op.e.d.ap, op.x, op.y, op.dir, op.pose === 'feed' ? Math.floor(drawT * 2) % 2 : 0, op.pose)); } }
-  add(iy(P) + 0.5, drawPlayer);
+  add(iy(P) + 0.5, drawPlayer); FISH.draw(add);
   L.sort((a, b) => a.y - b.y); for (const o of L) o.f(); ambFx(dt); FLOCK.draw();
   forestOverlay(tx0, ty0, tx1, ty1); drawEventDecor(true); drawMemGlints(); misMarkers(); questMarkers(); drawMoveFx(); drawDebugCol();
   for (const e of npcs) if (!e.hidden && e.bt > 0 && inV(e.x, e.y, 30)) drawBubble(e);
@@ -10087,12 +10096,105 @@ function interactables(forTap) {
   for (const k of ['norte', 'sul']) { const s = EXP[k].sign, x = (s[0] - 1.6) * TS, y = s[1] * TS + 6; add({ k: 'sign', label: '🪧 ' + (S.exp[k] ? EXP[k].n : 'Terreno à venda'), x, y, r: 26, prio: 2, hit: [x - 12, y - 30, x + 12, y], fn: () => openSign(k) }); }
   for (const k in LOTS) { if ((LOTS[k].exp && !S.exp[LOTS[k].exp]) || !lotOwned(k)) continue; const r = LOTS[k].r, x = (r[0] + r[2] + 1) / 2 * TS, y = (r[3] + 1.4) * TS; add({ k: 'lot', label: '🏗️ Lote ' + k + (S.lots[k] ? ': ' + BUILD[S.lots[k].b].n : ''), x, y, r: 28, prio: 1, hit: S.lots[k] ? [r[0] * TS, r[1] * TS - 20, (r[2] + 1) * TS, (r[3] + 1) * TS] : null, fn: () => openLot(k) }); }
   if (foot) add({ k: 'cart', label: '🛒 Carroça', x: S.cart.x, y: S.cart.y, r: 28, prio: 2, hit: [S.cart.x - 18, S.cart.y - 22, S.cart.x + 18, S.cart.y + 4], fn: openCart });
-  storyInteractables(add); misInteractables(add); aucInteractables(add); rocaInteractables(add, foot); pomarInteractables(add, foot); bicoInteractables(add, foot); jobInteractables(add, foot);
+  storyInteractables(add); misInteractables(add); aucInteractables(add); rocaInteractables(add, foot); fishInteractables(add, foot); pomarInteractables(add, foot); bicoInteractables(add, foot); jobInteractables(add, foot);
   if (Math.abs(P.y - 44 * TS) < 60) { if (Math.abs(P.x - 110.6 * TS) < 50) add({ k: 'viagem', label: '🛤️ Viajar para a Região das Serras', x: 110.8 * TS, y: 44 * TS, r: 40, prio: 6, hit: [109.5 * TS, 41.5 * TS, 112 * TS, 46 * TS], fn: () => travelAsk('go') }); if (Math.abs(P.x - 118.8 * TS) < 50) add({ k: 'viagem', label: '🛤️ Voltar para Itarantim', x: 118.8 * TS, y: 44 * TS, r: 40, prio: 6, hit: [117.5 * TS, 41.5 * TS, 120 * TS, 46 * TS], fn: () => travelAsk('back') }); }
   if (foot) { const e = objPos('esterqueira') || { x: 52.6 * TS, y: 94.8 * TS }, n = Math.floor(S.esterco || 0); add({ k: 'esterco', label: n ? '💩 Recolher esterco (' + n + ' saco' + (n > 1 ? 's' : '') + ')' : 'Esterqueira (vazia)', x: e.x, y: e.y + 6, r: 24, prio: 2, hit: [e.x - 18, e.y - 20, e.x + 18, e.y + 6], fn: () => n ? act('pickup', 1.2, { x: e.x, y: e.y }, collectManure) : say('A esterqueira enche com o esterco do chiqueiro e do aprisco, dia a dia.') }); }
   if (foot) { const ak = areaAt(P.x, P.y); if (ak && S.dirt[ak] > 20) add({ k: 'clean', label: '🧹 Limpar ' + AREAS[ak].n, x: P.x, y: P.y, r: 999, prio: -3, fn: () => cleanCurral(ak) }); }
   return L;
 }
+/* ===================== PESCA =====================
+   Espécies do sertão baiano por lugar (açude, rio, riacho da mata), horário e tempo. Vara e isca de verdade (mochila),
+   fisgada no tempo certo e briga com a linha (tensão). O peixe vai para a mochila, pode ser vendido no Mercadinho,
+   assado no fogão e entra na coleção com o recorde de peso. */
+const FISHD = {
+  piaba:     { n: 'Piaba', loc: ['acude', 'rio', 'riacho'], w: [0.02, 0.08], d: 1, p: 30, h: null, c: ['#c8ccd0', '#8a9098', '#e8d870'], len: 6, txt: 'Peixinho prateado de cardume. Morde qualquer isca.' },
+  lambari:   { n: 'Lambari', loc: ['rio', 'riacho'], w: [0.04, 0.15], d: 1, p: 28, h: [6, 17], c: ['#d8dce0', '#9aa0a8', '#e8a040'], len: 7, txt: 'Rabo amarelo, rápido; aparece de dia nas águas correntes.' },
+  tilapia:   { n: 'Tilápia', loc: ['acude'], w: [0.3, 1.4], d: 2, p: 16, h: [6, 18], bait: 'massa', c: ['#8a9a7a', '#5a6a52', '#b8c0a0'], len: 10, txt: 'O peixe mais comum dos açudes. Gosta de massa de milho.' },
+  traira:    { n: 'Traíra', loc: ['acude', 'rio'], w: [0.4, 2.6], d: 3, p: 20, h: [17, 6], c: ['#5a5232', '#3a3420', '#8a7a4a'], len: 12, txt: 'Dentuça e brava, caça no fim da tarde e de noite.' },
+  curimata:  { n: 'Curimatã', loc: ['rio'], w: [0.5, 2.5], d: 2, p: 18, h: [6, 16], c: ['#b8bcc0', '#7a8088', '#d8d0b0'], len: 11, txt: 'Sobe o rio em cardume quando chove.', rain: 1 },
+  tucunare:  { n: 'Tucunaré', loc: ['acude'], w: [0.6, 3.5], d: 4, p: 26, h: [7, 16], sun: 1, c: ['#c8b040', '#6a7a2a', '#e86a2a'], len: 13, txt: 'Mancha de olho no rabo. Ataca no sol forte e briga muito.' },
+  mandi:     { n: 'Mandi', loc: ['rio', 'riacho'], w: [0.1, 0.6], d: 2, p: 22, h: [18, 5], c: ['#c8b890', '#8a7a5a', '#4a3a2a'], len: 9, txt: 'Bagrinho de ferrão, sai à noite pelo fundo.' },
+  cari:      { n: 'Cari (cascudo)', loc: ['rio'], w: [0.2, 1.0], d: 2, p: 17, h: null, c: ['#4a4a3a', '#2a2a22', '#7a7a5a'], len: 9, txt: 'Couraçado, vive grudado nas pedras do fundo.' },
+  pacu:      { n: 'Pacu', loc: ['acude'], w: [1.0, 4.0], d: 3, p: 24, h: [8, 17], bait: 'massa', rare: 0.35, c: ['#9aa0a0', '#5a6062', '#e07a3a'], len: 13, txt: 'Redondo e forte. Raro no açude da fazenda.' },
+  mucum:     { n: 'Muçum', loc: ['acude', 'riacho'], w: [0.2, 0.9], d: 3, p: 25, h: [19, 5], rain: 1, rare: 0.5, c: ['#4a3a2a', '#2a2018', '#8a6a4a'], len: 14, eel: 1, txt: 'Parece cobra, sai da lama nas noites de chuva.' },
+  piau:      { n: 'Piau', loc: ['rio', 'riacho'], w: [0.2, 1.2], d: 2, p: 19, h: [6, 18], c: ['#b8b0a0', '#6a6458', '#3a3a3a'], len: 10, txt: 'Listrado de preto, belisca a isca antes de engolir.' },
+  surubim:   { n: 'Surubim', loc: ['rio'], w: [3.0, 12.0], d: 5, p: 34, h: [20, 4], rare: 0.12, c: ['#8a8a80', '#3a3a34', '#e8e4d8'], len: 16, txt: 'O rei do rio, pintado. Só de noite e com muita paciência.' }
+};
+for (const k in FISHD) { const F = FISHD[k], avg = (F.w[0] + F.w[1]) / 2; IT['pe_' + k] = { i: '', n: F.n, kg: Math.max(0.1, Math.round(avg * 10) / 10), p: Math.max(1, Math.round(avg * F.p * 10) / 10), d: F.txt + ' Vende no Mercadinho, assa no fogão.', c: 'pesca' }; }
+Object.assign(IT, {
+  vara: { i: '', n: 'Vara de pesca', kg: 1, p: 85, d: 'Vara de bambu com molinete simples. Perto da água, com isca na mochila: "Pescar".', c: 'ferr' },
+  minhoca: { i: '', n: 'Minhoca (isca)', kg: 0.01, p: 1.5, d: 'Isca para quase todo peixe. Uma por lançada que o peixe pegar.', c: 'pesca' },
+  massa: { i: '', n: 'Massa de milho (isca)', kg: 0.02, p: 2.5, d: 'Isca de fubá. Tilápia e pacu adoram. Faça no fogão com milho.', c: 'pesca' }
+});
+AGRO_ITEMS.fer.push('vara', 'minhoca', 'massa');
+if (typeof ICAT !== 'undefined') ICAT.pesca = ICAT.pesca || 'Pesca';
+function fishIconDraw(k, p) { const F = FISHD[k], [b, d, a] = F.c;
+  if (F.eel) { p(1, 6, 10, 2, b); p(1, 7, 10, 1, d); p(9, 5, 2, 2, b); p(10, 5, 1, 1, '#111'); return; }
+  p(2, 4, 7, 4, b); p(3, 3, 5, 1, b); p(3, 8, 5, 1, d); p(1, 5, 1, 2, b); p(0, 4, 1, 4, a); p(9, 5, 2, 2, b); p(9, 5, 1, 1, '#111'); p(4, 2, 2, 1, a); p(3, 5, 4, 1, shade(b, .2)); }
+for (const k in FISHD) ICON_EXTRA['pe_' + k] = p => fishIconDraw(k, p);
+ICON_EXTRA.vara = p => { for (let i = 0; i < 10; i++) p(1 + i, 10 - i, 1, 1, i < 3 ? '#5a3a1a' : '#c8a060'); p(3, 7, 2, 2, '#4a4a4a'); p(10, 1, 1, 9, 'rgba(230,230,230,0.8)'); p(10, 9, 1, 2, '#e03030'); };
+ICON_EXTRA.minhoca = p => { p(2, 4, 8, 6, '#8a5a32'); p(2, 4, 8, 1, '#a87a4a'); p(3, 6, 2, 1, '#d87a7a'); p(5, 5, 2, 1, '#d87a7a'); p(7, 7, 2, 1, '#d87a7a'); p(4, 2, 4, 2, '#6a6a6a'); };
+ICON_EXTRA.massa = p => { p(2, 4, 8, 6, '#e8d080'); p(2, 4, 8, 1, '#f8e8a0'); p(4, 6, 2, 2, '#d8b860'); p(7, 7, 1, 1, '#c8a040'); };
+function fishS() { if (!S.fish || typeof S.fish !== 'object') S.fish = {}; return S.fish; }
+function waterKind(tx, ty) { const i = gi(tx, ty); if (ground[i] !== G.WATER) return null; if (pondT[i]) return 'acude'; if (forest[i] || (tx < 30 && ty < 22)) return 'riacho'; return 'rio'; }
+// ponto de água à frente do vaqueiro (até ~2 ladrilhos)
+function fishSpot() { if (P.inside || P.mnt || P.cart) return null; const dv = { 0: [0, 1], 1: [0, -1], 2: [-1, 0], 3: [1, 0] }[P.dir] || [0, 1];
+  for (const r of [12, 18, 24, 30, 36]) { const x = P.x + dv[0] * r, y = P.y - 4 + dv[1] * r, k = waterKind(Math.floor(x / TS), Math.floor(y / TS)); if (k) return { x, y, k }; }
+  for (const [dx, dy] of [[0, 1], [0, -1], [-1, 0], [1, 0]]) for (const r of [14, 22]) { const x = P.x + dx * r, y = P.y - 4 + dy * r, k = waterKind(Math.floor(x / TS), Math.floor(y / TS)); if (k) { P.dir = dy > 0 ? 0 : dy < 0 ? 1 : dx < 0 ? 2 : 3; return { x, y, k }; } }
+  return null; }
+const FISH = { on: false, st: '', t: 0,
+  inHours(h, F) { if (!F.h) return true; const [a, b] = F.h; return a < b ? h >= a && h < b : h >= a || h < b; },
+  // sorteia o peixe conforme lugar, hora, tempo, isca e raridade
+  pick(k, bait) { const h = hour(), rain = isRain && isRain(), sun = S.weather === 'sol' || S.weather === 'calor'; const L = [];
+    for (const id in FISHD) { const F = FISHD[id]; if (!F.loc.includes(k)) continue; let w = this.inHours(h, F) ? 1 : 0.15; if (F.rain) w *= rain ? 2.2 : 0.4; if (F.sun) w *= sun ? 1.6 : 0.6; if (F.bait) w *= bait === F.bait ? 2.5 : 0.5; if (F.rare) w *= F.rare; if (id === 'piaba') w *= 0.8; L.push([id, w]); }
+    const tot = L.reduce((s, q) => s + q[1], 0); let r = Math.random() * tot; for (const [id, w] of L) { if ((r -= w) <= 0) return id; } return L.length ? L[0][0] : 'piaba'; },
+  bait() { return has('massa') ? 'massa' : has('minhoca') ? 'minhoca' : null; },
+  start() { const sp = fishSpot(); if (!sp) return say('Chegue na beira da água, virado para ela.'); if (!has('vara')) return say('Precisa de uma vara de pesca (Casa do Agro, Ferramentas).'); const b = this.bait(); if (!b) return say('Sem isca: compre minhoca na Casa do Agro ou faça massa de milho no fogão.');
+    this.on = true; this.sp = sp; this.b = b; this.st = 'cast'; this.t = 0; P._vx = P._vy = 0; this.fish = null; this.tens = 0.5; this.prog = 0.3; this.hold = false; this.ui(true); AU.swish && AU.swish(); },
+  // probabilidade de morder por segundo: mais no amanhecer e entardecer, com chuva fina, menos no meio-dia de calor
+  biteRate() { const h = hour(); let r = 0.22; if ((h >= 5 && h < 8) || (h >= 16 && h < 19)) r *= 1.8; if (h >= 11 && h < 14 && (S.weather === 'calor' || S.weather === 'sol')) r *= 0.55; if (isRain && isRain()) r *= 1.4; if (S.weather === 'tempestade') r *= 0.5; return r; },
+  update(dt) { if (!this.on) return; this.t += dt; P._vx = P._vy = 0;
+    if (this.st === 'cast' && this.t > 0.7) { this.st = 'wait'; this.t = 0; AU.splash && AU.splash(); part(this.sp.x, this.sp.y, 'ring'); this.msg('Esperando beliscar...'); }
+    else if (this.st === 'wait') { if (Math.random() < this.biteRate() * dt) { this.st = 'bite'; this.t = 0; this.fish = this.pick(this.sp.k, this.b); AU.splash && AU.splash(); for (let i = 0; i < 2; i++) part(this.sp.x, this.sp.y, 'ring'); this.msg('Fisgou! Puxe agora!', 1); buzz && buzz(30); } else if (this.t > 22) { this.end('Nada beliscou. Tente outro lugar ou outro horário.'); } }
+    else if (this.st === 'bite') { if (this.t > 0.95) { if (Math.random() < 0.5) useInv(this.b); this.end('O peixe roubou a isca e escapou.'); } }
+    else if (this.st === 'fight') { const F = FISHD[this.fish], diff = F.d, zone = this.zone();
+      this.tens += (this.hold ? 0.6 : -0.5) * dt; this.pull = (this.pull || 0) - dt; if (this.pull <= 0) { this.pull = 0.4 + Math.random() * (1.4 - diff * 0.18); this.kick = (Math.random() < 0.5 ? 1 : -1) * (0.08 + diff * 0.09); } this.tens += (this.kick || 0) * dt * 2; this.kick *= 0.9;
+      this.tens = cl(this.tens, 0, 1); const inZ = this.tens >= zone[0] && this.tens <= zone[1]; this.prog += (inZ ? 0.28 - diff * 0.03 : -0.1) * dt;
+      if (this.tens >= 0.995) { useInv(this.b); return this.end('A linha arrebentou! Segure menos quando o peixe der tranco.'); }
+      if (this.prog <= 0) { useInv(this.b); return this.end('O ' + F.n.toLowerCase() + ' escapou.'); }
+      if (this.prog >= 1) return this.catch(); this.drawUI(); }
+  },
+  zone() { const d = FISHD[this.fish].d, w = 0.52 - d * 0.075; return [0.5 - w / 2, 0.5 + w / 2]; },
+  press(down) { if (!this.on) return; if (this.st === 'bite' && down) { this.st = 'fight'; this.t = 0; this.tens = 0.5; this.prog = 0.3; this.msg('Segure para puxar, solte quando a linha esticar demais.'); AU.click && AU.click(); }
+    else if (this.st === 'wait' && down && this.t > 0.6) this.end('Você recolheu a linha.'); this.hold = down; },
+  catch() { const id = this.fish, F = FISHD[id]; useInv(this.b); const u = Math.random(), w = Math.round((F.w[0] + (F.w[1] - F.w[0]) * Math.pow(u, 1.7)) * 100) / 100;
+    const L = fishS(), rec = L[id] || { n: 0, best: 0 }, first = !rec.n, record = w > rec.best; rec.n++; if (record) rec.best = w; L[id] = rec; S.stats.fish = (S.stats.fish || 0) + 1;
+    addInv('pe_' + id, 1, true); questEvent && questEvent('fish', id, 1); AU.chime && AU.chime();
+    const msg = (first ? '🆕 Primeiro ' : '') + F.n + ' — ' + (w < 1 ? Math.round(w * 1000) + ' g' : w.toFixed(2).replace('.', ',') + ' kg') + (record && !first ? ' · novo recorde!' : '');
+    this.end(null); toast('🎣 ' + msg, first || record ? 'win' : ''); this.showCatch(id, w, first, record); },
+  end(m) { this.on = false; this.st = ''; this.hold = false; this.ui(false); if (m) say(m, 2600); },
+  // interface: barra de tensão com zona verde, progresso e botão grande
+  ui(on) { let el = $('fishUI'); if (!el) { el = document.createElement('div'); el.id = 'fishUI'; el.innerHTML = '<div class="fm"></div><canvas width="200" height="44"></canvas><button class="btn pri">Puxar</button>'; $('app').appendChild(el);
+      const b = el.querySelector('button'), dn = e => { e.preventDefault(); FISH.press(true); }, up = e => { e.preventDefault(); FISH.press(false); };
+      b.addEventListener('pointerdown', dn); b.addEventListener('pointerup', up); b.addEventListener('pointerleave', up); b.addEventListener('pointercancel', up);
+      addEventListener('keydown', e => { if (FISH.on && (e.code === 'Space' || e.key === 'e' || e.key === 'E') && !e.repeat) { e.preventDefault(); e.stopPropagation(); FISH.press(true); } }, true);
+      addEventListener('keyup', e => { if (FISH.on && (e.code === 'Space' || e.key === 'e' || e.key === 'E')) { e.preventDefault(); FISH.press(false); } }, true); }
+    el.style.display = on ? 'flex' : 'none'; document.body.classList.toggle('fishing', on); if (on) { el.querySelector('canvas').style.visibility = 'hidden'; el.querySelector('button').textContent = 'Fisgar / Recolher'; } },
+  msg(t, hot) { const el = $('fishUI'); if (!el) return; el.querySelector('.fm').textContent = t; el.classList.toggle('hot', !!hot); if (this.st === 'bite') el.querySelector('button').textContent = 'Fisgar!'; if (this.st === 'fight') { el.querySelector('button').textContent = 'Segure: puxar'; el.querySelector('canvas').style.visibility = 'visible'; } },
+  drawUI() { const cv = $('fishUI').querySelector('canvas'), g = cv.getContext('2d'), z = this.zone(); g.clearRect(0, 0, 200, 44);
+    g.fillStyle = '#2a1608'; g.fillRect(0, 4, 200, 16); g.fillStyle = '#7a3a2a'; g.fillRect(2, 6, 196, 12); g.fillStyle = '#4a9a3a'; g.fillRect(2 + z[0] * 196, 6, (z[1] - z[0]) * 196, 12); g.fillStyle = '#c03020'; g.fillRect(2 + 0.93 * 196, 6, 0.07 * 196, 12);
+    const x = 2 + this.tens * 196; g.fillStyle = '#fff4c0'; g.fillRect(x - 2, 1, 4, 22); g.fillStyle = '#2a1608'; g.fillRect(x - 1, 2, 2, 20);
+    g.fillStyle = '#2a1608'; g.fillRect(0, 28, 200, 12); g.fillStyle = '#e0b040'; g.fillRect(2, 30, Math.max(0, this.prog) * 196, 8); g.fillStyle = '#fff4c0'; g.font = 'bold 8px sans-serif'; g.fillText('TENSÃO', 4, 15); g.fillStyle = '#2a1608'; g.fillText('PEIXE NO ANZOL', 4, 37); },
+  showCatch(id, w, first, record) { const F = FISHD[id]; showModal('🎣 ' + F.n, null, null, () => `<div class="row" style="gap:12px;align-items:center"><img src="${itemIconURL('pe_' + id)}" width="72" height="72" style="image-rendering:pixelated"><div><b style="font-size:18px">${w < 1 ? Math.round(w * 1000) + ' g' : w.toFixed(2).replace('.', ',') + ' kg'}</b>${first ? '<br>🆕 Nova espécie na coleção!' : record ? '<br>🏆 Novo recorde de peso!' : ''}<p class="mut">${esc(F.txt)}</p></div></div><p class="mut">Pescados: ${fishS()[id].n} · Recorde: ${fishS()[id].best.toFixed(2).replace('.', ',')} kg · Coleção: ${Object.keys(fishS()).length}/${Object.keys(FISHD).length} espécies</p>`); },
+  // desenho no mundo: vara, linha com barriga e boia que afunda na fisgada
+  draw(add) { if (!this.on || !this.sp) return; const s = this.sp; add(iy(P) + 0.6, () => { const dv = { 0: [0, 1], 1: [0, -1], 2: [-1, 0], 3: [1, 0] }[P.dir] || [0, 1], hx = ix(P) + dv[0] * 5 + (dv[0] ? 0 : 4), hy = iy(P) - 13;
+      const lift = this.st === 'fight' ? (this.hold ? 6 : 3) + Math.sin(drawT * 20) * (this.kick ? 1 : 0) : this.st === 'cast' ? 10 * (1 - Math.min(1, this.t / 0.7)) : 2, tx = hx + dv[0] * 12, ty = hy - 12 - lift + dv[1] * 6;
+      X.strokeStyle = '#6a4a22'; X.lineWidth = 1.4; X.beginPath(); X.moveTo(hx, hy); X.lineTo(tx, ty); X.stroke(); X.lineWidth = 1;
+      const by = s.y + (this.st === 'bite' ? 2 + Math.sin(drawT * 30) : this.st === 'fight' ? 1 : Math.sin(drawT * 3) * 0.6), bx = this.st === 'fight' ? s.x + Math.sin(drawT * 7) * 3 : s.x;
+      if (this.st !== 'cast') { X.strokeStyle = 'rgba(235,235,225,0.75)'; X.beginPath(); X.moveTo(tx, ty); X.quadraticCurveTo((tx + bx) / 2, Math.max(ty, by) + (this.st === 'fight' ? 0 : 6), bx, by); X.stroke(); X.fillStyle = '#e03030'; X.fillRect(Math.round(bx) - 1, Math.round(by) - 2, 2, 2); X.fillStyle = '#f4f0e8'; X.fillRect(Math.round(bx) - 1, Math.round(by), 2, 1); } }); }
+};
+function fishInteractables(add, foot) { if (!foot || FISH.on) return; const sp = fishSpot(); if (!sp || !has('vara')) return; add({ k: 'fish', label: '🎣 Pescar' + (FISH.bait() ? '' : ' (sem isca)'), x: P.x, y: P.y, r: 999, prio: 1, fn: () => FISH.start() }); }
+function fishCollectionHTML() { const L = fishS(); return '<h3>Peixes</h3><div class="cgrid">' + Object.keys(FISHD).map(k => { const r = L[k], F = FISHD[k]; return `<div class="card${r ? '' : ' dim'}" style="text-align:center">${r ? `<img src="${itemIconURL('pe_' + k)}" width="40" height="40" style="image-rendering:pixelated"><br><b>${F.n}</b><br><span class="mut">${r.n}× · ${r.best.toFixed(2).replace('.', ',')} kg</span>` : `<div style="font-size:26px;opacity:.4">?</div><span class="mut">${F.loc.map(l => ({ acude: 'açude', rio: 'rio', riacho: 'riacho' })[l]).join(', ')}</span>`}</div>`; }).join('') + '</div>'; }
 function computeCtx() {
   if (mode !== 'play' || P._act || inst.on) { P._ctx = null; return; }
   let best = null, bs = 1e9; const C2 = (score, label, fn, x, y) => { if (score < bs) { bs = score; best = { label, fn, x, y }; } };
@@ -10115,7 +10217,7 @@ const STEP = 1 / 60; let acc = 0, lastT = 0, saveT = 0;
 function tick(dt) {
   drawT += dt;
   if (mode === 'play' && !paused) {
-    holdTick(); placeTick(dt); bagSync(); insideTick(); houseGuard(); if ((tick.lendT = (tick.lendT || 0) - dt) < 0) { tick.lendT = 1; lendTick(); const lh = loanedHorse(); if (lh && P.mnt !== lh.id && lh._st !== 'tied' && !lh._act) lh._st = 'tied'; } const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); CINE.update(dt); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
+    holdTick(); placeTick(dt); bagSync(); insideTick(); houseGuard(); if ((tick.lendT = (tick.lendT || 0) - dt) < 0) { tick.lendT = 1; lendTick(); const lh = loanedHorse(); if (lh && P.mnt !== lh.id && lh._st !== 'tied' && !lh._act) lh._st = 'tied'; } const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); CINE.update(dt); FISH.update(dt); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
     { const h = P.mnt ? byId(P.mnt) : null; if (h && h._react && (h._react.t -= dt) <= 0) h._react = null; }
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);
