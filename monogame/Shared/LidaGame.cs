@@ -13,7 +13,7 @@ using Microsoft.Xna.Framework.Input.Touch;
 
 namespace Lida
 {
-    public class LidaGame : Game
+    public partial class LidaGame : Game
     {
         readonly GraphicsDeviceManager gdm;
         SpriteBatch sb; Sprites spr; World world; Player pl; readonly List<Animal> animals = new List<Animal>();
@@ -22,8 +22,6 @@ namespace Lida
         // relógio: 1 minuto do jogo por segundo real (dia de 24 min, como no jogo web)
         double minutes = 600; int day = 1; float cash = 1500, acct = 2500; int season = 0;
         string toast = ""; float toastT;
-        // toque: joystick à esquerda, botões à direita
-        Vector2 joyC, joyV; int joyId = -1; bool runBtn, actBtn, actPrev; Rectangle bRun, bAct;
         float saveT; readonly string[] args; int shotFrames = -1; string shotPath;
         readonly string savePath;
 
@@ -33,12 +31,16 @@ namespace Lida
             gdm = new GraphicsDeviceManager(this) { PreferredBackBufferWidth = 960, PreferredBackBufferHeight = 540, SupportedOrientations = DisplayOrientation.Portrait | DisplayOrientation.LandscapeLeft | DisplayOrientation.LandscapeRight };
             IsMouseVisible = true; Window.AllowUserResizing = true; Window.Title = "Lida no Sertão";
             var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LidaNoSertao"); Directory.CreateDirectory(dir); savePath = Path.Combine(dir, "save.json");
-            for (int i = 0; i < args.Length; i++) if (args[i] == "--shot" && i + 1 < args.Length) { shotPath = args[i + 1]; shotFrames = 40; }
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i] == "--shot" && i + 1 < args.Length) { shotPath = args[i + 1]; shotFrames = 40; }
+                if (args[i] == "--size" && i + 1 < args.Length) { var wh = args[i + 1].Split('x'); gdm.PreferredBackBufferWidth = int.Parse(wh[0]); gdm.PreferredBackBufferHeight = int.Parse(wh[1]); }
+            }
         }
 
         protected override void LoadContent()
         {
-            sb = new SpriteBatch(GraphicsDevice); spr = new Sprites(GraphicsDevice);
+            sb = new SpriteBatch(GraphicsDevice); spr = new Sprites(GraphicsDevice); ui = new UiArt(GraphicsDevice);
             using (var s = Sprites.Res("world.json")) world = World.Load(s);
             var r = world.Root; var st = r.GetProperty("start"); minutes = st.GetProperty("min").GetDouble(); cash = st.GetProperty("cash").GetSingle(); acct = st.GetProperty("acct").GetSingle();
             var p = r.GetProperty("player"); pl = new Player { Pos = new Vector2(p.GetProperty("x").GetSingle(), p.GetProperty("y").GetSingle()) };
@@ -52,6 +54,8 @@ namespace Lida
                 if (args[i] == "--at" && i + 1 < args.Length) { var xy = args[i + 1].Split(','); pl.Pos = new Vector2(float.Parse(xy[0]) * world.TS, float.Parse(xy[1]) * world.TS); }
                 if (args[i] == "--hour" && i + 1 < args.Length) minutes = float.Parse(args[i + 1]) * 60;
                 if (args[i] == "--season" && i + 1 < args.Length) season = int.Parse(args[i + 1]);
+                if (args[i] == "--menu" && i + 1 < args.Length) OpenMenu(int.Parse(args[i + 1]));
+                if (args[i] == "--toast" && i + 1 < args.Length) Toast(args[i + 1]);
             }
             spr.LoadTerrain(GraphicsDevice, season);
             cam = pl.Pos;
@@ -61,53 +65,68 @@ namespace Lida
         protected override void Update(GameTime gt)
         {
             float dt = Math.Min(0.05f, (float)gt.ElapsedGameTime.TotalSeconds);
-            var kb = Keyboard.GetState(); if (kb.IsKeyDown(Keys.Escape) && shotPath == null) { Save(); Exit(); }
+            var kb = Keyboard.GetState();
             Layout();
-            // entrada: teclado + joystick e botões de toque
-            var mv = Vector2.Zero; if (kb.IsKeyDown(Keys.A) || kb.IsKeyDown(Keys.Left)) mv.X -= 1; if (kb.IsKeyDown(Keys.D) || kb.IsKeyDown(Keys.Right)) mv.X += 1; if (kb.IsKeyDown(Keys.W) || kb.IsKeyDown(Keys.Up)) mv.Y -= 1; if (kb.IsKeyDown(Keys.S) || kb.IsKeyDown(Keys.Down)) mv.Y += 1;
-            bool run = kb.IsKeyDown(Keys.LeftShift) || kb.IsKeyDown(Keys.RightShift), act = kb.IsKeyDown(Keys.E) || kb.IsKeyDown(Keys.Space);
-            runBtn = false; actBtn = false; bool joyAlive = false;
-            foreach (var t in TouchPanel.GetState())
-            {
-                var p = t.Position; if (t.State == TouchLocationState.Released) { if (t.Id == joyId) joyId = -1; continue; }
-                if (bRun.Contains(p)) { runBtn = true; continue; }
-                if (bAct.Contains(p)) { actBtn = true; continue; }
-                if (t.Id == joyId || (joyId < 0 && p.X < GraphicsDevice.Viewport.Width * 0.5f && p.Y > GraphicsDevice.Viewport.Height * 0.45f)) { if (joyId < 0) { joyId = t.Id; joyC = p; } joyAlive = true; var d = (p - joyC) / 60f; if (d.Length() > 1) d.Normalize(); joyV = d; }
-            }
-            if (!joyAlive) { joyId = -1; joyV = Vector2.Zero; }
-            mv += joyV; run |= runBtn; act |= actBtn;
+            UiInput(kb, out var mv, out bool run, out bool act);
             if (act && !actPrev) Interact(); actPrev = act;
+            hint = menuOpen ? null : Target().hint;
+            if (menuOpen && shotPath == null) { base.Update(gt); return; } // menu aberto pausa o tempo
 
             pl.Update(world, mv, run, dt); if (!pl.Running) pl.Energy = Math.Min(100, pl.Energy + dt * 0.4f);
             foreach (var a in animals) a.Update(world, pl, dt);
             // relógio
             minutes += dt; if (minutes >= 24 * 60) { minutes -= 24 * 60; day++; Toast("Dia " + day + " — bom dia, vaqueiro!"); }
             if (toastT > 0) toastT -= dt;
+            // cochos e bebedouros esvaziam devagar (cerca de um dia e meio)
+            foreach (var t in world.Troughs) t.Level = Math.Max(0, t.Level - dt * t.Cap / (24 * 60 * 1.5f));
             // câmera segue o vaqueiro com suavidade e para na borda do mapa
             cam = Vector2.Lerp(cam, pl.Pos, Math.Min(1, dt * 6)); if (shotFrames >= 0) cam = pl.Pos;
             if ((saveT += dt) > 30) { saveT = 0; Save(); }
             base.Update(gt);
         }
 
-        void Interact()
+        /// <summary>O que está ao alcance da mão: porteira, porta, cocho ou animal, e o texto da dica.</summary>
+        (string kind, object obj, string hint) Target()
         {
-            // porteira mais perto (até 1,5 ladrilho): abre ou fecha
             Gate best = null; float bd = 26;
             foreach (var g in world.Gates) foreach (var t in g.Tiles) { var c = new Vector2((t.x + 0.5f) * world.TS, (t.y + 0.5f) * world.TS); float d = Vector2.Distance(c, pl.Pos); if (d < bd) { bd = d; best = g; } }
-            if (best != null) { if (best.Locked) Toast("Porteira trancada: essa terra ainda não é sua."); else { best.Open = !best.Open; Toast(best.Open ? "Abriu a porteira." : "Fechou a porteira."); } return; }
-            foreach (var b in world.Buildings) { var door = new Vector2((b.Door + 0.5f) * world.TS, (b.R3 + 1.4f) * world.TS); if (Vector2.Distance(door, pl.Pos) < 24) { Toast(b.Name + ": interiores chegam na próxima etapa da migração."); return; } }
-            foreach (var a in animals) if (Vector2.Distance(a.Pos, pl.Pos) < 22 && a.Own == "player") { Toast("Carinho em " + a.Name + "."); return; }
+            if (best != null) return ("gate", best, best.Locked ? "Trancada" : best.Open ? "Fechar porteira" : "Abrir porteira");
+            foreach (var b in world.Buildings) { var door = new Vector2((b.Door + 0.5f) * world.TS, (b.R3 + 1.4f) * world.TS); if (Vector2.Distance(door, pl.Pos) < 24) return ("door", b, "Entrar: " + b.Name); }
+            foreach (var t in world.Troughs)
+            {
+                var c = new Vector2(t.X + t.W * world.TS / 2f, t.Y + 8); if (Vector2.Distance(c, pl.Pos) > 24) continue;
+                string pct = " (" + (int)(100 * t.Level / Math.Max(1, t.Cap)) + "%)";
+                if (t.Kind == "agua") return ("trough", t, (inv.CurId == "balde" ? "Encher bebedouro" : "Bebedouro") + pct);
+                return ("trough", t, (inv.CurId == "racao" ? "Pôr ração" : inv.CurId == "sal" ? "Pôr sal" : inv.CurId == "milho" ? "Pôr milho" : "Cocho") + pct);
+            }
+            foreach (var a in animals) if (Vector2.Distance(a.Pos, pl.Pos) < 22 && a.Own == "player" && a.Sp != "cao" || (a.Sp == "cao" && a.Own == "player" && Vector2.Distance(a.Pos, pl.Pos) < 16))
+                    return ("animal", a, inv.CurId == "milho" && a.Sp != "cao" ? "Dar milho a " + a.Name : "Carinho em " + a.Name);
+            return (null, null, null);
+        }
+
+        void Interact()
+        {
+            var (kind, obj, _) = Target();
+            if (kind == "gate") { var g = (Gate)obj; if (g.Locked) Toast("Porteira trancada: essa terra ainda não é sua."); else { g.Open = !g.Open; Toast(g.Open ? "Abriu a porteira." : "Fechou a porteira."); } }
+            else if (kind == "door") Toast(((Building)obj).Name + ": os interiores chegam na próxima etapa da migração.");
+            else if (kind == "trough")
+            {
+                var t = (Trough)obj;
+                if (t.Kind == "agua") { if (inv.CurId == "balde") { t.Level = t.Cap; Toast("Bebedouro cheio de água limpa."); } else Toast("Escolha o balde na barra de itens para encher o bebedouro."); }
+                else if (inv.CurId == "racao" || inv.CurId == "sal" || inv.CurId == "milho") { var n = Inventory.Defs[inv.CurId].Name; inv.UseOne(); t.Level = t.Cap; Toast(n + " no cocho. O gado agradece."); }
+                else Toast("Escolha ração, sal ou milho na barra de itens para encher o cocho.");
+            }
+            else if (kind == "animal")
+            {
+                var a = (Animal)obj;
+                if (inv.CurId == "milho" && a.Sp != "cao") { inv.UseOne(); Toast(a.Name + " comeu o milho todinho."); }
+                else Toast("Carinho em " + a.Name + ".");
+            }
         }
 
         void Toast(string t) { toast = t; toastT = 3; }
 
         // ---------------- desenho ----------------
-        void Layout()
-        {
-            var vp = GraphicsDevice.Viewport; zoom = Math.Max(2, (float)Math.Round(Math.Min(vp.Width, vp.Height) / 230f));
-            int bs = (int)(64 * zoom / 3f); bAct = new Rectangle(vp.Width - bs - 24, vp.Height - bs - 40, bs, bs); bRun = new Rectangle(vp.Width - bs * 2 - 40, vp.Height - bs - 28, bs, (int)(bs * 0.8f));
-        }
-
         /// <summary>Cor do mundo pela hora: amanhecer rosado, dia claro, tarde dourada, noite azul.</summary>
         Color DayTint(out float dark)
         {
@@ -170,40 +189,6 @@ namespace Lida
             if (shotFrames >= 0 && --shotFrames == 0) Shot();
         }
 
-        // ---------------- HUD ----------------
-        void Text(string s, float x, float y, Color c, int size = 0, float scale = 1)
-        {
-            float px = x;
-            foreach (char ch in s) { if (!font[size].TryGetValue(ch, out var g)) { px += 4 * scale; continue; } var sp = spr.Get(g.key); if (sp.Ok) { sb.Draw(spr.Atlas[sp.Atlas], new Vector2((float)Math.Round(px + scale), (float)Math.Round(y + scale)), sp.Src, Color.Black * 0.6f, 0, Vector2.Zero, scale, SpriteEffects.None, 0); sb.Draw(spr.Atlas[sp.Atlas], new Vector2((float)Math.Round(px), (float)Math.Round(y)), sp.Src, c, 0, Vector2.Zero, scale, SpriteEffects.None, 0); } px += g.w * scale; }
-        }
-        float TextW(string s, int size, float scale) { float w = 0; foreach (char ch in s) w += (font[size].TryGetValue(ch, out var g) ? g.w : 4) * scale; return w; }
-        void Panel(Rectangle r, Color fill)
-        {
-            sb.Draw(spr.Pixel, r, new Color(43, 22, 8)); sb.Draw(spr.Pixel, new Rectangle(r.X + 3, r.Y + 3, r.Width - 6, r.Height - 6), fill);
-            sb.Draw(spr.Pixel, new Rectangle(r.X + 3, r.Y + 3, r.Width - 6, 2), Color.White * 0.25f); sb.Draw(spr.Pixel, new Rectangle(r.X + 3, r.Bottom - 5, r.Width - 6, 2), Color.Black * 0.3f);
-        }
-        void DrawHud(Viewport vp)
-        {
-            float u = Math.Max(1, zoom / 2f); sb.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
-            var top = new Rectangle(8, 8, vp.Width - 16, (int)(34 * u)); Panel(top, new Color(92, 54, 26));
-            int h = (int)(minutes / 60) % 24, m = (int)(minutes % 60);
-            string[] wk = { "Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb" };
-            Text(wk[day % 7] + " · dia " + day + "   " + h.ToString("00") + ":" + m.ToString("00"), 20, 14 * u, new Color(255, 240, 200), 1, u * 0.9f);
-            string money = "R$ " + cash.ToString("N0") + "  ·  Banco R$ " + acct.ToString("N0"); Text(money, vp.Width - 20 - TextW(money, 1, u * 0.9f), 14 * u, new Color(255, 224, 140), 1, u * 0.9f);
-            // energia
-            var eb = new Rectangle(20, (int)(46 * u), (int)(120 * u), (int)(8 * u)); sb.Draw(spr.Pixel, eb, new Color(43, 22, 8)); sb.Draw(spr.Pixel, new Rectangle(eb.X + 2, eb.Y + 2, (int)((eb.Width - 4) * pl.Energy / 100f), eb.Height - 4), new Color(240, 200, 60));
-            Text("Energia", eb.Right + 8, eb.Y - 4 * u, Color.White, 0, u);
-            var ar = world.AreaAt(pl.Pos.X, pl.Pos.Y); if (ar != null) Text(ar.Name, 20, 60 * u, new Color(255, 240, 200), 0, u);
-            // aviso
-            if (toastT > 0) { float tw = TextW(toast, 0, u) + 24; var tr = new Rectangle((int)((vp.Width - tw) / 2), (int)(80 * u), (int)tw, (int)(22 * u)); Panel(tr, new Color(60, 34, 14) * 0.95f); Text(toast, tr.X + 12, tr.Y + 5 * u, Color.White, 0, u); }
-            // controles de toque
-            Panel(bAct, new Color(140, 84, 36)); Text("Ação", bAct.X + (bAct.Width - TextW("Ação", 1, u)) / 2, bAct.Y + bAct.Height / 2 - 9 * u, Color.White, 1, u);
-            Panel(bRun, runBtn || pl.Running ? new Color(200, 150, 60) : new Color(110, 66, 30)); Text("Correr", bRun.X + (bRun.Width - TextW("Correr", 0, u)) / 2, bRun.Y + bRun.Height / 2 - 7 * u, Color.White, 0, u);
-            if (joyId >= 0) { sb.Draw(spr.Soft, new Rectangle((int)joyC.X - 70, (int)joyC.Y - 70, 140, 140), Color.White * 0.4f); sb.Draw(spr.Soft, new Rectangle((int)(joyC.X + joyV.X * 60) - 28, (int)(joyC.Y + joyV.Y * 60) - 28, 56, 56), new Color(255, 220, 140) * 0.9f); }
-            Text("MonoGame · fase 1 da migração", 20, vp.Height - 22 * u, Color.White * 0.55f, 0, u * 0.85f);
-            sb.End();
-        }
-
         // ---------------- salvar / carregar ----------------
         void Save()
         {
@@ -213,6 +198,7 @@ namespace Lida
                 var o = new Dictionary<string, object> { ["v"] = 1, ["x"] = pl.Pos.X, ["y"] = pl.Pos.Y, ["min"] = minutes, ["day"] = day, ["cash"] = cash, ["acct"] = acct, ["en"] = pl.Energy };
                 var gates = new List<int>(); foreach (var g in world.Gates) if (g.Open) gates.Add(g.Index); o["gates"] = gates;
                 var an = new List<float[]>(); foreach (var a in animals) an.Add(new[] { a.Id, a.Pos.X, a.Pos.Y }); o["animals"] = an;
+                var iv = new List<object[]>(); foreach (var sl in inv.S) iv.Add(new object[] { sl.Empty ? "" : sl.Id, sl.N }); o["inv"] = iv; o["sel"] = inv.Sel;
                 File.WriteAllText(savePath, JsonSerializer.Serialize(o));
             }
             catch (Exception) { }
@@ -226,6 +212,7 @@ namespace Lida
                 pl.Pos = new Vector2(r.GetProperty("x").GetSingle(), r.GetProperty("y").GetSingle()); minutes = r.GetProperty("min").GetDouble(); day = r.GetProperty("day").GetInt32(); cash = r.GetProperty("cash").GetSingle(); acct = r.GetProperty("acct").GetSingle(); pl.Energy = r.GetProperty("en").GetSingle();
                 var open = new HashSet<int>(); foreach (var g in r.GetProperty("gates").EnumerateArray()) open.Add(g.GetInt32()); foreach (var g in world.Gates) g.Open = open.Contains(g.Index);
                 var pos = new Dictionary<int, Vector2>(); foreach (var a in r.GetProperty("animals").EnumerateArray()) pos[(int)a[0].GetSingle()] = new Vector2(a[1].GetSingle(), a[2].GetSingle()); foreach (var a in animals) if (pos.TryGetValue(a.Id, out var p)) { a.Pos = p; a.Target = p; }
+                if (r.TryGetProperty("inv", out var iv)) { int i = 0; foreach (var e in iv.EnumerateArray()) { if (i >= Inventory.Size) break; var id = e[0].GetString(); inv.S[i].Id = string.IsNullOrEmpty(id) || !Inventory.Defs.ContainsKey(id) ? null : id; inv.S[i].N = inv.S[i].Id == null ? 0 : e[1].GetInt32(); i++; } inv.Sel = r.GetProperty("sel").GetInt32(); }
                 Toast("Jogo carregado: dia " + day + ".");
             }
             catch (Exception) { }

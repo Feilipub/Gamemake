@@ -44,16 +44,21 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      # monogame/global.json fixa o .NET 8 (o runner traz o .NET 10, que recusa net8.0-android)
       - name: Instalar o suporte a Android do .NET
-        run: dotnet workload install android
+        working-directory: monogame
+        run: dotnet --version && dotnet workload install android
 
       - name: Conferir a versão de computador (compila)
-        run: dotnet build monogame/Desktop/LidaNoSertao.Desktop.csproj -c Release
+        working-directory: monogame
+        run: dotnet build Desktop/LidaNoSertao.Desktop.csproj -c Release
 
       - name: Gerar o APK
         run: |
-          dotnet publish monogame/Android/LidaNoSertao.Android.csproj -c Release -f net8.0-android \
+          cd monogame
+          dotnet publish Android/LidaNoSertao.Android.csproj -c Release -f net8.0-android -p:CheckEolWorkloads=false \
             -p:ApplicationVersion=${{ github.run_number }} -p:ApplicationDisplayVersion=0.1.${{ github.run_number }}
+          cd ..
           mkdir -p build/mono
           apk=$(find monogame/Android/bin/Release -name '*-Signed.apk' | head -1)
           echo "APK: $apk"
