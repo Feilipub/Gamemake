@@ -9,7 +9,7 @@ for(const id of ['baiao','xote','toada','quadrilha']){
  const d=buf.getChannelData(0);let s=0,pk=0;for(let i=0;i<d.length;i++){s+=d[i]*d[i];pk=Math.max(pk,Math.abs(d[i]))}const rms=Math.sqrt(s/d.length);
  const n=d.length,ab=new ArrayBuffer(44+n*2),v=new DataView(ab);const w=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))};w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,44100,true);v.setUint32(28,88200,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);const g=0.9/Math.max(pk,1e-3);for(let i=0;i<n;i++)v.setInt16(44+i*2,Math.max(-1,Math.min(1,d[i]*g))*32767,true);
  let bin='';const u8=new Uint8Array(ab);for(let i=0;i<u8.length;i+=8192)bin+=String.fromCharCode.apply(null,u8.subarray(i,i+8192));return JSON.stringify({rms,pk,secs,b64:btoa(bin),name:S0.n})})()`)},id);
- const o=JSON.parse(r);fs.writeFileSync(out+id+'.wav',Buffer.from(o.b64,'base64')); // converta com: ffmpeg -i X.wav -b:a 96k X.mp3ok(`${o.name}: renderizada (${o.secs.toFixed(1)} s)`,o.rms>0.003&&o.pk<4,'rms '+o.rms.toFixed(4));}
+ const o=JSON.parse(r);fs.writeFileSync(out+id+'.wav',Buffer.from(o.b64,'base64')); /* converta com: ffmpeg -i X.wav -b:a 96k X.mp3 */ok(`${o.name}: renderizada (${o.secs.toFixed(1)} s)`,o.rms>0.003&&o.pk<4,'rms '+o.rms.toFixed(4));}
 await E("newGame(defaultCF())");await p.waitForTimeout(400);await E("FILM.end();closeModal();qPump=()=>{};QDQ.length=0;S.min=10*60;SET.cine='off'");
 await p.mouse.click(200,200);await E("AU.init&&AU.init();AU.ctx&&AU.ctx.resume()");await p.waitForTimeout(500);
 const run=await E("AU.ok()");ok('áudio do navegador ativo',run);

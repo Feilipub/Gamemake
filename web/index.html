@@ -3542,7 +3542,7 @@ const RIG = (() => {
   const mixU = (u, v, t) => { const a = up(u), b = up(v); return pk(cl8(a[0] + (b[0] - a[0]) * t), cl8(a[1] + (b[1] - a[1]) * t), cl8(a[2] + (b[2] - a[2]) * t), 255); };
   const COOL = C('#3a2c5c'), WARM = C('#fff0c0');
   // conjunto de tons: base, sombra (fria), luz (quente), escuro (linhas)
-  function T(h) { const b = typeof h === 'number' ? h : C(h); return { b, s: mixU(mul(b, 0.74), COOL, 0.14), l: mixU(mul(b, 1.13), WARM, 0.16), d: mixU(mul(b, 0.5), COOL, 0.18) }; }
+  function T(h) { const b = typeof h === 'number' ? h : C(h); return { b, s: mixU(mul(b, 0.66), COOL, 0.16), l: mixU(mul(b, 1.2), WARM, 0.18), d: mixU(mul(b, 0.46), COOL, 0.2) }; } // contraste maior entre luz e sombra: volume mais legível
   const TC = new Map(); const tn = h => { let t = TC.get(h); if (!t) TC.set(h, t = T(h)); return t; };
   const hsh = (x, y, s) => { let h = (x * 374761393 + y * 668265263 + (s | 0) * 1442695041) | 0; h = (h ^ (h >>> 13)) * 1274126177 | 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
   const nz = (x, y, s) => { const xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi, u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy); const a = hsh(xi, yi, s), b = hsh(xi + 1, yi, s), c = hsh(xi, yi + 1, s), d = hsh(xi + 1, yi + 1, s); return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; };
@@ -3581,7 +3581,14 @@ const RIG = (() => {
     for (let y = my0; y <= my1; y++) for (let x = mx0; x <= mx1; x++) {
       const i = y * Wd + x; if (!inM(i)) continue;
       let c = t.b;
-      if (mode === 1) { const a = y > 0 && inM(i - Wd), b1 = y < Ht - 1 && inM(i + Wd), b2 = y < Ht - 2 && inM(i + 2 * Wd); if (!a) c = t.l; else if (!b1 || (sh2 && !b2)) c = t.s; else if (o.rim && x < Wd - 1 && !inM(i + 1)) c = t.s; }
+      if (mode === 1) { // volume em faixas: dorso iluminado, meio-tom pontilhado, sombra na barriga; luz na borda do lado do sol (oeste)
+        let dt = 0; while (dt < 5 && y - dt - 1 >= 0 && inM(i - (dt + 1) * Wd)) dt++; let db = 0; while (db < 6 && y + db + 1 < Ht && inM(i + (db + 1) * Wd)) db++;
+        const hg = dt + db + 1, chk = (x + y) & 1;
+        if (dt === 0) c = t.l; else if (db === 0 || (sh2 && db === 1)) c = t.s;
+        else if (dt === 1 && hg > 5) c = chk ? t.l : mixU(t.b, t.l, 0.5);
+        else if (db === 2 && hg > 6) c = chk ? mixU(t.b, t.s, 0.55) : t.b;
+        else if (o.rim && x < Wd - 1 && !inM(i + 1)) c = t.s;
+        else if (x > 0 && !inM(i - 1) && dt < hg / 2) c = mixU(c, t.l, 0.45); }
       else if (mode === 2) { const r = x < Wd - 1 && inM(i + 1), l = x > 0 && inM(i - 1), r2 = x < Wd - 2 && inM(i + 2); if (!r) c = t.s; else if (!l && r2) c = t.l; }
       else if (mode === 3) { const a = y > 0 && inM(i - Wd); if (!a) c = t.l; }
       if (o.fn) { const r = o.fn(x, y, c, t); if (r !== undefined && r !== null) c = r; }
@@ -4628,9 +4635,11 @@ function dev(a) { // desenvolvimento 0..100
 function score(a) { const ageP = a.age < 4 ? -8 : 0; return 0.36 * a.gen + 0.13 * a.hap + 0.13 * a.hp + 0.14 * dev(a) + 0.1 * a.care + 0.1 * a.cond + Math.min(3, a.skills.length) * 4 + ageP - (a.sick ? 10 : 0); }
 function stars(a) { return cl(1 + Math.floor(score(a) / 18), 1, 5); }
 function starStr(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
+// mercado do boi: a arroba do bezerro vale mais (até +25% aos 120 kg, zerando aos 300 kg); macho acima de 450 kg é boi gordo (+6%)
+function cattleAgio(a) { const w = a.wt || 300; let k = 1 + 0.25 * cl((300 - w) / 180, 0, 1); if (a.sex === 'M' && w >= 450) k *= 1.06; return k; }
 function animalValue(a) {
   const st = stars(a), q = 0.82 + st * 0.08;
-  if (a.sp === 'boi') return Math.round(a.wt / 15 * S.arroba * q * (CATTLE[a.br].p || 1) * (a.age < 12 ? 1.25 : 1));
+  if (a.sp === 'boi') return Math.round(a.wt / 15 * S.arroba * q * (CATTLE[a.br].p || 1) * cattleAgio(a)); // ágio do bezerro some aos poucos com o peso; boi gordo tem prêmio
   if (a.sp === 'cavalo') return Math.round((HORSES[a.br].cost * 420 + 2500) * q * (a.age < 12 ? 0.6 : 1));
   if (a.sp === 'burro') return Math.round(4200 * q); if (a.sp === 'jumento') return Math.round(1800 * q);
   if (a.sp === 'galinha') return Math.round((a.sex === 'M' ? 70 : 55) * q); if (a.sp === 'cao') return Math.round(600 * q);
@@ -5013,9 +5022,13 @@ function layEggs() {
   S.eggs = Math.min(60, S.eggs + n); S.eggsP = Math.min(40, (S.eggsP || 0) + nd);
   if (built('ordenha')) { const cows = S.animals.filter(a => a.sp === 'boi' && a.lact > 0 && a.own === 'player'); let L = 0; cows.forEach(c => L += (CATTLE[c.br].milk || 0.4) * 6 * (c.hap / 100 + 0.2)); S.milk = Math.round(Math.min(200, S.milk + L)); }
 }
+// destino de entrega que é seu de verdade: o Recebimento só depois de comprar o Terreno do Curral Grande
+function ownDest(to, a) { to = to || 'receb'; if (AREAS[to] && owned(to)) return to; if (a && a.sp === 'galinha' && owned('galin')) return 'galin'; if (a && RUM(a.sp) && AREAS.aprisco && owned('aprisco')) return 'aprisco'; if (a && a.sp === 'porco' && AREAS.chiq && owned('chiq')) return 'chiq'; return 'curral'; }
+// animais seus presos num cercado que ainda não é seu (saves antigos): vão para o curral
+function rescueLocked() { let n = 0; for (const a of S.animals) { if (a.own !== 'player' || a._hid) continue; const ak = areaAt(a.x, a.y); if (ak && AREAS[ak] && !owned(ak) && ['receb', 'conf', 'quar', 'haras', 'p3', 'p4', 'galin'].includes(ak)) { const to = ownDest(null, a), p = randIn(to); a.x = p[0]; a.y = p[1]; a.area = to; a._st = null; n++; } } if (n) toast('🐄 ' + n + ' animal(is) que estava(m) num cercado que ainda não é seu foi(ram) levado(s) para o ' + AREAS.curral.n + '.'); }
 function deliveries() {
   const now = S.delivery.filter(d => d.day <= S.day); S.delivery = S.delivery.filter(d => d.day > S.day);
-  now.forEach(d => { const a = byId(d.id); if (!a) return; a.own = 'player'; if (S.firsts && S.firsts.compra && !S.firsts.cs_compra) setTimeout(() => csPrimeiraCompra(a), 900); a.newArr = 1; const p = randIn(d.to || 'receb'); a.x = p[0]; a.y = p[1]; a._st = null; toast('🚚 ' + a.n + ' chegou ao ' + AREAS[d.to || 'receb'].n); });
+  now.forEach(d => { const a = byId(d.id); if (!a) return; a.own = 'player'; if (S.firsts && S.firsts.compra && !S.firsts.cs_compra) setTimeout(() => csPrimeiraCompra(a), 900); a.newArr = 1; const to = ownDest(d.to, a); const p = randIn(to); a.x = p[0]; a.y = p[1]; a.area = to; a._st = null; toast('🚚 ' + a.n + ' chegou ao ' + AREAS[to].n); });
   if (S.frete && S.fretePend) { for (const k in S.fretePend) S.dep[k] = (S.dep[k] || 0) + S.fretePend[k]; S.fretePend = null; toast('🚚 Entrega da Casa do Agro no depósito.'); }
 }
 function dayTick() { rocaGrowTick(); { const bd = bdayToday(); if (bd.length) toast('🎂 Hoje é aniversário de ' + bd.map(id => NPCDEF[id].n).join(' e ') + '! Presente hoje vale o dobro.'); } aucExpire(); storyCheck(); regionDay(); missionDay(); bicoDay(); if (S.reg && S.reg.pop) { rfarmDay(); jobDay(); } qRefresh();
@@ -7346,7 +7359,7 @@ const QDEF = [
     intro: [['joana', 'Oi! Sou a Joana. Seu avô era freguês antigo da loja. A gente juntou um vale de R$ 600 em nome dele. É seu, pra começar a criação.'], ['joana', 'Dá uma olhada nas abas: animais com a ficha de cada um, ração, remédio, mudas... compra um insumo e um animal pra começar.']],
     onAccept: () => receive(600, 'Vale da Casa do Agro (em nome de Tiãozinho)', 'cash'),
     steps: [{ t: 'Entrar na Casa do Agro', ev: 'door', key: 'agro', at: [107.5, 58] }, { t: 'Comprar qualquer insumo na loja', ev: 'buy' }, { t: 'Comprar um animal (chega amanhã cedo)', ev: 'buyAnimal' }],
-    outro: [['joana', 'Ótima escolha! Animal novo chega no lugar certo: porco no chiqueiro, cabra no aprisco, gado no Recebimento.'], ['joana', 'O Seu Bené ensina como cuidar. Ninguém entende mais de bicho que ele.']],
+    outro: [['joana', 'Ótima escolha! Animal novo chega no lugar certo: porco no chiqueiro, cabra no aprisco, gado no Recebimento — enquanto o Curral Grande não for seu, no seu curral.'], ['joana', 'O Seu Bené ensina como cuidar. Ninguém entende mais de bicho que ele.']],
     reward: { items: { racao: 1, vacina: 2 }, fr: { joana: 30 } } },
   { id: 'q4', n: 'Primeiros cuidados', giver: 'bene', after: 'q3',
     intro: [['bene', 'Ê boi! Bicho não fala, menino, mas mostra. Olho no cocho, mão no lombo e vacina em dia. Vou te ensinar.']],
@@ -7556,7 +7569,8 @@ function agroPrice(id) { return Math.round(IT[id].p * priceMul() * ((S.agro && S
 function genAgroAnimals(wk) {
   const L = [], mk = (sp, br, o) => mkAnimal(sp, br, Object.assign({ own: 'agro' }, o || {})), th = wk % 4, pk = o => pick(Object.keys(o).filter(k => !o[k].old));
   const nB = th === 0 ? 5 : 2, nH = th === 1 ? 4 : 1, nP = th === 2 ? 5 : 2, nG = th === 3 ? 5 : 2;
-  for (let i = 0; i < nB; i++) L.push(mk('boi', pk(CATTLE), { age: rint(8, 34), sex: i % 3 ? 'F' : 'M' }));
+  for (let i = 0; i < nB; i++) L.push(mk('boi', pk(CATTLE), { age: rint(14, 34), sex: i % 3 ? 'F' : 'M' }));
+  { const cheap = Object.keys(CATTLE).filter(k => !CATTLE[k].old && (CATTLE[k].p || 1) <= 1.05); for (let i = 0; i < 6; i++) L.push(mk('boi', pick(cheap.length ? cheap : Object.keys(CATTLE)), { age: rint(5, 10), sex: i % 2 ? 'F' : 'M', calfLot: 1 })); } // lote de bezerros desmamados, toda semana
   for (let i = 0; i < nH; i++) L.push(mk('cavalo', pk(HORSES), { age: rint(14, 40) }));
   L.push(mk(Math.random() < 0.5 ? 'burro' : 'jumento', null, {}));
   for (let i = 0; i < nP; i++) L.push(mk('porco', pk(PIGS), { age: i === 0 ? 2 : rint(4, 18), sex: i % 2 ? 'M' : 'F' }));
@@ -7565,8 +7579,8 @@ function genAgroAnimals(wk) {
   L.push(mk('galinha', pk(CHICKENS), { sex: 'F', age: 10 }), mk('galinha', pk(CHICKENS), { sex: 'M', age: 10 }), mk('cao', pk(DOGS), { age: 8 }));
   return L;
 }
-function agroAnimalPrice(a) { return Math.round(animalValue(a) * 1.08 * priceMul() * (S.agro ? 1 + ((S.agro.wk * 7 + a.id) % 9 - 4) / 100 : 1)); }
-function agroDest(a) { return a.sp === 'galinha' ? 'galin' : a.sp === 'porco' ? 'chiq' : RUM(a.sp) ? 'aprisco' : a.sp === 'cavalo' && owned('haras') ? 'haras' : 'receb'; }
+function agroAnimalPrice(a) { return Math.round(animalValue(a) * (a.sp === 'boi' && a.age < 12 ? 0.97 : 1.08) * priceMul() * (S.agro ? 1 + ((S.agro.wk * 7 + a.id) % 9 - 4) / 100 : 1)); }
+function agroDest(a) { return a.sp === 'galinha' ? 'galin' : a.sp === 'porco' ? 'chiq' : RUM(a.sp) ? 'aprisco' : a.sp === 'cavalo' && owned('haras') ? 'haras' : ownDest('receb', a); }
 function agroAnimalCard(a, i) {
   const B = breedOf(a), fert = a.sex === 'F' ? (a.age >= (a.sp === 'porco' ? 9 : RUM(a.sp) ? 10 : 20) ? 'matriz em idade de reprodução' : 'ainda jovem para reproduzir') : (a.age >= (a.sp === 'porco' ? 9 : RUM(a.sp) ? 10 : 20) ? 'reprodutor apto' : 'jovem');
   const tr = typeof traitNames === 'function' ? traitNames(a) : '', price = agroAnimalPrice(a);
@@ -8603,7 +8617,7 @@ function auctionEnd() {
   AUC.on = false; AUC.lotA = null; document.body.classList.remove('auc'); $('auc').style.display = 'none'; cam.taz = 1; cam.fx = cam.fy = null; S.auc.done = S.day;
   regionNews(`${AUC_TYPES[AUC.type].n}: ${AUC.sold.length} lote(s) vendido(s)${AUC.sold.length ? ', o maior por ' + fmt(Math.max(...AUC.sold.map(s => s.price))) : ''}.`);
   showModal('Fim do leilão', null, null, () => {
-    let h = `<p>${AUC.sold.length} lote(s) vendido(s). ${AUC.my.length ? 'Você arrematou: <b>' + AUC.my.map(esc).join(', ') + '</b> (chegam amanhã no Recebimento).' : ''}</p>`;
+    let h = `<p>${AUC.sold.length} lote(s) vendido(s). ${AUC.my.length ? 'Você arrematou: <b>' + AUC.my.map(esc).join(', ') + '</b> (chegam amanhã: no Recebimento, ou no seu curral se o Curral Grande ainda não for seu).' : ''}</p>`;
     h += AUC.sold.map(s => `<p class="mut">${esc(s.lot.a.n)} → ${s.by === 'player' ? 'você' : BUYERS[s.by].n}: ${fmt(s.price)}</p>`).join('');
     const un = AUC.unsold.filter(l => !l.mine && FARMS[l.sellerFarm]); if (un.length) h += '<h3>Negociar depois do leilão</h3><p class="mut">Os donos dos lotes que não venderam aceitam conversar.</p>' + un.map((l, i) => `<div class="card"><div class="row sp">${esc(l.a.n)} · ${catName(l.a)} ${breedOf(l.a).n} <span class="mut">(${NPCDEF[l.seller].n})</span>${btn('Fazer proposta', 'aucPost', String(AUC.unsold.indexOf(l)))}</div></div>`).join('');
     return h;
@@ -9207,14 +9221,17 @@ const FILM = {
           this.ridge(2.2, hy - 4, 12, '#a88aa0', '#e8b8a8', 0); this.ground('#9a8c4a', '#8a7c40', '#b8a660');
           const gx = Math.round(vw * 0.62), gy = Math.round(hy + (vh - hy) * 0.4), wood = '#7a4e2c', woodL = '#b07a48', woodD = '#4a2c18';
           this.tree(gx + 52, gy - 4, 1, '#3e5a2c', '#5e7e36', '#9cb050', '#5a3a22');
+          const fenceDraw = () => {
           for (let x = 0; x < vw; x++) { if (x > gx - 22 && x < gx + 22) continue; this.P(x, gy - 13, 1, 1, '#8a8a8a'); this.P(x, gy - 8, 1, 1, '#8a8a8a'); if (x % 12 === 0) { this.P(x, gy - 16, 2, 16, woodD); this.P(x, gy - 16, 1, 16, wood); } }
           for (const px of [gx - 22, gx + 20]) { this.P(px, gy - 30, 4, 31, woodD); this.P(px, gy - 30, 2, 31, wood); this.P(px, gy - 30, 1, 31, woodL); }
           this.P(gx - 24, gy - 33, 50, 6, woodD); this.P(gx - 23, gy - 32, 48, 4, '#9a6a3a'); this.P(gx - 23, gy - 32, 48, 1, woodL);
           const g = this.g; g.font = '5px "Pixelify Sans",monospace'; g.textAlign = 'center'; g.fillStyle = '#f4e2b0'; g.fillText('BOA ESPERANÇA', gx + 1, gy - 28); g.textAlign = 'left';
           const op = cl((u - 0.48) / 0.3, 0, 1), gw = Math.round(40 * Math.cos(op * 1.35)); // porteira de 5 tábuas abrindo
           for (let k = 0; k < 5; k++) this.P(gx - 18, gy - 22 + k * 4, gw, 2, k % 2 ? wood : woodL); this.P(gx - 18, gy - 22, 2, 20, woodD); this.P(gx - 18 + gw - 2, gy - 22, 2, 20, woodD); for (let k = 0; k < gw; k++) this.P(gx - 18 + k, gy - 22 + Math.round(k / Math.max(1, gw) * 18), 1, 1, woodD);
-          const x = u < 0.45 ? lerp(-30, gx - 40, u / 0.45) : u < 0.78 ? gx - 40 : lerp(gx - 40, vw + 30, (u - 0.78) / 0.22), an = u >= 0.45 && u < 0.78 ? 'idle' : 'walk', fr = an === 'idle' ? 0 : Math.floor(t * 9) % RIG.frames('walk');
-          this.rider(x, gy + 6, an, fr);
+          };
+          // o vaqueiro vem pela estrada na frente da cerca, para na porteira enquanto ela abre e entra por ela (some atrás da cerca)
+          const ry = u < 0.78 ? gy + 16 : lerp(gy + 16, gy - 10, (u - 0.78) / 0.22), x = u < 0.45 ? lerp(-30, gx - 30, u / 0.45) : u < 0.78 ? gx - 30 : lerp(gx - 30, gx + 2, (u - 0.78) / 0.22), an = u >= 0.45 && u < 0.78 ? 'idle' : 'walk', fr = an === 'idle' ? 0 : Math.floor(t * 9) % RIG.frames('walk');
+          if (ry < gy) { this.rider(x, ry, an, fr); fenceDraw(); } else { fenceDraw(); this.rider(x, ry, an, fr); }
           OP.post.call(this, Math.round(vw * 0.92), vh + 2, Math.round(vh * 0.16), '#3a2618', '#a8784a');
         },
         cue: [[0.4, () => sub(`<b>${nm}</b> chega à Fazenda Boa Esperança, herança do avô <b>Tiãozinho</b>.`)], [3.8, () => AU.creak && AU.creak()]] },
@@ -9532,7 +9549,7 @@ const SAVE = {
     S.animals.forEach(a => { if (a._reloc && AREAS[a._reloc]) { const q = randIn(a._reloc); a.x = q[0]; a.y = q[1]; delete a._reloc; } unstick(a); });
     if (boxHit(P.x, P.y, HB.foot, 'p')) { const R0 = P.inside && roomById(P.inside); if (R0) { P.x = (R0.door[0] + 0.5) * TS; P.y = (R0.door[1] - 0.6) * TS; } else { P.inside = null; P.out = null; P.x = 7 * TS; P.y = 30.4 * TS; } }
     initNpcs(); if (S.npcPos) npcs.forEach(e => { const p = S.npcPos[e.id]; if (p && SPOTS[p[2]]) { e.x = p[0]; e.y = p[1]; e.spot = p[2]; const q = SPOTS[p[2]].p; if (hyp(q[0] * TS - e.x, q[1] * TS - e.y) > 8) { e.path = spotPath([e.x / TS, e.y / TS], [], p[2]); e.hidden = false; } } }); // salvo no meio do caminho: retoma a rota em vez de ficar parado na estrada
-    grassSeasonReset(); houseGuard(); startPlay(false);
+    grassSeasonReset(); houseGuard(); rescueLocked(); startPlay(false);
   }
 };
 function grassSeasonReset() { groundSeason = -1; GR.invalidate(); }

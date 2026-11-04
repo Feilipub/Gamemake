@@ -153,3 +153,29 @@ nas estradas, missões e memória dos NPCs.
 | Redesenho dos sprites de personagens e animais | Não feito. |
 | Saltar obstáculos a cavalo | Não feito. |
 | Música nova | Não feita. Os sons novos são sintetizados: sapo, pato, miado e ronronar. |
+
+## Rodada 2
+
+| Sistema | O que foi feito | Teste |
+|---|---|---|
+| Ovelhas | 4 raças deslanadas (Santa Inês, Morada Nova, Somalis, Dorper): carne, borregos com gêmeos por raça, aprisco, rebanho, tocada, compra e venda | `criacao_test` 14/14 |
+| Patos de criação | Pato-crioulo e marreca-pequim: passam o dia no açude, botam ovo de pata, vendido no Mercadinho e na Padaria | `criacao_test` |
+| Padaria, restaurante e oficina | Donos novos (Neide, Damião, Bira) com rotina, horário, estoque diário e preços variáveis. A padaria compra produção da fazenda; o restaurante tem encomenda do dia (contrato); a oficina vende material e reforma a carroça (400 → 700 kg) | `vila_test` 19/19 |
+| Conversas e laços | 15 laços entre moradores (aba Relações). Falas entre moradores conforme o laço; falas com contexto (tempo, estação, hora, estado do vaqueiro, recordes, festas, fofoca) e banco de prosa do sertão | `vila_test` |
+| Construção | Cerca, cocho, bebedouro, abrigo, banco, poste, canteiro e espantalho, com material real. Regras de lugar, sem sobreposição e sem fechar caminhos (busca em largura); girar e remover | `construcao_test` 19/19 |
+| Salto a cavalo | Salto sobre cerca galopando, com refugo por temperamento, embalo e treino | `salto_test` 8/8 |
+| Música | 4 peças originais sintetizadas (baião, xote, toada, quadrilha) no revezamento, nas festas e à noite | `musica_test` 9/9 |
+| Animais (arte) | Volume em faixas com meio-tom pontilhado e contraste maior em todas as pelagens | inspeção visual |
+
+### Correções da rodada 2
+- **Compras:** iam para o Recebimento, que pertence ao Terreno do Curral Grande, ainda não comprado. Agora vão para um cercado que é seu; animais já presos lá são levados ao curral ao carregar o save.
+- **Abertura:** o vaqueiro passava ao lado da porteira. Agora para, espera abrir e entra por ela.
+- **Economia do bezerro:**
+  - O ágio do bezerro caía de uma vez aos 12 dias; agora diminui aos poucos com o peso (até +25% aos 120 kg, zerando aos 300 kg).
+  - Boi gordo (macho acima de 450 kg) ganha +6%.
+  - A Casa do Agro tem um lote de 6 bezerros desmamados toda semana, sem a margem da loja.
+- Teste: `entrega_test` 7/7.
+
+### Ainda não feito
+- Redesenho dos personagens (rostos e roupas): os sprites são os da etapa anterior.
+- O caixa da fazenda vizinha Serra cresce rápido demais (observado: ~579 mil → ~1,07 milhão em 20 dias).
