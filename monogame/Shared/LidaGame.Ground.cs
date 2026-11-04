@@ -14,7 +14,7 @@ namespace Lida
         void GroundInit()
         {
             hero = new HeroArt(GraphicsDevice); using (var st = Sprites.Res("heroi_vaqueiro.png")) heroSheet = Texture2D.FromStream(GraphicsDevice, st);
-            for (int i = 0; i < args.Length; i++) if (args[i] == "--hs" && i + 1 < args.Length) heroScale = int.Parse(args[i + 1]);
+            for (int i = 0; i < args.Length; i++) { if (args[i] == "--hs" && i + 1 < args.Length) heroScale = int.Parse(args[i + 1]); if (args[i] == "--heroout" && i + 1 < args.Length) using (var f = System.IO.File.Create(args[i + 1])) hero.Sheet.SaveAsPng(f, hero.Sheet.Width, hero.Sheet.Height); }
             terrain[season] = new TerrainArt(GraphicsDevice, season);
             int W = world.MW, H = world.MH; gsm = new byte[W * H];
             for (int y = 0; y < H; y++) for (int x = 0; x < W; x++) { int g = world.Ground[y * W + x]; if (g == G.DIRT && x >= 112) g = TerrainArt.GRAVEL; gsm[y * W + x] = (byte)(g >= TerrainArt.NT ? G.GRASS : g); }
