@@ -65,6 +65,13 @@ namespace Lida
             sb.Draw(Atlas[s.Atlas], new Vector2((float)Math.Round(x - ox), (float)Math.Round(y - s.Anchor.Y)), s.Src, c, 0, Vector2.Zero, 1, flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0);
         }
 
+        /// <summary>Desenha girando em volta da âncora (árvores balançando no vento).</summary>
+        public void DrawRot(SpriteBatch sb, string key, float x, float y, Color c, float rot)
+        {
+            var s = Get(key); if (!s.Ok) return;
+            sb.Draw(Atlas[s.Atlas], new Vector2((float)Math.Round(x), (float)Math.Round(y)), s.Src, c, rot, s.Anchor, 1, SpriteEffects.None, 0);
+        }
+
         public void Shadow(SpriteBatch sb, float x, float y, float rx, float ry, float a)
         {
             sb.Draw(Soft, new Rectangle((int)(x - rx), (int)(y - ry), (int)(rx * 2), (int)(ry * 2)), Color.White * a);

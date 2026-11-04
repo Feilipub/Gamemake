@@ -196,7 +196,7 @@ namespace Lida
             TextC(wk[day % 7] + " " + day, new Rectangle(rClock.X, rClock.Y + 6 * U, rClock.Width, 14 * U), Dark, 1, sh);
             float hr = (float)(minutes / 60.0) % 24; bool nightNow = hr < 5.5f || hr >= 18.5f;
             IconAt(nightNow ? "lua" : "sol", new Rectangle(rClock.X + 8 * U, rClock.Y + 21 * U, 18 * U, 18 * U));
-            IconAt(season == 0 ? "chuva" : "sol", new Rectangle(rClock.Right - 26 * U, rClock.Y + 21 * U, 18 * U, 18 * U), season == 0 ? 1 : 0.55f);
+            IconAt(raining ? "chuva" : season == 1 ? "sol" : "nuvem", new Rectangle(rClock.Right - 26 * U, rClock.Y + 21 * U, 18 * U, 18 * U));
             TextC(h.ToString("00") + ":" + m.ToString("00"), new Rectangle(rClock.X, rClock.Y + 22 * U, rClock.Width, 16 * U), Dark, 1, sh);
             // dinheiro
             Draw9(ui.Plank, rMoney); IconAt("moeda", new Rectangle(rMoney.X + 5 * U, rMoney.Y + 1 * U, 18 * U, 18 * U));

@@ -57,7 +57,8 @@ namespace Lida
                 if (args[i] == "--menu" && i + 1 < args.Length) OpenMenu(int.Parse(args[i + 1]));
                 if (args[i] == "--toast" && i + 1 < args.Length) Toast(args[i + 1]);
             }
-            spr.LoadTerrain(GraphicsDevice, season);
+            spr.LoadTerrain(GraphicsDevice, season); FxInit();
+            for (int i = 0; i < args.Length; i++) if (args[i] == "--rain" && i + 1 < args.Length) { raining = args[i + 1] == "1"; rainK = raining ? 1 : 0; rainCheck = 9999; }
             cam = pl.Pos;
         }
 
@@ -72,6 +73,7 @@ namespace Lida
             hint = menuOpen ? null : Target().hint;
             if (menuOpen && shotPath == null) { base.Update(gt); return; } // menu aberto pausa o tempo
 
+            { var vpp = GraphicsDevice.Viewport; float vw = vpp.Width / zoom, vh = vpp.Height / zoom; FxUpdate(dt, new RectangleF(cam.X - vw / 2, cam.Y - vh / 2, vw, vh)); }
             pl.Update(world, mv, run, dt); if (!pl.Running) pl.Energy = Math.Min(100, pl.Energy + dt * 0.4f);
             foreach (var a in animals) a.Update(world, pl, dt);
             // relógio
@@ -147,7 +149,8 @@ namespace Lida
             float cx = MathHelper.Clamp(cam.X - vw / 2, 0, Math.Max(0, wpx - vw)), cy = MathHelper.Clamp(cam.Y - vh / 2, 0, Math.Max(0, hpx - vh));
             cx = (float)Math.Round(cx * zoom) / zoom; cy = (float)Math.Round(cy * zoom) / zoom;
             var view = new RectangleF(cx, cy, vw, vh); var M = Matrix.CreateTranslation(-cx, -cy, 0) * Matrix.CreateScale(zoom);
-            var tint = DayTint(out float dark); bool night = dark > 0.6f;
+            FxLight(M, view, vp); GraphicsDevice.Clear(new Color(20, 12, 6)); // mapa de luz primeiro (trocar de alvo apaga a tela)
+            Ambient(out float dark); bool night = dark > 0.6f; var tint = Color.White;
 
             // chão
             sb.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, M);
@@ -160,7 +163,7 @@ namespace Lida
             {
                 if (!view.Near(p.X, p.Y, 80)) continue; var pp = p; string key = season == 1 && spr.Has(p.Sprite + "|s") ? p.Sprite + "|s" : p.Sprite;
                 L.Add((p.Y, () => { if (pp.Tree) spr.Shadow(sb, pp.X + 4, pp.Y - 1, 16, 6, 0.28f); else if (pp.Shadow > 0) spr.Shadow(sb, pp.X, pp.Y, pp.Shadow, 3, 0.3f);
-                    float a = pp.Tree && pl.Pos.Y < pp.Y && pl.Pos.Y > pp.Y - 58 && Math.Abs(pl.Pos.X - pp.X) < 22 ? 0.45f : 1f; spr.Draw(sb, key, pp.X, pp.Y, tint * a); }));
+                    float a = pp.Tree && pl.Pos.Y < pp.Y && pl.Pos.Y > pp.Y - 58 && Math.Abs(pl.Pos.X - pp.X) < 22 ? 0.45f : 1f; if (pp.Tree) spr.DrawRot(sb, key, pp.X, pp.Y, tint * a, Sway(pp.X, pp.Y)); else spr.Draw(sb, key, pp.X, pp.Y, tint * a); }));
             }
             foreach (var b in world.Buildings)
             {
@@ -177,11 +180,14 @@ namespace Lida
             foreach (var d in L) d.draw();
             sb.End();
 
-            // luz quente do lampião em volta do vaqueiro à noite
-            if (dark > 0.2f)
+            sb.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, M);
+            FxWorld(view, dark);
+            sb.End();
+            FxComposite(vp, dark);
+            if (dark > 0.5f) // vaga-lumes: pontinhos que acendem e apagam por cima da noite
             {
-                sb.Begin(SpriteSortMode.Deferred, BlendState.Additive, SamplerState.LinearClamp, null, null, null, M);
-                sb.Draw(spr.Soft, new Rectangle((int)pl.Pos.X - 46, (int)pl.Pos.Y - 46, 92, 76), new Color(255, 190, 110) * (0.55f * dark));
+                sb.Begin(SpriteSortMode.Deferred, BlendState.Additive, SamplerState.PointClamp, null, null, null, M);
+                foreach (var m in motes) { float b = 0.5f + 0.5f * (float)Math.Sin(m.Z * 3 + m.X); sb.Draw(spr.Pixel, new Rectangle((int)m.X, (int)m.Y, 1, 1), new Color(230, 255, 140) * b); }
                 sb.End();
             }
             DrawHud(vp);

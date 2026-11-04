@@ -178,6 +178,8 @@ namespace Lida
             // coração (afeição)
             q = N(); q.Ell(6, 7, 3.5f, 3.5f, new Color(226, 52, 64)); q.Ell(12, 7, 3.5f, 3.5f, new Color(226, 52, 64)); for (int y = 8; y < 16; y++) q.Rect(2 + (y - 8), y, 15 - 2 * (y - 8), 1, new Color(226, 52, 64)); q.Set(5, 5, new Color(255, 170, 170)); Icon["cor"] = Fin(q);
             q = N(); q.Ell(6, 7, 3.5f, 3.5f, new Color(190, 150, 110)); q.Ell(12, 7, 3.5f, 3.5f, new Color(190, 150, 110)); for (int y = 8; y < 16; y++) q.Rect(2 + (y - 8), y, 15 - 2 * (y - 8), 1, new Color(190, 150, 110)); Icon["cor0"] = Fin(q, false);
+            // nuvem com sol (tempo bom na estação das chuvas)
+            q = N(); q.Ell(11, 6, 4, 4, new Color(255, 214, 60)); q.Ell(7, 11, 4, 3.5f, new Color(236, 240, 248)); q.Ell(11, 10, 4.5f, 4, new Color(236, 240, 248)); q.Rect(4, 11, 12, 4, new Color(236, 240, 248)); Icon["nuvem"] = Fin(q);
             // moeda
             q = N(); q.Ell(9, 9, 6.5f, 6.5f, Gold); q.Ell(9, 9, 4.5f, 4.5f, new Color(240, 180, 50)); q.Rect(8, 6, 2, 6, Gold); Icon["moeda"] = Fin(q);
             // salvar (disquete) e sair (porta)
