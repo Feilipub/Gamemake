@@ -18,8 +18,9 @@ Problemas encontrados no mapa inteiro, a partir de uma captura completa
 (204 quadros montados):
 
 1. Cactos e árvores "brotando" de dentro das copas. A copa sobe uns 4
-   ladrilhos e o plantio só reservava 1–2 em volta do tronco (cerca de 100
-   casos).
+   ladrilhos e o plantio só reservava 1–2 em volta do tronco Saíram 188
+   plantas, contando as que caíam em cima de lajedos; o restante do plantio
+   ficou idêntico ao anterior.
 2. Rios retos, com degraus de um ladrilho — pareciam canais.
 3. Lagoas com bordas em escada e o fundo em quadrados de profundidade.
 4. Borda entre a mata e o chão seco em linha reta, seguindo a grade.
