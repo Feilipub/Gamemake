@@ -27,6 +27,18 @@ Os pedidos estão em inglês porque essas IAs entendem melhor; a explicação es
 blurry, photorealistic, 3d render, anti-aliasing, gradient background, text, watermark, extra fingers, copyrighted character
 ```
 
+## Estilo cordel (xilogravura) — cole antes de cada pedido
+
+O jogador escolheu o visual de capa de cordel. Desenho por código não chega na qualidade de um entalhe feito à mão, então este estilo deve ser gerado numa IA de imagem e depois ajustado e colocado no jogo.
+
+```
+Brazilian cordel literature woodcut print portrait (xilogravura nordestina), in the tradition of J. Borges, bust shot from chest up, head slightly turned three-quarters, bold black ink carved lines on aged cream paper, expressive hand-carved hatching that follows the forms of the face, strong contrast, visible gouge marks, simple sun with carved rays in the background, thick double border frame, one spot color only (dull red) used sparingly on scarf or hat band, square composition, no text, original character
+```
+
+**Evitar:** `color photo, 3d render, smooth gradients, anime, cartoon, blurry, watermark, text, signature`
+
+Gere em 512x512 ou 1024x1024; eu reduzo para o tamanho do retrato, mantendo o traço.
+
 ## Dicas
 
 - Gere um personagem por vez e peça 4 variações; escolha a melhor.
