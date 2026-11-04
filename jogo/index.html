@@ -351,7 +351,7 @@ body.lan .sw2 .pvbox{position:sticky;top:0}
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 204, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '6.3.0', SAVE_V = 9;
+const GAME_V = '6.4.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -2490,6 +2490,7 @@ function poseQ(pose, fr) {
   else if (pose === 'crouch' || pose === 'pet' || pose === 'pickup') { Q.legs = 'crouch'; Q.by = fr ? 2 : 3; Q.arms = pose === 'pet' ? 'pet' : 'down'; }
   else if (pose === 'jump') { Q.legs = 'tuck'; Q.by = -1; Q.arms = 'up'; }
   else if (pose === 'land') { Q.legs = 'crouch'; Q.by = 2; Q.arms = 'out'; }
+  else if (pose === 'moto') { Q.legs = 'moto'; Q.by = fr % 2 ? 1 : 0; Q.arms = 'bars'; Q.lean = 1; Q.flap = 1; }
   else if (pose === 'ride') { Q.legs = 'ride'; Q.by = fr % 2 ? -1 : 0; Q.arms = 'reins'; Q.flap = fr ? 2 : 1; Q.hatLag = fr === 2 ? 1 : 0; }
   else if (pose === 'reach') { Q.arms = 'reach'; Q.lean = fr ? 1 : 0; }
   else if (pose === 'push') { Q.arms = 'push'; Q.lean = 1; Q.sN = fr ? 1 : 0; Q.sF = -1; }
@@ -2524,6 +2525,9 @@ function drawChar(g, ap, dir, fr, pose) {
     const t = ap.boots === 1 ? 3 : 0; p(x, y - t - lift, 4, 3 + t, bc); p(x, y + 2 - lift, 4, 1, bD); if (t) p(x, y - t - lift, 4, 1, bL); if (ap.boots === 3) p(x + 1, y - lift, 1, 1, '#c8904a');
   }
   function legsFB() {
+    if (Q.legs === 'moto') { // de frente/costas: joelhos juntos no tanque, botas na pedaleira
+      p(4, 16 + by, 8, 3, pc); p(4, 18 + by, 8, 1, pD); p(3, 18 + by, 3, 3, pc); p(10, 18 + by, 3, 3, pc); p(3, 19 + by, 1, 2, pD); p(12, 19 + by, 1, 2, pD);
+      p(2, 21 + by, 4, 2, bc); p(10, 21 + by, 4, 2, bc); p(2, 22 + by, 4, 1, bD); p(10, 22 + by, 4, 1, bD); return; }
     if (Q.legs === 'ride') { // montado, visto de frente/costas: pernas abertas sobre o arreio, botas no estribo
       p(4, 15 + by, 8, 2, pc); p(4, 16 + by, 8, 1, pD);
       p(2, 16 + by, 3, 4, pc); p(11, 16 + by, 3, 4, pc); p(1, 19 + by, 3, 3, pc); p(12, 19 + by, 3, 3, pc); p(2, 17 + by, 1, 4, pD); p(13, 17 + by, 1, 4, pD);
@@ -2552,6 +2556,9 @@ function drawChar(g, ap, dir, fr, pose) {
     bootF(4, 22, lL); bootF(8, 22, lR);
   }
   function legsSide() {
+    if (Q.legs === 'moto') { // de lado: coxa reta no banco, joelho na frente, canela descendo até a pedaleira
+      p(5, 16 + by, 8, 3, pc); p(5, 18 + by, 8, 1, pD); if (ap.pants === 3) p(6, 16 + by, 6, 1, lea);
+      p(11, 18 + by, 3, 3, pc); p(11, 19 + by, 1, 2, pD); p(10, 21 + by, 5, 2, bc); p(10, 22 + by, 5, 1, bD); return; }
     if (Q.legs === 'ride') { p(6, 15 + by, 5, 3, pc); p(9, 17 + by, 3, 4, pc); p(9, 18 + by, 1, 3, pD); if (ap.pants === 3) { p(6, 16 + by, 5, 1, lea); p(9, 18 + by, 3, 3, lea); } p(9, 21 + by, 4, 2, bc); p(9, 22 + by, 4, 1, bD); return; }
     if (Q.legs === 'sit') { p(6, 19, 6, 3, pc); p(10, 21, 2, 3, pc); p(10, 24, 4, 2, bc); p(10, 25, 4, 1, bD); return; }
     if (Q.legs === 'sitg') { p(5, 21, 8, 3, pc); p(5, 23, 8, 1, pD); p(11, 22, 3, 2, pc); p(12, 23, 4, 2, bc); p(12, 24, 4, 1, bD); return; }
@@ -2598,6 +2605,7 @@ function drawChar(g, ap, dir, fr, pose) {
   function armsFB() {
     const y0 = 10 + by;
     switch (Q.arms) {
+      case 'bars': p(2, y0, 2, 3, sleeve); p(12, y0, 2, 3, sleeve); p(1, y0 + 2, 2, 3, sleeve); p(13, y0 + 2, 2, 3, sleeve); hand(1, y0 + 5); hand(13, y0 + 5); return;
       case 'reins': p(3, y0, 2, 4, sleeve); p(11, y0, 2, 4, sleeve); p(4, y0 + 3, 2, 2, sleeve); p(10, y0 + 3, 2, 2, sleeve); hand(5, y0 + 4 + (fr % 2)); hand(9, y0 + 4 + (fr % 2)); return;
       case 'carry': p(3, y0 - 2, 2, 4, sleeve); p(11, y0 - 2, 2, 4, sleeve); p(4, y0 + 1, 8, 6, '#d8c8a0'); p(4, y0 + 1, 8, 1, '#efe2c0'); p(5, y0 + 3, 6, 1, '#b8a47c'); hand(3, y0 + 2); hand(11, y0 + 2); return;
       case 'grill': p(3, y0, 2, 5, sleeve); hand(3, y0 + 5); p(11, y0, 2, 3, sleeve); hand(12, y0 + 2); p(13, y0 - 1 + (fr % 2), 1, 5, '#a0a4a8'); return;
@@ -2628,6 +2636,7 @@ function drawChar(g, ap, dir, fr, pose) {
       if (Q.arms !== 'swing' || !Q.mv) return; const sw = -Math.round(Q.sN * 0.6); p(sx - 1 + Math.sign(sw), y0 + 1, 2, 4, shade(sleeve, -.25)); p(sx - 1 + sw, y0 + 5 - (Q.run ? 1 : 0), 2, 2, skD); return;
     }
     switch (Q.arms) {
+      case 'bars': p(sx, y0 + 1, 2, 2, sleeve); p(sx + 1, y0 + 2, 3, 2, sleeve); p(sx + 4, y0 + 3, 2, 2, sleeve); hand(sx + 6, y0 + 4); return;
       case 'reins': p(sx, y0 + 1, 2, 3, sleeve); p(sx + 1, y0 + 3, 3, 2, sleeve); hand(sx + 4, y0 + 3 + (fr % 2)); return;
       case 'hammer': if (fr % 2 === 0) { p(sx, y0 - 3, 2, 4, sleeve); hand(sx + 1, y0 - 5); p(sx + 2, y0 - 9, 1, 6, '#7a4a22'); p(sx + 1, y0 - 10, 4, 2, '#6a6a72'); } else { p(sx + 1, y0 + 1, 3, 2, sleeve); hand(sx + 4, y0 + 2); p(sx + 5, y0 + 1, 4, 1, '#7a4a22'); p(sx + 8, y0, 2, 3, '#6a6a72'); } return;
       case 'brush': { const o = fr % 2; p(sx + 1, y0 + 1, 3, 2, sleeve); hand(sx + 4, y0 + 1 + o); p(sx + 5, y0 + o, 4, 3, '#b07a40'); p(sx + 5, y0 + 3 + o, 4, 1, '#3a2410'); return; }
@@ -4191,7 +4200,7 @@ function birthCalf(m, o) {
   S.animals.push(c); if (sp === 'cabra' && Math.random() < 0.45) { const c2 = mkAnimal(sp, br, { age: 0, gen: gen + gauss() * 4, mae: m.n, pai: m._paiN || '—', x: m.x - 6, y: m.y + 5, hap: 80, hp: 90 }); c2.maeId = m.id; S.animals.push(c2); toast('Gêmeos! Nasceu também ' + c2.n + '.'); }
   m.lact = 20; S.stats.born++;
   if (sp === 'boi') { c.umb = 1; c.wt = rnd(28, 36); if (!o.help && Math.random() < 0.05) { c.enj = 1; toast('🍼 ' + m.n + ' enjeitou o bezerro ' + c.n + '! Dê mamadeira com leite todo dia até ele comer capim.'); } }
-  toast('🐣 Nasceu ' + catName(c).toLowerCase() + ': ' + c.n + ' (' + starStr(stars(c)) + ')' + (sp === 'boi' ? ' — cure o umbigo com iodo!' : ''));
+  toast('🐣 Nasceu ' + catName(c).toLowerCase() + ': ' + c.n + ' (' + stars(c) + (stars(c) > 1 ? ' estrelas' : ' estrela') + ')' + (sp === 'boi' ? ' — cure o umbigo com iodo!' : ''));
   hist(m, 'Pariu ' + c.n + (o.help ? ' (com ajuda do vaqueiro)' : ''));
   return c;
 }
@@ -7509,8 +7518,8 @@ function drawTraffic(add, inV) {
     add(y + 4, () => { const c = vehSpr(v.type, v.col, view); X.globalAlpha = v.a; X.fillStyle = 'rgba(20,14,10,0.25)'; X.beginPath(); X.ellipse(x, y + 5, c.width * 0.48, 3, 0, 0, 7); X.fill();
       const put = (img, ox, oy, fl) => { if (fl) { X.save(); X.translate(Math.round(x), 0); X.scale(-1, 1); X.drawImage(img, -Math.round(ox), Math.round(y + oy)); X.restore(); } else X.drawImage(img, Math.round(x - ox), Math.round(y + oy)); };
       put(c, c.width / 2, -c.height + 7, flip);
-      if (two) { const ap = v._ap || (v._ap = riderAp(v)), dir = view === 'side' ? 3 : view === 'front' ? 0 : 1, fr = v.v > 3 ? Math.floor(drawT * 6) % 2 : 0; const rs = charSpr(ap, dir, fr, 'ride'), oy = view === 'side' ? (v.type === 'moto' ? -36 : -35) : -38;
-        put(rs, 12 + (view === 'side' ? -2 : 0), oy, flip);
+      if (two) { const ap = v._ap || (v._ap = riderAp(v)), dir = view === 'side' ? 3 : view === 'front' ? 0 : 1, fr = v.v > 3 ? Math.floor(drawT * 6) % 2 : 0; const rs = charSpr(ap, dir, 0, 'moto'), oy = view === 'side' ? (v.type === 'moto' ? -23 : -21) : (v.type === 'moto' ? -24 : -22);
+        put(rs, 12 + (view === 'side' ? -1 : 0), oy, flip); if (view === 'front') put(c, c.width / 2, -c.height + 7, flip);
         if (v.type === 'moto') { const hx = view === 'side' ? (flip ? x - 1 : x + 1) : x, hy = y + oy + 2, hc = ['#c83a2a', '#2a2a30', '#e8e8e8', '#2a5a9a'][v.rider % 4]; X.fillStyle = hc; X.fillRect(Math.round(hx - 5), Math.round(hy), 10, 7); X.fillRect(Math.round(hx - 4), Math.round(hy - 1), 8, 1); X.fillStyle = '#1e2a3a'; if (view === 'side') X.fillRect(Math.round(flip ? hx - 5 : hx + 1), Math.round(hy + 3), 4, 3); else if (view === 'front') X.fillRect(Math.round(hx - 3), Math.round(hy + 3), 6, 3); } }
       if (isNight() && v.type !== 'bike') { X.globalAlpha = v.a * 0.2; X.fillStyle = '#fff0a0'; if (view === 'side') { const fx = x + v.l.d * (c.width / 2); X.beginPath(); X.moveTo(fx, y - 4); X.lineTo(fx + v.l.d * 56, y - 16); X.lineTo(fx + v.l.d * 56, y + 10); X.closePath(); X.fill(); } else if (view === 'front') { X.beginPath(); X.moveTo(x - 6, y + 2); X.lineTo(x - 18, y + 44); X.lineTo(x + 18, y + 44); X.lineTo(x + 6, y + 2); X.closePath(); X.fill(); } }
       X.globalAlpha = 1; }, x, { w: 100, h: 60 }); }
@@ -10352,7 +10361,7 @@ function csIntro() {
   const steps = [
     { fade: 1, d: 0.1, grade: 'aurora', rays: 1, pitch: 30, fov: 30, fn: () => { S.min = 5 * 60 + 30; S.weather = 'sol'; S.mud = S.mud || 0; if (h) { P.mnt = h.id; h._st = 'ridden'; } P.x = r1[0][0]; P.y = r1[0][1]; cam.fx = 48 * TS; cam.fy = 74 * TS; cam.snap = true; AVES.length = 0;
       CINE.phi = 30; CINE.fov = 30; CINE.rays = 1; CINE.warm = 1;
-      bois.forEach((b, i) => { b.x = (4.4 + i * 2.4) * TS; b.y = (49.6 + i * 1.1) * TS; b._st = 'idle'; b._t = 99; b._pose = 'graze'; b.f = i ? -1 : 1; });
+      bois.forEach((b, i) => { b.x = (4.4 + i * 2.4) * TS; b.y = (49.6 + (i % 2) * 1.1 + (i > 1 ? 1.6 : 0)) * TS; b._st = 'idle'; b._t = 99; b._pose = 'graze'; b.f = i % 2 ? -1 : 1; });
       dogs.forEach((d, i) => { const [x, y] = trail(r1, 0, i); d.x = x; d.y = y; d._st = 'cs'; d._pose = 'sit'; d._cmd = 'seguir'; });
       fel.cs = true; fel.hidden = false; fel.x = 19.5 * TS; fel.y = 39.6 * TS; fel.dir = 1; fel.path = []; fel.pose = 'idle'; } },
     // 1. madrugada no sertão: o açude da fazenda, garças passando
@@ -10362,13 +10371,13 @@ function csIntro() {
     { fn: () => csTitle(null), spd: 1.6, z: 1.15, pitch: 42, dof: 0.3, txt: 'O dia nasce em Itarantim. Do outro lado da ponte do riacho fica a <b>Fazenda Boa Esperança</b>.', d: 6, upd: rideD(r1, 1) },
     { spd: 1.6, pitch: 46, rays: 0.7, txt: `<b>${nm}</b>${dogs.length ? ', com ' + dn + ',' : ''} chega para cuidar da herança do avô, <b>Tiãozinho</b>.`, d: 7.5, fn: () => { if (gateE && !gateE.open) { gateE.open = true; AU.creak(); } }, upd: rideD(r2, 1) },
     // 3. o que ficou: dois bois e um rancho
-    { cam: [6, 50.6], z: 1.7, spd: 1.3, pitch: 34, dof: 0.6, focus: 0.42, txt: 'No pasto, os dois bois pé-duro que ficaram: <b>Malhado</b> e <b>Fumaça</b>. É pouco, mas é um começo.', d: 4.8, fn: () => { if (gateE) gateE.open = false; setTimeout(() => bois[0] && AU.moo(bois[0].x, bois[0].y, 0.95), 600); setTimeout(() => bois[1] && AU.moo(bois[1].x, bois[1].y, 1.08), 2200); } },
+    { cam: [6, 50.6], z: 1.7, spd: 1.3, pitch: 34, dof: 0.6, focus: 0.42, txt: 'No pasto, o que ficou: os bois <b>Malhado</b> e <b>Fumaça</b> e a vaca <b>Estrela</b>, prenha do touro do Seu Felipe. É pouco, mas é um começo.', d: 4.8, fn: () => { if (gateE) gateE.open = false; setTimeout(() => bois[0] && AU.moo(bois[0].x, bois[0].y, 0.95), 600); setTimeout(() => bois[1] && AU.moo(bois[1].x, bois[1].y, 1.08), 2200); } },
     // 4. Seu Felipe espera na frente do rancho e acena
     { cam: [13.5, 36.6], z: 2.0, spd: 1.5, pitch: 44, dof: 0.5, d: 2.4, txt: 'Seu Felipe, o vizinho da Fazenda Campos, já esperava na frente do rancho.', fn: () => { fel.pose = 'talk'; fel.dir = 1; dogs.forEach(d => { d._pose = 'run'; AU.bark(d.x, d.y); }); }, upd: (dt, u) => { dogs.forEach((d, i) => { const tx = 19.5 * TS - 10 - i * 12, ty = 39.6 * TS + 8, k = Math.min(1, dt * 3); const mv = hyp(tx - d.x, ty - d.y); d.x = lerp(d.x, tx, k); d.y = lerp(d.y, ty, k); d._mv = mv > 2 ? 40 : 0; d._dist = (d._dist || 0) + mv * k; d.f = tx > d.x ? 1 : -1; d._pose = mv > 4 ? 'run' : 'sit'; if (u > 0.8 && !d._hrt) { d._hrt = 1; heart(d.x, d.y - 16); } }); } },
     { d: 1.0, clr: 1, fn: () => { P.dir = 3; fel.pose = 'idle'; if (h) { h.f = 1; act('dismount', 0.85, h, () => { P.mnt = null; P.x = ex; P.y = ey; h._st = 'idle'; h._t = 30; }, { ex, ey, keep: 1, zoom: false }); AU.saddleCreak(); } }, upd: dt => { if (P._act) updAct(dt); } },
     { cam: [12.8, 36], z: 2.1, spd: 1.4, pitch: 48, dof: 0.45, d: 2.8, fn: () => { P._act = null; P.mnt = null; P.x = ex; P.y = ey; fel.pose = 'walk'; fel._dist = fel._dist || 0; }, upd: (dt, u) => { const k = Math.min(1, u * 1.15), nx = lerp(19.5 * TS, fx, k), ny = lerp(39.6 * TS, ey, Math.min(1, k * 1.6)); fel._dist += hyp(nx - fel.x, ny - fel.y); fel.dir = Math.abs(nx - fel.x) > Math.abs(ny - fel.y) ? 2 : 1; fel.x = nx; fel.y = ny; if (k >= 1) { fel.pose = 'idle'; fel.dir = 2; } dogs.forEach((d, i) => { const tx = ex + 8 + i * 10, ty = ey + 14; d.x = lerp(d.x, tx, Math.min(1, dt * 2)); d.y = lerp(d.y, ty, Math.min(1, dt * 2)); d._pose = hyp(tx - d.x, ty - d.y) > 3 ? 'run' : 'sit'; d.f = 1; }); } },
     csSay('felipe', 'Seja bem-vindo! Seu avô, Tiãozinho, era o homem mais querido de Itarantim.', { look: false, z: 2.3, pitch: 50, dof: 0.65, focus: 0.44, rays: 0.4, fn: () => { two(); fel.emote = '♥'; fel.et = 1.6; } }),
-    csSay('felipe', 'A fazenda agora é sua. Tem pouco gado e pouco dinheiro, mas tem muito chão pra crescer.', { look: false, fn: two }),
+    csSay('felipe', 'A fazenda agora é sua. A Estrela tá prenha do meu touro: daqui a uns dias vem bezerro. E deixei sementes pra você começar a horta.', { look: false, fn: two }),
     csSay('felipe', 'Precisando, é só me procurar na Fazenda Campos, aqui do lado. E não esqueça: gado bem tratado é gado que engorda.', { look: false, z: 2.45, fn: two }),
     csSay('me', 'Pode deixar, Seu Felipe. Vou cuidar de tudo do jeito que ele cuidava.', { look: false, fn: () => { two(); P.dir = 3; } }),
     // 5. a lembrança do avô
@@ -10385,7 +10394,7 @@ function csIntro() {
     { fade: 0, fn: () => { final(); fel.cs = false; S.min = Math.max(S.min, 6 * 60 + 15); S.story.intro = 1; addFr('felipe', 30); npcState('felipe').met = 1; remember('felipe', 'recebeu você na chegada'); }, clr: 1, d: 0.2 }
   ];
   steps.forEach(st => { const u0 = st.upd; st.upd = (dt, u) => { S.min = Math.min(S.min + dt * 1.1, 7 * 60); if (u0) u0(dt, u); }; });
-  cutscene(steps, () => { final(); fel.cs = false; S.story.intro = 1; P._gal = 0; setTimeout(() => { toast('📋 Primeiras tarefas: encher os cochos d’água'); setTimeout(() => toast('📋 Juntar os bois com o Aboio (Q)'), 900); setTimeout(() => toast('📋 Conhecer Itarantim, depois da ponte'), 1800); }, 6800); say(SET.mode === 'touch' ? 'Toque no chão para andar e nos bois para ver a ficha. O Aboio faz o gado seguir você.' : 'Joystick ou WASD para andar, Correr para galopar. Toque nos bois para ver a ficha; o Aboio faz o gado seguir você.', 6500); SAVE.save('auto', true); });
+  cutscene(steps, () => { final(); fel.cs = false; S.story.intro = 1; P._gal = 0; setTimeout(() => { toast('📋 Primeiras tarefas: encher os cochos d’água'); setTimeout(() => toast('📋 Capinar e plantar a horta (você tem sementes)'), 900); setTimeout(() => toast('📋 Cuidar da Estrela: o bezerro nasce em ~6 dias'), 1800); setTimeout(() => toast('📋 Conhecer Itarantim, depois da ponte'), 2700); }, 6800); say(SET.mode === 'touch' ? 'Toque no chão para andar e nos bois para ver a ficha. O Aboio faz o gado seguir você.' : 'Joystick ou WASD para andar, Correr para galopar. Toque nos bois para ver a ficha; o Aboio faz o gado seguir você.', 6500); SAVE.save('auto', true); });
 }
 function removeLock(k, u) { const y = EXP[k].y; const xs = [37, 38, 39]; const n = Math.ceil(u * xs.length); for (let i = 0; i < n; i++) { const x = xs[i], idx = gi(x, y); if (obj[idx] === 1) { obj[idx] = 0; dust((x + .5) * TS, (y + .8) * TS, 6, '#c8a878'); AU.hammer(); } } }
 function csExpansion(k) {
@@ -10784,7 +10793,7 @@ function renderSetup() {
   } else if (setStep === 3 && !setupEdit) { h += dogSetupHTML();
   } else {
     const B = mountData();
-    h += `<div class="desc" style="font-size:calc(13px*var(--fs))"><b>${esc(CF.name)}</b>, vindo(a) de <b>${st[1]}</b>.<br>Montaria: <b>${esc(CF.hn)}</b> — ${B.n}, ${RIG.COATS[greyAge(CF.coat, ageDays(MOUNT_AGES[CF.age][1]))].n.toLowerCase()}${CF.mt === 'cavalo' ? (CF.hsex === 'F' ? ', égua' : ', garanhão') : CF.mt === 'muar' ? (CF.hsex === 'F' ? ', mula' : ', burro') : (CF.hsex === 'F' ? ', jumenta' : ', jumento')}, ${MOUNT_AGES[CF.age][1]} anos${CF.mt !== 'jegue' ? ', ' + markStr(CF.mk) : ''}.<br>${CF.dogs.length > 1 ? 'Cães' : 'Cão'}: ${CF.dogs.map(d => '<b>' + esc(d.n) + '</b> — ' + DOGS[d.br].n + ', ' + RIG.COATS[d.coat].n.toLowerCase() + ', ' + (d.sex === 'F' ? 'fêmea' : 'macho') + ', ' + DOG_AGES[d.age][0].toLowerCase() + ', ' + DOG_ESP[d.esp][0].toLowerCase()).join('; ')}.<br><br>Você começa pequeno em Itarantim: um rancho simples, poucos piquetes, <b>dois bois Pé-Duro</b> e pouco dinheiro. O resto, a lida constrói.</div>`;
+    h += `<div class="desc" style="font-size:calc(13px*var(--fs))"><b>${esc(CF.name)}</b>, vindo(a) de <b>${st[1]}</b>.<br>Montaria: <b>${esc(CF.hn)}</b> — ${B.n}, ${RIG.COATS[greyAge(CF.coat, ageDays(MOUNT_AGES[CF.age][1]))].n.toLowerCase()}${CF.mt === 'cavalo' ? (CF.hsex === 'F' ? ', égua' : ', garanhão') : CF.mt === 'muar' ? (CF.hsex === 'F' ? ', mula' : ', burro') : (CF.hsex === 'F' ? ', jumenta' : ', jumento')}, ${MOUNT_AGES[CF.age][1]} anos${CF.mt !== 'jegue' ? ', ' + markStr(CF.mk) : ''}.<br>${CF.dogs.length > 1 ? 'Cães' : 'Cão'}: ${CF.dogs.map(d => '<b>' + esc(d.n) + '</b> — ' + DOGS[d.br].n + ', ' + RIG.COATS[d.coat].n.toLowerCase() + ', ' + (d.sex === 'F' ? 'fêmea' : 'macho') + ', ' + DOG_AGES[d.age][0].toLowerCase() + ', ' + DOG_ESP[d.esp][0].toLowerCase()).join('; ')}.<br><br>Você começa pequeno em Itarantim: um rancho simples, poucos piquetes, <b>dois bois Pé-Duro</b>, a vaca <b>Estrela prenha</b>, sementes para a horta e pouco dinheiro. O resto, a lida constrói.</div>`;
   }
   h += `<div class="row" style="margin-top:14px">`;
   if (setStep > 0) h += `<button class="btn" data-s="prev" style="flex:1;padding:11px">◀ Voltar</button>`;
@@ -10882,6 +10891,10 @@ function newGame(cf) {
   S.tack = {}; if (cf.cust) { if (cf.cust.peit) S.tack.peit = 1; if (cf.cust.orn && cf.cust.orn !== 'none') S.tack[cf.cust.orn] = 1; } h.x = 12.5 * TS + 10; h.y = 31 * TS; S.animals.push(h);
   // dois bois Pé-Duro
   const bois = [put(mkAnimal('boi', 'peduro', { sex: 'M', age: 34, n: 'Malhado', coat: 'peVermelho' }), 'p1'), put(mkAnimal('boi', 'peduro', { sex: 'M', age: 30, n: 'Fumaça', coat: 'amarelo' }), 'p1')]; bois.forEach(b => { b.cast = 1; b.marca = 'TS'; }); S.gadoV = 2;
+  // a vaca Estrela, prenha do touro nelore do Seu Felipe: o primeiro bezerro vem em poucos dias
+  { const v = put(mkAnimal('boi', 'peduro', { sex: 'F', age: 44, n: 'Estrela', coat: 'peVermelho', hap: 85, cond: 62, gen: 66 }), 'p1'); v.marca = 'TS'; v.preg = 6; v._pai = 0; v._paiN = 'Imperador (touro do Seu Felipe)'; v._paiSp = 'boi'; v._paiBr = 'nelore'; v._paiGen = 72; v.temp = 'dócil'; v.traits = ['docil', 'sociavel']; hist(v, 'Prenha do touro nelore do Seu Felipe'); }
+  // sementes para a horta (a terra precisa de capina antes do plantio)
+  S.agro.seeds = { alface: 3, couve: 2, cheiro: 3, tomate: 2, feijao: 2, abobora: 1, pimenta: 1 };
   (cf.dogs && cf.dogs.length ? cf.dogs : [defDog(0)]).forEach((d, i) => S.animals.push(mkDogCF(d, i))); S.caoV = 1; S.dep.racaoCao = (S.dep.racaoCao || 0) + 10;
   for (let i = 0; i < 5; i++) put(mkAnimal('boi', pick(['nelore', 'nelore', 'guzera', 'gir', 'tabapua']), { own: 'felipe' }), 'campos');
   for (let i = 0; i < 3; i++) put(mkAnimal('cavalo', pick(['mm', 'qm', 'campolina', 'crioulo', 'arabe']), { own: 'ryan' }), 'duarte');
