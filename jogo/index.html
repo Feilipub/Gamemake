@@ -351,7 +351,7 @@ body.lan .sw2 .pvbox{position:sticky;top:0}
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 204, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '6.2.0', SAVE_V = 9;
+const GAME_V = '6.3.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -6114,7 +6114,7 @@ function heatF() { if (!S) return 1; const h = hour(); return S.weather === 'sol
 // lama: o chão de terra fica pesado depois da chuva
 function mudAt(x, y) { if (!S || S.mud < 0.05) return 0; const g = gt(Math.floor(x / TS), Math.floor(y / TS)); return (g === G.DIRT || g === G.DRY || g === G.FLOOR || g === G.MUD) ? S.mud : 0; }
 function drawMudTile(tx, ty, g) {
-  if (S.mud < 0.05 || !(g === G.DIRT || g === G.DRY || g === G.FLOOR)) return;
+  if (!(S.mud >= 0.05) || !(g === G.DIRT || g === G.DRY || g === G.FLOOR)) return;
   X.fillStyle = `rgba(60,38,20,${0.24 * S.mud})`; X.fillRect(tx * TS, ty * TS, TS, TS);
   if (S.mud > 0.3 && H2(tx, ty, 41) < 0.16) { const px = tx * TS + 3 + Math.floor(H2(tx, ty, 42) * 6), py = ty * TS + 5 + Math.floor(H2(tx, ty, 43) * 6), w = 5 + Math.floor(S.mud * 5); X.fillStyle = `rgba(70,88,104,${0.55 * S.mud})`; X.fillRect(px, py, w, 3); X.fillRect(px + 1, py - 1, w - 2, 5); X.fillStyle = `rgba(190,215,235,${0.4 * S.mud})`; X.fillRect(px + 1, py, 2, 1); if (S.wx && S.wx.ri > 0.2 && Math.sin(drawT * 5 + tx) > 0.6) { X.fillStyle = 'rgba(220,235,250,0.7)'; X.fillRect(px + 2 + Math.floor(H2(tx, ty, Math.floor(drawT * 3)) * (w - 3)), py + 1, 1, 1); } }
 }
@@ -10338,45 +10338,54 @@ function csIntro() {
   const final = () => { // estado final (também usado ao pular)
     P.mnt = null; P._act = null; P.x = ex; P.y = ey; P.dir = 3; P._gal = 0; P._st = 'idle';
     if (h) { h.x = ax; h.y = ay; h._st = 'idle'; h._t = 20; h.f = 1; }
-    if (dog) { dog.x = ex + 8; dog.y = ey + 14; dog._pose = null; dog._st = 'idle'; dog._t = 4; }
+    myAnimals('cao').forEach((d, i) => { d.x = ex + 8 + i * 10; d.y = ey + 14; d._pose = null; d._st = null; d._t = 4; d._cmd = 'seguir'; d._hrt = 0; });
     bois.forEach(b => { b._t = 0; b._pose = null; });
     fel.x = fx; fel.y = ey; fel.dir = 2; fel.pose = 'idle'; fel.hidden = false; CINE.actors.length = 0;
   };
   // lembrança: Tiãozinho chega da lida e pendura o chapéu no prego do esteio (desenhado com os sprites do jogo)
   const TIAO = { sex: 'M', skin: 3, hair: 1, hairC: 6, hat: 0, shirt: 3, shirtC: 3, pants: 1, pantsC: 1, boots: 1, acc: 1, scarfC: 0, orn: 'none' };
   let tiao = null; const tx0 = 8.4 * TS, ty0 = 29.6 * TS, tx1 = 6.1 * TS, ty1 = 29.0 * TS;
+  const dogs = myAnimals('cao'), dn = dogs.map(d => '<b>' + esc(d.n) + '</b>').join(' e '), gateE = GATES.find(g => Math.abs(g.x - 58) < 3 && Math.abs(g.y - 44) < 3);
+  const birdsFly = (k, n, x, y, ang) => { for (let j = 0; j < n; j++) AVES.push({ id: aveId++, k, x: x * TS - Math.cos(ang) * (j * 10 + rnd(0, 6)), y: y * TS - Math.sin(ang) * j * 6 + rnd(-8, 8), z: rnd(40, 60), st: 'pass', vx: Math.cos(ang) * 46, vy: Math.sin(ang) * 30, f: Math.cos(ang) > 0 ? 1 : -1, gid: 999, ph: Math.random() * 4 }); };
+  const trail = (route, u, i) => { const [x, y, dx, dy] = pathLerp(route, Math.max(0, u - 0.035 * (i + 1))); return [x - (dy ? 10 : 0) * (i % 2 ? 1 : -1), y + (dx ? 10 : 6) + i * 4, dx, dy]; };
+  const rideD = (route, gal) => { const r = ride(route, gal); return (dt, u) => { r(dt, u); dogs.forEach((d, i) => { const [x, y, dx] = trail(route, u, i), mv = hyp(x - d.x, y - d.y); d.x = x; d.y = y; d._mv = mv / Math.max(dt, 1e-3); d._dist = (d._dist || 0) + mv; d._hx = Math.sign(dx) || d._hx || 1; d._hy = 0; d.f = dx >= 0 ? 1 : -1; d._pose = u < 1 ? 'run' : 'sit'; d._st = 'cs'; if (u < 1 && Math.random() < dt * 0.4) AU.bark(d.x, d.y); }); }; };
   const steps = [
-    { fade: 1, d: 0.1, grade: 'aurora', rays: 1, pitch: 34, fov: 30, fn: () => { S.min = 5 * 60 + 45; S.weather = 'sol'; if (h) { P.mnt = h.id; h._st = 'ridden'; } P.x = r1[0][0]; P.y = r1[0][1]; cam.fx = 84 * TS; cam.fy = 50 * TS; cam.snap = true;
-      CINE.phi = 34; CINE.fov = 30; CINE.rays = 1; CINE.warm = 1;
+    { fade: 1, d: 0.1, grade: 'aurora', rays: 1, pitch: 30, fov: 30, fn: () => { S.min = 5 * 60 + 30; S.weather = 'sol'; S.mud = S.mud || 0; if (h) { P.mnt = h.id; h._st = 'ridden'; } P.x = r1[0][0]; P.y = r1[0][1]; cam.fx = 48 * TS; cam.fy = 74 * TS; cam.snap = true; AVES.length = 0;
+      CINE.phi = 30; CINE.fov = 30; CINE.rays = 1; CINE.warm = 1;
       bois.forEach((b, i) => { b.x = (4.4 + i * 2.4) * TS; b.y = (49.6 + i * 1.1) * TS; b._st = 'idle'; b._t = 99; b._pose = 'graze'; b.f = i ? -1 : 1; });
-      if (dog) { dog.x = 7.6 * TS; dog.y = 29.9 * TS; dog._st = 'idle'; dog._t = 99; dog._pose = 'lie'; }
+      dogs.forEach((d, i) => { const [x, y] = trail(r1, 0, i); d.x = x; d.y = y; d._st = 'cs'; d._pose = 'sit'; d._cmd = 'seguir'; });
       fel.cs = true; fel.hidden = false; fel.x = 19.5 * TS; fel.y = 39.6 * TS; fel.dir = 1; fel.path = []; fel.pose = 'idle'; } },
-    { fade: 0, cam: [84, 50], z: 1.15, snap: 1, d: 4, dof: 0.15, drift: 0.5, fn: () => csTitle('RF GAMES APRESENTA') },
-    { cam: [74, 45], spd: 0.45, d: 5, pitch: 38, fn: () => csTitle('LIDA NO SERTÃO', 'Itarantim · Bahia') },
-    { fn: () => csTitle(null), spd: 1.6, z: 1.05, pitch: 42, dof: 0.3, txt: 'Itarantim, sudoeste da Bahia. Depois da ponte do riacho fica a terra que o avô deixou.', d: 6.2, upd: ride(r1, 1) },
-    { spd: 1.6, pitch: 46, rays: 0.7, txt: `<b>${nm}</b> veio conhecer a Fazenda Boa Esperança, herança de seu avô <b>Tiãozinho</b>.`, d: 8, upd: ride(r2, 1) },
-    { cam: [6, 50.6], z: 1.65, spd: 1.3, pitch: 34, dof: 0.6, focus: 0.42, txt: 'No pasto, os dois bois pé-duro que ficaram: <b>Malhado</b> e <b>Fumaça</b>.', d: 4.8, fn: () => { setTimeout(() => bois[0] && AU.moo(bois[0].x, bois[0].y, 0.95), 600); setTimeout(() => bois[1] && AU.moo(bois[1].x, bois[1].y, 1.08), 2200); } },
-    { cam: [10.5, 33], z: 1.7, spd: 1.7, pitch: 40, dof: 0.5, txt: 'Na varanda do rancho, ' + (dog ? esc(dog.n) : 'o cão') + ', o cão da fazenda, levanta a cabeça.', d: 3.4, fn: () => { if (dog) dog._pose = 'sit'; } },
-    { d: 2.2, clr: 1, fn: () => { if (dog) { dog._pose = 'run'; AU.bark(dog.x, dog.y); } }, upd: (dt, u) => { if (!dog) return; const k = easeIO(u); dog.x = lerp(7.6 * TS, ex + 8, k); dog.y = lerp(29.9 * TS, ey + 14, k); dog.f = 1; if (u >= 1) dog._pose = 'sit'; } },
-    { d: 1.0, fn: () => { P.dir = 3; if (h) { h.f = 1; act('dismount', 0.85, h, () => { P.mnt = null; P.x = ex; P.y = ey; h._st = 'idle'; h._t = 30; }, { ex, ey, keep: 1, zoom: false }); AU.saddleCreak(); } }, upd: dt => { if (P._act) updAct(dt); } },
-    { cam: [12.8, 36], z: 2.1, spd: 1.4, pitch: 48, dof: 0.45, d: 3.4, fn: () => { P._act = null; P.mnt = null; P.x = ex; P.y = ey; fel.pose = 'walk'; fel._dist = fel._dist || 0; }, upd: (dt, u) => { const k = Math.min(1, u * 1.15), nx = lerp(19.5 * TS, fx, k), ny = lerp(39.6 * TS, ey, Math.min(1, k * 1.6)); fel._dist += hyp(nx - fel.x, ny - fel.y); fel.dir = Math.abs(nx - fel.x) > Math.abs(ny - fel.y) ? 2 : 1; fel.x = nx; fel.y = ny; if (k >= 1) { fel.pose = 'idle'; fel.dir = 2; } } },
-    csSay('felipe', FEL_LINES[0], { look: false, z: 2.3, pitch: 50, dof: 0.65, focus: 0.44, rays: 0.4, fn: () => { two(); fel.emote = '♥'; fel.et = 1.6; } }),
-    csSay('felipe', FEL_LINES[1], { look: false, fn: two }),
-    csSay('felipe', FEL_LINES[2], { look: false, z: 2.45, fn: two }),
+    // 1. madrugada no sertão: o açude da fazenda, garças passando
+    { fade: 0, cam: [48, 74], z: 1.05, snap: 1, d: 4.6, dof: 0.2, drift: 0.6, fn: () => { csTitle('RF GAMES APRESENTA'); birdsFly('garca', 4, 36, 70, -0.25); setTimeout(() => birdCall('garca', 48 * TS, 74 * TS), 1200); } },
+    { cam: [38, 60], spd: 0.4, d: 5.2, pitch: 36, rays: 1, fn: () => { csTitle('LIDA NO SERTÃO', 'Itarantim · sudoeste da Bahia'); birdsFly('marreca', 6, 30, 66, -0.6); setTimeout(() => birdCall('marreca', 38 * TS, 60 * TS), 900); } },
+    // 2. a estrada: o vaqueiro chega a cavalo, com os cães correndo ao lado
+    { fn: () => csTitle(null), spd: 1.6, z: 1.15, pitch: 42, dof: 0.3, txt: 'O dia nasce em Itarantim. Do outro lado da ponte do riacho fica a <b>Fazenda Boa Esperança</b>.', d: 6, upd: rideD(r1, 1) },
+    { spd: 1.6, pitch: 46, rays: 0.7, txt: `<b>${nm}</b>${dogs.length ? ', com ' + dn + ',' : ''} chega para cuidar da herança do avô, <b>Tiãozinho</b>.`, d: 7.5, fn: () => { if (gateE && !gateE.open) { gateE.open = true; AU.creak(); } }, upd: rideD(r2, 1) },
+    // 3. o que ficou: dois bois e um rancho
+    { cam: [6, 50.6], z: 1.7, spd: 1.3, pitch: 34, dof: 0.6, focus: 0.42, txt: 'No pasto, os dois bois pé-duro que ficaram: <b>Malhado</b> e <b>Fumaça</b>. É pouco, mas é um começo.', d: 4.8, fn: () => { if (gateE) gateE.open = false; setTimeout(() => bois[0] && AU.moo(bois[0].x, bois[0].y, 0.95), 600); setTimeout(() => bois[1] && AU.moo(bois[1].x, bois[1].y, 1.08), 2200); } },
+    // 4. Seu Felipe espera na frente do rancho e acena
+    { cam: [13.5, 36.6], z: 2.0, spd: 1.5, pitch: 44, dof: 0.5, d: 2.4, txt: 'Seu Felipe, o vizinho da Fazenda Campos, já esperava na frente do rancho.', fn: () => { fel.pose = 'talk'; fel.dir = 1; dogs.forEach(d => { d._pose = 'run'; AU.bark(d.x, d.y); }); }, upd: (dt, u) => { dogs.forEach((d, i) => { const tx = 19.5 * TS - 10 - i * 12, ty = 39.6 * TS + 8, k = Math.min(1, dt * 3); const mv = hyp(tx - d.x, ty - d.y); d.x = lerp(d.x, tx, k); d.y = lerp(d.y, ty, k); d._mv = mv > 2 ? 40 : 0; d._dist = (d._dist || 0) + mv * k; d.f = tx > d.x ? 1 : -1; d._pose = mv > 4 ? 'run' : 'sit'; if (u > 0.8 && !d._hrt) { d._hrt = 1; heart(d.x, d.y - 16); } }); } },
+    { d: 1.0, clr: 1, fn: () => { P.dir = 3; fel.pose = 'idle'; if (h) { h.f = 1; act('dismount', 0.85, h, () => { P.mnt = null; P.x = ex; P.y = ey; h._st = 'idle'; h._t = 30; }, { ex, ey, keep: 1, zoom: false }); AU.saddleCreak(); } }, upd: dt => { if (P._act) updAct(dt); } },
+    { cam: [12.8, 36], z: 2.1, spd: 1.4, pitch: 48, dof: 0.45, d: 2.8, fn: () => { P._act = null; P.mnt = null; P.x = ex; P.y = ey; fel.pose = 'walk'; fel._dist = fel._dist || 0; }, upd: (dt, u) => { const k = Math.min(1, u * 1.15), nx = lerp(19.5 * TS, fx, k), ny = lerp(39.6 * TS, ey, Math.min(1, k * 1.6)); fel._dist += hyp(nx - fel.x, ny - fel.y); fel.dir = Math.abs(nx - fel.x) > Math.abs(ny - fel.y) ? 2 : 1; fel.x = nx; fel.y = ny; if (k >= 1) { fel.pose = 'idle'; fel.dir = 2; } dogs.forEach((d, i) => { const tx = ex + 8 + i * 10, ty = ey + 14; d.x = lerp(d.x, tx, Math.min(1, dt * 2)); d.y = lerp(d.y, ty, Math.min(1, dt * 2)); d._pose = hyp(tx - d.x, ty - d.y) > 3 ? 'run' : 'sit'; d.f = 1; }); } },
+    csSay('felipe', 'Seja bem-vindo! Seu avô, Tiãozinho, era o homem mais querido de Itarantim.', { look: false, z: 2.3, pitch: 50, dof: 0.65, focus: 0.44, rays: 0.4, fn: () => { two(); fel.emote = '♥'; fel.et = 1.6; } }),
+    csSay('felipe', 'A fazenda agora é sua. Tem pouco gado e pouco dinheiro, mas tem muito chão pra crescer.', { look: false, fn: two }),
+    csSay('felipe', 'Precisando, é só me procurar na Fazenda Campos, aqui do lado. E não esqueça: gado bem tratado é gado que engorda.', { look: false, z: 2.45, fn: two }),
     csSay('me', 'Pode deixar, Seu Felipe. Vou cuidar de tudo do jeito que ele cuidava.', { look: false, fn: () => { two(); P.dir = 3; } }),
-    { cam: [5.6, 28.4], z: 2.6, spd: 1.2, pitch: 40, dof: 0.75, focus: 0.42, txt: 'No esteio da varanda, o chapéu de couro de Tiãozinho continua no prego, como se ele fosse voltar a qualquer hora.', d: 4.8 },
+    // 5. a lembrança do avô
+    { cam: [5.6, 28.4], z: 2.6, spd: 1.2, pitch: 40, dof: 0.75, focus: 0.42, txt: 'No esteio da varanda, o chapéu de couro de Tiãozinho continua no prego, como se ele fosse voltar a qualquer hora.', d: 4.6 },
     { grade: 'memoria', flash: 1, rays: 0.9, cam: [7, 28.4], z: 2.3, spd: 0.8, d: 6, txt: '<i>Toda tarde, ao voltar do campo, Tiãozinho pendurava o chapéu no mesmo prego.</i>',
       fn: () => { tiao = cineActor({ ap: Object.assign({}, TIAO), x: tx0, y: ty0, dir: 2, pose: 'walk', alpha: 1, dist: 0 }); },
       upd: (dt, u) => { if (!tiao) return; const k = Math.min(1, u / 0.62), nx = lerp(tx0, tx1, easeIO(k)), ny = lerp(ty0, ty1, easeIO(k)); tiao.dist += hyp(nx - tiao.x, ny - tiao.y); tiao.x = nx; tiao.y = ny;
         if (k < 1) { tiao.pose = 'walk'; tiao.fr = Math.floor(tiao.dist / 5) % 4; tiao.dir = 2; } else { tiao.pose = 'idle'; tiao.fr = 0; tiao.dir = 1; if (u > 0.8 && tiao.ap.hat !== 7) { tiao.ap = Object.assign({}, tiao.ap, { hat: 7 }); AU.buckle && AU.buckle(); } } } },
-    { d: 3.4, txt: '<i>O chapéu ficou. O lugar dele também.</i>', upd: (dt, u) => { if (tiao) tiao.alpha = 1 - easeIO(u); } },
-    { grade: 'aurora', flash: 1, rays: 0.6, cam: [43.4, 42.2], snap: 1, z: 2.6, spd: 1.1, pitch: 30, dof: 0.85, focus: 0.46, txt: 'Na porteira do curral, as iniciais que ele mesmo entalhou: <b>T.S.</b> Cada canto desta terra guarda uma lembrança dele.', d: 5.8, fn: () => { CINE.actors.length = 0; tiao = null; } },
-    { cam: [13, 35.5], z: 1.3, spd: 0.9, pitch: 40, dof: 0.2, rays: 0.8, txt: 'A história de Tiãozinho continua agora com você.', d: 5 },
-    { fade: 1, d: 0.9, clr: 1 },
+    { d: 3.2, txt: '<i>O chapéu ficou. O lugar dele também.</i>', upd: (dt, u) => { if (tiao) tiao.alpha = 1 - easeIO(u); } },
+    { grade: 'aurora', flash: 1, rays: 0.6, cam: [43.4, 42.2], snap: 1, z: 2.6, spd: 1.1, pitch: 30, dof: 0.85, focus: 0.46, txt: 'Na porteira do curral, as iniciais que ele mesmo entalhou: <b>T.S.</b> Cada canto desta terra guarda uma lembrança dele.', d: 5.2, fn: () => { CINE.actors.length = 0; tiao = null; } },
+    // 6. o primeiro dia: a câmera sobe sobre a fazenda
+    { cam: [11.5, 36.5], z: 1.0, spd: 0.7, pitch: 50, dof: 0.15, rays: 0.9, d: 5.4, clr: 1, fn: () => { csTitle('A LIDA COMEÇA', 'Fazenda Boa Esperança · Dia 1'); birdsFly('periquito', 8, 6, 46, -0.15); setTimeout(() => birdCall('periquito', 22 * TS, 42 * TS), 700); dogs.forEach(d => setTimeout(() => AU.bark(d.x, d.y), 400 + Math.random() * 800)); AU.whistle && setTimeout(() => AU.whistle(), 1600); } },
+    { fade: 1, d: 0.9, clr: 1, fn: () => csTitle(null) },
     { fade: 0, fn: () => { final(); fel.cs = false; S.min = Math.max(S.min, 6 * 60 + 15); S.story.intro = 1; addFr('felipe', 30); npcState('felipe').met = 1; remember('felipe', 'recebeu você na chegada'); }, clr: 1, d: 0.2 }
   ];
   steps.forEach(st => { const u0 = st.upd; st.upd = (dt, u) => { S.min = Math.min(S.min + dt * 1.1, 7 * 60); if (u0) u0(dt, u); }; });
-  cutscene(steps, () => { final(); fel.cs = false; S.story.intro = 1; P._gal = 0; say(SET.mode === 'touch' ? 'Toque no chão para andar e nos bois para ver a ficha. O Aboio faz o gado seguir você.' : 'Joystick ou WASD para andar, Correr para galopar. Toque nos bois para ver a ficha; o Aboio faz o gado seguir você.', 6500); SAVE.save('auto', true); });
+  cutscene(steps, () => { final(); fel.cs = false; S.story.intro = 1; P._gal = 0; setTimeout(() => { toast('📋 Primeiras tarefas: encher os cochos d’água'); setTimeout(() => toast('📋 Juntar os bois com o Aboio (Q)'), 900); setTimeout(() => toast('📋 Conhecer Itarantim, depois da ponte'), 1800); }, 6800); say(SET.mode === 'touch' ? 'Toque no chão para andar e nos bois para ver a ficha. O Aboio faz o gado seguir você.' : 'Joystick ou WASD para andar, Correr para galopar. Toque nos bois para ver a ficha; o Aboio faz o gado seguir você.', 6500); SAVE.save('auto', true); });
 }
 function removeLock(k, u) { const y = EXP[k].y; const xs = [37, 38, 39]; const n = Math.ceil(u * xs.length); for (let i = 0; i < n; i++) { const x = xs[i], idx = gi(x, y); if (obj[idx] === 1) { obj[idx] = 0; dust((x + .5) * TS, (y + .8) * TS, 6, '#c8a878'); AU.hammer(); } } }
 function csExpansion(k) {
