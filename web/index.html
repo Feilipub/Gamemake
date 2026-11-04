@@ -278,6 +278,111 @@ body.lan .sw2 .pvbox{position:sticky;top:0}
 @keyframes tf{0%{opacity:0;transform:translateY(6px)}8%{opacity:1;transform:none}82%{opacity:1}100%{opacity:0}}
 .slot{display:flex;gap:8px;align-items:center}
 .slot .info{flex:1}
+/* ================= TEMA "COURO E MADEIRA" (interfaces) =================
+   Texturas pixel art geradas em código (uiTex): couro costurado nos botões, madeira com rebites de latão nas
+   janelas e na HUD, pergaminho no miolo. Estados: normal, hover, pressionado, selecionado, desativado, principal. */
+:root{--ui-ink:#140a05;--ui-cream:#fbe9c2;--ui-brass:#d8a840}
+.btn,#bar button,.pad button,#tm button,.tabs button,.cl,#inp button,.ch button,.mb button,#ap button,#setup button,.ov button,#auc button,#tfoot button,#orient button,#skip{
+ border:8px solid transparent!important;border-image:var(--bN) 4 fill / 8px stretch!important;image-rendering:pixelated;background:transparent!important;color:var(--ui-cream)!important;text-shadow:0 2px 0 var(--ui-ink)!important;
+ box-shadow:0 3px 0 rgba(10,4,2,.5)!important;outline:none!important;min-height:34px;transition:transform .07s ease,filter .12s ease;letter-spacing:.2px}
+@media (hover:hover){.btn:hover,#bar button:hover,.pad button:hover,#tm button:hover,.tabs button:hover,.cl:hover,#inp button:hover,.ch button:hover,.mb button:hover,#ap button:hover,#setup button:hover,.ov button:hover,#auc button:hover,#tfoot button:hover{border-image-source:var(--bH)!important;filter:brightness(1.04)}}
+.btn:active,#bar button:active,.pad button:active,#tm button:active,.tabs button:active,.cl:active,#inp button:active,.ch button:active,.mb button:active,#ap button:active,#setup button:active,.ov button:active,#auc button:active,#tfoot button:active{border-image-source:var(--bP)!important;transform:translateY(2px);box-shadow:0 1px 0 rgba(10,4,2,.5)!important}
+.tabs button.on,.mgrid button.on,.pad button.on,.ch button.on,#setup button.on,.steps button.on,.ifilt button.on,.edcat button.on{border-image-source:var(--bS)!important;color:#3a1c08!important;text-shadow:0 1px 0 #fff4c8!important}
+#bx:not(.off),#tm button[data-t=new],#tm button[data-t=cont]:not(:disabled),button.pri{border-image-source:var(--bG)!important;color:#3a1c08!important;text-shadow:0 1px 0 #ffe9a0!important}
+button:disabled,.pad #bx.off{border-image-source:var(--bD)!important;color:#d8ccbe!important;opacity:.78!important;filter:none!important;transform:none!important}
+.tabs button,.mgrid button,.ch button,.ifilt button,.edcat button,.ag button,.steps button{border-width:6px!important;border-image-width:6px!important;min-height:30px}
+.steps .sS{display:none}
+body.lan .steps button{font-size:10.5px!important;padding:2px 1px!important;min-height:34px;line-height:1.1;letter-spacing:-.2px}
+body.lan .steps .sn{display:block;font-size:12px}
+body.lan .steps .sL{display:none}
+body.lan .steps .sS{display:inline}
+.tabs button{padding:2px 7px}.ch button{padding:3px 7px}
+.xb{border-image-source:var(--bN)!important}
+/* janelas: moldura de madeira com rebites e miolo de pergaminho */
+.px{border:16px solid transparent!important;border-image:var(--pn) 8 fill / 16px stretch!important;image-rendering:pixelated;background:transparent}
+.mb.px{padding:0 6px 6px}
+#mn{background:radial-gradient(ellipse at center,rgba(20,10,4,.55),rgba(8,3,1,.82))}
+#mn.on .mb{animation:winIn .22s cubic-bezier(.2,1.25,.4,1)}
+@keyframes winIn{from{transform:translateY(14px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+.mh{border-bottom:2px dashed rgba(122,74,30,.45);padding-bottom:5px;margin-bottom:7px}
+.mh h2{font-size:19px;color:#5a2408;text-shadow:0 1px 0 #fff4cc,0 0 1px rgba(90,36,8,.3);letter-spacing:.5px}
+#mic img{filter:drop-shadow(0 1px 0 #fff4cc)}
+#mc.swap{animation:swapIn .16s ease}
+@keyframes swapIn{from{opacity:.25;transform:translateY(4px)}to{opacity:1;transform:none}}
+.card{border:3px solid #5a3418;background:linear-gradient(#f8eac6,#efd9aa);box-shadow:inset 0 0 0 2px #fff6dc,inset 0 0 0 4px rgba(150,96,44,.18),0 3px 0 rgba(20,10,4,.3);border-radius:2px}
+.card.sel{outline:3px solid #c8862e;background:linear-gradient(#fff4d0,#f6e2b0)}
+.mb h3{color:#6a2c0c;border-left:4px solid #c8862e;padding-left:6px}
+.mut{color:#7a4e2c}
+.tag{background:#6a3418;border:2px solid var(--ui-ink);box-shadow:inset 0 0 0 1px #c89a40}
+input,select{border:3px solid #5a3418;background:#fff6d8;box-shadow:inset 0 2px 0 rgba(90,52,24,.25)}
+.bar2,.hb{border:2px solid var(--ui-ink)!important;box-shadow:0 0 0 1px #b8862e,inset 0 2px 0 rgba(0,0,0,.4)}
+/* HUD: tábua escura com placas de couro */
+#hud::before{content:'';position:absolute;inset:0;border:12px solid transparent;border-image:var(--wd) 6 fill / 12px stretch;image-rendering:pixelated;z-index:-1;opacity:.94}
+#hud{background:transparent!important;border:0!important;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+.chip{background:linear-gradient(#2e1a0c,#22130a);border:2px solid var(--ui-ink);box-shadow:inset 0 0 0 1px #6a3e20,inset 0 1px 0 rgba(232,200,144,.35);border-radius:3px;color:var(--ui-cream);text-shadow:0 1px 0 #000}
+#hMoney b,#hMoney{color:#ffe08a}
+.hb i{box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+#hud.got #hMoneyC{animation:coinPop .5s}
+@keyframes coinPop{30%{transform:scale(1.12);filter:brightness(1.4)}}
+.mfloat{position:absolute;z-index:31;pointer-events:none;font-weight:700;font-size:13px;text-shadow:0 2px 0 #140a05,0 0 3px #140a05;animation:mfloat 1.3s ease-out forwards;white-space:nowrap}
+.mfloat.p{color:#a8f070}.mfloat.n{color:#ff9a7a}
+@keyframes mfloat{from{transform:translateY(0);opacity:1}to{transform:translateY(-26px);opacity:0}}
+/* barra de baixo */
+#bar{background:transparent!important;border:0!important;box-shadow:none!important}
+#bar::before{content:'';position:absolute;inset:0;border:12px solid transparent;border-image:var(--wd) 6 fill / 12px stretch;image-rendering:pixelated;z-index:-1}
+#bar{z-index:6}
+#bar button{min-height:44px}
+/* controles */
+#joy{border:4px solid #b8862e!important;box-shadow:inset 0 0 0 3px #3a2010,inset 0 0 14px rgba(0,0,0,.85),0 4px 10px rgba(0,0,0,.5)!important;background:radial-gradient(circle,rgba(74,44,22,.6),rgba(24,12,6,.85))!important}
+#knob{background:radial-gradient(circle at 35% 30%,#fff2c8,#e0a840 45%,#8a5418 80%)!important;border:2px solid var(--ui-ink)!important}
+.pad button{min-height:38px;font-size:11.5px}
+/* barra rápida e mochila: espaços de couro afundado com tachas */
+#hotbar{background:transparent!important;border:0!important;box-shadow:none!important;padding:5px 6px!important}
+#hotbar::before{content:'';position:absolute;inset:0;border:10px solid transparent;border-image:var(--wd) 6 fill / 10px stretch;image-rendering:pixelated;z-index:-1}
+.hbs,.isl{border:4px solid transparent!important;border-image:var(--sl) 4 fill / 4px stretch!important;image-rendering:pixelated;background:transparent!important;box-shadow:none!important;transition:transform .12s cubic-bezier(.2,1.6,.4,1)}
+.hbs.on,.isl.on{border-image-source:var(--slS)!important;transform:translateY(-3px) scale(1.06);z-index:2;filter:drop-shadow(0 0 4px rgba(255,214,110,.75))}
+.hbs b,.isl b{right:0!important;bottom:-2px!important;background:#2a1608;color:#ffe08a!important;border:1px solid #c89a40;padding:0 2px;font-size:9px!important;line-height:11px;text-shadow:none!important}
+.hbs i{color:#7a4a20!important;font-weight:700}
+.hbs.got,.isl.got{animation:gotIt .45s ease}
+@keyframes gotIt{35%{transform:translateY(-4px) scale(1.15);filter:brightness(1.5) drop-shadow(0 0 5px #fff0a0)}}
+.isl.dim{opacity:.32}
+.iinfo{border:3px solid #5a3418;background:linear-gradient(#fff4d8,#f0dcae);box-shadow:inset 0 0 0 2px #fffae8}
+/* diálogos: retrato em moldura, nome em placa, fala em pergaminho que aparece letra a letra */
+.dlg>div:first-child{border:8px solid transparent;border-image:var(--wd) 6 fill / 8px stretch;image-rendering:pixelated;padding:1px;flex:none}
+.dlg b{display:inline-block;border:6px solid transparent;border-image:var(--pl) 5 fill / 6px stretch;image-rendering:pixelated;color:#fff2cc;text-shadow:0 1px 0 #2a0c04;padding:0 6px;font-size:15px!important;margin-bottom:3px}
+.dlg .txt{border:3px solid #5a3418!important;background:linear-gradient(#fffaea,#f6e6bc)!important;box-shadow:inset 0 0 0 2px #fff,0 2px 0 rgba(20,10,4,.25);font-size:15px!important;line-height:1.45!important;position:relative}
+.dlg .txt.typing::after{content:'▾';position:absolute;right:6px;bottom:2px;color:#8a4a20;animation:pulse 1s infinite}
+#sub{border:12px solid transparent!important;border-image:var(--pnD) 8 fill / 12px stretch!important;image-rendering:pixelated;background:transparent!important}
+#sub.dl b{display:inline-block;border:5px solid transparent;border-image:var(--pl) 5 fill / 5px stretch;color:#fff2cc;padding:0 6px;margin-bottom:4px}
+#sub.dl .pt{border:6px solid transparent!important;border-image:var(--wd) 6 fill / 6px stretch!important;background:transparent!important}
+/* avisos */
+#toast div{background:linear-gradient(#3e2210,#2a160a)!important;color:#ffe9a8!important;border:2px solid var(--ui-ink)!important;box-shadow:inset 0 0 0 1px #c89a40,0 3px 0 rgba(0,0,0,.4)!important;padding:4px 10px!important;font-size:12.5px!important;border-radius:2px}
+#toast div.win{background:linear-gradient(#6a4a10,#4a300a)!important;color:#fff4c0!important;position:relative;overflow:visible}
+#toast div.win::before,#toast div.win::after{content:'✦';position:absolute;top:-6px;color:#ffe060;animation:spark 1s ease-out infinite}
+#toast div.win::before{left:-8px}#toast div.win::after{right:-8px;animation-delay:.4s}
+@keyframes spark{0%{transform:scale(.4) rotate(0);opacity:0}40%{opacity:1}100%{transform:scale(1.4) rotate(90deg);opacity:0}}
+#msg{border:10px solid transparent!important;border-image:var(--pnD) 8 fill / 10px stretch!important;image-rendering:pixelated;background:transparent!important;box-shadow:none!important}
+/* menu inicial: placa de madeira pendurada e botões entrando em sequência */
+#tt{position:relative;border:16px solid transparent;border-image:var(--pnD) 8 fill / 16px stretch;image-rendering:pixelated;padding:4px 14px 8px;background:transparent}
+#tt::before,#tt::after{content:'';position:absolute;top:-34px;width:4px;height:30px;background:repeating-linear-gradient(#c8a060 0 3px,#8a6030 3px 6px);box-shadow:0 0 0 1px #2a1608}
+#tt::before{left:18%}#tt::after{right:18%}
+#title.rev #tt{animation:signSwing 3.2s ease-in-out infinite alternate;transform-origin:50% -30px}
+@keyframes signSwing{from{transform:rotate(-.6deg)}to{transform:rotate(.6deg)}}
+#title.menu #tm button{animation:btnIn .45s cubic-bezier(.2,1.3,.4,1) both}
+#title.menu #tm button:nth-child(2){animation-delay:.07s}#title.menu #tm button:nth-child(3){animation-delay:.14s}#title.menu #tm button:nth-child(4){animation-delay:.21s}
+@keyframes btnIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+#tm button{min-height:48px;font-size:16px}
+/* editor do vaqueiro */
+#setup{background:linear-gradient(rgba(24,12,6,.93),rgba(14,7,3,.97)),repeating-linear-gradient(90deg,#3a200e 0 22px,#2e1909 22px 24px)}
+#pv{border:14px solid transparent!important;border-image:var(--pnD) 8 fill / 14px stretch!important;image-rendering:pixelated;background:radial-gradient(ellipse at 50% 70%,#f0d8a0 0,#a8884e 45%,#4a3018 100%)!important}
+.pport{border:12px solid transparent!important;border-image:var(--pn) 8 fill / 12px stretch!important;image-rendering:pixelated;background:transparent!important}
+.pport canvas,.pport img{animation:portIn .25s ease}
+@keyframes portIn{from{transform:scale(.94);filter:brightness(1.3)}to{transform:none;filter:none}}
+#setup label{color:#ffd878;text-shadow:0 2px 0 var(--ui-ink);border-bottom:1px dashed rgba(216,168,64,.35);padding-bottom:2px}
+#setup h2{letter-spacing:1px}
+.thg button{min-height:72px}
+/* toque confortável */
+@media (pointer:coarse){.mb button,.ch button,.tabs button{min-height:38px}}
 </style>
 </head>
 <body class="ttl">
@@ -394,7 +499,7 @@ const EMO_IC = { '🐄': 'cow', '🐕': 'dog', '🐎': 'horse', '🐴': 'horse',
 const noEmo = t => String(t).replace(EMO_RE, '').replace(/^\s+/, '');
 function emoHTML(h) { return String(h).replace(/✅|✔️?/gu, '<b style="color:#2a7a2a">✓</b>').replace(/⭐/gu, '★').replace(/⚠️?/gu, '<b style="color:#b02020">!</b>').replace(EMO_RE, m => { const k = m.trim().replace(/\uFE0F/g, ''); return EMO_IC[k] && typeof ic === 'function' ? ic(EMO_IC[k], 14) + ' ' : ''; }); }
 function say(t, ms) { const m = $('msg'); t = noEmo(t); m.textContent = t; m.classList.add('on'); msgT = ms || 3500; }
-function toast(t) { const box = $('toast'), d = document.createElement('div'); d.textContent = noEmo(t).replace(/^\s*([!✓])?/, '$1'); box.appendChild(d); while (box.children.length > 4) box.firstChild.remove(); setTimeout(() => d.remove(), 2700); } // no máximo 4 avisos na tela
+function toast(t) { const box = $('toast'), d = document.createElement('div'); if (/^\s*(✅|🏆|🎉|📜 Missão aceita|🎂)/.test(t) || /concluíd|Conquista|parabéns/i.test(t)) d.className = 'win'; d.textContent = noEmo(t).replace(/^\s*([!✓])?/, '$1'); box.appendChild(d); while (box.children.length > 4) box.firstChild.remove(); setTimeout(() => d.remove(), 2700); } // no máximo 4 avisos na tela
 const shownTips = {};
 function tip(k, t) { if (S && S.flags['tip_' + k]) return; if (S) S.flags['tip_' + k] = 1; say(t, 6500); }
 
@@ -543,6 +648,38 @@ function itemIconURL(id) {
 }
 const iic = (id, s) => `<img class="ic" src="${itemIconURL(id)}" width="${s || 24}" height="${s || 24}" alt="">`;
 // molduras 9-slice desenhadas em canvas
+// texturas da interface (pixel art, 9 fatias): couro costurado, madeira com veio e rebites de latão, pergaminho
+function uiTex(kind) {
+  const S = { btn: 16, panel: 32, wood: 24, slot: 16, hud: 24, plate: 16 }[kind.replace(/[A-Z].*$/, '')] || 16;
+  const [c, g] = mkC(S, S); const p = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); }, R = mulberry(S * 7 + kind.length * 13);
+  const ink = '#140a05';
+  if (kind.startsWith('btn')) { // botão de couro com costura; variantes de estado
+    const pal = { btn: ['#8c4c26', '#a8643a', '#6a3418', '#e8c890'], btnH: ['#a05a2e', '#bf7646', '#7a3e1c', '#f6dca8'], btnP: ['#6e3a1c', '#5a2e14', '#8a4a24', '#d8b478'], btnS: ['#c8862e', '#e8b050', '#9a5e18', '#fff0c0'], btnG: ['#d89a30', '#f2c454', '#a86a18', '#5a2e0c'], btnD: ['#6a5a50', '#7e6e62', '#544640', '#a89888'] }[kind] || ['#8c4c26', '#a8643a', '#6a3418', '#e8c890'];
+    p(0, 0, S, S, ink); p(1, 1, S - 2, S - 2, pal[0]);
+    for (let y = 1; y < S - 1; y++) for (let x = 1; x < S - 1; x++) if (R() < 0.12) p(x, y, 1, 1, R() < 0.5 ? pal[1] : pal[2]); // poro do couro
+    if (kind === 'btnP') { p(1, 1, S - 2, 2, pal[1]); p(1, S - 2, S - 2, 1, pal[2]); } else { p(1, 1, S - 2, 2, pal[1]); p(1, S - 3, S - 2, 2, pal[2]); }
+    for (let k = 3; k < S - 3; k += 2) { p(k, 3, 1, 1, pal[3]); p(k, S - 4, 1, 1, pal[3]); p(3, k, 1, 1, pal[3]); p(S - 4, k, 1, 1, pal[3]); } // costura
+    if (kind === 'btnS' || kind === 'btnG') { p(0, 0, S, 1, '#5a3008'); [[1, 1], [S - 3, 1], [1, S - 3], [S - 3, S - 3]].forEach(([x, y]) => { p(x, y, 2, 2, '#fff0b0'); }); }
+  } else if (kind === 'panel' || kind === 'panelD') { // moldura de madeira com rebites de latão e miolo de pergaminho
+    const dark = kind === 'panelD';
+    p(0, 0, S, S, ink); p(1, 1, S - 2, S - 2, '#6a3e20');
+    for (let y = 1; y < 9; y++) for (let x = 1; x < S - 1; x++) { const v = Math.sin(x * 0.7 + y * 2.1 + R() * 0.6); p(x, y, 1, 1, v > 0.6 ? '#8a5430' : v < -0.6 ? '#4e2c14' : '#6e4222'); p(x, S - 1 - y, 1, 1, v > 0.5 ? '#7a4826' : '#5a3218'); }
+    for (let x = 1; x < 9; x++) for (let y = 9; y < S - 9; y++) { const v = Math.sin(y * 0.7 + x * 2.3 + R() * 0.6); p(x, y, 1, 1, v > 0.6 ? '#8a5430' : '#6a3e20'); p(S - 1 - x, y, 1, 1, v > 0.5 ? '#7a4826' : '#5a3218'); }
+    p(1, 1, S - 2, 1, '#b07a48'); p(1, 1, 1, S - 2, '#a06a3a'); p(1, S - 2, S - 2, 1, '#3a200e');
+    p(7, 7, S - 14, S - 14, ink); p(8, 8, S - 16, S - 16, dark ? '#2a1a10' : '#ead2a0'); /* miolo liso: o recorte 9-slice (8px) estica o centro, então nada de traço/pinta nele */
+    [[2, 2], [S - 6, 2], [2, S - 6], [S - 6, S - 6]].forEach(([x, y]) => { p(x, y, 4, 4, '#3a2410'); p(x + 1, y, 2, 4, '#d8a840'); p(x, y + 1, 4, 2, '#d8a840'); p(x + 1, y + 1, 2, 2, '#f0d070'); p(x + 1, y + 1, 1, 1, '#fff6c0'); });
+  } else if (kind === 'wood' || kind === 'hud') { // tábua escura (barra de baixo, HUD)
+    p(0, 0, S, S, ink); for (let y = 1; y < S - 1; y++) for (let x = 1; x < S - 1; x++) { const v = Math.sin(x * 0.45 + Math.sin(y * 0.9) * 1.6 + R() * 0.4); p(x, y, 1, 1, v > 0.55 ? '#6a3e20' : v < -0.5 ? '#3a200e' : '#4e2c16'); }
+    p(1, 1, S - 2, 1, '#8a5a32'); p(1, S - 2, S - 2, 1, '#26140a');
+    [[2, 2], [S - 4, 2], [2, S - 4], [S - 4, S - 4]].forEach(([x, y]) => { p(x, y, 2, 2, '#c89a40'); p(x, y, 1, 1, '#fff0b0'); });
+  } else if (kind === 'slot' || kind === 'slotS') { // espaço de item: couro claro afundado com tachas
+    const sel = kind === 'slotS'; p(0, 0, S, S, ink); p(1, 1, S - 2, S - 2, sel ? '#f0c050' : '#5a3418'); p(2, 2, S - 4, S - 4, sel ? '#fff0c0' : '#3a2010'); p(3, 3, S - 6, S - 6, '#e2c896'); p(3, 3, S - 6, 1, '#b8945e'); p(3, 3, 1, S - 6, '#c8a46e'); p(3, S - 4, S - 6, 1, '#f6e4b8');
+    [[1, 1], [S - 2, 1], [1, S - 2], [S - 2, S - 2]].forEach(([x, y]) => p(x, y, 1, 1, sel ? '#fff8d0' : '#c89a40'));
+  } else if (kind === 'plate') { // placa de nome (diálogos, títulos)
+    p(0, 0, S, S, ink); p(1, 1, S - 2, S - 2, '#7a2e18'); p(1, 1, S - 2, 2, '#a8462a'); p(1, S - 3, S - 2, 2, '#5a1e10'); for (let k = 3; k < S - 3; k += 2) { p(k, 3, 1, 1, '#f0c870'); p(k, S - 4, 1, 1, '#f0c870'); }
+  }
+  return c.toDataURL();
+}
 function frameURL(kind) {
   const [c, g] = mkC(18, 18); const p = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
   if (kind === 'paper') {
@@ -556,7 +693,8 @@ function frameURL(kind) {
   return c.toDataURL();
 }
 function initAssets() {
-  const r = document.documentElement.style; r.setProperty('--frame', `url(${frameURL('paper')})`); r.setProperty('--wood', `url(${frameURL('wood')})`); r.setProperty('--ctl', SET.ctl); document.body.classList.toggle('tapmode', SET.mode === 'touch');
+  const r = document.documentElement.style; for (const [v, k] of [['--bN', 'btn'], ['--bH', 'btnH'], ['--bP', 'btnP'], ['--bS', 'btnS'], ['--bG', 'btnG'], ['--bD', 'btnD'], ['--pn', 'panel'], ['--pnD', 'panelD'], ['--wd', 'wood'], ['--sl', 'slot'], ['--slS', 'slotS'], ['--pl', 'plate']]) r.setProperty(v, `url(${uiTex(k)})`);
+  r.setProperty('--frame', `url(${frameURL('paper')})`); r.setProperty('--wood', `url(${frameURL('wood')})`); r.setProperty('--ctl', SET.ctl); document.body.classList.toggle('tapmode', SET.mode === 'touch');
   $('ib1').innerHTML = ic('bag', 18); $('ib2').innerHTML = ic('scroll', 18); $('ib3').innerHTML = ic('sell', 18); $('ib4').innerHTML = ic('sound', 22); $('mx').innerHTML = ic('close', 18);
   const tb = { cont: ['play', 'Continuar'], new: ['plus', 'Novo jogo'], opt: ['gear', 'Opções'], cred: ['book', 'Créditos'], ctrl: ['pad', 'Controles'] };
   document.querySelectorAll('#tm button, #tfoot button[data-t]').forEach(b => { const d = tb[b.dataset.t]; b.innerHTML = ic(d[0], 18) + '<span>' + d[1] + '</span>'; });
@@ -4257,13 +4395,18 @@ function fixRefs() {
 function ledger(desc, v, acc) { S.ledger.unshift({ d: S.day, h: clock(), desc, v: Math.round(v * 100) / 100, acc: acc || 'cc' }); if (S.ledger.length > 160) S.ledger.length = 160; }
 function priceMul() { return (S.cf && STATES[S.cf.st][5] === 'negocio') ? 0.94 : 1; }
 function canPay(v) { return S.cash + S.acct >= v; }
+function moneyFx(v) { // +R$ / -R$ subindo do dinheiro na HUD
+  const ch = $('hMoneyC'); if (!ch || !v || mode !== 'play') return; const r = ch.getBoundingClientRect(), w = $('wrap').getBoundingClientRect(), d = document.createElement('div');
+  d.className = 'mfloat ' + (v > 0 ? 'p' : 'n'); d.textContent = (v > 0 ? '+' : '−') + fmt2(Math.abs(v)); d.style.left = (r.left - w.left + 8) + 'px'; d.style.top = (r.bottom - w.top + 2) + 'px'; $('wrap').appendChild(d); setTimeout(() => d.remove(), 1400);
+  const hud = $('hud'); hud.classList.remove('got'); void hud.offsetWidth; hud.classList.add('got');
+}
 function pay(v, desc) {
   v = Math.round(v * 100) / 100; if (!canPay(v)) { say('Saldo insuficiente (carteira + conta).'); AU.osc('square', 200, 120, 0.2, 0.06); return false; }
-  const c = Math.min(S.cash, v); S.cash -= c; if (c > 0) ledger(desc + ' (dinheiro)', -c, 'cx');
+  moneyFx(-v); const c = Math.min(S.cash, v); S.cash -= c; if (c > 0) ledger(desc + ' (dinheiro)', -c, 'cx');
   const r = v - c; if (r > 0) { S.acct -= r; ledger(desc + ' (débito)', -r, 'cc'); }
   AU.coin(); return true;
 }
-function receive(v, desc, to) { v = Math.round(v * 100) / 100; if (to === 'cash') { S.cash += v; ledger(desc, v, 'cx'); } else { S.acct += v; ledger(desc, v, 'cc'); } S.stats.earned += v; AU.coin(); }
+function receive(v, desc, to) { v = Math.round(v * 100) / 100; moneyFx(v); if (to === 'cash') { S.cash += v; ledger(desc, v, 'cx'); } else { S.acct += v; ledger(desc, v, 'cc'); } S.stats.earned += v; AU.coin(); }
 /* ---------- inventário ---------- */
 /* ---------- inventário por espaços (mochila 12/24/36, pilhas, barra rápida e baús) ----------
    S.inv continua sendo o total de cada item (todos os sistemas do jogo leem e gastam por ele); S.bag guarda
@@ -6247,9 +6390,17 @@ function renderModal() {
   if (autoIc && !M.icon) M.icon = autoIc;
   $('mtt').textContent = noEmo(tt); $('mic').innerHTML = M.icon ? ic(M.icon, 22) : (cur && cur[2] ? ic(cur[2], 22) : '');
   $('mc').innerHTML = emoHTML(M.fn(M.tab)); $('mn').scrollTop = st;
+  for (const el of $('mc').querySelectorAll('.dlg .txt')) typeText(el);
+}
+// fala aparece letra a letra (toque completa na hora); só em textos simples, sem botões dentro
+function typeText(el) {
+  if (el.children.length || !el.textContent.trim() || el.dataset.tw) return; const full = el.textContent; el.dataset.tw = 1; el.textContent = ''; el.classList.add('typing'); let i = 0;
+  const done = () => { el.textContent = full; el.classList.remove('typing'); clearInterval(t); };
+  const t = setInterval(() => { if (!el.isConnected) return clearInterval(t); i += 2; el.textContent = full.slice(0, i); if (i >= full.length) done(); }, 22);
+  el.addEventListener('pointerdown', done, { once: true });
 }
 function closeModal() { M.chest = null; M.ctap = false; M.isel = null; if (S && P) fixRefs(); if (!M.open) return; M.open = false; if (M.qdl && M.qdl.fin) { const f = M.qdl.fin; M.qdl = null; setTimeout(f, 0); } const mn = $('mn'); mn.classList.remove('on'); mn.style.display = 'none'; setTimeout(() => S && typeof qHud === 'function' && qHud(), 30); paused = mode !== 'play' && mode !== 'cs' && mode !== 'film' ? true : false; if (mode === 'play') paused = false; AU.whoosh(false); }
-A.tab = v => { M.tab = v; M.sel = null; M.sub = null; renderModal(); $('mn').scrollTop = 0; AU.click(); };
+A.tab = v => { M.tab = v; M.sel = null; M.sub = null; renderModal(); $('mn').scrollTop = 0; AU.click(); const mc = $('mc'); mc.classList.remove('swap'); void mc.offsetWidth; mc.classList.add('swap'); };
 const btn = (l, a, v, dis, cls) => `<button data-a="${a}" data-v="${v === undefined ? '' : esc(v)}" ${dis ? 'disabled' : ''} ${cls ? `class="${cls}"` : ''}>${l}</button>`;
 const ibtn = (icn, l, a, v, dis) => `<button data-a="${a}" data-v="${v === undefined ? '' : esc(v)}" ${dis ? 'disabled' : ''}>${ic(icn, 18)}<span>${l}</span></button>`;
 const bar = (v, cls) => `<span class="bar2 ${cls || ''}"><i style="width:${cl(v, 0, 100)}%"></i></span>`;
@@ -6416,7 +6567,8 @@ function hotbarUpdate() {
     el.addEventListener('pointerup', e => { const s = e.target.closest('[data-hb]'); if (!s) return; e.stopPropagation(); const i = +s.dataset.hb; if (S.bag.sel === i) useSelected(); else hbSelect(i); }); }
   const show = mode === 'play' && !M.open && S && S.bag; el.style.display = show ? '' : 'none'; if (!show) return;
   const B = S.bag, sig = B.sel + '|' + B.slots.slice(0, 12).map(s => s ? s.id + s.n : '').join(','); if (sig === hbSig) return; hbSig = sig;
-  el.innerHTML = B.slots.slice(0, 12).map((s, i) => `<div class="hbs${i === B.sel ? ' on' : ''}" data-hb="${i}"><i>${i < 9 ? i + 1 : i === 9 ? 0 : ''}</i>${s ? iic(s.id, 22) + (s.n !== 1 ? `<b>${fmtQ(s.n)}</b>` : '') : ''}</div>`).join('');
+  const prev = hotbarUpdate.prev || []; hotbarUpdate.prev = B.slots.slice(0, 12).map(s => s ? s.id + ':' + s.n : '');
+  el.innerHTML = B.slots.slice(0, 12).map((s, i) => `<div class="hbs${i === B.sel ? ' on' : ''}${s && prev[i] !== undefined && prev[i] !== s.id + ':' + s.n && (!prev[i] || prev[i].split(':')[0] !== s.id || +prev[i].split(':')[1] < s.n) ? ' got' : ''}" data-hb="${i}"><i>${i < 9 ? i + 1 : i === 9 ? 0 : ''}</i>${s ? iic(s.id, 22) + (s.n !== 1 ? `<b>${fmtQ(s.n)}</b>` : '') : ''}</div>`).join('');
 }
 function hbSelect(i) { S.bag.sel = (i + 12) % 12; hbSig = ''; const s = S.bag.slots[S.bag.sel]; if (s) say(IT[s.id].n + (s.n > 1 ? ' (' + fmtQ(s.n) + ')' : '') + ' — toque de novo para usar', 1400); AU.click(); }
 function useSelected() { const s = S.bag.slots[S.bag.sel]; if (!s) return; const it = IT[s.id];
@@ -9129,7 +9281,7 @@ function renderSetup() {
   const a = CF.ap, st = STATES[CF.st];
   const STEPS = setupEdit ? ['Aparência', 'Roupa'] : ['Vaqueiro', 'Origem e roupa', 'Montaria', 'Seu cão', 'Começar'];
   let h = `<div class="sw2"><div class="pvbox"><h2>${ic(setupEdit ? 'brush' : 'hat', 20)} ${setupEdit ? 'Guarda-roupa' : 'Novo vaqueiro'}</h2>${setStep < 2 || setupEdit ? `<div class="pport">${charImg(a, 4)}<div><b>${esc(CF.name || '')}</b><br><span class="mut">${FACES[a.face || 0]} · olhos ${EYECN[a.eyeC === undefined ? 1 : a.eyeC].toLowerCase()} · ${HAIRS[a.hair].toLowerCase()}${a.beard ? ' · ' + BEARDS[a.beard].toLowerCase() : ''}</span></div></div>` : ''}<canvas id="pv" width="360" height="170"></canvas>
-    <div class="steps">${STEPS.map((n, i) => `<button data-s="step" data-v="${i}" class="${i === setStep ? 'on' : ''}">${i + 1}. ${n}</button>`).join('')}</div></div><div>`;
+    <div class="steps">${STEPS.map((n, i) => `<button data-s="step" data-v="${i}" class="${i === setStep ? 'on' : ''}"><b class="sn">${i + 1}.</b> <span class="sL">${n}</span><span class="sS">${n === 'Seu cão' ? 'Cão' : n.split(' ')[0]}</span></button>`).join('')}</div></div><div>`;
   if (setStep === 0) {
     if (!setupEdit) h += `<label>Nome do vaqueiro</label><input id="pn" maxlength="16" value="${esc(CF.name)}">`;
     h += editorHTML(a);
