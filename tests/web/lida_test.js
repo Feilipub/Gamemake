@@ -5,7 +5,10 @@ await p.goto('file://'+path.resolve(__dirname,'../../web/index.html')+'#debug-no
 const E=s=>p.evaluate(s=>__lida.ev(s),s);await E("newGame(defaultCF())");await p.waitForTimeout(400);await E("FILM.end();closeModal();qPump=()=>{};QDQ.length=0");
 const R=[];const ok=(n,c,i)=>R.push((c?'OK  ':'FALHA ')+n+(i?' — '+i:''));
 ok('mapa com 150 linhas e interiores abaixo',await E("MH===150&&MHT===182&&ROOMS.every(r=>r.y0===undefined||r.y0>=WMH)"));
-ok('Retiro é da nossa fazenda desde o jogo novo (sem compra)',await E("!PARCELS.retiro&&['r1','r2','r3','r4','r5','rcur'].every(k=>owned(k)&&!GATES[AREAS[k].gate].lock)"));
+ok('Retiro é da nossa fazenda mas começa abandonado (porteiras travadas, cerca caída)',await E("!PARCELS.retiro&&['r1','r2','r3','r4','r5','rcur'].every(k=>!owned(k)&&GATES[AREAS[k].gate].lock)&&!!retiroBroken(10,112)"));
+await E("S.cash=0;S.acct=0;retFix('r1')");ok('sem dinheiro não recupera',await E("!owned('r1')"));
+await E("S.cash=200000;retFix('r1')");ok('recuperar o Piquete 9 destrava só ele e conserta a cerca',await E("owned('r1')&&!GATES[AREAS.r1.gate].lock&&!owned('r2')&&!retiroBroken(10,112)&&S.cash===194000"));
+await E("for(const k in RETIRO)retFix(k)");ok('recuperado por partes, o Retiro inteiro fica liberado',await E("['r1','r2','r3','r4','r5','rcur'].every(k=>owned(k)&&!GATES[AREAS[k].gate].lock)"));
 ok('Retiro aparece como Fazenda Boa Esperança e conta como fazenda (obras)',await E("farmTile(20,120)&&regionAt(20*TS,120*TS)[0]==='Fazenda Boa Esperança'&&regionAt(20*TS,120*TS)[1].startsWith('SUA PROPRIEDADE')"));
 ok('aguada do Retiro tem água dentro do piquete',await E("(()=>{let n=0;const r=AREAS.r5.r;for(let y=r[1]+1;y<r[3];y++)for(let x=r[0]+1;x<r[2];x++)if(ground[gi(x,y)]===G.WATER)n++;return n>40})()"));
 ok('cercas: arame no piquete, tábua no curral do Retiro',await E("fenceStyleAt(10,112)==='a'&&fenceStyleAt(41,114)==='m'"));
@@ -43,5 +46,5 @@ await E("A.lidaCount()");ok('caderneta conta o gado e lista a lida',await E("/Ca
 await E("addInv('sal',1);const c=PROPS.find(q=>q.t==='cochoSal');P.x=c.x;P.y=c.y+14;window.__it=interactables().find(o=>o.k==='sal');__it&&__it.fn()");await p.waitForTimeout(3000);
 ok('sal no cocho coberto dura 7 dias',await E("(S.salt.r1||0)>=S.day+6"),await E("JSON.stringify(S.salt)"));
 await E("SAVE.save('manual')");await p.waitForTimeout(400);await E("SAVE.loadBest(SAVE.slot)");await p.waitForTimeout(1200);
-ok('lida sobrevive ao salvar',await E("byId(__m.id).cast===1&&byId(__m.id).brand===1&&byId(__m.id).wH.length===2"));
+ok('lida e Retiro recuperado sobrevivem ao salvar',await E("owned('r5')&&byId(__m.id).cast===1&&byId(__m.id).brand===1&&byId(__m.id).wH.length===2"));
 console.log(R.join('\n'));console.log([...new Set(errs)].join('\n')||'sem erros');await b.close();})();

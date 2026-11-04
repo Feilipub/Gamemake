@@ -230,7 +230,7 @@ nas estradas, missões e memória dos NPCs.
 ### Mapa maior: Retiro do Umbuzeiro
 
 O mundo passou de 110 para 150 linhas (`MH`); os interiores das casas ficam abaixo (`MHT = MH + 32`). Abaixo do Pomar (y 110–149) fica o
-**Retiro**, parte da Fazenda Boa Esperança desde o jogo novo (sem compra; na tela aparece "Fazenda Boa Esperança · Sua propriedade · Retiro"). Ele tem:
+**Retiro**, terra da Fazenda Boa Esperança herdada do avô, mas **abandonada** (cerca caída com buracos, porteiras travadas). Cada cercado é recuperado aos poucos, com dinheiro, pela placa do Retiro, pela porteira ou pela aba Fazenda: Piquete 9 R$ 6 000, Piquete 10 R$ 8 000, Piquete 11 R$ 10 000, Piquete 12 R$ 12 000, Curral com brete e balança R$ 12 000, Piquete da Aguada R$ 18 000 (total R$ 66 000). Assim a terra cresce com a progressão; quem tinha comprado o Retiro na versão anterior fica com tudo recuperado. Ele tem:
 - 4 piquetes (9 a 12) de arame farpado em volta de um **corredor de manejo**: todas as porteiras abrem no corredor, que leva à estrada;
 - o **Piquete da Aguada**, com açude natural (o gado bebe no açude, sem bebedouro);
 - o **Curral do Retiro** (tábua), a casa do retireiro e o **brete com tronco de contenção e balança**;
