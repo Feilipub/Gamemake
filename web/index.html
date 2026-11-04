@@ -5358,6 +5358,7 @@ function dayTick() { rocaGrowTick(); hxDay(); { const bd = bdayToday(); if (bd.l
   // peões
   for (const w of S.workers) { w.fat = Math.max(0, w.fat - (built('casapeao') ? 70 : 45)); }
   if (S.day % 7 === 1) payWorkers();
+  ctrDay();
   if (S.day % 3 === 0) genCandidates();
   // NPCs: estoque de animais e favores vencidos
   merchWeek(); restockNpc('felipe', 'campos', 'boi', ['nelore', 'nelore', 'guzera', 'gir', 'tabapua']);
@@ -7233,7 +7234,7 @@ function pasturesHTML() { const ks = AKEYS.filter(k => AREAS[k].k === 'pasto' &&
   return '<h3>🌾 Pastos</h3><p class="mut">Capim baixa quando o gado pasta e rebrota com o tempo (bem mais nas águas que na seca). Rodízio: tire o lote quando o capim ficar baixo e deixe o piquete descansar; pasto descansado rebrota 50% mais rápido.</p>' + ks.map(k => { const q = pastureInfo(k), tip = q.heads && q.pct < 25 ? '⚠️ Capim rapado: troque o lote de piquete ou dê trato no cocho.' : q.heads && q.days < 4 ? '⏳ Dá para mais ' + q.days + ' dia(s). Prepare o próximo piquete.' : !q.heads && q.pct < 60 ? '😴 Descansando (' + q.rest + ' dia' + (q.rest === 1 ? '' : 's') + ').' : q.heads > 0 && q.ua > q.cap * 1.3 ? '🐄 Lotação acima do que o pasto aguenta nesta estação.' : '✅ Pasto bom.';
     return `<div class="card"><div class="row sp"><b>${AREAS[k].n}</b><span class="mut">${q.heads} cabeça(s) · ${q.ua} UA</span></div><div class="row sp"><span>Capim</span>${bar(q.pct, q.pct < 25 ? 'r' : q.pct < 50 ? 'y' : '')}<span>${q.pct}%</span></div>${q.water !== null ? `<div class="row sp"><span>Bebedouro</span>${bar(q.water, 'w')}<span>${q.water}%</span></div>` : ''}<p class="mut" style="margin:2px 0">${S.salt && S.salt[k] >= S.day ? '🧂 Sal no cocho até o dia ' + S.salt[k] + '. ' : '🧂 Cocho de sal vazio. '}Aguenta ~${q.cap} UA nesta estação${q.heads ? ' · pasto para ' + (q.days >= 99 ? 'muitos dias' : q.days + ' dia(s)') : ''}. ${tip}</p></div>`; }).join(''); }
 function farmTab() {
-  let h = `<div class="row">${btn('📒 Contar o gado (caderneta de campo)', 'lidaCount')}</div>` + pasturesHTML() + (Object.keys(RETIRO).every(retOk) ? '' : retiroHTML()) + `<div class="card"><div class="row sp"><span>💧 Reservatório</span>${bar(S.res, 'w')}<span>${Math.round(S.res)}%</span></div><div class="row sp"><span>🌽 Depósito</span><span>${Math.round(depKg())} / ${depCap()} kg</span></div><p class="mut">Ração ${Math.round(S.dep.racao)} kg · Milho ${Math.round(S.dep.milho)} kg · Sal ${Math.round(S.dep.sal)} kg · Lenha ${S.dep.lenha} · Carvão ${S.dep.carvao}<br>Materiais: ${Object.keys(MATS).map(k => MATS[k][0] + ' ' + (S.dep[k] || 0)).join(' · ')}</p></div>`;
+  let h = `<div class="row">${btn('📒 Contar o gado (caderneta de campo)', 'lidaCount')}</div>` + pasturesHTML() + ctrHTML() + (Object.keys(RETIRO).every(retOk) ? '' : retiroHTML()) + `<div class="card"><div class="row sp"><span>💧 Reservatório</span>${bar(S.res, 'w')}<span>${Math.round(S.res)}%</span></div><div class="row sp"><span>🌽 Depósito</span><span>${Math.round(depKg())} / ${depCap()} kg</span></div><p class="mut">Ração ${Math.round(S.dep.racao)} kg · Milho ${Math.round(S.dep.milho)} kg · Sal ${Math.round(S.dep.sal)} kg · Lenha ${S.dep.lenha} · Carvão ${S.dep.carvao}<br>Materiais: ${Object.keys(MATS).map(k => MATS[k][0] + ' ' + (S.dep[k] || 0)).join(' · ')}</p></div>`;
   if (S.land) {
     const pv = patrimonio(), ri = rankOf(pv), nx = RANKS[ri + 1];
     h += `<div class="card"><b>${RANKS[ri][1]}</b> · patrimônio ${fmt(pv)}${nx ? `<br><span class="mut">Próximo título: ${nx[1]} (${fmt(nx[0])})</span>` : ''}</div>`;
@@ -7431,6 +7432,36 @@ function weighLot(ak) {
   showModal('⚖️ Balança — ' + AREAS[ak].n, null, null, () => L.length ? `<p class="mut">Lote passado no brete e pesado um a um. GMD = ganho médio diário desde a pesagem anterior (1 dia de jogo ≈ 1 mês do animal). Arroba = 15 kg de carcaça (~52% do peso vivo).</p><div class="card">${L.map(a => `<div class="row sp"><span>${esc(a.n)} <span class="mut">${catName(a)}</span></span><span>${Math.round(a.wt)} kg · ${arrobas(a).toFixed(1)} @${a.wH.length > 1 ? ' · <b>' + gmd(a).toFixed(2) + '</b> kg/d' : ''}</span></div>`).join('')}</div><p><b>${L.length}</b> cabeças · <b>${Math.round(tot)}</b> kg · média ${Math.round(tot / L.length)} kg · ${(L.reduce((t, a) => t + arrobas(a), 0)).toFixed(1)} @ (${fmt(L.reduce((t, a) => t + (a.sp === 'boi' ? animalValue(a) : 0), 0))} no preço de hoje)</p>` : '<p>Não há animais neste curral. Traga o lote para o curral e passe pelo brete.</p>');
 }
 A.retFix = k => retFix(k);
+/* ============ CONTRATOS DE VENDA ============
+   Toda semana chegam propostas: frigorífico (bois gordos acima de um peso, com prêmio sobre a arroba), laticínio (litros de
+   leite), restaurante e padaria (queijo, requeijão, manteiga, ovos). Aceite até 2 de cada vez; entregue até o prazo (pode
+   entregar aos poucos os produtos). Cumprir paga acima do mercado e melhora a amizade; deixar vencer cobra multa de 10%. */
+const CTR_KINDS = {
+  boi: { who: 'Frigorífico Sertão (Sr. Valdemar)', ic: '🐂', mk: () => ({ need: rint(3, 6), minKg: pick([420, 450, 480]), days: rint(10, 18), prem: Math.round(rnd(0.08, 0.16) * 100) / 100 }) },
+  leite: { who: 'Laticínio de Itapetinga', ic: '🥛', item: 'leite', mk: () => ({ need: rint(4, 10) * 10, days: rint(6, 12), pu: 3.9 }) },
+  queijo: { who: 'Restaurante do Seu Damião', npc: 'damiao', ic: '🧀', item: 'queijo', mk: () => ({ need: rint(4, 10), days: rint(6, 12), pu: 33 }) },
+  requeijao: { who: 'Restaurante do Seu Damião', npc: 'damiao', ic: '🧀', item: 'requeijao', mk: () => ({ need: rint(3, 6), days: rint(7, 12), pu: 40 }) },
+  manteiga: { who: 'Padaria da Dona Neide', npc: 'neide', ic: '🧈', item: 'manteiga', mk: () => ({ need: rint(2, 5), days: rint(7, 12), pu: 52 }) },
+  ovos: { who: 'Padaria da Dona Neide', npc: 'neide', ic: '🥚', item: 'ovo', mk: () => ({ need: rint(3, 6) * 12, days: rint(5, 10), pu: 1.7 }) }
+};
+function ctrS() { S.ctr = S.ctr || { act: [], off: [], wk: -1, done: 0, fail: 0 }; return S.ctr; }
+function ctrDesc(c) { const K = CTR_KINDS[c.k]; return c.k === 'boi' ? `${c.need} bois gordos com pelo menos ${c.minKg} kg, entregues no curral. Paga a arroba do dia + ${Math.round(c.prem * 100)}%.` : `${c.need} ${IT[K.item].n.toLowerCase()} a ${fmt2(c.pu)} cada (${fmt(c.need * c.pu)} no total). Pode entregar aos poucos.`; }
+function ctrOffers() { const C = ctrS(), wk = Math.floor(S.day / 7); if (C.wk === wk && C.off.length) return; C.wk = wk; C.off = [];
+  const ks = Object.keys(CTR_KINDS).filter(k => k !== 'ovos' || IT.ovo); for (let i = 0; i < 3; i++) { const k = i === 0 ? 'boi' : pick(ks.filter(x => x !== 'boi')); C.off.push(Object.assign({ k, id: S.day * 10 + i, got: 0 }, CTR_KINDS[k].mk())); } }
+function ctrDay() { const C = ctrS(); for (const c of C.act.slice()) if (S.day > c.due) { const val = c.k === 'boi' ? c.need * 4000 : c.need * c.pu, fine = Math.round(val * 0.1); C.act = C.act.filter(x => x !== c); C.fail++; pay(Math.min(fine, S.cash + S.acct), 'Multa: contrato não cumprido (' + CTR_KINDS[c.k].who + ')'); if (CTR_KINDS[c.k].npc) addFr(CTR_KINDS[c.k].npc, -10); toast('📄 Contrato vencido com ' + CTR_KINDS[c.k].who + ': multa de ' + fmt(fine) + '.'); } ctrOffers(); }
+function ctrHTML() { const C = ctrS(); ctrOffers();
+  let h = '<h3>📄 Contratos de venda</h3><p class="mut">Pagam acima do mercado. Aceite até 2 de cada vez e cumpra no prazo; contrato vencido cobra multa de 10%.</p>';
+  h += C.act.map((c, i) => { const K = CTR_KINDS[c.k], left = c.due - S.day, have = c.k === 'boi' ? myAnimals('boi').filter(a => a.area === 'curral' && a.wt >= c.minKg && !a.main).length : (S.inv[K.item] || 0);
+    return `<div class="card"><div class="row sp"><b>${K.ic} ${K.who}</b><span class="mut">${left >= 0 ? 'faltam ' + left + ' dia(s)' : 'vence hoje'}</span></div><p class="mut" style="margin:2px 0">${ctrDesc(c)}</p><div class="row sp"><span>Entregue: <b>${c.got}/${c.need}</b> · você tem ${have}${c.k === 'boi' ? ' no curral' : ' na mochila'}</span>${btn('Entregar', 'ctrGive', i, !have)}</div></div>`; }).join('');
+  if (C.act.length < 2) h += '<p><b>Propostas da semana</b></p>' + C.off.map((c, i) => `<div class="card"><b>${CTR_KINDS[c.k].ic} ${CTR_KINDS[c.k].who}</b><p class="mut" style="margin:2px 0">${ctrDesc(c)} Prazo: ${c.days} dias.</p>${btn('Aceitar', 'ctrTake', i)}</div>`).join('') || '<p class="mut">Sem propostas novas esta semana.</p>';
+  if (C.done || C.fail) h += `<p class="mut">Cumpridos: ${C.done} · vencidos: ${C.fail}</p>`; return h; }
+A.ctrTake = i => { const C = ctrS(), c = C.off[+i]; if (!c || C.act.length >= 2) return; C.off.splice(+i, 1); c.due = S.day + c.days; C.act.push(c); toast('📄 Contrato aceito: ' + CTR_KINDS[c.k].who + '. Prazo até o dia ' + c.due + '.'); renderModal(); };
+A.ctrGive = i => { const C = ctrS(), c = C.act[+i]; if (!c) return; const K = CTR_KINDS[c.k]; let v = 0;
+  if (c.k === 'boi') { const L = myAnimals('boi').filter(a => a.area === 'curral' && a.wt >= c.minKg && !a.main).sort((a, b) => b.wt - a.wt).slice(0, c.need - c.got); for (const a of L) { v += frigPrice(a) * (1 + c.prem); if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; S.animals = S.animals.filter(x => x !== a); S.stats.sold++; } c.got += L.length; }
+  else { const n = Math.min(S.inv[K.item] || 0, c.need - c.got); if (n <= 0) return; useInv(K.item, n); c.got += n; v = n * c.pu; }
+  if (v) receive(v, 'Contrato: ' + K.who); if (K.npc) addFr(K.npc, 3);
+  if (c.got >= c.need) { C.act = C.act.filter(x => x !== c); C.done++; if (K.npc) addFr(K.npc, 12); AU.jingle && AU.jingle(); toast('✅ Contrato cumprido com ' + K.who + '!'); }
+  renderModal(); };
 A.lidaCount = () => {
   const L = myAnimals().filter(a => a.sp !== 'cao' && !a._hid), by = {};
   for (const a of L) { const k = a.area ? AREAS[a.area].n : 'Fora dos cercados'; (by[k] = by[k] || []).push(a); }
