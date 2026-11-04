@@ -1225,13 +1225,33 @@ function enterHouse(b) {
   if (P.lead || lasso.t || P.cart) { say('Solte o animal e a carroça antes de entrar em casa.'); return true; }
   const rule = houseRule(b); if (!rule.ok) { AU.knock && AU.knock(); say(rule.txt || 'Fechado.', 3200); return true; }
   if (rule.txt) say(rule.txt, 2600);
-  if (P.mnt) { const h = byId(P.mnt); dismount(); if (h) { h._st = 'tied'; h.tie = null; } }
-  fadeTo(1, () => { P.out = { x: P.x, y: P.y + 6, b: b.id }; P.inside = b.id; P.x = (R0.door[0] + 0.5) * TS; P.y = (R0.door[1] - 0.4) * TS; P.dir = 1; P._auto = null; P._vx = P._vy = 0; cam.snap = true; AU.door && AU.door(); fadeTo(0); questEvent('door', b.id); });
+  if (houseGuard.busy) return true;
+  /* desce do cavalo na hora: a animação de desmontar terminava depois da porta e jogava o vaqueiro de volta para fora (sumia dentro de casa) */
+  if (P._act) { P._act = null; cam.taz = 1; }
+  if (P.mnt) { const h = byId(P.mnt); P.mnt = null; if (h) { h._st = 'idle'; h._t = 30; h.tie = null; h.x = P.x; h.y = P.y + 6; } P.y += 14; }
+  houseGuard.busy = 1; const S0 = S;
+  fadeTo(1, () => { houseGuard.busy = 0; if (S !== S0) return; P._act = null; cam.taz = 1; P.out = { x: P.x, y: P.y + 6, b: b.id }; P.inside = b.id; P.x = (R0.door[0] + 0.5) * TS; P.y = (R0.door[1] - 0.4) * TS; P.dir = 1; P._auto = null; P._vx = P._vy = 0; cam.snap = true; AU.door && AU.door(); fadeTo(0); questEvent('door', b.id); });
   return true;
 }
 function exitHouse() {
-  const o = P.out || {}; const b = BLD.find(q => q.id === (o.b || P.inside)); fadeTo(1, () => { if (b) { P.x = o.x || (b.door + 0.5) * TS; P.y = o.y || (b.r[3] + 1.6) * TS; } P.inside = null; P.out = null; P.dir = 0; P._auto = null; P._vx = P._vy = 0; cam.snap = true; AU.door && AU.door(); fadeTo(0); });
+  if (houseGuard.busy) return; houseGuard.busy = 1; const S0 = S;
+  const o = P.out || {}; const b = BLD.find(q => q.id === (o.b || P.inside)); fadeTo(1, () => { houseGuard.busy = 0; if (S !== S0) return; P._act = null; cam.taz = 1; if (b) { P.x = o.x || (b.door + 0.5) * TS; P.y = o.y || (b.r[3] + 1.6) * TS; } P.inside = null; P.out = null; P.dir = 0; P._auto = null; P._vx = P._vy = 0; cam.snap = true; AU.door && AU.door(); fadeTo(0); });
 }
+/* trava de segurança: o vaqueiro nunca fica "dentro" de uma casa estando fora do cômodo (ou o contrário) */
+function houseGuard() {
+  if (houseGuard.busy) return;
+  const tx = P.x / TS, ty = P.y / TS;
+  if (P.inside) {
+    const R0 = roomById(P.inside); if (!R0) { P.inside = null; P.out = null; }
+    else {
+      if (P.mnt) { const h = byId(P.mnt); P.mnt = null; if (h) { h._st = 'idle'; h._t = 30; } }
+      if (P._act && (P._act.k === 'mount' || P._act.k === 'dismount')) { P._act = null; cam.taz = 1; }
+      if (tx < R0.x0 || tx >= R0.x0 + R0.w || ty < R0.y0 || ty >= R0.y0 + R0.h) { P.x = (R0.door[0] + 0.5) * TS; P.y = (R0.door[1] - 0.6) * TS; P._vx = P._vy = 0; P._auto = null; cam.snap = true; }
+    }
+  }
+  if (!P.inside && ty >= MH) { const o = P.out || {}, b = BLD.find(q => q.id === o.b) || BLD.find(q => q.id === 'casa'); P.x = o.x || (b.door + 0.5) * TS; P.y = o.y || (b.r[3] + 1.6) * TS; P.out = null; P._vx = P._vy = 0; P._auto = null; if (P._act) { P._act = null; cam.taz = 1; } cam.snap = true; }
+}
+houseGuard.busy = 0;
 function insideTick() {
   if (!P.inside) return; const R0 = roomById(P.inside); if (!R0) { P.inside = null; return; }
   const tx = Math.floor(P.x / TS), ty = Math.floor(P.y / TS); if (tx === R0.door[0] && ty >= R0.door[1] && !insideTick.lock) { insideTick.lock = 1; exitHouse(); setTimeout(() => { insideTick.lock = 0; }, 900); }
@@ -5246,7 +5266,7 @@ function dismount(then) {
   act('dismount', 0.85, h, () => { P.mnt = null; P.x = ex; P.y = ey; h._st = 'idle'; h._t = 3; P._vx = P._vy = 0; if (then) setTimeout(then, 30); }, { ex, ey, keep: 1, zoom: 1.5 }); AU.saddleCreak();
 }
 function mountToggle() {
-  if (mode !== 'play' || P._act) return;
+  if (mode !== 'play' || P._act || houseGuard.busy) return;
   if (P.cart) return cartOff();
   if (P.mnt) return dismount();
   const m = mainHorse(); const h = nearestOwn(a => (a.sp === 'cavalo' || a.sp === 'burro' || a.sp === 'jumento') && a.age >= 12 && S.cart.hitch !== a.id, 40);
@@ -8262,7 +8282,14 @@ function aucBid(id) {
   if (id !== 'player') { const e = npcs.find(n => n.id === id); if (e) { e.emote = '$'; e.et = 1.5; e.pose = 'talk'; setTimeout(() => { e.pose = 'idle'; }, 900); aucFocus('npc', 1.3, e.x, e.y - 14); } } else { P._wave = 1; }
   AU.click && AU.click(); renderAuc();
 }
+function aucReset() { // desliga o leilão sem cerimônia (ao carregar um save, ou se travar)
+  if (!AUC.on) return; AUC.on = false; AUC.lotA = null; AUC.cur = null; document.body.classList.remove('auc'); const el = $('auc'); if (el) el.style.display = 'none'; cam.taz = 1; cam.fx = cam.fy = null;
+}
 function updAuction(dt) {
+  if (AUC.on && !AUC.cur) { // a abertura (cena) não devolveu o controle: segue para o 1º lote em vez de prender o vaqueiro
+    if (mode === 'play' && !M.open && !CS.on) { if ((AUC.wd = (AUC.wd || 0) + dt) > 2.5) { AUC.wd = 0; try { document.body.classList.add('auc'); auctionNextLot(); } catch (e) { console.error(e); aucReset(); } } } else AUC.wd = 0;
+    return;
+  }
   if (!AUC.on || !AUC.cur) return; const c = AUC.cur;
   if (AUC.camT > 0) { AUC.camT -= dt; if (AUC.camT <= 0) aucFocus('pen', 0); }
   if (AUC.cam) { cam.fx = AUC.cam[0]; cam.fy = AUC.cam[1]; }
@@ -9225,15 +9252,16 @@ const SAVE = {
     while (S.tr.length < TROUGHS.length) S.tr.push(TROUGHS[S.tr.length].cap * 0.5);
     for (const k of ['norte', 'sul']) if (S.exp[k]) { const y = EXP[k].y; for (const x of [37, 38, 39]) obj[gi(x, y)] = 0; }
     S.animals.forEach(a => { if (a.tie !== null && a.tie !== undefined && POSTS[a.tie]) a._st = 'tied'; if (a.own === 'delivery' && !S.delivery.some(d => d.id === a.id)) a.own = 'player'; });
+    P._act = null; P._auto = null; P._vx = P._vy = 0; cam.taz = 1; houseGuard.busy = 0; if (typeof AUC !== 'undefined') aucReset(); P._sit = null; if (typeof insideTick !== 'undefined') insideTick.lock = 0;
     if (P.mnt && !byId(P.mnt)) P.mnt = null; if (P.mnt) byId(P.mnt)._st = 'ridden';
     for (const a of S.animals) if (!a.traits) rollTraits(a);
     if (!S.story) S.story = { intro: 1, mem: {}, seen: {} }; // saves antigos já viram a chegada
     if (!S.land) { S.land = { piquetes: true, leste: true, galinheiro: true }; if (S.house === undefined) S.house = 2; S.rankI = rankOf(patrimonio()); } // saves antigos: a fazenda já era inteira
     applyLand(); applyObjs(); WILD = [];
     S.animals.forEach(a => { if (a._reloc && AREAS[a._reloc]) { const q = randIn(a._reloc); a.x = q[0]; a.y = q[1]; delete a._reloc; } unstick(a); });
-    if (boxHit(P.x, P.y, HB.foot, 'p')) { P.x = 7 * TS; P.y = 30.4 * TS; }
+    if (boxHit(P.x, P.y, HB.foot, 'p')) { const R0 = P.inside && roomById(P.inside); if (R0) { P.x = (R0.door[0] + 0.5) * TS; P.y = (R0.door[1] - 0.6) * TS; } else { P.inside = null; P.out = null; P.x = 7 * TS; P.y = 30.4 * TS; } }
     initNpcs(); if (S.npcPos) npcs.forEach(e => { const p = S.npcPos[e.id]; if (p && SPOTS[p[2]]) { e.x = p[0]; e.y = p[1]; e.spot = p[2]; const q = SPOTS[p[2]].p; if (hyp(q[0] * TS - e.x, q[1] * TS - e.y) > 8) { e.path = spotPath([e.x / TS, e.y / TS], [], p[2]); e.hidden = false; } } }); // salvo no meio do caminho: retoma a rota em vez de ficar parado na estrada
-    grassSeasonReset(); startPlay(false);
+    grassSeasonReset(); houseGuard(); startPlay(false);
   }
 };
 function grassSeasonReset() { groundSeason = -1; GR.invalidate(); }
@@ -9894,7 +9922,7 @@ const STEP = 1 / 60; let acc = 0, lastT = 0, saveT = 0;
 function tick(dt) {
   drawT += dt;
   if (mode === 'play' && !paused) {
-    holdTick(); placeTick(dt); bagSync(); insideTick(); if ((tick.lendT = (tick.lendT || 0) - dt) < 0) { tick.lendT = 1; lendTick(); const lh = loanedHorse(); if (lh && P.mnt !== lh.id && lh._st !== 'tied' && !lh._act) lh._st = 'tied'; } const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
+    holdTick(); placeTick(dt); bagSync(); insideTick(); houseGuard(); if ((tick.lendT = (tick.lendT || 0) - dt) < 0) { tick.lendT = 1; lendTick(); const lh = loanedHorse(); if (lh && P.mnt !== lh.id && lh._st !== 'tied' && !lh._act) lh._st = 'tied'; } const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
     { const h = P.mnt ? byId(P.mnt) : null; if (h && h._react && (h._react.t -= dt) <= 0) h._react = null; }
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);
@@ -9908,21 +9936,29 @@ function tick(dt) {
   else if (OPMODES[mode]) OP.update(dt);
   if (S) updParts(dt);
 }
+const LERR = { n: 0, seen: {} };
+function loopErr(err, where) { // erro no laço: registra, tenta destravar o vaqueiro e avisa uma vez (para o jogador poder reportar)
+  console.error(err); LERR.n++; const k = where + ':' + (err && err.message);
+  if (!LERR.seen[k]) { LERR.seen[k] = 1; LERR.last = k + ' @ ' + String(err && err.stack || '').split('\n')[1]; try { toast('⚠️ Erro (' + where + '): ' + (err && err.message || err)); } catch (e) { } }
+  try { if (P && P._act) { P._act = null; cam.taz = 1; } if (P) houseGuard(); } catch (e) { }
+}
 function loop(ts) {
   let dt = (ts - lastT) / 1000; lastT = ts; if (!(dt > 0)) dt = 0; if (dt > 0.25) dt = 0.25;
   acc += dt; let n = 0;
+  /* cada etapa isolada: um erro no desenho não congela o relógio nem a simulação (antes tudo parava junto) */
   try {
     if (mode === 'play' || mode === 'cs') keyInput();
     while (acc >= STEP && n < 6) { if (S && P) snapshot(); tick(STEP); acc -= STEP; n++; }
-    if (n >= 6) acc = 0;
-    ALPHA = cl(acc / STEP, 0, 1);
-    FX.sync(dt);
-    if (mode === 'film') FILM.render(); else if (OPMODES[mode]) OP.render(); else { camUpdate(dt); render(dt); }
+  } catch (err) { loopErr(err, 'tick'); acc = 0; }
+  if (n >= 6) acc = 0;
+  ALPHA = cl(acc / STEP, 0, 1);
+  try { FX.sync(dt); if (mode === 'film') FILM.render(); else if (OPMODES[mode]) OP.render(); else { camUpdate(dt); render(dt); } } catch (err) { loopErr(err, 'render'); }
+  try {
     if (mode === 'play' || mode === 'cs') { hud(dt); updSheet(dt); AU.ambient(dt); }
     if (S) hotbarUpdate();
     MUS.update(dt);
     if ($('setup').style.display !== 'none') drawPreview(dt);
-  } catch (err) { console.error(err); }
+  } catch (err) { loopErr(err, 'hud'); }
   if (msgT > 0) { msgT -= dt * 1000; if (msgT <= 0) $('msg').classList.remove('on'); }
   requestAnimationFrame(loop);
 }
