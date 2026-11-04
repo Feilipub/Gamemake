@@ -829,10 +829,13 @@ const MULES = {
   burro: { n: 'Burro de sela', c: '#6e4a2c', s: '#4a2e1a', l: '#a07a58', m: '#2a1a10', v: [38, 51, 78], ac: 1.9, cost: 11, rec: 23, ar: 140, gen: [50, 80], temp: ['teimoso', 'calmo', 'esperto'], d: 'O macho do muar: forte, firme de pata e incansável nas viagens.' },
   baio: { n: 'Burro Baio', c: '#b89058', s: '#8a6638', l: '#d8b47a', m: '#3a2a18', v: [38, 50, 76], ac: 1.8, cost: 11, rec: 23, ar: 140, gen: [50, 80], old: 1, temp: ['teimoso', 'calmo'], d: 'Pelagem baia, tradicional das tropas.' }
 };
+const DUCK_SPOTS = [[29.5, 28.4], [33.5, 29.2], [36.4, 26.2], [28.2, 25.6]]; // beira do açude da fazenda
 const CHICKENS = {
   caipira: { n: 'Caipira', c: '#a8562a', s: '#7a3a18', l: '#d07a40', egg: 1, gen: [40, 75], d: 'A galinha de terreiro do interior.' },
   carijo: { n: 'Carijó', c: '#d8d4cc', s: '#3a3634', l: '#f2efe8', pat: 'barrado', egg: 1.1, gen: [40, 78], d: 'Penas carijós, ótima poedeira.' },
   indio: { n: 'Índio Gigante', c: '#3a2218', s: '#1a100c', l: '#b84a1c', tall: 1, egg: 0.8, gen: [45, 82], d: 'Ave alta e imponente.' },
+  pato: { n: 'Pato-crioulo', c: '#2a2a2e', s: '#14141a', l: '#f2efe8', duck: 1, egg: 0.55, gen: [42, 78], d: 'O pato do terreiro brasileiro (pato-do-mato manso): rústico, bota ovos grandes e gosta de água.' },
+  marreca: { n: 'Marreca-pequim', c: '#f4f0e6', s: '#d8d2c4', l: '#ffffff', duck: 1, egg: 0.7, gen: [40, 75], d: 'Marreca branca, boa poedeira; passa o dia no açude.' },
   angola: { n: "Galinha d'Angola", c: '#5a5e66', s: '#3a3c42', l: '#7a7e86', pat: 'pontos', egg: 0.9, gen: [40, 75], d: 'Barulhenta, ótima vigia do terreiro.' }
 };
 const DOGS = {
@@ -868,11 +871,18 @@ const PIGS = {
   largewhite: { n: 'Large White', c: '#f0dcd2', gen: [55, 86], gain: 1.2, litter: [9, 12], p: 1.15, size: 1.08, ex: 1, purpose: 'Leitões e engorda (comercial)', d: 'Raça comercial de origem inglesa. Muitos leitões e crescimento rápido, mas exige ração, sombra e água à vontade.' },
   duroc: { n: 'Duroc', c: '#a0482a', gen: [55, 86], gain: 1.15, litter: [8, 11], p: 1.2, size: 1.05, ex: 1, purpose: 'Engorda (comercial)', d: 'Raça comercial americana, avermelhada; carne de qualidade e boa conversão de ração.' }
 };
-const SPECIES = { boi: CATTLE, cavalo: HORSES, jumento: DONKEYS, burro: MULES, galinha: CHICKENS, cao: DOGS, cabra: GOATS, porco: PIGS };
-const SPN = { boi: 'Bovino', cavalo: 'Cavalo', jumento: 'Jumento', burro: 'Muar', galinha: 'Ave', cao: 'Cão', cabra: 'Caprino', porco: 'Suíno' };
+const SHEEP = {
+  santaines: { n: 'Santa Inês', c: '#2a2422', s: '#161211', l: '#4a403c', gen: [50, 85], meat: 1.25, rust: 1.05, twin: 0.3, d: 'Ovelha deslanada brasileira, preta ou marrom, orelhas compridas e caídas; boa de carne e muito usada no sertão.' },
+  moradanova: { n: 'Morada Nova', c: '#a8542a', s: '#7a3818', l: '#c87444', gen: [42, 80], meat: 0.95, rust: 1.25, twin: 0.45, d: 'Raça naturalizada do Ceará, vermelha, pequena e rústica; pare gêmeos com frequência.' },
+  somalis: { n: 'Somalis Brasileira', c: '#f0ece2', s: '#d4cec0', l: '#ffffff', gen: [42, 80], meat: 1, rust: 1.3, twin: 0.25, d: 'Corpo branco e cabeça preta, garupa gorda que guarda reserva para a seca.' },
+  dorper: { n: 'Dorper', c: '#f2eee6', s: '#d8d0c4', l: '#ffffff', gen: [55, 88], meat: 1.45, rust: 0.95, twin: 0.35, d: 'Raça sul-africana de corte, branca de cabeça preta; cresce rápido com boa comida.' }
+};
+const RUM = sp => sp === 'cabra' || sp === 'ovelha'; // pequenos ruminantes: aprisco, rebanho, reprodução parecida
+const SPECIES = { boi: CATTLE, cavalo: HORSES, jumento: DONKEYS, burro: MULES, galinha: CHICKENS, cao: DOGS, cabra: GOATS, porco: PIGS, ovelha: SHEEP };
+const SPN = { boi: 'Bovino', cavalo: 'Cavalo', jumento: 'Jumento', burro: 'Muar', galinha: 'Ave', cao: 'Cão', cabra: 'Caprino', porco: 'Suíno', ovelha: 'Ovino' };
 const SKILLS = {
   boi: ['Rústico', 'Precoce', 'Dócil', 'Boa Mãe', 'Ganho de Peso'], cavalo: ['Faro de Gado', 'Fôlego', 'Arrancada', 'Marcha Macia', 'Coragem'],
-  jumento: ['Força', 'Paciência', 'Pé Firme'], burro: ['Força', 'Pé Firme', 'Resistência'], cabra: ['Rústica', 'Leiteira', 'Prolífica', 'Dócil'], porco: ['Prolífica', 'Rústico', 'Ganho de Peso', 'Boa Mãe', 'Dócil'], galinha: ['Poedeira', 'Rústica', 'Choca'], cao: ['Boiadeiro', 'Guarda', 'Rastreador', 'Obediente']
+  jumento: ['Força', 'Paciência', 'Pé Firme'], burro: ['Força', 'Pé Firme', 'Resistência'], cabra: ['Rústica', 'Leiteira', 'Prolífica', 'Dócil'], ovelha: ['Rústica', 'Prolífica', 'Ganho de Peso', 'Boa Mãe'], porco: ['Prolífica', 'Rústico', 'Ganho de Peso', 'Boa Mãe', 'Dócil'], galinha: ['Poedeira', 'Rústica', 'Choca'], cao: ['Boiadeiro', 'Guarda', 'Rastreador', 'Obediente']
 };
 const NAMES = {
   F: ['Mimosa', 'Estrela', 'Malhada', 'Pintada', 'Fumaça', 'Boneca', 'Faceira', 'Bonita', 'Jabuticaba', 'Princesa', 'Serena', 'Graúna', 'Rosinha', 'Cigana', 'Formosa', 'Pérola', 'Açucena', 'Baronesa', 'Chuvisco', 'Lua', 'Brisa', 'Moreninha', 'Flor', 'Jurema'],
@@ -880,6 +890,7 @@ const NAMES = {
   cao: ['Caramelo', 'Baleia', 'Rex', 'Pipoca', 'Tupã', 'Paçoca', 'Bolinha', 'Faro', 'Valente', 'Pretinha', 'Lobo', 'Pingo'],
   galinha: ['Cocota', 'Pintadinha', 'Zezé', 'Carijó', 'Penosa', 'Dona Chica', 'Quitéria', 'Galega', 'Fofinha', 'Clotilde'],
   galo: ['Garnisé', 'Carijó', 'Cantador', 'Coronel', 'Brigão', 'Despertador'],
+  ovelha: ['Mimosa', 'Lãzinha', 'Neguinha', 'Bonequinha', 'Dondoca', 'Fofa', 'Pretinha', 'Caju', 'Ruivinha', 'Belinha', 'Sereia', 'Nuvem'], carneiro: ['Bolota', 'Trovão', 'Carneirão', 'Chumbinho', 'Pretão', 'Turrão', 'Sansão', 'Tonico'],
   cabra: ['Branquinha', 'Mocinha', 'Cabocla', 'Faceira', 'Cheirosa', 'Lili', 'Rapadura', 'Pipoca', 'Zabelê', 'Chiquinha', 'Graúna', 'Totonha'],
   bode: ['Bodão', 'Barbudo', 'Chifrudo', 'Moxotó', 'Seu Bode', 'Valente', 'Tinhoso', 'Catingueiro', 'Coroné', 'Malhado'],
   porco: ['Toicinho', 'Torresmo', 'Barão', 'Fofão', 'Bolota', 'Pintado', 'Lamparina', 'Coronel', 'Chouriço', 'Tonico'],
@@ -928,6 +939,7 @@ const IT = {
   queijo: { i: '🧀', n: 'Queijo Coalho', kg: 0.5, p: 9, d: '+5 energia, +25 fome.', c: 'comida', en: 5, fo: 25 },
   cafe: { i: '☕', n: 'Garrafa de café', kg: 1, p: 7, d: '+22 energia.', c: 'comida', en: 22, fo: 2 },
   farinha: { i: '🥣', n: 'Farinha de mandioca', kg: 1, p: 8, d: '+16 fome.', c: 'comida', en: 2, fo: 16 },
+  ovoPata: { i: '', n: 'Ovo de pata', kg: 0.08, p: 2.2, d: 'Maior que o de galinha, gema forte; bom para bolo e doce. Venda no Mercadinho ou coma (+9 fome).', c: 'prod', en: 2, fo: 9 },
   ovo: { i: '🥚', n: 'Ovo caipira', kg: 0.06, p: 1.2, d: 'Venda no Mercadinho ou coma (+6 fome).', c: 'prod', en: 1, fo: 6 },
   mudaManga: { i: '', n: 'Muda de mangueira', kg: 1.5, p: 25, d: 'Plante no Pomar com a enxada (Ação numa cova vazia).', c: 'muda' },
   mudaCaju: { i: '', n: 'Muda de cajueiro', kg: 1.5, p: 18, d: 'Plante no Pomar com a enxada (Ação numa cova vazia).', c: 'muda' },
@@ -2047,6 +2059,13 @@ function chickenSpr(a, pose, fr) {
   const adult = a.age >= 6;
   return cached(`ck|${a.br}|${a.sex}|${adult}|${pose}|${fr}`, 16, 16, g => {
     const p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x + 1, y + 1, w, h); };
+    const BD = CHICKENS[a.br] || {};
+    if (BD.duck) { if (!adult) { p(4, 9, 6, 4, '#f0d860'); p(9, 7, 3, 3, '#f0d860'); p(12, 8, 2, 1, '#e8902a'); p(10, 8, 1, 1, '#1a1410'); p(5, 13, 1, 1, '#e8902a'); p(8, 13, 1, 1, '#e8902a'); return; }
+      const peck = pose === 'graze' && fr % 2, mv = pose === 'walk', hy = peck ? 3 : 0, M = a.sex === 'M';
+      p(5, 12, 2, 2, '#e8902a'); p(8, 12, 2, 2, '#e8902a'); if (mv && fr % 2) p(4, 13, 2, 1, '#e8902a');
+      p(2, 7, 10, 5, BD.c); p(3, 6, 7, 1, BD.c); p(1, 8, 2, 2, BD.c); p(3, 11, 8, 1, BD.s); p(4, 8, 5, 2, BD.l === '#ffffff' ? '#e8e2d6' : BD.s); p(5, 8, 3, 1, BD.l);
+      p(9, 2 + hy, 3, 5, BD.c); p(10, 1 + hy, 3, 2, BD.c); p(13, 3 + hy, 2, 1, BD.duck && BD.c === '#2a2a2e' ? '#c8a0a0' : '#f0a030'); p(11, 2 + hy, 1, 1, '#1a1410');
+      if (BD.c === '#2a2a2e') { p(10, 3 + hy, 2, 2, M ? '#d03030' : '#b85a5a'); p(4, 7, 4, 1, '#3a5a4a'); } return; }
     if (!adult) { p(4, 8, 6, 5, '#f4d84a'); p(8, 6, 4, 4, '#f4d84a'); p(11, 8, 1, 1, '#e08a20'); p(10, 7, 1, 1, '#1a1410'); p(6, 13, 1, 1, '#e08a20'); p(8, 13, 1, 1, '#e08a20'); p(5, 9, 2, 1, '#e0c03a'); return; }
     const B = CHICKENS[a.br] || CHICKENS.caipira, galo = a.sex === 'M', tall = B.tall ? 1 : 0;
     const peck = pose === 'graze' && fr % 2, mv = pose === 'walk';
@@ -3640,6 +3659,10 @@ const RIG = (() => {
     boer: { n: 'Branca de cabeça vermelha', b: '#f2eee6', m: '#e8e2d6', mz: '#c89a8a', pat: 'boer', patC: '#8a3a1e' },
     nubiana: { n: 'Malhada', b: '#7a4a2a', m: '#3a2214', mz: '#5a3a2a', pat: 'malhas', patC: '#e8dcc6' },
     saanen: { n: 'Branca', b: '#f4f2ec', m: '#e4e0d6', mz: '#e8c0b8' },
+    ovPreta: { n: 'Preta', b: '#2a2422', m: '#1a1614', mz: '#2a2020', tail: '#1a1614' },
+    ovMarrom: { n: 'Marrom', b: '#5a3422', m: '#3a2014', mz: '#3a2a22', tail: '#3a2014' },
+    ovVermelha: { n: 'Vermelha', b: '#a8542a', m: '#7a3818', mz: '#8a5040', tail: '#7a3818' },
+    ovCabPreta: { n: 'Branca de cabeça preta', b: '#f0ece2', m: '#e0dad0', mz: '#2a2420', pat: 'boer', patC: '#1e1a18' },
     // suínos (snout = cor do focinho)
     piau: { n: 'Creme pintado', b: '#e8d2b0', m: '#e8d2b0', mz: '#e0b8a0', snout: '#d89a90', pat: 'malhado', patC: '#2a2422' },
     moura: { n: 'Moura', b: '#5a5654', m: '#3a3634', mz: '#4a4040', snout: '#3a2e2e', pat: 'roan', patC: '#c8c2b8' },
@@ -3719,6 +3742,11 @@ const RIG = (() => {
     repartida: { t: 'caprino', H: 14, L: 15, D: 7, earT: 'horiz', ear: 2.6, horn: 'cabra', coats: ['repartida'] },
     nubiana: { t: 'caprino', H: 15.5, L: 16, D: 7.4, earT: 'pend', ear: 4.6, earW: 1.2, prof: 1.4, headL: 6.2, horn: 'cabra', hornL: 2.4, coats: ['nubiana'] },
     boer: { t: 'caprino', H: 14.5, L: 16.5, D: 8, earT: 'pend', ear: 3.6, prof: 1, legT: 0.7, horn: 'cabra', hornL: 3, coats: ['boer'] },
+    // ovinos deslanados (mochos, cauda caída, focinho mais curto e largo que o da cabra)
+    santaines: { t: 'caprino', H: 15.5, L: 17, D: 8, legT: 0.68, neckL: 5.2, neckW: 2.6, headL: 6.2, jowl: 2.2, muzzle: 1.5, prof: 1.5, earT: 'pend', ear: 4.2, earW: 1.3, horn: 'mocho', tail: 'tuft', tailL: 5, tailW: 1.4, rump: 1.1, coats: ['ovPreta', 'ovMarrom'] },
+    moradanova: { t: 'caprino', H: 13.5, L: 15, D: 7.2, legT: 0.62, neckL: 5, neckW: 2.4, headL: 5.6, jowl: 2, muzzle: 1.4, earT: 'horiz', ear: 2.6, horn: 'mocho', tail: 'tuft', tailL: 4.4, tailW: 1.3, coats: ['ovVermelha'] },
+    somalis: { t: 'caprino', H: 14, L: 15.6, D: 8.2, legT: 0.6, neckL: 4.6, neckW: 2.8, headL: 5.6, jowl: 2.2, muzzle: 1.5, earT: 'horiz', ear: 2.4, horn: 'mocho', tail: 'tuft', tailL: 3, tailW: 2.2, rump: 1.35, coats: ['ovCabPreta'] },
+    dorper: { t: 'caprino', H: 14.5, L: 17, D: 8.8, legT: 0.62, neckL: 4.6, neckW: 3, headL: 5.8, jowl: 2.4, muzzle: 1.6, earT: 'horiz', ear: 2.6, horn: 'mocho', tail: 'tuft', tailL: 4, tailW: 1.5, rump: 1.25, chest: 1.15, coats: ['ovCabPreta'] },
     saanen: { t: 'caprino', H: 15, L: 16, D: 7.4, earT: 'erect', ear: 2.6, earW: 0.9, horn: 'mocho', coats: ['saanen'] },
     // suínos
     piau: { t: 'suino', coats: ['piau'] }, moura: { t: 'suino', coats: ['moura'] }, canastra: { t: 'suino', H: 12.5, L: 18.5, D: 8.4, coats: ['canastra'] },
@@ -4575,11 +4603,12 @@ function mkAnimal(sp, br, o) {
   if (sp === 'jumento') a.wt = Math.round(rnd(170, 240));
   if (sp === 'cabra') a.wt = Math.round(age < 6 ? 4 + age * 4 : (sex === 'M' ? rnd(42, 62) : rnd(30, 45)));
   if (sp === 'cabra' && !o.n) a.n = pick(sex === 'M' ? NAMES.bode : NAMES.cabra);
+  if (sp === 'ovelha') { a.wt = Math.round(age < 6 ? 4 + age * 4.5 : (sex === 'M' ? rnd(55, 80) : rnd(38, 55)) * ((SHEEP[br] || {}).meat > 1.2 ? 1.1 : 1)); if (!o.n) a.n = pick(sex === 'M' ? NAMES.carneiro : NAMES.ovelha); }
   if (sp === 'porco') { const z = B.size || 1; a.wt = o.wt || Math.round((age < 14 ? 1.5 + age * 7 : (sex === 'M' ? rnd(115, 150) : rnd(105, 140))) * z); if (!o.n) a.n = pick(sex === 'M' ? NAMES.porco : NAMES.porca); }
   // identidade visual e temperamento (rig de pixel art)
   const rb = rigBreedKey(sp, br, sex), rs = RIG.BR[rb]; if (rs) { const cs = rs.coats || []; a.coat = o.coat && RIG.COATS[o.coat] ? o.coat : cs[rint(0, cs.length - 1)]; }
   if (sp === 'cavalo' || sp === 'burro') a.mk = o.mk !== undefined ? o.mk : (Math.random() < 0.55 ? rint(1, 3) : 0) | ((Math.random() < 0.5 ? rint(1, 15) : 0) << 2);
-  const tp = B.temp || (sp === 'boi' ? ['calmo', 'arisco', 'dócil', 'nervoso'] : sp === 'cabra' ? ['esperto', 'arisco', 'dócil'] : sp === 'jumento' ? ['calmo', 'teimoso', 'paciente'] : ['calmo', 'dócil', 'esperto']);
+  const tp = B.temp || (sp === 'boi' ? ['calmo', 'arisco', 'dócil', 'nervoso'] : sp === 'cabra' ? ['esperto', 'arisco', 'dócil'] : sp === 'ovelha' ? ['dócil', 'calmo', 'arisco'] : sp === 'jumento' ? ['calmo', 'teimoso', 'paciente'] : ['calmo', 'dócil', 'esperto']);
   a.temp = o.temp || pick(tp); a.aff = o.aff !== undefined ? o.aff : (o.main ? 55 : rint(5, 25)); a.spdF = o.spdF || +(0.92 + Math.random() * 0.16).toFixed(2); a.endF = o.endF || +(0.9 + Math.random() * 0.2).toFixed(2);
   rollTraits(a);
   return a;
@@ -4600,11 +4629,12 @@ function animalValue(a) {
   if (a.sp === 'galinha') return Math.round((a.sex === 'M' ? 70 : 55) * q); if (a.sp === 'cao') return Math.round(600 * q);
   if (a.sp === 'porco') return Math.round(Math.max(a.age < 5 ? 160 : 0, (a.wt || 80) * 7.5 * q * ((PIGS[a.br] || {}).p || 1)));
   if (a.sp === 'cabra') return Math.round((a.wt || 35) * 14 * q * ((GOATS[a.br] || {}).meat || 1) * (a.age < 6 ? 1.3 : 1));
+  if (a.sp === 'ovelha') return Math.round((a.wt || 45) * 15 * q * ((SHEEP[a.br] || {}).meat || 1) * (a.age < 6 ? 1.3 : 1));
   if (a.sp === 'fauna') return 0;
   return 100;
 }
-function ageStr(a) { const d = a.age; if (a.sp === 'galinha') return d < 6 ? 'pinto' : 'adulta'; if (a.sp === 'cabra' && d < 6) return d + ' dias (cabrito)'; if (a.sp === 'porco' && d < 5) return d + ' dias (leitão)'; if (d < 12) return d + ' dias (filhote)'; return Math.floor(d / 14 + 1) + ' anos'; }
-function catName(a) { if (a.sp === 'cabra') return a.age < 6 ? 'Cabrito' : a.sex === 'F' ? 'Cabra' : 'Bode'; if (a.sp === 'porco') return a.age < 5 ? 'Leitão' : a.age < 12 ? (a.sex === 'F' ? 'Marrã' : 'Porco de engorda') : a.sex === 'F' ? 'Porca' : 'Cachaço'; if (a.sp !== 'boi') return SPN[a.sp] + (a.sex === 'F' ? (a.sp === 'cao' ? ' (fêmea)' : a.sp === 'cavalo' ? ' (égua)' : a.sp === 'galinha' ? ' (galinha)' : ' (fêmea)') : (a.sp === 'cavalo' ? ' (garanhão)' : a.sp === 'galinha' ? ' (galo)' : ' (macho)'));
+function ageStr(a) { const d = a.age; if (a.sp === 'galinha') return d < 6 ? 'pinto' : 'adulta'; if (a.sp === 'cabra' && d < 6) return d + ' dias (cabrito)'; if (a.sp === 'ovelha' && d < 6) return d + ' dias (borrego)'; if (a.sp === 'porco' && d < 5) return d + ' dias (leitão)'; if (d < 12) return d + ' dias (filhote)'; return Math.floor(d / 14 + 1) + ' anos'; }
+function catName(a) { if (a.sp === 'cabra') return a.age < 6 ? 'Cabrito' : a.sex === 'F' ? 'Cabra' : 'Bode'; if (a.sp === 'ovelha') return a.age < 6 ? 'Borrego' : a.sex === 'F' ? 'Ovelha' : 'Carneiro'; if (a.sp === 'galinha' && (CHICKENS[a.br] || {}).duck) return a.age < 6 ? 'Patinho' : a.sex === 'F' ? 'Pata' : 'Pato'; if (a.sp === 'porco') return a.age < 5 ? 'Leitão' : a.age < 12 ? (a.sex === 'F' ? 'Marrã' : 'Porco de engorda') : a.sex === 'F' ? 'Porca' : 'Cachaço'; if (a.sp !== 'boi') return SPN[a.sp] + (a.sex === 'F' ? (a.sp === 'cao' ? ' (fêmea)' : a.sp === 'cavalo' ? ' (égua)' : a.sp === 'galinha' ? ' (galinha)' : ' (fêmea)') : (a.sp === 'cavalo' ? ' (garanhão)' : a.sp === 'galinha' ? ' (galo)' : ' (macho)'));
   if (a.age < 12) return a.sex === 'F' ? 'Bezerra' : 'Bezerro'; if (a.sex === 'F') return a.age < 24 ? 'Novilha' : 'Vaca'; return a.age < 24 ? 'Garrote' : 'Touro'; }
 const myAnimals = (sp) => S.animals.filter(a => a.own === 'player' && (!sp || a.sp === sp));
 const mainHorse = () => S.animals.find(a => a.main);
@@ -4970,9 +5000,9 @@ function regrow(hrs) {
 }
 function layEggs() {
   const hens = S.animals.filter(a => a.sp === 'galinha' && a.sex === 'F' && a.age >= 6 && a.own === 'player');
-  const fi = trIdx('galin', 'racao'); let n = 0;
-  for (const h of hens) { const fed = S.tr[fi] > 0.2; if (fed) S.tr[fi] = Math.max(0, S.tr[fi] - 0.15); const pr = (fed ? 0.85 : 0.25) * ((CHICKENS[h.br] || {}).egg || 1) * (h.hap / 100 + 0.3) * (built('galinheiro') ? 1.3 : 1) * (h.skills.includes('Poedeira') ? 1.2 : 1); if (Math.random() < pr) n++; }
-  S.eggs = Math.min(60, S.eggs + n);
+  const fi = trIdx('galin', 'racao'); let n = 0, nd = 0;
+  for (const h of hens) { if ((CHICKENS[h.br] || {}).duck) { const pr = (S.tr[fi] > 0.2 ? 0.75 : 0.35) * CHICKENS[h.br].egg * (h.hap / 100 + 0.3); if (Math.random() < pr) nd++; continue; } const fed = S.tr[fi] > 0.2; if (fed) S.tr[fi] = Math.max(0, S.tr[fi] - 0.15); const pr = (fed ? 0.85 : 0.25) * ((CHICKENS[h.br] || {}).egg || 1) * (h.hap / 100 + 0.3) * (built('galinheiro') ? 1.3 : 1) * (h.skills.includes('Poedeira') ? 1.2 : 1); if (Math.random() < pr) n++; }
+  S.eggs = Math.min(60, S.eggs + n); S.eggsP = Math.min(40, (S.eggsP || 0) + nd);
   if (built('ordenha')) { const cows = S.animals.filter(a => a.sp === 'boi' && a.lact > 0 && a.own === 'player'); let L = 0; cows.forEach(c => L += (CATTLE[c.br].milk || 0.4) * 6 * (c.hap / 100 + 0.2)); S.milk = Math.round(Math.min(200, S.milk + L)); }
 }
 function deliveries() {
@@ -5023,15 +5053,16 @@ function dayTick() { rocaGrowTick(); { const bd = bdayToday(); if (bd.length) to
     if (a.lact > 0) a.lact--;
     // reprodução
     if (a.preg > 0) { a.preg--; if (a.preg === 0) born.push(a); }
-    else if (a.sex === 'F' && a.age >= (a.sp === 'cabra' ? 10 : a.sp === 'porco' ? 9 : 20) && a.hp > 40) {
-      const males = S.animals.filter(m => m.own === 'player' && m.sex === 'M' && m.age >= (m.sp === 'cabra' ? 10 : m.sp === 'porco' ? 9 : 20) && m.area === a.area && a.area && !m.sick);
+    else if (a.sex === 'F' && a.age >= (RUM(a.sp) ? 10 : a.sp === 'porco' ? 9 : 20) && a.hp > 40) {
+      const males = S.animals.filter(m => m.own === 'player' && m.sex === 'M' && m.age >= (RUM(m.sp) ? 10 : m.sp === 'porco' ? 9 : 20) && m.area === a.area && a.area && !m.sick);
       let mate = null;
       if (a.sp === 'boi') mate = males.find(m => m.sp === 'boi');
       if ((a.sp === 'cavalo') && built('estrebaria')) mate = males.find(m => m.sp === 'cavalo' || m.sp === 'jumento');
       if (a.sp === 'jumento') mate = males.find(m => m.sp === 'jumento');
       if (a.sp === 'cabra') mate = males.find(m => m.sp === 'cabra');
+      if (a.sp === 'ovelha') mate = males.find(m => m.sp === 'ovelha');
       if (a.sp === 'porco') mate = males.find(m => m.sp === 'porco');
-      if (mate && Math.random() < (a.sp === 'boi' ? 0.1 : a.sp === 'cabra' ? 0.14 : a.sp === 'porco' ? 0.18 : 0.07) * (a.hap / 80)) { a.preg = a.sp === 'boi' ? 7 : a.sp === 'cabra' ? 5 : a.sp === 'porco' ? 4 : 9; a._pai = mate.id; a._paiN = mate.n; a._paiSp = mate.sp; a._paiBr = mate.br; a._paiGen = mate.gen; }
+      if (mate && Math.random() < (a.sp === 'boi' ? 0.1 : RUM(a.sp) ? 0.14 : a.sp === 'porco' ? 0.18 : 0.07) * (a.hap / 80)) { a.preg = a.sp === 'boi' ? 7 : RUM(a.sp) ? 5 : a.sp === 'porco' ? 4 : 9; a._pai = mate.id; a._paiN = mate.n; a._paiSp = mate.sp; a._paiBr = mate.br; a._paiGen = mate.gen; }
     }
   }
   for (const m of born) {
@@ -5041,7 +5072,7 @@ function dayTick() { rocaGrowTick(); { const bd = bdayToday(); if (bd.length) to
     const gen = ((m.gen + (m._paiGen || m.gen)) / 2) + gauss() * 9;
     const c = mkAnimal(sp, br, { age: 0, gen, mae: m.n, pai: m._paiN || '—', x: m.x + 8, y: m.y + 4, hap: 80, hp: 90 }); c.mid = m.id;
     S.animals.push(c); if (sp === 'porco') { const B = PIGS[br] || PIGS.piau, n = rint(B.litter[0], B.litter[1]) - 1 + (m.skills.includes('Prolífica') ? 1 : 0); for (let k = 0; k < n; k++) { const c2 = mkAnimal(sp, br, { age: 0, gen: gen + gauss() * 5, mae: m.n, pai: m._paiN || '—', x: m.x + rnd(-10, 10), y: m.y + rnd(2, 10), hap: 80, hp: 88 }); c2.mid = m.id; S.animals.push(c2); } toast('🐖 ' + m.n + ' pariu ' + (n + 1) + ' leitões!'); questEvent('produce', 'leitao'); S.firsts = S.firsts || {}; if (!S.firsts.leitoes) { S.firsts.leitoes = 1; setTimeout(() => typeof csNascimento === 'function' && csNascimento(m), 400); } }
-    if (sp === 'cabra' && Math.random() < 0.45) { const c2 = mkAnimal(sp, br, { age: 0, gen: gen + gauss() * 4, mae: m.n, pai: m._paiN || '—', x: m.x - 6, y: m.y + 5, hap: 80, hp: 90 }); S.animals.push(c2); toast('Gêmeos! Nasceu também ' + c2.n + '.'); } m.lact = 20; S.stats.born++; toast('🐣 Nasceu ' + catName(c).toLowerCase() + ': ' + c.n + ' (' + starStr(stars(c)) + ')');
+    if (RUM(sp) && Math.random() < (sp === 'ovelha' ? ((SHEEP[br] || {}).twin || 0.3) : 0.45)) { const c2 = mkAnimal(sp, br, { age: 0, gen: gen + gauss() * 4, mae: m.n, pai: m._paiN || '—', x: m.x - 6, y: m.y + 5, hap: 80, hp: 90 }); S.animals.push(c2); toast('Gêmeos! Nasceu também ' + c2.n + '.'); } m.lact = 20; S.stats.born++; toast('🐣 Nasceu ' + catName(c).toLowerCase() + ': ' + c.n + ' (' + starStr(stars(c)) + ')');
   }
   // galinhas: pintinhos
   const hens = S.animals.filter(a => a.sp === 'galinha' && a.own === 'player'), cap = 10 + (built('galinheiro') ? 12 : 0);
@@ -5144,13 +5175,14 @@ function decide(a) {
   const h = hour();
   if (a.sp === 'galinha') {
     if (a.own === 'player' && (isNight() || isRain())) { a._st = 'go'; a._tg = [7 * TS, 35.6 * TS]; a._then = 'coop'; a._t = 20; return; }
-    a._hid = false; const t = findGrass(a) || [a.x + rnd(-20, 20), a.y + rnd(-20, 20)]; setGo(a, { x: t[0], y: t[1] }, 'graze', rnd(3, 7)); return;
+    a._hid = false; if ((CHICKENS[a.br] || {}).duck && a.own === 'player' && hour() > 7 && hour() < 17 && Math.random() < 0.6) { const q = DUCK_SPOTS[(a.id + Math.floor(S.min / 40)) % DUCK_SPOTS.length]; return setGo(a, { x: q[0] * TS + rnd(-8, 8), y: q[1] * TS + rnd(-4, 4) }, 'graze', rnd(6, 12)); }
+    const t = findGrass(a) || [a.x + rnd(-20, 20), a.y + rnd(-20, 20)]; setGo(a, { x: t[0], y: t[1] }, 'graze', rnd(3, 7)); return;
   }
   if (a.sp === 'cao') return;
-  const herd = a.sp === 'boi' || a.sp === 'cabra', hc = herd ? herdCenter(a) : null, far = hc && hyp(hc.x - a.x, hc.y - a.y) > 56;
+  const herd = a.sp === 'boi' || RUM(a.sp), hc = herd ? herdCenter(a) : null, far = hc && hyp(hc.x - a.x, hc.y - a.y) > 56;
   // noite: o rebanho deita junto (quem está longe vai para perto dos outros antes de deitar)
   if (h >= 20.5 || h < 5) { if (far) return setGo(a, { x: hc.x + rnd(-18, 18), y: hc.y + rnd(-10, 10) }, 'rest', rnd(30, 60)); a._st = 'rest'; a._t = rnd(30, 60); return; }
-  if ((a.sp === 'cabra' && a.area === 'aprisco') || (a.sp === 'porco' && a.area === 'chiq')) { const hot = h > 11 && h < 15 && !isRain(); if (hot || h >= 19.5 || h < 5.5 || isRain()) { if (Math.random() < 0.6) { const sh = a.sp === 'cabra' ? [53 + Math.random() * 3, 104.3] : [44.5 + Math.random() * 4, 98.3]; return setGo(a, { x: sh[0] * TS, y: sh[1] * TS }, 'rest', rnd(15, 40)); } } }
+  if ((RUM(a.sp) && a.area === 'aprisco') || (a.sp === 'porco' && a.area === 'chiq')) { const hot = h > 11 && h < 15 && !isRain(); if (hot || h >= 19.5 || h < 5.5 || isRain()) { if (Math.random() < 0.6) { const sh = RUM(a.sp) ? [53 + Math.random() * 3, 104.3] : [44.5 + Math.random() * 4, 98.3]; return setGo(a, { x: sh[0] * TS, y: sh[1] * TS }, 'rest', rnd(15, 40)); } } }
   if (a.sp === 'porco') { if ((h > 10.5 && h < 16 && !isRain() && Math.random() < 0.5) || (a.food > 85 && Math.random() < 0.4)) { const m = findMud(a); if (m) return setGo(a, m, 'rest', rnd(14, 26)); } if (Math.random() < 0.35) { const t2 = [a.x + rnd(-30, 30), a.y + rnd(-20, 20)]; if (!a.area || areaAt(t2[0], t2[1]) === a.area) return setGo(a, { x: t2[0], y: t2[1] }, 'graze', rnd(4, 9)); } } // fuçar
   // chuva forte e tempestade: procura abrigo debaixo de árvore
   if (S.weather === 'tempestade' || (isRain() && Math.random() < 0.35)) { const s = findShade(a); if (s) return setGo(a, s, 'idle', rnd(12, 24)); }
@@ -5162,7 +5194,7 @@ function decide(a) {
   // filhote brinca: corrida curta perto da mãe ou dos irmãos
   if (a.age < 8 && a.sp !== 'galinha' && Math.random() < 0.18) { const m = motherOf(a) || a; const t = [m.x + rnd(-40, 40), m.y + rnd(-24, 24)]; if (!a.area || areaAt(t[0], t[1]) === a.area) { a._st = 'play'; a._tg = t; a._t = rnd(1.5, 3); return; } }
   // contato social: dois animais da mesma espécie se encontram e ficam um de frente para o outro
-  if (a.age >= 8 && Math.random() < 0.1) { const b = near(a.x, a.y, 34).find(o => o !== a && o.sp === a.sp && o.own === a.own && !o._hid && (o._st === 'idle' || o._st === 'graze' || !o._st)); if (b) { a._st = 'social'; a._mate = b.id; a._t = rnd(3, 6); b._st = 'social'; b._mate = a.id; b._t = a._t; if (a.sp === 'porco' && AU.oink) AU.oink(a.x, a.y, 1.1); else if (a.sp === 'cabra' && AU.bleat && Math.random() < 0.4) AU.bleat(a.x, a.y, 1); return; } }
+  if (a.age >= 8 && Math.random() < 0.1) { const b = near(a.x, a.y, 34).find(o => o !== a && o.sp === a.sp && o.own === a.own && !o._hid && (o._st === 'idle' || o._st === 'graze' || !o._st)); if (b) { a._st = 'social'; a._mate = b.id; a._t = rnd(3, 6); b._st = 'social'; b._mate = a.id; b._t = a._t; if (a.sp === 'porco' && AU.oink) AU.oink(a.x, a.y, 1.1); else if (RUM(a.sp) && AU.bleat && Math.random() < 0.4) AU.bleat(a.x, a.y, a.sp === 'ovelha' ? 0.78 : 1); return; } }
   // filhote acompanha a mãe
   if (a.age < 8) { const m = motherOf(a); if (m && !m._hid && hyp(m.x - a.x, m.y - a.y) > 30) return setGo(a, { x: m.x + rnd(-10, 10), y: m.y + rnd(4, 10) }, m._st === 'rest' ? 'rest' : 'graze', rnd(4, 8)); }
   // barriga cheia: deita para ruminar
@@ -5579,7 +5611,7 @@ function updAnimals(dt, gm) {
     if (a._lod) { gm += 0; }
     updAnimal(a, dt, gm + (a._lgm || 0), th); a._lgm = 0; a._lod = 0; separate(a);
   }
-  if (Math.random() < dt * 0.25) { const vis = near(P.x, P.y, 160); if (vis.length) { const a = pick(vis); if (a.sp === 'boi') AU.moo(a.x, a.y, a.sex === 'M' ? 0.8 : a.age < 12 ? 1.5 : 1.05); else if (a.sp === 'cavalo' || a.sp === 'burro') AU.neigh(a.x, a.y); else if (a.sp === 'jumento') Math.random() < .3 && AU.bray(a.x, a.y); else if (a.sp === 'galinha') AU.cluck(a.x, a.y); else if (a.sp === 'cabra') AU.bleat(a.x, a.y, a.age < 6 ? 1.4 : a.sex === 'M' ? 0.8 : 1); else if (a.sp === 'porco') AU.oink(a.x, a.y, a.age < 5 ? 1.8 : a.sex === 'M' ? 0.85 : 1); else if (a.sp === 'cao' && Math.random() < .3) AU.bark(a.x, a.y); } }
+  if (Math.random() < dt * 0.25) { const vis = near(P.x, P.y, 160); if (vis.length) { const a = pick(vis); if (a.sp === 'boi') AU.moo(a.x, a.y, a.sex === 'M' ? 0.8 : a.age < 12 ? 1.5 : 1.05); else if (a.sp === 'cavalo' || a.sp === 'burro') AU.neigh(a.x, a.y); else if (a.sp === 'jumento') Math.random() < .3 && AU.bray(a.x, a.y); else if (a.sp === 'galinha') AU.cluck(a.x, a.y); else if (a.sp === 'cabra') AU.bleat(a.x, a.y, a.age < 6 ? 1.4 : a.sex === 'M' ? 0.8 : 1); else if (a.sp === 'ovelha') AU.bleat(a.x, a.y, a.age < 6 ? 1.15 : a.sex === 'M' ? 0.62 : 0.78); else if (a.sp === 'porco') AU.oink(a.x, a.y, a.age < 5 ? 1.8 : a.sex === 'M' ? 0.85 : 1); else if (a.sp === 'cao' && Math.random() < .3) AU.bark(a.x, a.y); } }
   for (const id in S.npcs) { const q = S.npcs[id].quest; if (q && q.k === 'fujao') { const a = byId(q.aid); if (a && inArea(NPCDEF[id].area, a.x, a.y)) { if (lasso.t === a) lasso.t = null; const r = checkQuest(id); if (r) toast('✅ ' + NPCDEF[id].n + ': ' + r); } } }
   updEscorts(dt);
 }
@@ -5589,8 +5621,8 @@ function updAnimals(dt, gm) {
    cão, peão, predador), se mantém junto (coesão), não se atropela (separação), acompanha o grupo
    (alinhamento), desvia de cercas e paredes (antenas) e é puxado para porteiras abertas no caminho.
    Muito susto dispersa o rebanho; quando a pressão passa, ele se reagrupa e volta a pastar. */
-const HERD = { boi: 1, cabra: 1, porco: 1 };
-const HSP = { boi: { walk: 11, trot: 26, run: 44, acc: 70, R: 1 }, cabra: { walk: 12, trot: 30, run: 50, acc: 90, R: 0.85 }, porco: { walk: 9, trot: 22, run: 38, acc: 70, R: 0.8 } };
+const HERD = { boi: 1, cabra: 1, porco: 1, ovelha: 1 };
+const HSP = { boi: { walk: 11, trot: 26, run: 44, acc: 70, R: 1 }, cabra: { walk: 12, trot: 30, run: 50, acc: 90, R: 0.85 }, ovelha: { walk: 11, trot: 27, run: 46, acc: 85, R: 0.9 }, porco: { walk: 9, trot: 22, run: 38, acc: 70, R: 0.8 } };
 function pressureSources() {
   const L = [];
   if (!P.cart && mode === 'play') {
@@ -5695,7 +5727,7 @@ function updHerdAnimal(a, dt, gm, srcs) {
     if (a._halt > 0) { a._halt -= dt; want *= 0.15; }
     const gp = pmag > 0.05 ? gatePull(a, px, py) : gatePull(a, tx, ty); tx += gp[0]; ty += gp[1]; // a porteira é escolhida pelo rumo do empurrão, não pelo zigue-zague do boi
     if (Math.random() < dt * (pmag > 1 ? 0.35 : 0.12) && a.sp === 'boi') AU.moo(a.x, a.y, a.sex === 'M' ? 0.85 : a.age < 12 ? 1.5 : 1.05);
-    if (Math.random() < dt * (pmag > 1 ? 0.3 : 0.08) && a.sp === 'cabra' && AU.bleat) AU.bleat(a.x, a.y, a.age < 6 ? 1.4 : a.sex === 'M' ? 0.8 : 1);
+    if (Math.random() < dt * (pmag > 1 ? 0.3 : 0.08) && RUM(a.sp) && AU.bleat) AU.bleat(a.x, a.y, (a.age < 6 ? 1.4 : a.sex === 'M' ? 0.8 : 1) * (a.sp === 'ovelha' ? 0.8 : 1));
   }
   finishHerd(a, dt, tx, ty, want, sx, sy, hb, SP, alertSrc);
 }
@@ -5723,7 +5755,7 @@ function calmStep(a, dt, gm) {
   switch (a._st) {
     case 'go': { const r = stepTo(a, a._tg[0], a._tg[1], animalSpeed(a), dt); a._pose = 'walk'; a._vx = (a._hx || 0) * a._mv; a._vy = (a._hy || 0) * a._mv; if (r === true || r === 'stuck' || a._t <= 0) { a._st = a._then; a._t = a._dur || 6; arriveAt(a); } return; }
     case 'graze': { a._pose = 'graze'; grazeTick(a, gm); if (a._t <= 0) a._st = null; else if ((hasT(a, 'curioso') || hasT(a, 'agitado') || hasT(a, 'preguicoso')) && Math.random() < dt * 0.25 && traitCalm(a)) return; return; }
-    case 'rest': a._pose = a.sp === 'boi' || a.sp === 'cabra' || a.sp === 'porco' ? 'lie' : 'idle'; if (a._t <= 0) a._st = null; if ((hour() >= 20.5 || hour() < 5) && a._t <= 0) { a._st = 'rest'; a._t = 20; } return;
+    case 'rest': a._pose = a.sp === 'boi' || RUM(a.sp) || a.sp === 'porco' ? 'lie' : 'idle'; if (a._t <= 0) a._st = null; if ((hour() >= 20.5 || hour() < 5) && a._t <= 0) { a._st = 'rest'; a._t = 20; } return;
     case 'drink': a._pose = 'drink'; if (a._t <= 0) a._st = null; return;
     case 'eat': a._pose = 'graze'; if (a._t <= 0) a._st = null; return;
     case 'play': { const r = stepTo(a, a._tg[0], a._tg[1], animalSpeed(a) * 2.6, dt); a._pose = 'run'; a._run = 1; a._vx = (a._hx || 0) * a._mv; a._vy = (a._hy || 0) * a._mv; if (r === true || r === 'stuck' || a._t <= 0) { a._run = 0; a._st = Math.random() < 0.5 ? null : 'idle'; a._t = rnd(1, 3); } return; }
@@ -5739,9 +5771,9 @@ function arriveAt(a) {
   if (a._then === 'coop') { a._hid = true; a._t = 30; }
 }
 function grazeTick(a, gm) {
-  const i = gi(Math.floor(a.x / TS), Math.floor(a.y / TS)), bite = a.sp === 'cabra' ? 0.35 : 0.6;
-  if (ground[i] === G.PAST) { if (grass[i] > 12) { const e = Math.min(grass[i], bite * gm); grass[i] -= e; const f = e * (a.sp === 'cabra' ? 0.42 : 0.27) * Math.min(1, grass[i] / 120 + 0.3); a.food = cl(a.food + f, 0, 100); a.dayFood += f; } else a._t = Math.min(a._t, 0.5); }
-  else if (ground[i] === G.GRASS || ground[i] === G.DRY) { const f = (a.sp === 'cabra' ? 0.12 : 0.08) * gm; a.food = cl(a.food + f, 0, 100); a.dayFood += f; }
+  const i = gi(Math.floor(a.x / TS), Math.floor(a.y / TS)), bite = a.sp === 'cabra' ? 0.35 : a.sp === 'ovelha' ? 0.42 : 0.6;
+  if (ground[i] === G.PAST) { if (grass[i] > 12) { const e = Math.min(grass[i], bite * gm); grass[i] -= e; const f = e * (a.sp === 'cabra' ? 0.42 : a.sp === 'ovelha' ? 0.4 : 0.27) * Math.min(1, grass[i] / 120 + 0.3); a.food = cl(a.food + f, 0, 100); a.dayFood += f; } else a._t = Math.min(a._t, 0.5); }
+  else if (ground[i] === G.GRASS || ground[i] === G.DRY) { const f = (a.sp === 'cabra' ? 0.12 : a.sp === 'ovelha' ? 0.09 : 0.08) * gm; a.food = cl(a.food + f, 0, 100); a.dayFood += f; }
 }
 /* ---------- cavalos, muares e jumentos soltos ---------- */
 function updHorseAI(a, dt, gm, srcs) {
@@ -5772,7 +5804,7 @@ function updHorseAI(a, dt, gm, srcs) {
 }
 /* ---------- cão de trabalho ---------- */
 function herdCenter(R) {
-  let x = 0, y = 0, n = 0, rad = 0; const L = near(P.x, P.y, R).filter(a => (a.sp === 'boi' || a.sp === 'cabra') && a.own === 'player' && !a._hid && free(a));
+  let x = 0, y = 0, n = 0, rad = 0; const L = near(P.x, P.y, R).filter(a => (a.sp === 'boi' || RUM(a.sp)) && a.own === 'player' && !a._hid && free(a));
   for (const a of L) { x += a.x; y += a.y; n++; } if (!n) return null; x /= n; y /= n; for (const a of L) rad = Math.max(rad, hyp(a.x - x, a.y - y)); return { x, y, n, rad, L };
 }
 function updWorkDog(a, dt) {
@@ -6125,7 +6157,7 @@ const TRAITS = {
   dominante: { n: 'Dominante', d: 'puxa a boiada, os outros seguem', obey: 1.1 }
 };
 const TRAIT_BAN = [['docil', 'arisco'], ['corajoso', 'medroso'], ['sociavel', 'independente'], ['teimoso', 'obediente'], ['agitado', 'preguicoso']];
-const TRAIT_SP = { porco: ['docil', 'curioso', 'preguicoso', 'agitado', 'sociavel', 'teimoso', 'dominante', 'medroso', 'obediente'], boi: ['docil', 'arisco', 'curioso', 'preguicoso', 'agitado', 'medroso', 'sociavel', 'independente', 'teimoso', 'obediente', 'dominante', 'corajoso'], cabra: ['docil', 'arisco', 'curioso', 'agitado', 'medroso', 'sociavel', 'independente', 'teimoso', 'dominante'], cavalo: ['docil', 'arisco', 'curioso', 'preguicoso', 'agitado', 'corajoso', 'medroso', 'sociavel', 'independente', 'teimoso', 'obediente'], cao: ['docil', 'curioso', 'preguicoso', 'agitado', 'corajoso', 'territorial', 'sociavel', 'independente', 'obediente', 'teimoso'], galinha: ['curioso', 'medroso', 'agitado', 'sociavel'] };
+const TRAIT_SP = { porco: ['docil', 'curioso', 'preguicoso', 'agitado', 'sociavel', 'teimoso', 'dominante', 'medroso', 'obediente'], boi: ['docil', 'arisco', 'curioso', 'preguicoso', 'agitado', 'medroso', 'sociavel', 'independente', 'teimoso', 'obediente', 'dominante', 'corajoso'], cabra: ['docil', 'arisco', 'curioso', 'agitado', 'medroso', 'sociavel', 'independente', 'teimoso', 'dominante'], ovelha: ['docil', 'medroso', 'sociavel', 'curioso', 'teimoso', 'obediente', 'agitado'], cavalo: ['docil', 'arisco', 'curioso', 'preguicoso', 'agitado', 'corajoso', 'medroso', 'sociavel', 'independente', 'teimoso', 'obediente'], cao: ['docil', 'curioso', 'preguicoso', 'agitado', 'corajoso', 'territorial', 'sociavel', 'independente', 'obediente', 'teimoso'], galinha: ['curioso', 'medroso', 'agitado', 'sociavel'] };
 TRAIT_SP.burro = TRAIT_SP.jumento = TRAIT_SP.cavalo;
 function rollTraits(a) {
   const L = (TRAIT_SP[a.sp] || TRAIT_SP.boi).slice(); const out = [];
@@ -6154,11 +6186,11 @@ function traitCalm(a) {
   // curioso: vem ver o vaqueiro a pé (ou o cão), para a um palmo e fica olhando
   if (hasT(a, 'curioso') && !P.mnt && dP < 130 && dP > 34 && (P._mv || 0) < 20 && r < 0.45 && (!a.area || inArea(a.area, P.x, P.y))) { const k = (dP - 28) / dP; a._st = 'go'; a._tg = [a.x + (P.x - a.x) * k, a.y + (P.y - a.y) * k]; a._then = 'idle'; a._dur = 3 + Math.random() * 2; a._t = 6; a._curious = 1; return true; }
   // preguiçoso: deita no meio do dia e à toa
-  if (r < 0.12 * tmod(a, 'lazy') && (a.sp === 'boi' || a.sp === 'cabra' || a.sp === 'cao')) { a._st = 'rest'; a._t = 8 + Math.random() * 10 * tmod(a, 'lazy'); return true; }
+  if (r < 0.12 * tmod(a, 'lazy') && (a.sp === 'boi' || RUM(a.sp) || a.sp === 'cao')) { a._st = 'rest'; a._t = 8 + Math.random() * 10 * tmod(a, 'lazy'); return true; }
   // agitado: anda de um lado para o outro do piquete
   if (r < 0.18 * (tmod(a, 'wander') - 1) && a.area && AREAS[a.area]) { const q = randIn(a.area); a._st = 'go'; a._tg = q; a._then = 'graze'; a._dur = 3 + Math.random() * 3; a._t = 12; return true; }
   // sociável/independente: escolhe pastar perto ou longe do grupo
-  if ((hasT(a, 'sociavel') || hasT(a, 'independente')) && r < 0.35 && (a.sp === 'boi' || a.sp === 'cabra' || a.sp === 'cavalo')) {
+  if ((hasT(a, 'sociavel') || hasT(a, 'independente')) && r < 0.35 && (a.sp === 'boi' || RUM(a.sp) || a.sp === 'cavalo')) {
     const mates = near(a.x, a.y, 200).filter(b => b !== a && b.sp === a.sp && b.own === a.own && !b._hid); if (mates.length) {
       let mx = 0, my = 0; for (const b of mates) { mx += b.x; my += b.y; } mx /= mates.length; my /= mates.length; const d = hyp(mx - a.x, my - a.y) || 1;
       if (hasT(a, 'sociavel') && d > 30) { a._st = 'go'; a._tg = [mx + rnd(-14, 14), my + rnd(-10, 10)]; a._then = 'graze'; a._dur = 6; a._t = 10; return true; }
@@ -7023,7 +7055,7 @@ function sheetActions(a) {
   L.push(['heart', 'Acariciar', 'pet']);
   if (big) L.push(['lasso', P.lead === a.id ? 'Soltar' : 'Conduzir', 'lead']);
   if (a.sp === 'cabra' && a.sex === 'F' && a.lact > 0) L.push(['water', a.milkD === S.day ? 'Já ordenhada hoje' : 'Ordenhar', 'milkGoat', a.milkD === S.day]);
-  if (a.sp === 'boi' || a.sp === 'cabra' || a.sp === 'porco') { L.push(['gate', 'Levar ao curral', 'curral', a.area === 'curral']); L.push(['map', 'Trocar de pasto', 'transfer']); L.push(['lasso', a._cut ? 'Juntar ao rebanho' : 'Apartar', 'cut']); }
+  if (a.sp === 'boi' || RUM(a.sp) || a.sp === 'porco') { L.push(['gate', 'Levar ao curral', 'curral', a.area === 'curral']); L.push(['map', 'Trocar de pasto', 'transfer']); L.push(['lasso', a._cut ? 'Juntar ao rebanho' : 'Apartar', 'cut']); }
   if (isH || a.sp === 'jumento') { L.push(['boot', a._st === 'follow' ? 'Parar de seguir' : 'Me seguir', 'follow']); L.push(['pin', a._st === 'stay' ? 'Liberar' : 'Ficar aqui', 'stay']); }
   if (a.sp === 'galinha') L.push(['egg', 'Recolher ovos (' + S.eggs + ')', 'eggs', !S.eggs]);
   if (a.sp === 'cao') { const c = a._cmd || 'seguir'; L.push(['cow', 'Juntar o gado', 'cmdjuntar', c === 'juntar']); L.push(['lasso', 'Tocar o gado', 'cmdtocar', c === 'tocar']); L.push(['pin', 'Ficar', 'cmdficar', c === 'ficar']); L.push(['boot', 'Seguir', 'cmdseguir', c === 'seguir']); L.push(['call', 'Chamar', 'call']); L.push(['ball', 'Brincar', 'play']); L.push(['book', 'Treinar', 'train']); }
@@ -7035,7 +7067,7 @@ function sheetActions(a) {
   L.push(['eye', 'Examinar', 'exam']);
   if (a.sick) L.push(['plus', 'Tratar', 'cure', !has('remedio')]);
   if (a.sp !== 'galinha') L.push(['plus', a.verm >= S.day ? 'Vermifugado' : 'Vermifugar', 'verm', !has('vermifugo') || a.verm >= S.day]);
-  if (a.sp === 'boi' || a.sp === 'cavalo' || a.sp === 'cabra' || a.sp === 'cao') L.push(['water', 'Banho carrapaticida', 'carrap', !has('carrapaticida') || a.carrap >= S.day]);
+  if (a.sp === 'boi' || a.sp === 'cavalo' || RUM(a.sp) || a.sp === 'cao') L.push(['water', 'Banho carrapaticida', 'carrap', !has('carrapaticida') || a.carrap >= S.day]);
   if (a.hp < 70) L.push(['plus', 'Cicatrizante', 'cicat', !has('cicatrizante')]);
   L.push(['water', 'Vacinar', 'vacc', !has('vacina') || a.vacc >= S.day]);
   if (!a.main) L.push(['sell', 'Vender', 'sell']);
@@ -7482,7 +7514,7 @@ const ECON = {
 function prodHTML() {
   const wk = S.ledger.filter(l => l.d >= S.day - 6), inc = wk.filter(l => l.v > 0).reduce((t, l) => t + l.v, 0), exp = -wk.filter(l => l.v < 0).reduce((t, l) => t + l.v, 0);
   let h = `<div class="card"><b>Últimos 7 dias</b><br>Entradas: <b style="color:#2a7a3a">${fmt(inc)}</b> · Saídas: <b style="color:#a83a2a">${fmt(exp)}</b> · Saldo: <b>${fmt(inc - exp)}</b>${wk.length ? '<br><span class="mut">' + wk.slice(0, 6).map(l => esc(l.desc.replace(/ \((dinheiro|débito)\)/, '')) + ' ' + (l.v > 0 ? '+' : '') + fmt(l.v)).join(' · ') + '</span>' : ''}</div>`;
-  const mine = myAnimals(), sp = ['boi', 'porco', 'cabra', 'galinha', 'cavalo', 'jumento', 'burro'].filter(k => mine.some(a => a.sp === k));
+  const mine = myAnimals(), sp = ['boi', 'porco', 'cabra', 'ovelha', 'galinha', 'cavalo', 'jumento', 'burro'].filter(k => mine.some(a => a.sp === k));
   const lact = mine.filter(a => a.sp === 'cabra' && a.sex === 'F' && a.lact > 0), hens = mine.filter(a => a.sp === 'galinha' && a.sex === 'F' && a.age >= 6).length, trees = pomarS().filter(q => q && fruitStage(q) === 2).length;
   h += '<h3>Seu plantel hoje</h3>' + (sp.map(k => { const L = mine.filter(a => a.sp === k), v = L.reduce((t, a) => t + animalValue(a), 0); return `<div class="row sp"><span>${SPN[k]}: <b>${L.length}</b></span><span class="mut">${fmt(v)}</span></div>`; }).join('') || '<p class="mut">Sem animais ainda.</p>');
   h += `<div class="card"><b>Produção estimada por dia</b><br>🥚 Ovos: ~${Math.round(hens * 0.85)} · 🥛 Leite de cabra: ~${lact.reduce((t, a) => t + ((GOATS[a.br] || {}).milk || 0.6) * 2.2, 0).toFixed(1)} L${built('ordenha') ? ' · leite de vaca na ordenha' : ''} · 💩 Esterco: ~${(mine.filter(a => a.sp === 'porco' && a.area === 'chiq').length * 0.35 + mine.filter(a => a.sp === 'cabra' && a.area === 'aprisco').length * 0.12).toFixed(1)} saco · 🌳 Árvores produzindo: ${trees}${S.crowd && Object.keys(S.crowd).length ? '<br><span style="color:#a83a2a">⚠️ Lotado: ' + Object.keys(S.crowd).map(k => AREAS[k].n).join(', ') + '</span>' : ''}</div>`;
@@ -7499,8 +7531,8 @@ const AGRO_ITEMS = {
 };
 const AGRO_BUYS = { esterco: 8, leiteCabra: 5.5, fPalma: 9, fMandacaru: 8, fManicoba: 11 }; // o que a loja compra do produtor (R$ por unidade)
 // finalidade e manejo por espécie (aparece na ficha dos animais à venda)
-const AGRO_USE = { boi: 'Cria, recria e engorda; venda por arroba', cavalo: 'Montaria, lida e reprodução', burro: 'Carga, sela e carroça', jumento: 'Carga, carroça e reprodução de muares', cabra: 'Leite, cabritos e reprodutores', porco: 'Leitões, engorda e esterco', galinha: 'Ovos e pintinhos', cao: 'Guarda e lida com o gado' };
-const AGRO_CARE = { boi: 'Pasto com descanso, água e sal mineral no cocho; vacina a cada 28 dias.', cavalo: 'Escovar, selar com cuidado e treinar; milho e água no haras.', burro: 'Rústico: pasto, água e pouco milho.', jumento: 'Rústico: pasto e água; ótimo para puxar a carroça.', cabra: 'Aprisco seco e alto, pasto de caatinga, água limpa; ordenhar as que pariram.', porco: 'Chiqueiro com sombra e lama, ração de suínos e água à vontade; limpar o chiqueiro.', galinha: 'Galinheiro fechado à noite e milho no cocho.', cao: 'Ração de cão, carinho e treino.' };
+const AGRO_USE = { boi: 'Cria, recria e engorda; venda por arroba', cavalo: 'Montaria, lida e reprodução', burro: 'Carga, sela e carroça', jumento: 'Carga, carroça e reprodução de muares', cabra: 'Leite, cabritos e reprodutores', ovelha: 'Carne (venda por peso), borregos e esterco', porco: 'Leitões, engorda e esterco', galinha: 'Ovos e pintinhos', cao: 'Guarda e lida com o gado' };
+const AGRO_CARE = { boi: 'Pasto com descanso, água e sal mineral no cocho; vacina a cada 28 dias.', cavalo: 'Escovar, selar com cuidado e treinar; milho e água no haras.', burro: 'Rústico: pasto, água e pouco milho.', jumento: 'Rústico: pasto e água; ótimo para puxar a carroça.', cabra: 'Aprisco seco e alto, pasto de caatinga, água limpa; ordenhar as que pariram.', ovelha: 'Aprisco com as cabras, capim e palma; vermífugo em dia (verminose é o maior risco) e casco aparado.', porco: 'Chiqueiro com sombra e lama, ração de suínos e água à vontade; limpar o chiqueiro.', galinha: 'Galinheiro fechado à noite e milho no cocho.', cao: 'Ração de cão, carinho e treino.' };
 function agroWeek() { return Math.floor((S.day - 1) / 7); }
 function agroRestock() {
   if (S.agro && S.agro.wk === agroWeek()) { if (S.agro.inv) for (const k in AGRO_ITEMS) for (const id of AGRO_ITEMS[k]) if (S.agro.inv[id] === undefined) { S.agro.inv[id] = IT[id].c === 'pesca' ? rint(40, 80) : rint(6, 20); if (S.agro.mul) S.agro.mul[id] = 1; } return; } // item novo numa semana já aberta: entra no estoque sem esperar a segunda
@@ -7520,13 +7552,14 @@ function genAgroAnimals(wk) {
   L.push(mk(Math.random() < 0.5 ? 'burro' : 'jumento', null, {}));
   for (let i = 0; i < nP; i++) L.push(mk('porco', pk(PIGS), { age: i === 0 ? 2 : rint(4, 18), sex: i % 2 ? 'M' : 'F' }));
   for (let i = 0; i < nG; i++) L.push(mk('cabra', pk(GOATS), { age: rint(4, 24), sex: i % 3 ? 'F' : 'M' }));
+  for (let i = 0; i < Math.max(3, nG); i++) L.push(mk('ovelha', pk(SHEEP), { age: rint(4, 24), sex: i % 3 ? 'F' : 'M' }));
   L.push(mk('galinha', pk(CHICKENS), { sex: 'F', age: 10 }), mk('galinha', pk(CHICKENS), { sex: 'M', age: 10 }), mk('cao', pk(DOGS), { age: 8 }));
   return L;
 }
 function agroAnimalPrice(a) { return Math.round(animalValue(a) * 1.08 * priceMul() * (S.agro ? 1 + ((S.agro.wk * 7 + a.id) % 9 - 4) / 100 : 1)); }
-function agroDest(a) { return a.sp === 'galinha' ? 'galin' : a.sp === 'porco' ? 'chiq' : a.sp === 'cabra' ? 'aprisco' : a.sp === 'cavalo' && owned('haras') ? 'haras' : 'receb'; }
+function agroDest(a) { return a.sp === 'galinha' ? 'galin' : a.sp === 'porco' ? 'chiq' : RUM(a.sp) ? 'aprisco' : a.sp === 'cavalo' && owned('haras') ? 'haras' : 'receb'; }
 function agroAnimalCard(a, i) {
-  const B = breedOf(a), fert = a.sex === 'F' ? (a.age >= (a.sp === 'porco' ? 9 : a.sp === 'cabra' ? 10 : 20) ? 'matriz em idade de reprodução' : 'ainda jovem para reproduzir') : (a.age >= (a.sp === 'porco' ? 9 : a.sp === 'cabra' ? 10 : 20) ? 'reprodutor apto' : 'jovem');
+  const B = breedOf(a), fert = a.sex === 'F' ? (a.age >= (a.sp === 'porco' ? 9 : RUM(a.sp) ? 10 : 20) ? 'matriz em idade de reprodução' : 'ainda jovem para reproduzir') : (a.age >= (a.sp === 'porco' ? 9 : RUM(a.sp) ? 10 : 20) ? 'reprodutor apto' : 'jovem');
   const tr = typeof traitNames === 'function' ? traitNames(a) : '', price = agroAnimalPrice(a);
   return `<div class="card"><div class="row sp">${animalImg(a, 2)}<span style="flex:1"><b>${esc(a.n)}</b> · ${catName(a)} <b>${esc(B.n || '')}</b><br>${ageStr(a)} · ${a.sex === 'F' ? 'fêmea' : 'macho'}${a.wt ? ' · ' + Math.round(a.wt) + ' kg' : ''}<br><span class="stars">${starStr(stars(a))}</span> <span class="mut">genética ${Math.round(a.gen)}</span></span><b>${fmt(price)}</b></div>`
     + `<p class="mut" style="margin:4px 0"><b>Finalidade:</b> ${esc((B.purpose || AGRO_USE[a.sp] || ''))}. <b>Reprodução:</b> ${fert}${B.litter ? ' (' + B.litter[0] + '–' + B.litter[1] + ' leitões por parto)' : ''}.<br><b>Saúde:</b> ${Math.round(a.hp)}%${a.sick ? ' (doente)' : ''} · <b>Características:</b> ${esc([...(a.skills || []), tr].filter(Boolean).join(', ') || '—')}<br>${esc(B.d || '')}<br><b>Manejo:</b> ${esc(AGRO_CARE[a.sp] || '')}</p>`
@@ -7540,7 +7573,7 @@ function openAgro() { agroRestock(); showModal('🌿 Casa do Agro', [['ani', 'An
   let h = keeperBanner('agro');
   const temas = ['Semana do gado de corte e leite', 'Semana dos cavalos', 'Semana dos suínos', 'Semana dos caprinos'];
   if (t === 'ani') {
-    const sps = ['boi', 'cavalo', 'porco', 'cabra', 'burro', 'jumento', 'galinha', 'cao'].filter(k => S.agro.list.some(a => a.sp === k)), f = M.agroSp && sps.includes(M.agroSp) ? M.agroSp : sps[0];
+    const sps = ['boi', 'cavalo', 'porco', 'cabra', 'ovelha', 'burro', 'jumento', 'galinha', 'cao'].filter(k => S.agro.list.some(a => a.sp === k)), f = M.agroSp && sps.includes(M.agroSp) ? M.agroSp : sps[0];
     h += `<p class="mut">${temas[S.agro.wk % 4]}. O estoque de animais muda toda segunda-feira e os preços seguem o mercado da região.</p><div class="row" style="flex-wrap:wrap">${sps.map(k => btn((k === f ? '● ' : '') + SPN[k] + ' (' + S.agro.list.filter(a => a.sp === k).length + ')', 'agroSp', k)).join('')}</div>`;
     h += S.agro.list.map((a, i) => a.sp === f ? agroAnimalCard(a, i) : '').join('') || '<p>Nada desta espécie esta semana.</p>';
   }
@@ -7571,7 +7604,7 @@ function openMercadinho() { showModal('🧺 Mercadinho Itarantim', [['com', 'Com
   let h = keeperBanner('mercadinho');
   if (t === 'com') h += ['rapadura', 'queijo', 'cafe', 'farinha'].map(id => shopRow(id)).join('');
   if (t === 'var') h += ['violao', 'viola', 'lampiao', 'galaoV'].map(id => shopRow(id)).join('');
-  if (t === 'ven') { const o = S.inv.ovo || 0, l = S.inv.leite || 0; h += `<div class="card">🥚 Ovos na mochila: <b>${o}</b> × ${fmt2(IT.ovo.p)} ${btn('Vender todos', 'sellP', 'ovo', !o)}</div><div class="card">🥛 Leite na mochila: <b>${l}</b> L × ${fmt2(IT.leite.p)} ${btn('Vender todo', 'sellP', 'leite', !l)}</div><p class="mut">Recolha ovos no galinheiro e leite na Sala de Ordenha.</p>`; { const rc = ROCA_SELL.filter(id => S.inv[id]); h += '<h3>Da roça e da cozinha</h3>' + (rc.length ? rc.map(id => `<div class="card"><div class="row sp">${iic(id, 22)}<span style="flex:1">${IT[id].n}<br><span class="mut">Mochila: ${S.inv[id]} · ${fmt2(mercPrice(id))} cada</span></span>${btn('Vender', 'sellF', id)}</div></div>`).join('') : '<p class="mut">Nada da roça na mochila. Milho, feijão, mandioca, abóbora e cana nascem nas leiras da roça.</p>'); }
+  if (t === 'ven') { const o = S.inv.ovo || 0, l = S.inv.leite || 0; h += `<div class="card">🥚 Ovos na mochila: <b>${o}</b> × ${fmt2(IT.ovo.p)} ${btn('Vender todos', 'sellP', 'ovo', !o)}</div>` + (S.inv.ovoPata ? `<div class="card">🦆 Ovos de pata: <b>${S.inv.ovoPata}</b> × ${fmt2(IT.ovoPata.p)} ${btn('Vender todos', 'sellP', 'ovoPata')}</div>` : '') + `<div class="card">🥛 Leite na mochila: <b>${l}</b> L × ${fmt2(IT.leite.p)} ${btn('Vender todo', 'sellP', 'leite', !l)}</div><p class="mut">Recolha ovos no galinheiro e leite na Sala de Ordenha.</p>`; { const rc = ROCA_SELL.filter(id => S.inv[id]); h += '<h3>Da roça e da cozinha</h3>' + (rc.length ? rc.map(id => `<div class="card"><div class="row sp">${iic(id, 22)}<span style="flex:1">${IT[id].n}<br><span class="mut">Mochila: ${S.inv[id]} · ${fmt2(mercPrice(id))} cada</span></span>${btn('Vender', 'sellF', id)}</div></div>`).join('') : '<p class="mut">Nada da roça na mochila. Milho, feijão, mandioca, abóbora e cana nascem nas leiras da roça.</p>'); }
   { const pe = Object.keys(FISHD).map(k => 'pe_' + k).filter(id => S.inv[id]); h += '<h3>Peixe fresco</h3>' + (pe.length ? pe.map(id => `<div class="card"><div class="row sp">${iic(id, 22)}<span style="flex:1">${IT[id].n}<br><span class="mut">Mochila: ${S.inv[id]} · ${fmt2(mercPrice(id))} cada</span></span>${btn('Vender', 'sellF', id)}</div></div>`).join('') : '<p class="mut">Nenhum peixe na mochila. Vara e isca na Casa do Agro.</p>'); } h += '<h3>Frutas e leite de cabra</h3>' + [...Object.keys(FRUITS).map(k => FRUITS[k].item), 'leiteCabra'].map(id => { const n = S.inv[id] || 0, pr = mercPrice(id); return `<div class="card"><div class="row sp">${iic(id, 22)}<span style="flex:1">${IT[id].n}<br><span class="mut">Mochila: ${n}${S.dep[id] ? ' · depósito: ' + S.dep[id] : ''}</span></span><b>${fmt2(pr)}</b></div>${btn('Vender tudo da mochila', 'sellF', id, !n)}</div>`; }).join(''); }
   return h; }); }
 function mercPrice(id) { const F = Object.values(FRUITS).find(f => f.item === id); const off = F && !fruitInSeason(F) ? 1.35 : 1; return Math.round(IT[id].p * off * (1 + ((S.day * 7 + id.length) % 11 - 5) / 100) * 100) / 100; } // fruta fora de época vale mais
@@ -8683,9 +8716,9 @@ function zoomAt(z, sx, sy) { // zoom preservando o ponto focal (sx,sy em pixels 
 }
 /* ---------- entidades ---------- */
 /* ---------- animais (rig de pixel art por anatomia) ---------- */
-const RIGSP = { boi: 1, cavalo: 1, burro: 1, jumento: 1, cao: 1, cabra: 1, fauna: 1, porco: 1 };
-const MATURE = { boi: 24, cavalo: 30, burro: 30, jumento: 30, cabra: 12, cao: 10, fauna: 8, porco: 14 };
-function rigBreed(a) { const k = rigBreedKey(a.sp, a.br, a.sex); return RIG.BR[k] ? k : a.sp === 'boi' ? 'mestico' : a.sp === 'cao' ? 'caramelo' : a.sp === 'cabra' ? 'moxoto' : a.sp === 'porco' ? 'piau' : 'mm'; }
+const RIGSP = { boi: 1, cavalo: 1, burro: 1, jumento: 1, cao: 1, cabra: 1, fauna: 1, porco: 1, ovelha: 1 };
+const MATURE = { boi: 24, cavalo: 30, burro: 30, jumento: 30, cabra: 12, ovelha: 12, cao: 10, fauna: 8, porco: 14 };
+function rigBreed(a) { const k = rigBreedKey(a.sp, a.br, a.sex); return RIG.BR[k] ? k : a.sp === 'boi' ? 'mestico' : a.sp === 'cao' ? 'caramelo' : a.sp === 'cabra' ? 'moxoto' : a.sp === 'ovelha' ? 'santaines' : a.sp === 'porco' ? 'piau' : 'mm'; }
 function rigCoat(a) { if (a.coat && RIG.COATS[a.coat]) return a.coat; const cs = RIG.spec(rigBreed(a)).coats || ['castanho']; return cs[(a.id * 7 + 3) % cs.length]; }
 function rigK(a) { const k = 0.55 + 0.45 * Math.min(1, (a.age || 0) / (MATURE[a.sp] || 20)); return Math.round(k * 20) / 20; }
 function rigView(a) {
@@ -10112,7 +10145,7 @@ function interactables(forTap) {
   for (const b of BLD) { const x = b.dp[0] * TS, y = b.dp[1] * TS; add({ k: 'door', label: '🚪 ' + (b.id === 'casa' && S.house === 0 ? 'Casa' : b.id === 'casa' && S.house === 1 ? 'Casa' : b.n), x, y, r: 20, prio: 3, hit: [x - 11, y - 34, x + 11, y + 2], fn: () => act('door', 0.25, { x, y: y - 10 }, () => openBuilding(b), { zoom: false }) }); }
   for (const g of GATES) { const x = g.x * TS, y = g.y * TS; add({ k: 'gate', label: g.open ? 'Fechar porteira' : 'Abrir porteira', x, y, r: 24, prio: 4, hit: g.h ? [x - 16, y - 22, x + 16, y + 6] : [x - 8, y - 26, x + 8, y + 16], fn: () => foot ? useGate(g) : toggleGate(g) }); }
   TROUGHS.forEach((t, i) => { if (AREAS[t.a].k === 'npc' || (AREAS[t.a].exp && !S.exp[AREAS[t.a].exp])) return; const x = (t.x + t.w / 2) * TS, y = (t.y + 0.6) * TS; add({ k: 'trough', label: t.k === 'agua' ? '💧 Cocho d’água' : '🌽 Cocho', x, y, r: 24, prio: 2, hit: [t.x * TS - 2, t.y * TS - 4, (t.x + t.w) * TS + 2, (t.y + 1) * TS + 2], fn: () => openTrough(i) }); });
-  add({ k: 'eggs', label: '🥚 Ovos (' + S.eggs + ')', x: 7 * TS, y: 36.2 * TS, r: 18, prio: 2, hit: [7 * TS - 22, 35 * TS - 34, 7 * TS + 22, 35 * TS + 2], fn: () => S.eggs ? act('pickup', 0.8, { x: 7 * TS, y: 35 * TS }, collectEggs) : collectEggs() });
+  add({ k: 'eggs', label: '🥚 Ovos (' + S.eggs + (S.eggsP ? ' + ' + S.eggsP + ' de pata' : '') + ')', x: 7 * TS, y: 36.2 * TS, r: 18, prio: 2, hit: [7 * TS - 22, 35 * TS - 34, 7 * TS + 22, 35 * TS + 2], fn: () => S.eggs || S.eggsP ? act('pickup', 0.8, { x: 7 * TS, y: 35 * TS }, collectEggs) : collectEggs() });
   if (has('galaoV') || forTap) add({ k: 'res', label: '💧 Encher galões', x: 26.5 * TS, y: 30 * TS, r: 30, prio: 1, hit: [27 * TS, 23 * TS, 36 * TS, 31 * TS], fn: () => has('galaoV') ? act('pickup', 0.9, { x: 28 * TS, y: 28 * TS }, fillGallons) : say('Você não tem galões vazios.') });
   if (foot) { const f = objPos('fogueira'), c = objPos('churrasqueira'); add({ k: 'fire', label: 'Fogueira', x: f.x, y: f.y, r: 24, prio: 2, hit: [f.x - 16, f.y - 22, f.x + 16, f.y + 10], fn: openFire }); add({ k: 'bbq', label: 'Churrasqueira', x: c.x + 0.5 * TS, y: c.y + 0.8 * TS, r: 22, prio: 2, hit: [c.x - TS, c.y - 2.2 * TS, c.x + 2 * TS, c.y + 0.4 * TS], fn: openChurras }); }
   { const b = objPos('bau'); add({ k: 'chest', label: 'Baú', x: b.x, y: b.y + 0.5 * TS, r: 20, prio: 2, hit: [b.x - 9, b.y - 15, b.x + 9, b.y + 1], fn: () => act('reach', 0.3, { x: b.x, y: b.y }, openChest, { zoom: false }) }); }
@@ -10296,6 +10329,7 @@ function miranteView() { if (CINE.on) return; const pts = [[12 * TS, 30 * TS], [
   const step = () => { if (i >= pts.length) { CINE.stop(); P.en = Math.min(100, P.en + 10); if (!relS().carta4) findRelic('carta4'); else toast('🔭 O vale inteiro lá embaixo.'); return; } cam.fx = pts[i][0]; cam.fy = pts[i][1]; i++; setTimeout(step, i === pts.length ? 1400 : 2300); }; step(); }
 function relicHTML() { const L = relS(); return `<h3>Relíquias e lembranças</h3><p class="mut">Algumas brilham só quando você está perto. Os lugares da exploração guardam as cartas do avô.</p><div class="cgrid">` + Object.keys(RELICS).map(k => L[k] ? `<div class="card" style="text-align:center"><img src="${relicIconURL(k)}" width="36" height="36" style="image-rendering:pixelated"><br><b>${RELICS[k].n}</b><br><span class="mut">Dia ${L[k]}</span></div>` : `<div class="card dim" style="text-align:center"><div style="font-size:24px;opacity:.4">?</div><span class="mut">${RELICS[k].at ? POI[RELICS[k].at].n : 'Em algum lugar do mapa'}</span></div>`).join('') + '</div>' + (Object.keys(L).filter(k => k.startsWith('carta')).length ? '<h3>Cartas do avô</h3>' + ['carta1', 'carta2', 'carta3', 'carta4'].filter(k => L[k]).map(k => `<div class="card"><b>${RELICS[k].n}</b><p>${esc(RELICS[k].t)}</p></div>`).join('') : '') + `<h3>Lugares descobertos</h3><p class="mut">${Object.keys(POI).map(k => POI[k].n).join(' · ')}</p>`; }
 IT.medalhaAvo = { i: '', n: 'Medalha da Vaquejada de 1974', kg: 0.1, p: 0, d: 'Do avô Tião. Lembrança de família — não se vende.', c: 'ferr' };
+ICON_EXTRA.ovoPata = p => { p(3, 2, 6, 9, '#e8e4d8'); p(2, 4, 8, 6, '#e8e4d8'); p(4, 3, 2, 2, '#ffffff'); p(3, 9, 6, 1, '#c8c0b0'); };
 ICON_EXTRA.medalhaAvo = p => { p(4, 0, 4, 4, '#2a6ab0'); p(5, 0, 2, 4, '#c03030'); p(2, 4, 8, 7, '#d8a830'); p(3, 5, 6, 5, '#f0c850'); p(5, 6, 2, 3, '#a87820'); };
 /* ===================== VIDA AMBIENTAL =====================
    Borboletas (de dia, sem chuva, perto de flor e capim), abelhas em volta das flores e frutíferas, sapos na beira
@@ -10333,6 +10367,7 @@ const LIFE = { bf: [], bees: [], frogs: [], ducks: null, t: 0,
     this.frogs = this.frogs.filter(f => f.l < f.m && inView(f.x, f.y, 80));
     // patos do açude da fazenda
     if (!this.ducks) { this.ducks = []; for (let i = 0; i < 4; i++) this.ducks.push({ x: (31 + i * 1.2) * TS, y: (25 + (i % 2)) * TS, a: Math.random() * 6.28, ph: i }); }
+    if (S.animals.some(a => a.own === 'player' && a.sp === 'galinha' && (CHICKENS[a.br] || {}).duck)) this.ducks.length = 0; // com patos de criação, os do açude são eles
     for (const d of this.ducks) { if (!inView(d.x, d.y, 200)) continue; d.a += (Math.random() - 0.5) * 2 * dt; const nx = d.x + Math.cos(d.a) * 7 * dt, ny = d.y + Math.sin(d.a) * 5 * dt; if (waterKind(Math.floor(nx / TS), Math.floor(ny / TS)) === 'acude' && waterDepthAt(nx, ny) > 0.25) { d.x = nx; d.y = ny; } else d.a += Math.PI * (0.6 + Math.random() * 0.4);
       if (hyp(d.x - P.x, d.y - P.y) < 30) d.a = Math.atan2(d.y - P.y, d.x - P.x); if (Math.random() < dt * 0.05) AU.quack(d.x, d.y); if (Math.random() < dt * 0.6) part(d.x - Math.cos(d.a) * 4, d.y + 1, 'ring'); }
     // gatos da casa
@@ -10463,7 +10498,7 @@ function computeCtx() {
 }
 function doAction() { if (VQ.on) return vaqAction(); if (mode !== 'play' || M.open || P._act) return; if (inst.on) return stopInst(); computeCtx(); if (P._ctx) { P._ctx.fn(); buzz(6); } }
 function serve(id) { if (!useInv('assado')) return; const s = npcState(id); s.served = S.day; const q = S.flags.grillQ || 1; addFr(id, 30 + q * 10); remember(id, 'churrasco na sua fazenda'); const e = npcs.find(n => n.id === id); heart(e.x, e.y - 36); heart(e.x + 6, e.y - 30); AU.chime(); toast('🍽️ ' + NPCDEF[id].n + ': "Que churrasco! Tá de parabéns!"'); }
-function collectEggs() { if (S.eggs) questEvent('produce', 'ovos'); if (!S.eggs) return say('Nenhum ovo no ninho agora. As galinhas botam pela manhã quando o cocho tem milho.'); const n = S.eggs; addInv('ovo', n, true); S.eggs = 0; S.stats.eggs += n; AU.cluck(7 * TS, 35 * TS); AU.pickup(); part(P.x, P.y - 30, 'img', { img: imgOf('ovo'), vx: 0, vy: -18, m: 1 }); toast('🥚 +' + n + ' ovos'); }
+function collectEggs() { if (S.eggsP > 0) { const k = Math.min(S.eggsP, Math.max(0, invRoom('ovoPata'))); if (k) { addInv('ovoPata', k, true); S.eggsP -= k; toast('🦆 +' + k + ' ovo(s) de pata'); if (!S.eggs) return; } } if (S.eggs) questEvent('produce', 'ovos'); if (!S.eggs) return say('Nenhum ovo no ninho agora. As galinhas botam pela manhã quando o cocho tem milho.'); const n = S.eggs; addInv('ovo', n, true); S.eggs = 0; S.stats.eggs += n; AU.cluck(7 * TS, 35 * TS); AU.pickup(); part(P.x, P.y - 30, 'img', { img: imgOf('ovo'), vx: 0, vy: -18, m: 1 }); toast('🥚 +' + n + ' ovos'); }
 function fillGallons() { questEvent('fillGallon'); const n = S.inv.galaoV || 0; if (!n) return; if (S.res < 2) return say('O reservatório está seco! Espere a chuva ou construa um Poço Artesiano.'); let k = n; useInv('galaoV', k); addInv('galao', k, true); S.res -= k * 0.6; AU.splash(); AU.pickup(); toast('💧 ' + k + ' galão(ões) cheio(s)'); }
 const imgCache = {}; function imgOf(id) { if (!imgCache[id]) { const i = new Image(); i.src = itemIconURL(id); imgCache[id] = i; } return imgCache[id]; }
 /* ---------- laço principal: passo fixo de 60 Hz + interpolação ---------- */
