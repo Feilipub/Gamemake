@@ -323,7 +323,7 @@ body.lan .sw2 .pvbox{position:sticky;top:0}
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 150, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '5.5.0', SAVE_V = 9;
+const GAME_V = '5.6.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -595,21 +595,50 @@ const STATES = [
 ];
 /* ---------- raças ---------- */
 const CATTLE = {
-  peduro: { n: 'Pé-Duro (Curraleiro)', c: '#9a4a24', s: '#6e3214', l: '#b8653a', hump: 0, horn: 'peduro', ear: 'curta', dew: 0, mz: '#1e1410', gen: [45, 74], gain: 0.8, milk: 0.5, rust: 1.35, p: 0.9, d: 'Raça bovina naturalizada do Nordeste: pequena, muito rústica, pelagem variada com extremidades escuras.' },
-  nelore: { n: 'Nelore', c: '#ece8dc', s: '#bdb7a4', l: '#faf8f0', hump: 2, horn: 'curto', ear: 'curta', dew: 2, bullC: '#8a8680', mz: '#3a3530', gen: [50, 78], gain: 1, milk: 0.3, rust: 1, p: 1, d: 'Zebuíno rústico, base do rebanho brasileiro.' },
-  gir: { n: 'Gir', c: '#a8552a', s: '#7a3818', l: '#c87444', hump: 2, horn: 'gir', ear: 'caida', dew: 3, pat: 'pintas', patC: '#efe2c8', mz: '#3a2418', gen: [48, 76], gain: 0.85, milk: 1, rust: 0.95, p: 1.05, d: 'Leiteiro, orelhas longas e pendentes.' },
-  guzera: { n: 'Guzerá', c: '#b8b4ac', s: '#7e7a74', l: '#d6d2ca', hump: 2, horn: 'lira', ear: 'curta', dew: 2, bullC: '#4e4a46', mz: '#2a2624', gen: [50, 76], gain: 0.95, milk: 0.6, rust: 1.05, p: 1.05, d: 'Chifres em lira, dupla aptidão e resistente à seca.' },
-  tabapua: { n: 'Tabapuã', c: '#f2efe6', s: '#c8c2b2', l: '#ffffff', hump: 1, horn: 'nenhum', ear: 'curta', dew: 2, mz: '#4a4440', gen: [52, 80], gain: 1.08, milk: 0.3, rust: 0.95, p: 1.1, d: 'Mocho (sem chifres), precoce e dócil.' },
-  brahman: { n: 'Brahman', c: '#cfcac2', s: '#9a948a', l: '#e6e2da', hump: 3, horn: 'curto', ear: 'media', dew: 3, bullC: '#6a6660', mz: '#2a2826', gen: [55, 82], gain: 1.1, milk: 0.3, rust: 1, p: 1.2, d: 'Cupim grande, ganho de peso acima da média.' },
-  senepol: { n: 'Senepol', c: '#9c3a1c', s: '#6e2410', l: '#b85030', hump: 0, horn: 'nenhum', ear: 'curta', dew: 1, mz: '#3a1a10', gen: [55, 84], gain: 1.12, milk: 0.4, rust: 0.9, p: 1.25, d: 'Taurino adaptado ao calor, carne macia.' },
-  girolando: { n: 'Girolando', c: '#221c18', s: '#100c0a', l: '#3a322c', hump: 1, horn: 'curto', ear: 'media', dew: 2, pat: 'malhado', patC: '#f2efe8', mz: '#e8c8c0', gen: [48, 76], gain: 0.9, milk: 1.3, rust: 0.9, p: 1.1, d: 'Gir x Holandês: a vaca leiteira do Brasil.' },
-  angus: { n: 'Angus', c: '#1c1816', s: '#0c0a09', l: '#34302c', hump: 0, horn: 'nenhum', ear: 'curta', dew: 0, mz: '#2a2420', gen: [58, 86], gain: 1.15, milk: 0.4, rust: 0.8, p: 1.35, d: 'Taurino de carne marmorizada; sofre no calor.' },
-  caracu: { n: 'Caracu', c: '#c89648', s: '#9a6a2a', l: '#dcb06a', hump: 0, horn: 'curto', ear: 'curta', dew: 1, mz: '#3a2a1e', gen: [50, 80], gain: 1, milk: 0.6, rust: 1.1, p: 1.05, carro: 1.3, d: 'Raça taurina brasileira, amarela e de grande porte: o boi de carro mais tradicional do Sul e do Sudeste.' },
-  franqueiro: { n: 'Franqueiro', c: '#a4522a', s: '#6e3214', l: '#c06a3a', hump: 0, horn: 'lira', ear: 'curta', dew: 1, mz: '#3a2418', gen: [45, 76], gain: 0.85, milk: 0.4, rust: 1.3, p: 1, carro: 1.25, d: 'Gado crioulo de chifres enormes, hoje raro: famoso nas juntas dos carros de boi do sertão antigo.' },
-  lageano: { n: 'Crioulo Lageano', c: '#d2b07a', s: '#a07a48', l: '#e6c896', hump: 0, horn: 'lira', ear: 'curta', dew: 1, mz: '#2a221c', gen: [45, 76], gain: 0.85, milk: 0.4, rust: 1.3, p: 0.95, carro: 1.2, d: 'Gado crioulo dos campos de Lages (SC), de chifres longos: manso, forte e ótimo na canga.' },
-  mochoNac: { n: 'Mocho Nacional', c: '#d2b07a', s: '#a07a48', l: '#e6c896', hump: 0, horn: 'nenhum', ear: 'curta', dew: 1, mz: '#2a221c', gen: [45, 76], gain: 0.9, milk: 0.6, rust: 1.2, p: 0.95, carro: 1.15, d: 'Raça brasileira sem chifres, baia e dócil: na junta, um boi não machuca o outro com as guampas.' },
-  tucura: { n: 'Pantaneiro (Tucura)', c: '#9a4a24', s: '#6e3214', l: '#b8653a', hump: 0, horn: 'lira', ear: 'curta', dew: 0, mz: '#1e1410', gen: [42, 74], gain: 0.75, milk: 0.4, rust: 1.4, p: 0.9, carro: 1.15, d: 'Gado crioulo do Pantanal: pequeno, aguenta água e calor; puxava os carros das fazendas pantaneiras.' },
-  mestico: { n: 'Mestiço', c: '#b07a48', s: '#7e5230', l: '#c89464', hump: 1, horn: 'curto', ear: 'curta', dew: 1, pat: 'malhado', patC: '#ece4d4', mz: '#3a2a20', gen: [40, 70], gain: 1, milk: 0.6, rust: 1, p: 0.9, d: 'Cruzamento de raças, vigor híbrido.' }
+  peduro: { n: 'Pé-Duro (Curraleiro)', mw: 300, c: '#9a4a24', s: '#6e3214', l: '#b8653a', hump: 0, horn: 'peduro', ear: 'curta', dew: 0, mz: '#1e1410', gen: [45, 74], gain: 0.8, milk: 0.5, rust: 1.35, p: 0.9, d: 'Raça bovina naturalizada do Nordeste: pequena, muito rústica, pelagem variada com extremidades escuras.' },
+  nelore: { n: 'Nelore', mw: 450, c: '#ece8dc', s: '#bdb7a4', l: '#faf8f0', hump: 2, horn: 'curto', ear: 'curta', dew: 2, bullC: '#8a8680', mz: '#3a3530', gen: [50, 78], gain: 1, milk: 0.3, rust: 1, p: 1, d: 'Zebuíno rústico, base do rebanho brasileiro.' },
+  gir: { n: 'Gir', mw: 420, c: '#a8552a', s: '#7a3818', l: '#c87444', hump: 2, horn: 'gir', ear: 'caida', dew: 3, pat: 'pintas', patC: '#efe2c8', mz: '#3a2418', gen: [48, 76], gain: 0.85, milk: 1, rust: 0.95, p: 1.05, d: 'Leiteiro, orelhas longas e pendentes.' },
+  guzera: { n: 'Guzerá', mw: 480, c: '#b8b4ac', s: '#7e7a74', l: '#d6d2ca', hump: 2, horn: 'lira', ear: 'curta', dew: 2, bullC: '#4e4a46', mz: '#2a2624', gen: [50, 76], gain: 0.95, milk: 0.6, rust: 1.05, p: 1.05, d: 'Chifres em lira, dupla aptidão e resistente à seca.' },
+  tabapua: { n: 'Tabapuã', mw: 470, c: '#f2efe6', s: '#c8c2b2', l: '#ffffff', hump: 1, horn: 'nenhum', ear: 'curta', dew: 2, mz: '#4a4440', gen: [52, 80], gain: 1.08, milk: 0.3, rust: 0.95, p: 1.1, d: 'Mocho (sem chifres), precoce e dócil.' },
+  brahman: { n: 'Brahman', mw: 500, c: '#cfcac2', s: '#9a948a', l: '#e6e2da', hump: 3, horn: 'curto', ear: 'media', dew: 3, bullC: '#6a6660', mz: '#2a2826', gen: [55, 82], gain: 1.1, milk: 0.3, rust: 1, p: 1.2, d: 'Cupim grande, ganho de peso acima da média.' },
+  senepol: { n: 'Senepol', mw: 470, c: '#9c3a1c', s: '#6e2410', l: '#b85030', hump: 0, horn: 'nenhum', ear: 'curta', dew: 1, mz: '#3a1a10', gen: [55, 84], gain: 1.12, milk: 0.4, rust: 0.9, p: 1.25, d: 'Taurino adaptado ao calor, carne macia.' },
+  girolando: { n: 'Girolando', mw: 480, c: '#221c18', s: '#100c0a', l: '#3a322c', hump: 1, horn: 'curto', ear: 'media', dew: 2, pat: 'malhado', patC: '#f2efe8', mz: '#e8c8c0', gen: [48, 76], gain: 0.9, milk: 1.3, rust: 0.9, p: 1.1, d: 'Gir x Holandês: a vaca leiteira do Brasil.' },
+  angus: { n: 'Angus', mw: 500, c: '#1c1816', s: '#0c0a09', l: '#34302c', hump: 0, horn: 'nenhum', ear: 'curta', dew: 0, mz: '#2a2420', gen: [58, 86], gain: 1.15, milk: 0.4, rust: 0.8, p: 1.35, d: 'Taurino de carne marmorizada; sofre no calor.' },
+  caracu: { n: 'Caracu', mw: 500, c: '#c89648', s: '#9a6a2a', l: '#dcb06a', hump: 0, horn: 'curto', ear: 'curta', dew: 1, mz: '#3a2a1e', gen: [50, 80], gain: 1, milk: 0.6, rust: 1.1, p: 1.05, carro: 1.3, d: 'Raça taurina brasileira, amarela e de grande porte: o boi de carro mais tradicional do Sul e do Sudeste.' },
+  franqueiro: { n: 'Franqueiro', mw: 430, c: '#a4522a', s: '#6e3214', l: '#c06a3a', hump: 0, horn: 'lira', ear: 'curta', dew: 1, mz: '#3a2418', gen: [45, 76], gain: 0.85, milk: 0.4, rust: 1.3, p: 1, carro: 1.25, d: 'Gado crioulo de chifres enormes, hoje raro: famoso nas juntas dos carros de boi do sertão antigo.' },
+  lageano: { n: 'Crioulo Lageano', mw: 430, c: '#d2b07a', s: '#a07a48', l: '#e6c896', hump: 0, horn: 'lira', ear: 'curta', dew: 1, mz: '#2a221c', gen: [45, 76], gain: 0.85, milk: 0.4, rust: 1.3, p: 0.95, carro: 1.2, d: 'Gado crioulo dos campos de Lages (SC), de chifres longos: manso, forte e ótimo na canga.' },
+  mochoNac: { n: 'Mocho Nacional', mw: 450, c: '#d2b07a', s: '#a07a48', l: '#e6c896', hump: 0, horn: 'nenhum', ear: 'curta', dew: 1, mz: '#2a221c', gen: [45, 76], gain: 0.9, milk: 0.6, rust: 1.2, p: 0.95, carro: 1.15, d: 'Raça brasileira sem chifres, baia e dócil: na junta, um boi não machuca o outro com as guampas.' },
+  tucura: { n: 'Pantaneiro (Tucura)', mw: 330, c: '#9a4a24', s: '#6e3214', l: '#b8653a', hump: 0, horn: 'lira', ear: 'curta', dew: 0, mz: '#1e1410', gen: [42, 74], gain: 0.75, milk: 0.4, rust: 1.4, p: 0.9, carro: 1.15, d: 'Gado crioulo do Pantanal: pequeno, aguenta água e calor; puxava os carros das fazendas pantaneiras.' },
+
+  // ---- Brasil e zebuínos ----
+  nelMocho: { n: 'Nelore Mocho', c: '#ece8dc', s: '#bdb7a4', l: '#faf8f0', hump: 2, horn: 'nenhum', ear: 'curta', dew: 2, mz: '#3a3530', gen: [52, 80], gain: 1.02, milk: 0.3, rust: 1, p: 1.05, mw: 450, d: 'Nelore sem chifres: mais fácil de manejar no curral e no caminhão.' },
+  indubrasil: { n: 'Indubrasil', c: '#cfcac2', s: '#9a948a', l: '#e6e2da', hump: 3, horn: 'curto', ear: 'caida', dew: 3, mz: '#2a2826', gen: [48, 76], gain: 0.95, milk: 0.5, rust: 1, p: 1, mw: 470, d: 'Zebu formado no Triângulo Mineiro: orelhas enormes e pendentes, cupim grande.' },
+  sindi: { n: 'Sindi', c: '#a8502a', s: '#6a2a14', l: '#c06a3a', hump: 2, horn: 'curto', ear: 'media', dew: 2, mz: '#3a2418', gen: [45, 75], gain: 0.85, milk: 0.8, rust: 1.25, p: 0.95, mw: 330, d: 'Zebu pequeno e vermelho, muito resistente à seca do semiárido; bom de leite.' },
+  sahiwal: { n: 'Sahiwal', c: '#a86a3a', s: '#6a3a1a', l: '#c08a5a', hump: 2, horn: 'curto', ear: 'caida', dew: 3, mz: '#3a2a20', gen: [45, 76], gain: 0.85, milk: 1.1, rust: 1.15, p: 1, mw: 400, d: 'Zebu leiteiro do Paquistão, de barbela solta; aguenta calor e carrapato.' },
+  canchim: { n: 'Canchim', c: '#e8dcbc', s: '#c8b890', l: '#f6eedc', hump: 1, horn: 'curto', ear: 'curta', dew: 1, mz: '#d8b8a0', gen: [52, 82], gain: 1.12, milk: 0.4, rust: 0.95, p: 1.12, mw: 520, d: 'Raça brasileira da Embrapa (Charolês com zebu): creme, precoce e de carcaça pesada.' },
+  guzolando: { n: 'Guzolando', c: '#c8c4bc', s: '#8a8680', l: '#e0dcd4', hump: 1, horn: 'lira', ear: 'media', dew: 2, pat: 'malhado', patC: '#2a2622', mz: '#3a3634', gen: [48, 76], gain: 0.9, milk: 1.15, rust: 0.95, p: 1.05, mw: 500, d: 'Guzerá com Holandês: leiteira rústica, de dupla aptidão.' },
+  brangus: { n: 'Brangus', c: '#1c1816', s: '#0c0a09', l: '#34302c', hump: 1, horn: 'nenhum', ear: 'media', dew: 1, mz: '#2a2420', gen: [55, 84], gain: 1.12, milk: 0.4, rust: 0.95, p: 1.15, mw: 520, d: 'Angus com zebu: carne macia do Angus com a rusticidade tropical. Mocho e preto.' },
+  braford: { n: 'Braford', c: '#9a4022', s: '#6a2410', l: '#b85a34', hump: 1, horn: 'curto', ear: 'media', dew: 1, mz: '#e8c8b8', gen: [55, 84], gain: 1.12, milk: 0.4, rust: 0.95, p: 1.15, mw: 520, d: 'Hereford com zebu: vermelho de cara branca, muito usado no Sul e no Centro-Oeste.' },
+  montana: { n: 'Montana Tropical', c: '#7a3a1c', s: '#4a2410', l: '#9a5434', hump: 0, horn: 'nenhum', ear: 'curta', dew: 1, mz: '#2a1e18', gen: [55, 84], gain: 1.1, milk: 0.45, rust: 1, p: 1.12, mw: 500, d: 'Composto brasileiro de 4 tipos de raça: precoce, fértil e adaptado ao calor.' },
+  junqueira: { n: 'Junqueira', c: '#c9984e', s: '#9a6a2a', l: '#dcb06a', hump: 0, horn: 'lira', ear: 'curta', dew: 1, mz: '#2a1e18', gen: [42, 72], gain: 0.8, milk: 0.5, rust: 1.3, p: 0.95, mw: 380, carro: 1.15, d: 'Crioulo mineiro de chifres longos em lira, quase extinto; rústico e bom de canga.' },
+  // ---- raças de fora ----
+  hereford: { n: 'Hereford', c: '#9a4022', s: '#6a2410', l: '#b85a34', hump: 0, horn: 'frente', ear: 'curta', dew: 0, mz: '#e8c8b8', gen: [55, 86], gain: 1.1, milk: 0.4, rust: 0.8, p: 1.2, mw: 520, d: 'Inglesa, vermelha de cara branca: dócil e de carne macia; sofre com calor e carrapato.' },
+  redAngus: { n: 'Red Angus', c: '#8a3a1c', s: '#5a2410', l: '#a4542e', hump: 0, horn: 'nenhum', ear: 'curta', dew: 0, mz: '#3a2418', gen: [58, 86], gain: 1.15, milk: 0.4, rust: 0.82, p: 1.32, mw: 520, d: 'O Angus vermelho: carne marmorizada e pele que aguenta um pouco mais de sol.' },
+  charoles: { n: 'Charolês', c: '#efe6cc', s: '#d8ccaa', l: '#fff8e8', hump: 0, horn: 'curto', ear: 'curta', dew: 0, mz: '#e0b8a8', gen: [58, 88], gain: 1.22, milk: 0.4, rust: 0.8, p: 1.3, mw: 650, d: 'Francesa, branca-creme e enorme: o maior ganho de peso do jogo; precisa de comida boa.' },
+  limousin: { n: 'Limousin', c: '#c0702e', s: '#8a4a1a', l: '#d89a5a', hump: 0, horn: 'curto', ear: 'curta', dew: 0, mz: '#e0b890', gen: [58, 88], gain: 1.18, milk: 0.4, rust: 0.82, p: 1.28, mw: 600, d: 'Francesa vermelho-dourada, comprida e musculosa: carcaça de alto rendimento.' },
+  simental: { n: 'Simental', c: '#b8602a', s: '#8a4220', l: '#d07a40', hump: 0, horn: 'curto', ear: 'curta', dew: 0, mz: '#e8c8b0', gen: [58, 88], gain: 1.16, milk: 0.9, rust: 0.82, p: 1.25, mw: 650, d: 'Suíça, vermelha e branca de cara branca: grande, de carne e de leite.' },
+  holandes: { n: 'Holandês', c: '#f2efe8', s: '#d0ccc2', l: '#ffffff', hump: 0, horn: 'curto', ear: 'curta', dew: 0, pat: 'malhado', patC: '#1e1a18', mz: '#e8b8b0', gen: [55, 88], gain: 0.75, milk: 2, rust: 0.75, p: 0.82, mw: 600, d: 'A maior produtora de leite do mundo, preta e branca. Macho de leiteira é barato e engorda devagar.' },
+  jersey: { n: 'Jersey', c: '#b8844a', s: '#8a5a30', l: '#d0a06a', hump: 0, horn: 'curto', ear: 'curta', dew: 0, mz: '#1e1612', gen: [55, 86], gain: 0.7, milk: 1.5, rust: 0.85, p: 0.85, mw: 380, d: 'Pequena e caramelo, de leite gordo (bom para queijo). Come pouco.' },
+  pardoSuico: { n: 'Pardo-Suíço', c: '#8a7a6a', s: '#5a4e44', l: '#a8988a', hump: 0, horn: 'curto', ear: 'media', dew: 0, mz: '#2a2420', gen: [55, 86], gain: 0.95, milk: 1.6, rust: 0.85, p: 1.05, mw: 600, d: 'Suíça, parda-acinzentada de focinho claro: leite e carne, pernas fortes.' },
+  wagyu: { n: 'Wagyu', c: '#1c1816', s: '#0c0a09', l: '#34302c', hump: 0, horn: 'curto', ear: 'curta', dew: 0, mz: '#2a2420', gen: [58, 88], gain: 0.85, milk: 0.4, rust: 0.8, p: 1.9, mw: 450, d: 'Japonesa, da carne mais marmorizada e cara do mundo. Engorda devagar, mas vale quase o dobro.' },
+  bonsmara: { n: 'Bonsmara', c: '#9c3a1c', s: '#6e2410', l: '#b85030', hump: 0, horn: 'curto', ear: 'curta', dew: 1, mz: '#3a1a10', gen: [55, 84], gain: 1.12, milk: 0.45, rust: 1.05, p: 1.15, mw: 520, d: 'Sul-africana (Afrikaner com taurinos): vermelha, fértil e adaptada ao calor.' },
+  azulBelga: { n: 'Azul Belga', c: '#d8dce4', s: '#9aa0aa', l: '#f0f2f6', hump: 0, horn: 'curto', ear: 'curta', dew: 0, mz: '#2a2e36', gen: [60, 90], gain: 1.2, milk: 0.35, rust: 0.75, p: 1.4, mw: 700, dist: 0.15, d: 'Belga de músculo duplo, enorme: carcaça de altíssimo rendimento, mas parto difícil.' },
+  highland: { n: 'Highland', c: '#a8582a', s: '#7a3a18', l: '#c87a3a', hump: 0, horn: 'highland', ear: 'curta', dew: 0, mz: '#2a1a10', gen: [50, 82], gain: 0.8, milk: 0.4, rust: 0.7, p: 1.25, mw: 420, d: 'Escocesa peluda de chifres longos: linda e rústica no frio, mas sofre no calor do sertão.' },
+  longhorn: { n: 'Texas Longhorn', c: '#e8d8c0', s: '#c0a888', l: '#f6ecdc', hump: 0, horn: 'longhorn', ear: 'curta', dew: 0, mz: '#3a2a20', gen: [48, 80], gain: 0.85, milk: 0.4, rust: 1.1, p: 1.1, mw: 450, d: 'Do Texas, de chifres gigantes na horizontal e pelagem pintada; magro e resistente.' },
+  watusi: { n: 'Ankole-Watusi', c: '#6a2414', s: '#4a160c', l: '#8a3a20', hump: 0, horn: 'watusi', ear: 'curta', dew: 0, mz: '#2a1410', gen: [45, 78], gain: 0.75, milk: 0.5, rust: 1.1, p: 1.2, mw: 430, d: 'Africana de chifres enormes e grossos, que ajudam a esfriar o corpo no calor.' },
+  shorthorn: { n: 'Shorthorn', c: '#a85a3a', s: '#7a3a22', l: '#c07a5a', hump: 0, horn: 'curto', ear: 'curta', dew: 0, mz: '#e0b8a8', gen: [55, 84], gain: 1.08, milk: 0.7, rust: 0.8, p: 1.15, mw: 560, d: 'Inglesa de pelagem rosilha (vermelho com branco): dupla aptidão.' },
+  normando: { n: 'Normando', c: '#f0ece4', s: '#c8c2b6', l: '#ffffff', hump: 0, horn: 'curto', ear: 'curta', dew: 0, pat: 'malhado', patC: '#6a4a2a', mz: '#e0b8a8', gen: [55, 84], gain: 0.95, milk: 1.3, rust: 0.82, p: 1.08, mw: 600, d: 'Francesa malhada de "óculos" escuros: leite com muito queijo e boa carne.' },
+  mestico: { n: 'Mestiço', mw: 440, c: '#b07a48', s: '#7e5230', l: '#c89464', hump: 1, horn: 'curto', ear: 'curta', dew: 1, pat: 'malhado', patC: '#ece4d4', mz: '#3a2a20', gen: [40, 70], gain: 1, milk: 0.6, rust: 1, p: 0.9, d: 'Cruzamento de raças, vigor híbrido.' }
 };
 const HORSES = {
   mm: { n: 'Mangalarga Marchador', c: '#6e3c22', s: '#55301a', l: '#9a5c36', m: '#1a1210', v: [40, 50, 80], ac: 1.9, cost: 18, rec: 24, ar: 140, gen: [55, 85], temp: ['dócil', 'calmo', 'esperto'], d: 'Raça brasileira de marcha macia: cansa pouco o cavaleiro e recupera o fôlego rápido.' },
@@ -818,22 +847,22 @@ const DZ = {
   raiva: { n: 'Raiva', cure: null, hp: 25, die: 3, d: 'Mordida de morcego-vampiro. Não tem cura: só a vacina previne.' },
   cobra: { n: 'Picada de cobra', cure: 'soro', hp: 40, die: 1, d: 'Inchaço na perna ou na cara. Soro antiofídico hoje, ou o animal morre.' }
 };
-const SEMEN = { nelore: ['Nelore PO', 35], gir: ['Gir Leiteiro', 40], guzera: ['Guzerá', 35], tabapua: ['Tabapuã', 35], brahman: ['Brahman', 42], senepol: ['Senepol', 55], angus: ['Angus', 48], caracu: ['Caracu', 30], holandes: ['Holandês (leite)', 45] };
+const SEMEN = { nelore: ['Nelore PO', 35], nelMocho: ['Nelore Mocho PO', 38], gir: ['Gir Leiteiro', 40], guzera: ['Guzerá', 35], tabapua: ['Tabapuã', 35], brahman: ['Brahman', 42], sindi: ['Sindi', 32], sahiwal: ['Sahiwal', 38], senepol: ['Senepol', 55], angus: ['Angus', 48], redAngus: ['Red Angus', 50], brangus: ['Brangus', 46], hereford: ['Hereford', 46], braford: ['Braford', 44], charoles: ['Charolês', 50], limousin: ['Limousin', 52], simental: ['Simental', 48], canchim: ['Canchim', 40], bonsmara: ['Bonsmara', 48], wagyu: ['Wagyu', 120], azulBelga: ['Azul Belga', 70], caracu: ['Caracu', 30], holandes: ['Holandês (leite)', 45], jersey: ['Jersey (leite)', 42], pardoSuico: ['Pardo-Suíço', 45] };
 const ZEBU = ['nelore', 'gir', 'guzera', 'tabapua', 'brahman'];
 function crossBreed(mom, sire) {
-  if (!sire || sire === mom) return mom;
-  if (sire === 'holandes') return mom === 'gir' || mom === 'girolando' ? 'girolando' : 'mestico';
-  if ((mom === 'gir' && sire === 'holandes') || (mom === 'girolando')) return 'girolando';
-  if ((mom === 'nelore' && sire === 'gir') || (mom === 'gir' && sire === 'nelore')) return 'mestico';
-  if (!CATTLE[sire]) return mom;
-  return Math.random() < 0.5 ? mom : sire;
+  if (!sire || sire === mom || !CATTLE[sire]) return mom;
+  const pair = (x, y) => (mom === x && sire === y) || (mom === y && sire === x);
+  if (pair('gir', 'holandes') || (mom === 'girolando' && (sire === 'gir' || sire === 'holandes'))) return 'girolando';
+  if (pair('guzera', 'holandes')) return 'guzolando';
+  if (pair('nelore', 'nelMocho')) return Math.random() < 0.5 ? 'nelore' : 'nelMocho';
+  if (pair('angus', 'redAngus')) return Math.random() < 0.5 ? 'angus' : 'redAngus';
+  return 'mestico';
 }
 const tnow = () => S.day * 1440 + S.min;
 const isBull = a => a.sp === 'boi' && a.sex === 'M' && !a.cast && a.age >= 24;
 const calfOf = a => S.animals.filter(c => c.maeId === a.id && c.sp === 'boi' && !c.desm && c.age < 14);
 function ecc(a) { // escore de condição corporal 1 a 5
-  if (a.sp !== 'boi') return 3; const ideal = a.age < 24 ? (a.age < 12 ? 35 + a.age * 16 : 180 + (a.age - 12) * 18) : (a.sex === 'M' ? 560 : 450) * ((CATTLE[a.br] || {}).p > 1.15 ? 1.08 : a.br === 'peduro' || a.br === 'tucura' ? 0.72 : 1);
-  const r = (a.wt || ideal) / ideal; return Math.round(cl(1 + (r - 0.62) * 9 + (a.cond - 50) / 60, 1, 5) * 2) / 2;
+  if (a.sp !== 'boi') return 3; const m = (a.wt || 0) / adultW(a.br, a.sex, a.cast), n = a.nut === undefined ? 0.4 : a.nut; return Math.round(cl(2.2 + n * 2.2 + (m - 0.6) * 2.5 + (a.cond - 50) / 120 - (a.lact > 0 ? 0.3 : 0), 1, 5) * 2) / 2;
 }
 function dzOf(a) { return DZ[a.dz] || DZ.febre; }
 function dzCure(a) { return dzOf(a).cure; }
@@ -2761,6 +2790,30 @@ const RIG = (() => {
     amarelo: { n: 'Amarelo', b: '#c9984e', m: '#5a3a1e', mz: '#2a1e18', tail: '#2a1e18', leg: '#6a4a2a' },
     baioBoi: { n: 'Baio', b: '#d2b07a', m: '#5a442a', mz: '#2a221c', tail: '#2a221c', leg: '#7a5a38' },
     peVermelho: { n: 'Vermelho de extremidades escuras', b: '#9a4a24', m: '#3a1c0e', mz: '#1e1410', tail: '#1e1410', leg: '#4a2414' },
+    gelo: { n: 'Branco-gelo', b: '#f2f0ea', m: '#2a2622', mz: '#3a3530', tail: '#2a2420' },
+    sindiV: { n: 'Vermelho', b: '#a8502a', m: '#6a2a14', mz: '#3a2418', tail: '#2a1a10' },
+    sahiwalV: { n: 'Vermelho-pardo', b: '#a86a3a', m: '#6a3a1a', mz: '#3a2a20', tail: '#2a1a10' },
+    creme: { n: 'Creme', b: '#e8dcbc', m: '#c8b890', mz: '#d8b8a0', tail: '#c8b890' },
+    guzoPB: { n: 'Malhado cinza e preto', b: '#c8c4bc', m: '#2a2622', mz: '#3a3634', tail: '#2a2622', pat: 'malhado', patC: '#2a2622' },
+    caraBranca: { n: 'Vermelho de cara branca', b: '#9a4022', m: '#6a2410', mz: '#e8c8b8', tail: '#f2eee6', pat: 'whiteface', patC: '#f2eee6' },
+    caraBrancaPreto: { n: 'Preto de cara branca', b: '#1e1a18', m: '#0c0a09', mz: '#e8c8b8', tail: '#f2eee6', pat: 'whiteface', patC: '#f2eee6' },
+    simentalC: { n: 'Malhado vermelho de cara branca', b: '#b8602a', m: '#8a4220', mz: '#e8c8b0', tail: '#f2eee6', pat: 'whitefacePied', patC: '#f4f0e8' },
+    vermelhoAngus: { n: 'Vermelho', b: '#8a3a1c', m: '#5a2410', mz: '#3a2418', tail: '#4a1e0c' },
+    charolesC: { n: 'Branco-creme', b: '#efe6cc', m: '#d8ccaa', mz: '#e0b8a8', tail: '#d8ccaa' },
+    limousinC: { n: 'Vermelho-dourado', b: '#c0702e', m: '#8a4a1a', mz: '#e0b890', tail: '#8a4a1a', belly: '#d89a5a' },
+    jerseyC: { n: 'Caramelo', b: '#b8844a', m: '#3a2418', mz: '#1e1612', tail: '#2a1a10', head: '#8a5a30', leg: '#6a4426', belly: '#c89a60' },
+    pardoC: { n: 'Pardo', b: '#8a7a6a', m: '#3a322c', mz: '#d8ccc0', tail: '#2a2420', head: '#7a6a5a' },
+    akaushi: { n: 'Vermelho (Akaushi)', b: '#7a3418', m: '#4a1e0c', mz: '#2a1a10', tail: '#3a1a0c' },
+    azulRuao: { n: 'Azul (ruão)', b: '#d8dce4', m: '#3a4250', mz: '#2a2e36', tail: '#3a4250', pat: 'roan', patC: '#4a5260', head: '#8a92a0' },
+    belgaBranco: { n: 'Branco pintado', b: '#f2f2ee', m: '#4a5260', mz: '#2a2e36', tail: '#4a5260', pat: 'malhado', patC: '#4a5260' },
+    peludoV: { n: 'Vermelho peludo', b: '#a8582a', m: '#c87a3a', mz: '#2a1a10', tail: '#c87a3a', shag: 1 },
+    peludoA: { n: 'Amarelo peludo', b: '#d8a85a', m: '#e8c07a', mz: '#3a2a1a', tail: '#e8c07a', shag: 1 },
+    peludoP: { n: 'Preto peludo', b: '#2a2420', m: '#3a3430', mz: '#1a1614', tail: '#3a3430', shag: 1 },
+    pintadoLH: { n: 'Pintado vermelho', b: '#e8d8c0', m: '#8a3a1e', mz: '#3a2a20', tail: '#8a3a1e', pat: 'malhas', patC: '#8a3a1e' },
+    pintadoLHP: { n: 'Pintado preto', b: '#e8d8c0', m: '#2a2420', mz: '#3a2a20', tail: '#2a2420', pat: 'malhas', patC: '#2a2420' },
+    vermelhoEsc: { n: 'Vermelho-escuro', b: '#6a2414', m: '#4a160c', mz: '#2a1410', tail: '#2a1410' },
+    rosilhoBoi: { n: 'Rosilho vermelho', b: '#a85a3a', m: '#7a3a22', mz: '#e0b8a8', tail: '#7a3a22', pat: 'roan', patC: '#ece0d4', head: '#9a4a2c' },
+    normandoC: { n: 'Malhado de óculos', b: '#f0ece4', m: '#6a4a2a', mz: '#e0b8a8', tail: '#6a4a2a', pat: 'malhado', patC: '#6a4a2a' },
     caracu: { n: 'Amarelo caracu', b: '#c89648', m: '#7a5228', mz: '#3a2a1e', tail: '#5a3a1e' },
     malhadoVerm: { n: 'Malhado vermelho e branco', b: '#f0ece4', m: '#5a2a14', mz: '#3a2418', tail: '#5a2a14', pat: 'malhado', patC: '#8a3a1e' },
     chitaBoi: { n: 'Chitado', b: '#a4522a', m: '#5a2a14', mz: '#3a2418', tail: '#3a1e10', pat: 'chita', patC: '#efe2c8' },
@@ -2830,6 +2883,33 @@ const RIG = (() => {
     muMini: { t: 'equino', H: 19.5, L: 21, D: 10.2, neckL: 9.4, neckW: 3.1, arch: 0.6, headL: 9.4, jowl: 2.9, muzzle: 1.8, prof: 0.4, ear: 4.8, earW: 1.35, mane: 1, maneL: 1.1, maneT: 'roach', tail: 'mule', tailW: 1.6, tailL: 10.5, legT: 0.95, hoof: 1.05, coats: ['pardo', 'pampaPreto', 'castanho', 'baio', 'russo', 'pampaJ'] },
     muPant: { t: 'equino', H: 24.2, L: 25, D: 11.2, neckL: 11.2, neckW: 3.2, arch: 0.6, headL: 10.8, jowl: 3, muzzle: 1.9, prof: 0.5, ear: 5.2, earW: 1.4, mane: 1, maneL: 1.2, maneT: 'roach', tail: 'mule', tailW: 1.6, tailL: 12, legT: 0.9, hoof: 1.1, coats: ['baio', 'tordilho', 'castanho', 'lobuno', 'pardo', 'rosilho', 'gateado'] },
     jBras: { t: 'equino', H: 23.5, L: 24, D: 11.2, neckL: 10.4, neckW: 3.3, arch: 0.3, neckA: 0.85, headL: 11.2, jowl: 3.2, muzzle: 2.2, prof: 0.45, ear: 7.4, earW: 1.7, mane: 1.4, maneL: 1.5, maneT: 'roach', tail: 'tuft', tailL: 12, tailW: 0.85, legT: 1.02, hoof: 1.1, donkey: 1, coats: ['pretoJ', 'russo', 'rucoJ', 'pardo'] },
+
+    nelMocho: { t: 'bovino', H: 24, L: 30, D: 12.6, hump: 2.3, dew: 2.3, earT: 'curta', ear: 2.6, horn: 'mocho', coats: ['branco', 'gelo'] },
+    indubrasil: { t: 'bovino', H: 25.5, L: 30.5, D: 12.6, hump: 2.7, dew: 3.2, earT: 'pend', ear: 6, earW: 1.5, horn: 'curto', hornL: 2.6, prof: 1, coats: ['cinzaBoi', 'branco', 'vermelho'] },
+    sindi: { t: 'bovino', H: 21, L: 26, D: 11.4, hump: 1.8, dew: 2, earT: 'media', ear: 3, horn: 'curto', hornL: 2, legT: 0.95, coats: ['sindiV', 'vermelho'] },
+    sahiwal: { t: 'bovino', H: 22.5, L: 28, D: 12.4, hump: 2, dew: 3.4, earT: 'pend', ear: 4.2, horn: 'curto', hornL: 1.6, coats: ['sahiwalV', 'vermelho'] },
+    canchim: { t: 'bovino', H: 25, L: 31, D: 13.4, hump: 0.7, dew: 1.2, earT: 'media', ear: 3, horn: 'curto', hornL: 2.2, rump: 1.1, coats: ['creme', 'charolesC'] },
+    guzolando: { t: 'bovino', H: 25, L: 30.5, D: 12.8, hump: 1.5, dew: 1.8, earT: 'media', ear: 3.4, horn: 'lira', hornL: 4, coats: ['guzoPB', 'malhado'] },
+    brangus: { t: 'bovino', H: 23, L: 29, D: 13.4, hump: 0.6, dew: 1, earT: 'media', ear: 3, horn: 'mocho', legT: 1.05, coats: ['pretoBoi', 'vermelhoAngus'] },
+    braford: { t: 'bovino', H: 23.5, L: 29.5, D: 13.4, hump: 0.6, dew: 1, earT: 'media', ear: 3, horn: 'curto', hornL: 2.2, legT: 1.05, coats: ['caraBranca'] },
+    montana: { t: 'bovino', H: 23.5, L: 29.5, D: 13.2, horn: 'mocho', ear: 2.6, coats: ['vermelho', 'pretoBoi', 'vermelhoAngus', 'caraBranca'] },
+    junqueira: { t: 'bovino', H: 23, L: 29, D: 12.2, horn: 'lira', hornL: 8, ear: 2.6, coats: ['amarelo', 'baioBoi', 'caracu'] },
+    hereford: { t: 'bovino', H: 23, L: 29, D: 13.8, legT: 1.1, horn: 'frente', hornL: 3.2, ear: 2.6, rump: 1.15, coats: ['caraBranca', 'caraBrancaPreto'] },
+    redAngus: { t: 'bovino', H: 22, L: 28, D: 13.4, horn: 'mocho', ear: 2.4, legT: 1.1, coats: ['vermelhoAngus'] },
+    charoles: { t: 'bovino', H: 25.5, L: 32, D: 14, legT: 1.2, neckW: 5.2, horn: 'curto', hornL: 2.4, ear: 2.6, rump: 1.3, chest: 1.15, coats: ['charolesC', 'creme'] },
+    limousin: { t: 'bovino', H: 24.5, L: 32.5, D: 13.4, legT: 1.12, horn: 'curto', hornL: 2.2, ear: 2.6, rump: 1.25, coats: ['limousinC'] },
+    simental: { t: 'bovino', H: 25.5, L: 31.5, D: 14, legT: 1.15, neckW: 5, horn: 'curto', hornL: 2.4, ear: 2.8, rump: 1.2, coats: ['simentalC', 'caraBranca'] },
+    holandes: { t: 'bovino', H: 26, L: 31, D: 12.4, legT: 1.02, neckL: 10.4, headL: 10.4, horn: 'curto', hornL: 1.8, ear: 2.8, tuck: 0.12, coats: ['malhado', 'malhadoVerm'] },
+    jersey: { t: 'bovino', H: 21, L: 26, D: 11, legT: 0.92, neckL: 9, headL: 8.8, prof: -0.6, horn: 'curto', hornL: 1.8, ear: 2.6, coats: ['jerseyC'] },
+    pardoSuico: { t: 'bovino', H: 25, L: 30.5, D: 13, legT: 1.12, horn: 'curto', hornL: 2, earT: 'media', ear: 3.4, coats: ['pardoC'] },
+    wagyu: { t: 'bovino', H: 22, L: 27.5, D: 12.4, legT: 1, horn: 'curto', hornL: 2.2, ear: 2.6, coats: ['pretoBoi', 'akaushi'] },
+    bonsmara: { t: 'bovino', H: 23.5, L: 30, D: 13, hump: 0.4, horn: 'curto', hornL: 2.4, ear: 2.8, coats: ['vermelho', 'vermelhoAngus'] },
+    azulBelga: { t: 'bovino', H: 23.5, L: 30, D: 14, legT: 1.18, neckW: 5.4, rump: 1.42, chest: 1.32, horn: 'curto', hornL: 1.8, ear: 2.6, coats: ['azulRuao', 'belgaBranco'] },
+    highland: { t: 'bovino', H: 20, L: 26, D: 12.6, legT: 1, neckW: 4.6, horn: 'highland', hornL: 6.4, ear: 2.4, shag: 1, coats: ['peludoV', 'peludoA', 'peludoP'] },
+    longhorn: { t: 'bovino', H: 24, L: 30, D: 11.6, legT: 1, horn: 'longhorn', hornL: 11, hornW: 1.1, ear: 2.6, coats: ['pintadoLH', 'pintadoLHP', 'vermelho', 'amarelo'] },
+    watusi: { t: 'bovino', H: 24.5, L: 29, D: 12, legT: 0.98, hump: 0.6, horn: 'watusi', hornL: 9, hornW: 2.2, ear: 2.6, coats: ['vermelhoEsc', 'malhadoVerm'] },
+    shorthorn: { t: 'bovino', H: 23.5, L: 29.5, D: 13.4, legT: 1.08, horn: 'curto', hornL: 2.2, ear: 2.6, coats: ['rosilhoBoi', 'vermelho', 'branco'] },
+    normando: { t: 'bovino', H: 24.5, L: 30, D: 13.2, legT: 1.08, horn: 'curto', hornL: 2.4, ear: 2.8, coats: ['normandoC'] },
     // ---- bois de carro ----
     caracu: { t: 'bovino', H: 25, L: 31, D: 13.2, legT: 1.1, neckW: 5, horn: 'curto', hornL: 3.6, ear: 2.8, coats: ['caracu', 'amarelo'] },
     franqueiro: { t: 'bovino', H: 24, L: 30, D: 12.6, legT: 1.05, horn: 'lira', hornL: 7.5, ear: 2.6, coats: ['vermelho', 'malhadoVerm', 'chitaBoi', 'peVermelho'] },
@@ -2843,15 +2923,15 @@ const RIG = (() => {
     pega: { t: 'equino', H: 24, L: 24.5, D: 11, neckL: 10.6, neckW: 3.3, arch: 0.3, neckA: 0.85, headL: 11.4, jowl: 3.2, muzzle: 2.2, prof: 0.45, ear: 7.6, earW: 1.7, mane: 1.4, maneL: 1.5, maneT: 'roach', tail: 'tuft', tailL: 12, tailW: 0.85, legT: 1, hoof: 1.1, donkey: 1, coats: ['russo', 'pardo', 'cinza', 'pretoJ', 'rucoJ', 'brancoJ'] },
     // bovinos
     peduro: { t: 'bovino', H: 20.5, L: 26, D: 11.2, legT: 0.96, neckL: 7, neckW: 4, headL: 8, jowl: 3, horn: 'peduro', hornL: 4, ear: 2.6, coats: ['peVermelho', 'amarelo', 'baioBoi'] },
-    nelore: { t: 'bovino', H: 24, L: 30, D: 12.6, hump: 2.3, dew: 2.3, earT: 'curta', ear: 2.6, horn: 'curto', hornL: 2, coats: ['branco'] },
+    nelore: { t: 'bovino', H: 24, L: 30, D: 12.6, hump: 2.3, dew: 2.3, earT: 'curta', ear: 2.6, horn: 'curto', hornL: 2, coats: ['branco', 'gelo', 'cinzaBoi'] },
     gir: { t: 'bovino', H: 23, L: 29, D: 12.6, hump: 2.1, dew: 3, earT: 'pend', ear: 5.2, horn: 'gir', hornL: 3, prof: 1.3, coats: ['gir', 'vermelho'] },
     guzera: { t: 'bovino', H: 25, L: 30.5, D: 12.8, hump: 2.3, dew: 2.2, earT: 'media', ear: 3.4, horn: 'lira', hornL: 6.5, coats: ['cinzaBoi'] },
     tabapua: { t: 'bovino', H: 24, L: 30, D: 12.8, hump: 2.1, dew: 2.2, earT: 'curta', ear: 2.6, horn: 'mocho', coats: ['branco'] },
     brahman: { t: 'bovino', H: 25, L: 30, D: 13, hump: 2.8, dew: 3.2, earT: 'pend', ear: 4.4, horn: 'curto', hornL: 2.6, coats: ['cinzaBoi', 'vermelho'] },
     senepol: { t: 'bovino', H: 22.5, L: 28.5, D: 13, horn: 'mocho', ear: 2.6, coats: ['vermelho'] },
-    girolando: { t: 'bovino', H: 23.5, L: 29.5, D: 12.8, hump: 1, dew: 1.5, earT: 'media', ear: 3.6, horn: 'curto', hornL: 2, coats: ['malhado'] },
-    angus: { t: 'bovino', H: 22, L: 28, D: 13.4, horn: 'mocho', ear: 2.4, legT: 1.1, coats: ['pretoBoi', 'vermelho'] },
-    mestico: { t: 'bovino', H: 23, L: 29, D: 12.6, hump: 1.3, dew: 1.6, earT: 'media', ear: 3.2, horn: 'curto', hornL: 2.4, coats: ['vermelho', 'branco', 'malhado', 'amarelo'] },
+    girolando: { t: 'bovino', H: 23.5, L: 29.5, D: 12.8, hump: 1, dew: 1.5, earT: 'media', ear: 3.6, horn: 'curto', hornL: 2, coats: ['malhado', 'pretoBoi', 'malhadoVerm', 'gir'] },
+    angus: { t: 'bovino', H: 22, L: 28, D: 13.4, horn: 'mocho', ear: 2.4, legT: 1.1, coats: ['pretoBoi', 'vermelhoAngus'] },
+    mestico: { t: 'bovino', H: 23, L: 29, D: 12.6, hump: 1.3, dew: 1.6, earT: 'media', ear: 3.2, horn: 'curto', hornL: 2.4, coats: ['vermelho', 'branco', 'malhado', 'amarelo', 'pretoBoi', 'malhadoVerm', 'chitaBoi', 'caraBranca', 'baioBoi', 'cinzaBoi'] },
     // caprinos
     moxoto: { t: 'caprino', H: 14, L: 15, D: 7, earT: 'horiz', ear: 2.6, horn: 'cabra', coats: ['moxoto'] },
     caninde: { t: 'caprino', H: 14.2, L: 15.2, D: 7.1, earT: 'horiz', ear: 2.8, horn: 'cabra', coats: ['caninde'] },
@@ -2943,6 +3023,8 @@ const RIG = (() => {
       if (co.dorsal && part === 'body' && ((view === 'side' && v < -s.H * 0.38 + 1.2 && u < s.L * 0.3 && u > -s.L * 0.44) || (view === 'back' && Math.abs(u) < 0.8))) return C(co.dorsal);
       if (co.zebra && part === 'leg' && view === 'side' && v > s.D * 0.4 && v < s.H * 0.42 && (y % 3) === 0) return C(co.zebra);
       switch (pat) {
+        case 'whiteface': { if (part === 'head' || part === 'ear') return part === 'ear' ? undefined : pick(pT); if (part === 'body' && v > s.D * 0.28 && view === 'side') return pick(pT); if (part === 'leg' && v > s.H * 0.32) return pick(pT); if (part === 'neck' && view === 'side' && v > -s.D * 0.05 && u > s.L * 0.3) return pick(pT); return; }
+        case 'whitefacePied': { if (part === 'head') return pick(pT); if ((part === 'body' || part === 'neck') && nz(u * 0.2 + seed, v * 0.24, seed + 3) > 0.56) return pick(pT); if (part === 'body' && v > s.D * 0.3) return pick(pT); if (part === 'leg' && v > s.H * 0.28) return pick(pT); return; }
         case 'flea': { if ((part === 'body' || part === 'neck' || part === 'head') && hsh(x, y, seed) < 0.09) return pick(pT); return; }
         case 'sabino': { if (part === 'body' && v > s.D * 0.05 && hsh(x, y, seed) < (v - s.D * 0.05) / (s.D * 0.35)) return pick(pT); if (part === 'leg' && v > s.H * 0.18 && hsh(x, y, seed + 2) < 0.85) return pick(pT); if ((part === 'neck') && hsh(x, y, seed) < 0.08) return pick(pT); return; }
         case 'dapple': { if (part === 'body' || part === 'neck') { const k = Math.sin(u * 1.3) + Math.sin(v * 1.2 + u * 0.4); if (k > 1.25 && tone === 0) return mixU(c, pC, 0.6); } return; }
@@ -3121,6 +3203,7 @@ const RIG = (() => {
     const lineIn = (p0, p1, bulge, k0) => { for (let k = 0; k <= 8; k++) { const p = lerpP(p0, p1, k / 8), x = Math.round(p[0] + Math.sin(k / 8 * Math.PI) * bulge), y = Math.round(p[1]); if (x >= 0 && y >= 0 && x < Wd && y < Ht && PID[y * Wd + x]) COL[y * Wd + x] = mul(COL[y * Wd + x], k0); } };
     if (eq && !lie && !s.donkey) { lineIn(P_(L * 0.25, -H * 0.93), P_(L * 0.36, -leg - D * 0.15), 1.2, 0.88); lineIn(P_(-L * 0.12, -H * 0.86), P_(-L * 0.18, -leg - D * 0.2), -1.4, 0.9); }
     if (bov && !lie) { const hk = P_(-L * 0.24, -H * 0.97); dotIf(hk[0], hk[1] + 1, bodyT.s); dotIf(hk[0] + 1, hk[1] + 1, bodyT.s); }
+    if ((s.shag || co.shag) && bov && !lie) { const yB = gy - leg + by + 1, sh = bodyT.s; for (let x = Math.round(bx - L * 0.44); x <= Math.round(bx + L * 0.4); x++) { if (hsh(x, 1, seed) < 0.75) { const n = 1 + Math.floor(hsh(x, 2, seed) * 3); for (let k = 0; k < n; k++) dot(x, yB + k, k === n - 1 ? bodyT.d : sh); } } for (let k = 0; k < 6; k++) { const q = P_(L * 0.34 - k * 1.4, -H * 1.0 + (k % 2)); dotIf(q[0], q[1] - 1, bodyT.l); } }
     if (o.brand && !sit) { const b0 = P_(-L * 0.36, -H * 0.86), bc = mixU(mul(bodyT.b, 0.42), C('#2a1408'), 0.5); let bx0 = Math.round(b0[0]); const chs = String(o.brand).slice(0, 2).split(''); if (o.bflip) chs.reverse(); for (const ch of chs) { const g = BRAND_FONT[ch]; if (g) for (let i = 0; i < 15; i++) if (g[i] === 'x') dotIf(bx0 + (o.bflip ? 2 - (i % 3) : i % 3), Math.round(b0[1]) + Math.floor(i / 3), bc); bx0 += 4; } }
     // úbere / bainha
     if ((bov || cpr) && o.sex === 'F' && o.adult && !lie && !sit) { const u = P_(-L * 0.16, -leg + 0.5); mClear(); ell(u[0], u[1] + 0.8 * K, (bov ? 2.1 : 1.5) * K, (bov ? 1.5 : 1.2) * K); paint(tn('#e2a8a0'), 1, {}); dot(u[0] - 1, u[1] + 2.1 * K, C('#c08078')); dot(u[0] + 1, u[1] + 2.1 * K, C('#c08078')); }
@@ -3198,9 +3281,13 @@ const RIG = (() => {
         case 'peduro': pts = [hb, P2(0.35, 0.35), P2(0.85, 0.5)]; break;
         case 'cabra': pts = [hb, P2(0.6, -0.35), P2(0.65, -0.95)]; break;
         case 'espeto': pts = [hb, P2(1, -0.1)]; break;
+        case 'longhorn': pts = [hb, P2(0.15, -0.5), P2(0.32, -0.92), P2(0.55, -1.12)]; break;
+        case 'watusi': pts = [hb, P2(0.45, -0.25), P2(0.95, -0.12), P2(1.25, 0.18)]; break;
+        case 'highland': pts = [hb, P2(0.12, -0.6), P2(0.5, -0.92), P2(0.9, -0.78)]; break;
+        case 'frente': pts = [hb, P2(0.3, 0.45), P2(0.1, 0.85)]; break;
         default: pts = [hb, P2(1, 0)];
       }
-      mClear(); chain(pts, pts.map((_, i) => (cpr ? 0.75 : 0.95) * K * (1 - i / (pts.length + 0.5)) + 0.35));
+      mClear(); chain(pts, pts.map((_, i) => (cpr ? 0.75 : 0.95) * K * (s.hornW || 1) * (1 - i / (pts.length + 0.5)) + 0.35));
       const tip = pts[pts.length - 1]; paint(tn(cpr || cer ? '#8a7a64' : '#e6dab0'), 2, { fn: (x, y, c) => Math.hypot(x + 0.5 - tip[0], y + 0.5 - tip[1]) < 1.4 ? C('#3a3028') : c });
     }
     ear(0);
@@ -3341,6 +3428,10 @@ const RIG = (() => {
           else if (s.horn === 'gir') { chain([h0, [h0[0] + sd * hl * 0.6, h0[1] + 0.2 * K], [h0[0] + sd * hl * 0.75, h0[1] + hl * 0.45]], [0.9 * K, 0.7 * K, 0.45]); }
           else if (s.horn === 'cabra') { chain([h0, [h0[0] + sd * hl * 0.25, h0[1] - hl * 0.6], [h0[0] + sd * hl * 0.55, h0[1] - hl * 0.8]], [0.7 * K, 0.55 * K, 0.35]); }
           else if (s.horn === 'peduro') { chain([h0, [h0[0] + sd * hl * 0.55, h0[1] - hl * 0.1], [h0[0] + sd * hl * 0.8, h0[1] - hl * 0.55]], [0.9 * K, 0.7 * K, 0.45]); }
+          else if (s.horn === 'longhorn') { chain([h0, [h0[0] + sd * hl * 0.5, h0[1] + hl * 0.06], [h0[0] + sd * hl * 0.95, h0[1] - hl * 0.04], [h0[0] + sd * hl * 1.25, h0[1] - hl * 0.32]], [1.0 * K, 0.85 * K, 0.6 * K, 0.4]); }
+          else if (s.horn === 'watusi') { const w = s.hornW || 2; chain([h0, [h0[0] + sd * hl * 0.35, h0[1] - hl * 0.35], [h0[0] + sd * hl * 0.5, h0[1] - hl * 0.8], [h0[0] + sd * hl * 0.32, h0[1] - hl * 1.15]], [1.0 * K * w, 0.85 * K * w, 0.6 * K * w, 0.4 * w]); }
+          else if (s.horn === 'highland') { chain([h0, [h0[0] + sd * hl * 0.6, h0[1] + hl * 0.08], [h0[0] + sd * hl * 0.95, h0[1] - hl * 0.35], [h0[0] + sd * hl * 0.88, h0[1] - hl * 0.72]], [0.9 * K, 0.75 * K, 0.55 * K, 0.4]); }
+          else if (s.horn === 'frente') { chain([h0, [h0[0] + sd * hl * 0.6, h0[1] - hl * 0.1], [h0[0] + sd * hl * 0.72, h0[1] + hl * 0.32]], [0.9 * K, 0.7 * K, 0.45]); }
           else chain([h0, [h0[0] + sd * hl * 0.7, h0[1] - hl * 0.25], [h0[0] + sd * hl * 0.9, h0[1] - hl * 0.55]], [0.9 * K, 0.7 * K, 0.45]);
         }
         paint(tn(s.t === 'caprino' ? '#8a7a64' : '#e6dab0'), 2, { lay });
@@ -3750,7 +3841,7 @@ function newState() {
 function rigBreedKey(sp, br, sex) { if (sp === 'jumento') return br === 'pega' ? 'pega' : br === 'brasileiro' ? 'jBras' : 'nordJ'; if (sp === 'burro') { if (MULES[br] && MULES[br].rig) return MULES[br].rig; return br === 'mula' || (br !== 'burro' && sex === 'F') ? 'mula' : 'burro'; } return br; }
 function breedOf(a) { return (SPECIES[a.sp] || {})[a.br] || {}; }
 function mkAnimal(sp, br, o) {
-  o = o || {}; if (!br || !SPECIES[sp][br]) br = pick(Object.keys(SPECIES[sp]).filter(k => !SPECIES[sp][k].old)); const B = SPECIES[sp][br];
+  o = o || {}; if (!br || !SPECIES[sp][br]) br = sp === 'boi' ? pick(['nelore', 'nelore', 'nelore', 'mestico', 'mestico', 'girolando', 'guzera', 'gir', 'tabapua', 'brahman', 'nelMocho', 'canchim', 'senepol', 'angus']) : pick(Object.keys(SPECIES[sp]).filter(k => !SPECIES[sp][k].old && !SPECIES[sp][k].free)); const B = SPECIES[sp][br];
   const sex = o.sex || (Math.random() < .5 ? 'F' : 'M');
   const gr = B.gen || [45, 75];
   const gen = cl(Math.round(o.gen !== undefined ? o.gen : rnd(gr[0], gr[1]) + gauss() * 6), 5, 100);
@@ -3760,7 +3851,7 @@ function mkAnimal(sp, br, o) {
   const age = o.age !== undefined ? o.age : rint(14, 40);
   const a = { id: S.nid++, sp, br, n, sex, age, gen, hap: o.hap || rint(60, 85), hp: o.hp || rint(80, 100), cond: o.cond || rint(40, 70), food: 80, water: 80, skills: o.skills || sk, wt: 0, preg: 0, pai: o.pai || '—', mae: o.mae || '—', sick: 0, vacc: 0, care: 50, x: o.x || 0, y: o.y || 0, f: 1, own: o.own || 'player', saddle: o.saddle || null, travel: false, brushed: 0, fedDay: 0, lact: 0, newArr: o.newArr || 0, dayFood: 60, ration: 0, salt: 0, born: S.day - age, main: !!o.main, tie: null, home: o.home || null, hist: [] };
   if (o.hist) a.hist.push({ d: S.day, t: o.hist });
-  if (sp === 'boi') a.wt = o.wt || Math.round(age < 12 ? 35 + age * 14 : (sex === 'M' ? rnd(420, 560) : rnd(360, 450)));
+  if (sp === 'boi') a.wt = o.wt || Math.round(expWtOf(br, sex, false, age) * (age < 1 ? 1 : rnd(0.9, 1.08)));
   if (sp === 'cavalo' || sp === 'burro') a.wt = Math.round(age < 12 ? 50 + age * 20 : rnd(380, 480));
   if (sp === 'jumento') a.wt = Math.round(rnd(170, 240));
   if (sp === 'cabra') a.wt = Math.round(age < 6 ? 4 + age * 4 : (sex === 'M' ? rnd(42, 62) : rnd(30, 45)));
@@ -3777,7 +3868,7 @@ function mkAnimal(sp, br, o) {
 }
 function hist(a, t) { if (!a.hist) a.hist = []; a.hist.unshift({ d: S.day, t }); if (a.hist.length > 14) a.hist.length = 14; }
 function dev(a) { // desenvolvimento 0..100
-  if (a.sp === 'boi') { const ideal = a.age < 12 ? 35 + a.age * 16 : (a.sex === 'M' ? 560 : 450); return cl(a.wt / ideal * 85, 0, 100); }
+  if (a.sp === 'boi') return cl(a.wt / expWt(a) * 85, 0, 100);
   return cl(a.age / 14 * 70 + a.cond * 0.3, 0, 100);
 }
 function score(a) { const ageP = a.age < 4 ? -8 : 0; return 0.36 * a.gen + 0.13 * a.hap + 0.13 * a.hp + 0.14 * dev(a) + 0.1 * a.care + 0.1 * a.cond + Math.min(3, a.skills.length) * 4 + ageP - (a.sick ? 10 : 0); }
@@ -3785,7 +3876,7 @@ function stars(a) { return cl(1 + Math.floor(score(a) / 18), 1, 5); }
 function starStr(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
 function animalValue(a) {
   const st = stars(a), q = 0.82 + st * 0.08;
-  if (a.sp === 'boi') return Math.round(a.wt / 15 * S.arroba * q * (CATTLE[a.br].p || 1) * (a.age < 12 ? 1.25 : 1) * ((a.carro || 0) >= 100 ? 1.35 : 1));
+  if (a.sp === 'boi') return Math.round((a.wt || 0) * kgPrice() * catFactor(a) * (0.94 + st * 0.03) * ((CATTLE[a.br] || {}).p || 1) * ((a.carro || 0) >= 100 ? 1.35 : 1) + (a.age < 1 ? 300 : 0));
   if (a.sp === 'cavalo') return Math.round((HORSES[a.br].cost * 420 + 2500) * q * (a.age < 12 ? 0.6 : 1));
   if (a.sp === 'burro') return Math.round(4200 * q * ((MULES[a.br] || {}).cost > 10 ? 1.15 : 1)); if (a.sp === 'jumento') return Math.round(1800 * q * (a.br === 'pega' || a.br === 'brasileiro' ? 1.3 : 1));
   if (a.sp === 'galinha') return Math.round((a.sex === 'M' ? 70 : 55) * q); if (a.sp === 'cao') return Math.round(600 * q);
@@ -3793,7 +3884,7 @@ function animalValue(a) {
   if (a.sp === 'fauna') return 0;
   return 100;
 }
-function ageStr(a) { const d = a.age; if (a.sp === 'galinha') return d < 6 ? 'pinto' : 'adulta'; if (a.sp === 'cabra' && d < 6) return d + ' dias (cabrito)'; if (d < 12) return d + ' dias (filhote)'; return Math.floor(d / 14 + 1) + ' anos'; }
+function ageStr(a) { const d = a.age; if (a.sp === 'boi' && d < 24) return Math.max(1, Math.round(d * 12 / 14)) + (d < 12 ? ' meses (bezerro)' : ' meses'); if (a.sp === 'galinha') return d < 6 ? 'pinto' : 'adulta'; if (a.sp === 'cabra' && d < 6) return d + ' dias (cabrito)'; if (d < 12) return d + ' dias (filhote)'; return Math.floor(d / 14 + 1) + ' anos'; }
 function catName(a) { if (a.sp === 'burro') return a.sex === 'F' ? 'Muar (mula)' : 'Muar (burro)'; if (a.sp === 'jumento') return a.sex === 'F' ? 'Jumenta' : 'Jumento'; if (a.sp === 'boi' && a.sex === 'M' && a.age >= 24 && (a.carro || 0) >= 100) return 'Boi de carro'; if (a.sp === 'cabra') return a.age < 6 ? 'Cabrito' : a.sex === 'F' ? 'Cabra' : 'Bode'; if (a.sp !== 'boi') return SPN[a.sp] + (a.sex === 'F' ? (a.sp === 'cao' ? ' (fêmea)' : a.sp === 'cavalo' ? ' (égua)' : a.sp === 'galinha' ? ' (galinha)' : ' (fêmea)') : (a.sp === 'cavalo' ? ' (garanhão)' : a.sp === 'galinha' ? ' (galo)' : ' (macho)'));
   if (a.age < 12) return a.sex === 'F' ? 'Bezerra' : 'Bezerro'; if (a.sex === 'F') return a.age < 24 ? 'Novilha' : 'Vaca'; if (a.cast) return a.age < 24 ? 'Garrote (castrado)' : 'Boi'; return a.age < 24 ? 'Garrote' : 'Touro'; }
 const myAnimals = (sp) => S.animals.filter(a => a.own === 'player' && (!sp || a.sp === sp));
@@ -3840,7 +3931,7 @@ function cattleDayAfter() {
   const alive = myAnimals('boi');
   // briga de touros no mesmo pasto
   const byArea = {}; for (const a of alive) if (isBull(a) && a.area) (byArea[a.area] = byArea[a.area] || []).push(a);
-  for (const k in byArea) { const L = byArea[k]; if (L.length >= 2 && Math.random() < 0.3) { const [x, y] = L; x.hp = cl(x.hp - 10, 5, 100); y.hp = cl(y.hp - 10, 5, 100); x.wound = y.wound = S.day; hist(x, 'Brigou com ' + y.n); hist(y, 'Brigou com ' + x.n); toast('🐂⚔️ Os touros ' + x.n + ' e ' + y.n + ' brigaram no ' + AREAS[k].n + '. Deixe um touro por pasto!'); } }
+  for (const k in byArea) { const L = byArea[k].filter(b => b.age >= 30); if (L.length >= 2 && Math.random() < 0.15) { const [x, y] = L; x.hp = cl(x.hp - 10, 5, 100); y.hp = cl(y.hp - 10, 5, 100); x.wound = y.wound = S.day; hist(x, 'Brigou com ' + y.n); hist(y, 'Brigou com ' + x.n); toast('🐂⚔️ Os touros ' + x.n + ' e ' + y.n + ' brigaram no ' + AREAS[k].n + '. Deixe um touro por pasto!'); } }
   // ladrão de gado: leva gado sem marca dos pastos
   const loose = alive.filter(a => !a.marca && a.age >= 12 && !a.main && a.area && AREAS[a.area].k === 'pasto');
   const guard = myAnimals('cao').some(d => d.skills.includes('Guarda')) ? 0.4 : 1;
@@ -3860,7 +3951,7 @@ function birthCalf(m, o) {
   else if (sp === 'boi') br = crossBreed(m.br, m._paiBr);
   const gen = ((m.gen + (m._paiGen || m.gen)) / 2) + gauss() * 9;
   const c = mkAnimal(sp, br, { age: 0, gen, mae: m.n, pai: m._paiN || '—', x: m.x + 8, y: m.y + 4, hap: 80, hp: o.weak ? 50 : 90 });
-  c.maeId = m.id; m.calves = (m.calves || 0) + 1;
+  c.maeId = m.id; m.calves = (m.calves || 0) + 1; if (sp === 'boi' && m._paiBr && m._paiBr !== m.br && (br === 'mestico' || br === 'girolando' || br === 'guzolando')) { c.hv = 1; c.cruz = (CATTLE[m.br] || {}).n + ' × ' + ((CATTLE[m._paiBr] || {}).n || m._paiBr); }
   S.animals.push(c); if (sp === 'cabra' && Math.random() < 0.45) { const c2 = mkAnimal(sp, br, { age: 0, gen: gen + gauss() * 4, mae: m.n, pai: m._paiN || '—', x: m.x - 6, y: m.y + 5, hap: 80, hp: 90 }); c2.maeId = m.id; S.animals.push(c2); toast('Gêmeos! Nasceu também ' + c2.n + '.'); }
   m.lact = 20; S.stats.born++;
   if (sp === 'boi') { c.umb = 1; c.wt = rnd(28, 36); if (!o.help && Math.random() < 0.05) { c.enj = 1; toast('🍼 ' + m.n + ' enjeitou o bezerro ' + c.n + '! Dê mamadeira com leite todo dia até ele comer capim.'); } }
@@ -3869,7 +3960,7 @@ function birthCalf(m, o) {
   return c;
 }
 function startLabor(m) { // parto difícil: o vaqueiro tem poucas horas para ajudar
-  const first = !(m.calves > 0), risk = 0.06 + (first ? 0.08 : 0) + (m._paiBr === 'angus' && ZEBU.includes(m.br) ? 0.04 : 0) + (ecc(m) >= 4.5 ? 0.03 : 0) + (m.age < 26 ? 0.03 : 0);
+  const first = !(m.calves > 0), risk = 0.06 + (first ? 0.08 : 0) + (m._paiBr === 'angus' && ZEBU.includes(m.br) ? 0.04 : 0) + ((CATTLE[m._paiBr] || {}).dist || 0) + ((CATTLE[m.br] || {}).dist || 0) * 0.5 + (((CATTLE[m._paiBr] || {}).mw || 450) > 560 && ((CATTLE[m.br] || {}).mw || 450) < 460 ? 0.05 : 0) + (ecc(m) >= 4.5 ? 0.03 : 0) + (m.age < 26 ? 0.03 : 0);
   if (Math.random() >= risk) return false;
   m.labor = tnow() + 300; toast('⚠️ ' + m.n + ' está num parto difícil no ' + (m.area ? AREAS[m.area].n : 'pasto') + '! Corra para ajudar (ficha › Manejo › Ajudar no parto).'); AU.moo(m.x, m.y, 1.2); return true;
 }
@@ -3894,6 +3985,63 @@ function cattleTick(dt) {
     }
   }
 }
+/* ---------- ENGORDA: curva de crescimento por raça e ganho diário pela dieta ---------- */
+// 1 dia de jogo ≈ 26 dias de verdade (14 dias = 1 ano). GMD real (kg/dia) × 26 = kg por dia de jogo.
+const GAME_DAYS = 26;
+const WT_FRAC = [[0, 0.07], [4, 0.2], [8, 0.37], [14, 0.48], [21, 0.61], [28, 0.74], [42, 0.9], [60, 1]];
+function adultW(br, sex, cast) { const mw = (CATTLE[br] || {}).mw || 450; return mw * (sex === 'F' ? 1 : cast ? 1.22 : 1.45); }
+function expWtOf(br, sex, cast, age) { const A = adultW(br, sex, cast); let f = 1; for (let i = 0; i + 1 < WT_FRAC.length; i++) { const [a0, f0] = WT_FRAC[i], [a1, f1] = WT_FRAC[i + 1]; if (age <= a1) { f = f0 + (f1 - f0) * Math.max(0, age - a0) / (a1 - a0); break; } } return A * f; }
+const expWt = a => expWtOf(a.br, a.sex, a.cast, a.age || 0);
+function dietOf(a) { // o que o animal come hoje e quanto isso rende (GMD real, kg/dia)
+  const aguas = season() === 0, avg = a._fT ? a._fA / a._fT : a.food, eat = cl((avg - 15) / 55, 0, 1.15);
+  const ar = a.area && AREAS[a.area], pastoK = ar && (ar.k === 'pasto' || ar.k === 'npc') ? cl((areaGrass(a.area) || 0) / 55, 0.25, 1) : ar ? 0.55 : 0.7;
+  const R = { pasto: (aguas ? 0.58 : 0.34) * pastoK * Math.min(1, eat), sal: 0, racao: 0, silagem: 0, palma: 0, leite: 0, conf: 1, eat };
+  if (S.salt && S.salt[a.area] >= S.day) R.sal = aguas ? 0.05 : 0.09;
+  const need = Math.max(3, (a.wt || 200) * 0.05); if (a.rationKg) R.racao = 0.38 * Math.min(1, a.rationKg / need);
+  if (S.silo2 && S.silo2[a.area] >= S.day) R.silagem = 0.3;
+  if (S.palm && S.palm[a.area] >= S.day && !aguas) R.palma = 0.12;
+  if (a.age < 12 && a.maeId && !a.desm && !a.enj) R.leite = 0.3;
+  if (a.area === 'conf' && built('cocho')) R.conf = 1.25;
+  return R;
+}
+function gmdReal(a, B) {
+  const R = dietOf(a); let real = (R.pasto + R.sal + R.racao + R.silagem + R.palma);
+  if (R.leite) real = Math.max(real, 0.5) + R.leite; else if (a.age < 3) real = Math.max(real, 0.3);
+  real *= R.conf * (B.gain || 1) * (0.8 + (a.gen || 50) / 250) * cl(a.hp / 100, 0.2, 1) * (1 + skill('pec') * 0.05) * (a.skills.includes('Ganho de Peso') ? 1.15 : 1) * (a.hv ? 1.1 : 1) * (a.cast || a.sex === 'F' ? 1 : 1.06);
+  real *= Math.max(0.3, 1 - (a.carr || 0) * 0.004 - (a.verme || 0) * 0.005 - (a.mosca || 0) * 0.002) * (a.manca ? 0.8 : 1) * (a.sick ? 0.4 : 1);
+  if (R.eat < 0.2 || a.food < 10) real = -0.35; // passou fome: perde peso
+  return real;
+}
+function cattleGrow(a, B) {
+  const real = gmdReal(a, B); a._ld = { eat: +dietOf(a).eat.toFixed(2), real: +real.toFixed(2), food: Math.round(a._fT ? a._fA / a._fT : a.food), sick: a.dz || 0 }; const maxW = adultW(a.br, a.sex, a.cast) * 1.12, mat = Math.max(0.04, 1 - Math.pow(Math.max(0, a.wt) / maxW, 4));
+  a.nut = (a.nut === undefined ? 0.4 : a.nut) * 0.6 + real * 0.4;
+  let g = real * GAME_DAYS * (real > 0 ? mat : 1);
+  if (a.preg > 0 && a.preg < 3) g += 4;
+  if (a.age < 12 && a.maeId && !a.desm && !a.enj) { const mm = byId(a.maeId); if (mm && mm.area === a.area) mm.cond = cl(mm.cond - 0.3, 0, 100); }
+  a.wt = Math.round(cl((a.wt || 30) + g, 22, maxW) * 10) / 10; a._fA = 0; a._fT = 0;
+}
+/* ---------- preço: reposição (com ágio para animal jovem) x frigorífico (por arroba) ---------- */
+const kgPrice = () => S.arroba / 15; // R$ por kg vivo de boi gordo (escala do jogo)
+function repoF() { return 1 + (season() === 0 ? 0.06 : -0.04); } // nas águas todo mundo quer bezerro
+function catFactor(a) { const w = a.wt || 0; if (a.sex === 'M') return a.age >= 24 && !a.cast ? (a.repro ? 1.15 : 0.95) : 1 + 0.24 * cl((430 - w) / 250, 0, 1); return a.age >= 24 ? 0.92 * (a.preg ? 1.15 : 1) * (a.lact ? 1.08 : 1) : 0.96 + 0.18 * cl((380 - w) / 230, 0, 1); }
+function frigPriceBoi(a) {
+  const e = ecc(a), acab = e >= 3.5 ? 1.03 : e < 2.5 ? 0.88 : 1, st = stars(a);
+  let k = a.sex === 'M' ? (a.age >= 24 ? (a.cast ? 1 : 0.93) : a.age < 12 ? 0.85 : 0.97) : a.age >= 24 ? 0.9 : a.age < 12 ? 0.85 : 0.95;
+  if (a.marca || a.brinco) k *= 1.02; if ((a.carr || 0) > 60 || (a.verme || 0) > 60) k *= 0.95; if (a.sick) k *= 0.7;
+  return Math.round((a.wt || 0) * kgPrice() * k * acab * (0.95 + st * 0.02) * Math.min(1.25, (CATTLE[a.br] || {}).p || 1));
+}
+function soldRecord(a, price, how) { if (a.sp !== 'boi') return; S.sales = S.sales || []; S.sales.unshift({ d: S.day, n: a.n, br: a.br, buy: a.buyP || 0, bd: a.buyD || a.born || 0, w0: a.buyW || 0, w: Math.round(a.wt || 0), v: Math.round(price), how }); if (S.sales.length > 30) S.sales.length = 30; }
+function markBought(a, price) { a.buyP = Math.round(price); a.buyD = S.day; a.buyW = Math.round(a.wt || 0); }
+function engordaHTML() {
+  const L = myAnimals('boi').filter(a => a.buyP);
+  let h = '<div class="card"><b>📈 Resultado da engorda</b><p class="mut">Comprou magro, vende gordo: a diferença entre o preço de compra e o que o frigorífico paga hoje. O bezerro tem ágio na compra; o lucro vem do peso que ele ganha.</p>';
+  if (L.length) { let tc = 0, tv = 0; h += '<table class="t"><tr><td><b>Animal</b></td><td>Dias</td><td>Peso</td><td>Pago</td><td>Vale hoje</td><td>Resultado</td></tr>' + L.slice(0, 20).map(a => { const v = frigPrice(a), r = v - a.buyP; tc += a.buyP; tv += v; return `<tr><td>${esc(a.n)}</td><td>${S.day - a.buyD}</td><td>${a.buyW}→${Math.round(a.wt)} kg</td><td>${fmt(a.buyP)}</td><td>${fmt(v)}</td><td style="color:${r >= 0 ? '#2a7a2a' : '#b02020'}">${r >= 0 ? '+' : ''}${fmt(r)}</td></tr>`; }).join('') + `</table><p>Total: pago ${fmt(tc)} · vale hoje ${fmt(tv)} · <b style="color:${tv >= tc ? '#2a7a2a' : '#b02020'}">${tv >= tc ? '+' : ''}${fmt(tv - tc)}</b></p>`; }
+  else h += '<p class="mut">Nenhum animal comprado ainda. Compre bezerros na Feira da Casa do Agro.</p>';
+  const V = (S.sales || []).filter(s => s.buy);
+  if (V.length) { const lu = V.reduce((s, x) => s + x.v - x.buy, 0), dd = V.reduce((s, x) => s + Math.max(1, x.d - x.bd), 0); h += `<b>Vendas de animais comprados</b><br><span class="mut">${V.length} venda(s) · lucro ${fmt(lu)} · média ${fmt(lu / V.length)} por cabeça · ${fmt(lu / dd)} por cabeça/dia</span>` + V.slice(0, 8).map(s => `<br><span class="mut">Dia ${s.d}:</span> ${esc(s.n)} ${s.w0}→${s.w} kg em ${s.d - s.bd} dias: ${fmt(s.buy)} → ${fmt(s.v)} (<b style="color:${s.v >= s.buy ? '#2a7a2a' : '#b02020'}">${s.v >= s.buy ? '+' : ''}${fmt(s.v - s.buy)}</b>)`).join(''); }
+  return h + '</div>';
+}
+function dietHTML(a) { const R = dietOf(a), g = gmdReal(a, breedOf(a)) * GAME_DAYS, parts = []; if (R.leite) parts.push('leite da mãe'); if (R.pasto > 0.05) parts.push('pasto ' + (season() === 0 ? 'das águas' : 'seco')); if (R.sal) parts.push('sal mineral'); if (R.racao) parts.push('ração ' + Math.round(R.racao / 0.38 * 100) + '%'); if (R.silagem) parts.push('silagem'); if (R.palma) parts.push('palma'); if (R.conf > 1) parts.push('confinamento'); return `<div class="row mut" style="margin:2px 0">Dieta: ${parts.join(' + ') || 'quase nada'} · ganho previsto ${g >= 0 ? '+' : ''}${g.toFixed(1)} kg/dia · peso ideal p/ idade ${Math.round(expWt(a))} kg · adulto ${Math.round(adultW(a.br, a.sex, a.cast))} kg</div>`; }
 /* ---------- dinheiro ---------- */
 function ledger(desc, v, acc) { S.ledger.unshift({ d: S.day, h: clock(), desc, v: Math.round(v * 100) / 100, acc: acc || 'cc' }); if (S.ledger.length > 160) S.ledger.length = 160; }
 function priceMul() { return (S.cf && STATES[S.cf.st][5] === 'negocio') ? 0.94 : 1; }
@@ -4309,19 +4457,9 @@ function dayTick() { storyCheck(); regionDay(); missionDay(); socialDay();
     if (a.sp === 'boi') cattleDay(a, B);
     if (a.newArr) { a._qd = (a._qd || 0) + (a.area === 'quar' ? 1 : 0); a.newArr = a.area === 'quar' && (a._qd >= 2) ? 0 : (a.newArr + 1 > 6 ? 0 : a.newArr + 1); if (!a.newArr) a._qd = 0; }
     // peso
-    if (a.sp === 'boi') {
-      const eat = cl(a.dayFood / 100, 0, 1.2);
-      let gain = (B.gain || 1) * (0.25 + 0.55 * eat) * (a.ration ? 1.45 : 1) * (a.area === 'conf' && built('cocho') ? 1.25 : 1) * (0.8 + a.gen / 250) * (a.hp / 100) * (1 + skill('pec') * 0.05) * (a.skills.includes('Ganho de Peso') ? 1.15 : 1) * (se && !a.ration ? 0.7 : 1);
-      if (a.age < 12) gain *= 1.6;
-      gain *= Math.max(0.3, 1 - (a.carr || 0) * 0.004 - (a.verme || 0) * 0.005 - (a.mosca || 0) * 0.002) * (a.manca ? 0.8 : 1);
-      if (a.age < 12 && a.maeId && !a.desm && !a.enj) { const mm = byId(a.maeId); if (mm && mm.area === a.area) { gain *= 1.25; mm.cond = cl(mm.cond - 0.3, 0, 100); } }
-      if (a.cast && a.age >= 12) gain *= 1.06; if (S.silo2 && S.silo2[a.area] >= S.day) gain *= 1.15;
-      if (S.palm && S.palm[a.area] >= S.day) a.water = Math.max(a.water, 60);
-      if (a.food < 15) gain = -2.5;
-      const cap = a.sex === 'M' ? 900 : 560; a.wt = Math.round(cl(a.wt + gain * 2.2, 30, cap) * 10) / 10;
-    }
+    if (a.sp === 'boi') cattleGrow(a, B);
     a.cond = cl(a.cond + (a._ran || 0) / 400 - 0.4, 0, 100); a._ran = 0;
-    a.dayFood = 0; a.ration = 0;
+    a.dayFood = 0; a.ration = 0; a.rationKg = 0;
     if (a.lact > 0) a.lact--;
     // reprodução
     if (a.preg > 0) { a.preg--; if (a.preg === 0) born.push(a); }
@@ -4395,7 +4533,8 @@ function findWater(a) {
 function findFeed(a) { if (!a.area) return null; const ti = TROUGHS.findIndex((t, i) => t.a === a.area && t.k === 'racao' && S.tr[i] > 1); if (ti < 0) return null; const t = TROUGHS[ti]; return { x: (t.x + rnd(0.3, t.w - 0.3)) * TS, y: (t.y + 1.6) * TS, ti }; }
 function findGrass(a) {
   let best = null, bv = -1; const tx = Math.floor(a.x / TS), ty = Math.floor(a.y / TS);
-  for (let i = 0; i < 8; i++) { const x = tx + rint(-5, 5), y = ty + rint(-5, 5); if (x < 0 || y < 0 || x >= MW || y >= MH) continue; const j = gi(x, y); if (obj[j] || ground[j] === G.WATER) continue; if (a.area && areaId[j] !== AKEYS.indexOf(a.area)) continue; if (!a.area && Math.abs(x - tx) + Math.abs(y - ty) > 4) continue; const v = (ground[j] === G.PAST ? grass[j] : (ground[j] === G.GRASS || ground[j] === G.DRY ? 60 : 0)) + rnd(0, 30); if (v > bv) { bv = v; best = [(x + .5) * TS, (y + .5) * TS]; } }
+  const big = a.sp === 'boi' || a.sp === 'cabra', N = big ? 16 : 8, Rr = big ? 6 : 5;
+  for (let i = 0; i < N; i++) { const x = tx + rint(-Rr, Rr), y = ty + rint(-Rr, Rr); if (x < 0 || y < 0 || x >= MW || y >= MH) continue; const j = gi(x, y); if (obj[j] || ground[j] === G.WATER) continue; if (a.area && areaId[j] !== AKEYS.indexOf(a.area)) continue; if (!a.area && Math.abs(x - tx) + Math.abs(y - ty) > 4) continue; const v = (ground[j] === G.PAST ? (grass[j] < 16 ? -40 : grass[j]) : (ground[j] === G.GRASS || ground[j] === G.DRY ? 60 : 0)) + rnd(0, 30) - (big ? (Math.abs(x - tx) + Math.abs(y - ty)) * 4 : 0); if (v > bv) { bv = v; best = [(x + .5) * TS, (y + .5) * TS]; } }
   return best;
 }
 function findShade(a) { for (const p of PROPS) { if (!['umbu', 'juazeiro', 'manga', 'inga', 'caju', 'ipe'].includes(p.t)) continue; if (hyp(p.x - a.x, p.y - a.y) > 140) continue; const x = p.x + rnd(-14, 14), y = p.y + rnd(4, 12); if (!a.area || areaAt(x, y) === a.area) if (!hitAt(x, y, 5)) return { x, y }; } return null; }
@@ -4407,10 +4546,12 @@ function decide(a) {
     a._hid = false; const t = findGrass(a) || [a.x + rnd(-20, 20), a.y + rnd(-20, 20)]; setGo(a, { x: t[0], y: t[1] }, 'graze', rnd(3, 7)); return;
   }
   if (a.sp === 'cao') return;
-  if (h >= 20.5 || h < 5) { a._st = 'rest'; a._t = rnd(30, 60); return; }
+  const hungry = (a.sp === 'boi' || a.sp === 'cabra') && a.food < 45;
+  if (h >= 20.5 || h < 5) { if (!((a.sp === 'boi' || a.sp === 'cabra') && (hungry || Math.random() < 0.3))) { a._st = 'rest'; a._t = rnd(20, 40); return; } }
   if (a.water < 40) { const w = findWater(a); if (w) return setGo(a, w, 'drink', 3); }
   if (a.food < 75) { const f = findFeed(a); if (f) return setGo(a, f, 'eat', 4); }
-  if (h > 11 && h < 14.5 && S.weather === 'sol' && Math.random() < 0.45) { const s = findShade(a); if (s) return setGo(a, s, 'rest', rnd(15, 30)); }
+  if (hungry) { const g0 = findGrass(a); if (g0) return setGo(a, { x: g0[0], y: g0[1] }, 'graze', rnd(10, 20)); }
+  if (h > 11 && h < 14.5 && S.weather === 'sol' && Math.random() < 0.45) { const s = findShade(a); if (s) return setGo(a, s, 'rest', rnd(6, 14)); }
   if (a.sp === 'boi' && a.age < 12 && a.maeId && !a.desm && !a.enj) { const m = byId(a.maeId); if (m && m.own === a.own && m.area === a.area && !m._hid && Math.random() < 0.55) return setGo(a, { x: m.x - (m.f || 1) * 7, y: m.y + 3 }, Math.random() < 0.45 ? 'drink' : 'graze', rnd(3, 6)); }
   if (a.manca && Math.random() < 0.5) { a._st = 'rest'; a._t = rnd(8, 16); return; }
   if (Math.random() < 0.12) { a._st = 'idle'; a._t = rnd(3, 8); return; }
@@ -4427,7 +4568,7 @@ function stepTo(a, tx, ty, sp, dt, who) {
 }
 function updAnimal(a, dt, gm, threats) {
   a._mv = 0;
-  if (a.own === 'player' || a.own === 'felipe' || a.own === 'ryan') { const eat = a.sp === 'jumento' ? 0.6 : a.sp === 'burro' ? 0.8 : 1; a.food = cl(a.food - gm * 0.07 * eat, 0, 100); a.water = cl(a.water - gm * (season() ? 0.095 : 0.075) * (a.sp === 'jumento' ? 0.7 : 1) * heatF(), 0, 100); }
+  if (a.own === 'player' || a.own === 'felipe' || a.own === 'ryan') { const eat = a.sp === 'jumento' ? 0.6 : a.sp === 'burro' ? 0.8 : 1; a.food = cl(a.food - gm * 0.07 * eat, 0, 100); a.water = cl(a.water - gm * (season() ? 0.095 : 0.075) * (a.sp === 'jumento' ? 0.7 : 1) * heatF(), 0, 100); if (a.sp === 'boi') { a._fA = (a._fA || 0) + a.food * gm; a._fT = (a._fT || 0) + gm; } }
   if ((a._at = (a._at || 0) - dt) < 0) { a._at = 0.8; a.area = areaAt(a.x, a.y); }
   if (a.id === P.mnt || a._wr) { a._st = 'ridden'; return; }
   if (isHitched(a.id)) { a._st = 'hitched'; return; }
@@ -4448,7 +4589,7 @@ function updAnimal(a, dt, gm, threats) {
     case 'follow': { const tx = P.x - (P.dir === 3 ? 26 : P.dir === 2 ? -26 : 0) + (a.id % 5 - 2) * 8, ty = P.y - (P.dir === 0 ? 24 : P.dir === 1 ? -24 : 0) + (a.id % 3 - 1) * 8; const d = hyp(tx - a.x, ty - a.y); if (d > 10) { const r = stepTo(a, tx, ty, Math.min(P.mnt ? 70 : 42, 14 + d * 0.9), dt); if (r === 'stuck' && d > 90) { a.x = lerp(a.x, tx, 0.04); a.y = lerp(a.y, ty, 0.04); } a._pose = a._mv > 30 ? 'run' : 'walk'; } else { a._pose = 'idle'; a._mv = 0; } if (a._t <= 0) a._st = null; return; }
     case 'come': { const d = hyp(P.x - a.x, P.y - a.y); if (d > 26) { const r = stepTo(a, P.x, P.y, 50, dt, 'a'); if (r === 'stuck') { a._gh = 1; } if (a._gh) moveEnt(a, (P.x - a.x) / d * 50 * dt, (P.y - a.y) / d * 50 * dt, 5, 'ghost'); a._pose = 'walk'; a._run = 1; } else { a._st = 'idle'; a._t = 6; a._gh = 0; a._run = 0; } if (a._t <= 0) { a._st = null; a._gh = 0; } return; }
     case 'route': { if (!a._route || !a._route.length) { a._st = null; return; } const [tx, ty] = a._route[0]; const r = stepTo(a, tx, ty, a._spd || 24, dt, a._gh ? 'ghost' : 'route'); a._pose = 'walk'; if (r === true) { a._route.shift(); a._gh = 0; } else if (r === 'stuck') { a._gh = 1; } if (a._t < -90) { a._route = null; } return; }
-    case 'go': { const r = stepTo(a, a._tg[0], a._tg[1], animalSpeed(a), dt); a._pose = 'walk'; if (r === true || r === 'stuck' || a._t <= 0) { a._st = a._then; a._t = a._dur || 6; if (a._then === 'drink') { const ti = a._ti; if (ti >= 0 && S.tr[ti] > 0) { const take = Math.min(S.tr[ti], 25); S.tr[ti] -= take; a.water = cl(a.water + take * 4, 0, 100); } else if (ti === -1) a.water = 100; } if (a._then === 'eat') { const ti = a._ti; if (ti >= 0 && S.tr[ti] > 0) { const k = a.sp === 'galinha' ? 0.1 : 4; const take = Math.min(S.tr[ti], k); S.tr[ti] -= take; a.food = cl(a.food + take / k * 45, 0, 100); a.dayFood += take / k * 45; a.ration = 1; } } if (a._then === 'coop') { a._hid = true; a._t = 30; } } return; }
+    case 'go': { const r = stepTo(a, a._tg[0], a._tg[1], animalSpeed(a), dt); a._pose = 'walk'; if (r === true || r === 'stuck' || a._t <= 0) { a._st = a._then; a._t = a._dur || 6; if (a._then === 'drink') { const ti = a._ti; if (ti >= 0 && S.tr[ti] > 0) { const take = Math.min(S.tr[ti], 25); S.tr[ti] -= take; a.water = cl(a.water + take * 4, 0, 100); } else if (ti === -1) a.water = 100; } if (a._then === 'eat') { const ti = a._ti; if (ti >= 0 && S.tr[ti] > 0) { const k = a.sp === 'galinha' ? 0.1 : 4; const take = Math.min(S.tr[ti], k); S.tr[ti] -= take; a.food = cl(a.food + take / k * 45, 0, 100); a.dayFood += take / k * 45; a.ration = 1; a.rationKg = (a.rationKg || 0) + take; } } if (a._then === 'coop') { a._hid = true; a._t = 30; } } return; }
     case 'graze': { a._pose = 'graze'; const i = gi(Math.floor(a.x / TS), Math.floor(a.y / TS)); if (a.sp !== 'galinha') { if (ground[i] === G.PAST) { if (grass[i] > 12) { const e = Math.min(grass[i], 0.6 * gm); grass[i] -= e; const f = e * 0.27 * Math.min(1, grass[i] / 120 + 0.3); a.food = cl(a.food + f, 0, 100); a.dayFood += f; } else a._t = Math.min(a._t, 0.5); } else if (ground[i] === G.GRASS || ground[i] === G.DRY) { const f = 0.08 * gm; a.food = cl(a.food + f, 0, 100); a.dayFood += f; } } if (a._t <= 0) a._st = null; return; }
     case 'rest': a._pose = a.sp === 'boi' ? 'lie' : 'idle'; if (a._t <= 0) a._st = null; if ((hour() >= 20.5 || hour() < 5) && a._t <= 0) { a._st = 'rest'; a._t = 20; } return;
     case 'coop': a._pose = 'idle'; if (a._t <= 0 && !isNight() && !isRain()) { a._hid = false; a._st = null; } else if (a._t <= 0) a._t = 10; return;
@@ -4923,7 +5064,7 @@ function updHerdAnimal(a, dt, gm, srcs) {
   // ---- comportamento calmo (pasto, água, sombra, descanso) quando não pressionado ----
   let tx = 0, ty = 0, want = 0;
   if (!pressured && a._st !== 'driven') {
-    if (n === 0 && Math.random() < dt * 0.4) { const far = near(a.x, a.y, 220).filter(b => b !== a && b.sp === a.sp && b.own === a.own && !b._hid && !b._cut); if (far.length) { let fx = 0, fy = 0; for (const b of far) { fx += b.x; fy += b.y; } fx /= far.length; fy /= far.length; if (hyp(fx - a.x, fy - a.y) > 60 && (!a.area || areaAt(fx, fy) === a.area)) { a._st = 'regroup'; a._tg = [fx, fy]; a._t = 12; } } }
+    if (n === 0 && (a.food > 45 || a._st === 'rest') && Math.random() < dt * 0.4) { const far = near(a.x, a.y, 220).filter(b => b !== a && b.sp === a.sp && b.own === a.own && !b._hid && !b._cut); if (far.length) { let fx = 0, fy = 0; for (const b of far) { fx += b.x; fy += b.y; } fx /= far.length; fy /= far.length; if (hyp(fx - a.x, fy - a.y) > 60 && (!a.area || areaAt(fx, fy) === a.area)) { a._st = 'regroup'; a._tg = [fx, fy]; a._t = 12; } } }
     if (a._st === 'regroup') { tx = a._tg[0] - a.x; ty = a._tg[1] - a.y; const d = hyp(tx, ty); want = SP.walk * 1.2; if (d < 26 || (a._t -= dt) < 0) { a._st = null; } else { tx /= d; ty /= d; } a._pose = 'walk'; }
     else { calmStep(a, dt, gm); return finishHerd(a, dt, 0, 0, 0, sx, sy, hb, SP, alertSrc); }
   }
@@ -4981,13 +5122,13 @@ function calmStep(a, dt, gm) {
 }
 function arriveAt(a) {
   if (a._then === 'drink') { const ti = a._ti; if (ti >= 0 && S.tr[ti] > 0) { const take = Math.min(S.tr[ti], 25); S.tr[ti] -= take; a.water = cl(a.water + take * 4, 0, 100); } else if (ti === -1) a.water = 100; }
-  if (a._then === 'eat') { const ti = a._ti; if (ti >= 0 && S.tr[ti] > 0) { const k = a.sp === 'galinha' ? 0.1 : 4; const take = Math.min(S.tr[ti], k); S.tr[ti] -= take; a.food = cl(a.food + take / k * 45, 0, 100); a.dayFood += take / k * 45; a.ration = 1; } }
+  if (a._then === 'eat') { const ti = a._ti; if (ti >= 0 && S.tr[ti] > 0) { const k = a.sp === 'galinha' ? 0.1 : 4; const take = Math.min(S.tr[ti], k); S.tr[ti] -= take; a.food = cl(a.food + take / k * 45, 0, 100); a.dayFood += take / k * 45; a.ration = 1; a.rationKg = (a.rationKg || 0) + take; } }
   if (a._then === 'coop') { a._hid = true; a._t = 30; }
 }
 function grazeTick(a, gm) {
   const i = gi(Math.floor(a.x / TS), Math.floor(a.y / TS)), bite = a.sp === 'cabra' ? 0.35 : 0.6;
-  if (ground[i] === G.PAST) { if (grass[i] > 12) { const e = Math.min(grass[i], bite * gm); grass[i] -= e; const f = e * (a.sp === 'cabra' ? 0.42 : 0.27) * Math.min(1, grass[i] / 120 + 0.3); a.food = cl(a.food + f, 0, 100); a.dayFood += f; } else a._t = Math.min(a._t, 0.5); }
-  else if (ground[i] === G.GRASS || ground[i] === G.DRY) { const f = (a.sp === 'cabra' ? 0.12 : 0.08) * gm; a.food = cl(a.food + f, 0, 100); a.dayFood += f; }
+  if (ground[i] === G.PAST) { if (grass[i] > 12) { const e = Math.min(grass[i], bite * gm); grass[i] -= e; const f = e * (a.sp === 'cabra' ? 0.6 : 0.55) * Math.min(1, grass[i] / 120 + 0.3); a.food = cl(a.food + f, 0, 100); a.dayFood += f; } else a._t = Math.min(a._t, 0.5); }
+  else if (ground[i] === G.GRASS || ground[i] === G.DRY) { const f = (a.sp === 'cabra' ? 0.14 : 0.11) * gm; a.food = cl(a.food + f, 0, 100); a.dayFood += f; }
 }
 /* ---------- cavalos, muares e jumentos soltos ---------- */
 function updHorseAI(a, dt, gm, srcs) {
@@ -6093,7 +6234,7 @@ function sheetStats(a) {
   const co = a.coat && RIG.COATS[rigCoat(a)] ? RIG.COATS[rigCoat(a)].n : ''; const sp2 = (SPECIES[a.sp] || {})[a.br];
   if (eqn && (a.sp === 'cavalo' || a.sp === 'burro')) h += `<div class="row mut" style="margin:2px 0">Sinais: ${markStr(a.mk)}${a.cust && (a.cust.mane !== 'natural' || a.cust.tail !== 'natural') ? ' · crina ' + MANES.find(m => m[0] === a.cust.mane)[1].toLowerCase() + ', cauda ' + TAILS.find(m => m[0] === a.cust.tail)[1].toLowerCase() : ''}</div>`;
   if (a.sp === 'boi') { const tag = [a.brinco ? '🏷️ nº ' + String(a.brinco).padStart(3, '0') : '', a.marca ? '🔥 marca ' + a.marca : '', a.cast ? '✂️ castrado' : '', a.repro ? '🐂 reprodutor' : '', a.mocho ? 'descornado' : '', a.cio === S.day ? '💗 no cio' : '', a.labor ? '<b style="color:#b02020">⚠️ PARTO DIFÍCIL</b>' : '', a.umb ? '🩹 umbigo por curar' : '', a.enj ? '🍼 enjeitado' : '', a._fug ? '🔎 fugido' : '', a.manca ? 'mancando' : '', a.sick ? '<b style="color:#b02020">' + dzOf(a).n + '</b>' : ''].filter(Boolean).join(' · ');
-    h += `<div class="sg"><span>Carrapato</span>${bar(a.carr || 0, 'r')}<b>${Math.round(a.carr || 0)}</b><span>Verminose</span>${bar(a.verme || 0, 'y')}<b>${Math.round(a.verme || 0)}</b><span>Mosca</span>${bar(a.mosca || 0, '')}<b>${Math.round(a.mosca || 0)}</b></div><div class="row mut" style="margin:2px 0">ECC ${ecc(a).toFixed(1)} / 5${a.gmd !== undefined ? ' · ganho ' + a.gmd.toFixed(2) + ' kg/dia' : ''} · ${vacStr(a)}</div>${tag ? `<div class="row mut" style="margin:2px 0">${tag}</div>` : ''}`; }
+    h += `<div class="sg"><span>Carrapato</span>${bar(a.carr || 0, 'r')}<b>${Math.round(a.carr || 0)}</b><span>Verminose</span>${bar(a.verme || 0, 'y')}<b>${Math.round(a.verme || 0)}</b><span>Mosca</span>${bar(a.mosca || 0, '')}<b>${Math.round(a.mosca || 0)}</b></div>${dietHTML(a)}${a.cruz ? '<div class="row mut" style="margin:2px 0">Cruzamento ' + esc(a.cruz) + ' (vigor híbrido: +10% de ganho)</div>' : ''}${a.buyP ? '<div class="row mut" style="margin:2px 0">Comprado no dia ' + a.buyD + ' por ' + fmt(a.buyP) + ' com ' + a.buyW + ' kg · frigorífico paga hoje ' + fmt(frigPrice(a)) + '</div>' : ''}<div class="row mut" style="margin:2px 0">ECC ${ecc(a).toFixed(1)} / 5${a.gmd !== undefined ? ' · ganho ' + a.gmd.toFixed(2) + ' kg/dia' : ''} · ${vacStr(a)}</div>${tag ? `<div class="row mut" style="margin:2px 0">${tag}</div>` : ''}`; }
   if (a.sp === 'boi' && a.sex === 'M' && a.age >= 24) h += `<div class="row mut" style="margin:2px 0">Canga: ${(a.carro || 0) >= 100 ? '<b>boi de carro amansado</b>' : 'amansado ' + Math.round(a.carro || 0) + '%'}${CATTLE[a.br] && CATTLE[a.br].carro ? ' · raça boa de carro' : ''}</div>`;
   h += `<div class="row mut" style="margin:2px 0">Nº ${a.id}${co ? ' · ' + co : ''}${a.temp && !(a.traits && a.traits.length) ? ' · ' + (TEMPS[a.temp] || a.temp) : ''}${eqn && sp2 && sp2.v ? ' · velocidade ' + Math.round(sp2.v[2] * (a.spdF || 1)) + ' · resistência ' + Math.round((30 - sp2.cost) * 5 * (a.endF || 1)) : ''}${a._cut ? ' · <b>apartado</b>' : ''}</div>`;
   const flags = []; if (a.sick) flags.push('<b style="color:#b02020">🤒 doente</b>'); if (a.preg && (a.exam >= S.day - 7 || a.preg <= 3)) flags.push('🤰 prenhe (' + a.preg + 'd)'); if (a.lact) flags.push('🍼 lactação'); if (a.newArr) flags.push('📦 recém-chegado'); if (a.vacc >= S.day || S.vacUntil >= S.day) flags.push('💉 vacinado'); if (a._st === 'tied') flags.push('🪢 amarrado'); if (P.lead === a.id) flags.push('🪢 no cabresto'); if (a._st === 'route') flags.push('🚶 sendo conduzido');
@@ -6164,7 +6305,7 @@ $('ap').addEventListener('click', e => { const b = e.target.closest('[data-a]');
 A.shClose = () => closeSheet();
 A.saNo = () => { SH.conf = null; renderSheet(); };
 A.saTo = k => { const a = SH.a; SH.sub = null; renderSheet(); escort(a, k); };
-A.saSell = () => { const a = SH.a; const p = a.area === 'curral' ? frigPrice(a) : Math.round(frigPrice(a) - 80); if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; unhitchId(a.id); if (P.mnt === a.id) return; S.animals = S.animals.filter(x => x !== a); S.stats.sold++; receive(p, 'Venda de ' + a.n + (a.area === 'curral' ? '' : ' (com frete)')); toast('💰 ' + a.n + ' vendido(a) por ' + fmt(p)); closeSheet(); };
+A.saSell = () => { const a = SH.a; const p = a.area === 'curral' ? frigPrice(a) : Math.round(frigPrice(a) - 80); soldRecord(a, p, 'frigorífico'); if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; unhitchId(a.id); if (P.mnt === a.id) return; S.animals = S.animals.filter(x => x !== a); S.stats.sold++; receive(p, 'Venda de ' + a.n + (a.area === 'curral' ? '' : ' (com frete)')); toast('💰 ' + a.n + ' vendido(a) por ' + fmt(p)); closeSheet(); };
 function nearPost(a) { const t = a || P; let b = -1, bd = 46; POSTS.forEach((p, i) => { const d = hyp(p.x - t.x, p.y - t.y); if (d < bd) { bd = d; b = i; } }); return b; }
 // executa a ação: caminha até o animal e toca a animação correspondente
 function doAnimal(a, k, dur, fn, opt) {
@@ -6253,7 +6394,7 @@ function tradeView(id) {
 A.tSelT = v => { M.tsel.theirs = +v; renderModal(); };
 A.tSelM = v => { M.tsel.mine = +v; renderModal(); };
 function npcBuy(id, a, price) { if (!pay(price, 'Compra de ' + a.n + ' (' + NPCDEF[id].n + ')')) return false; S.delivery.push({ id: a.id, day: S.day + 1, to: 'receb' }); a.own = 'delivery'; a.x = -999; a.y = -999; addFr(id, 15); npcState(id).trades++; remember(id, 'vendeu ' + a.n + ' para você'); return true; }
-function npcSell(id, a, price) { const q = npcState(id).quest; if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; unhitchId(a.id); a.own = id; const p = randIn(NPCDEF[id].area); a.x = p[0]; a.y = p[1]; a._st = null; receive(price, 'Venda de ' + a.n + ' para ' + NPCDEF[id].n); S.stats.sold++; addFr(id, 15); remember(id, 'comprou ' + a.n + ' de você'); if (q && q.k === 'animal' && a.sp === q.sp && stars(a) >= q.st) { M.txt = finishQuest(id); } }
+function npcSell(id, a, price) { soldRecord(a, price, NPCDEF[id] ? NPCDEF[id].n : 'vizinho'); const q = npcState(id).quest; if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; unhitchId(a.id); a.own = id; const p = randIn(NPCDEF[id].area); a.x = p[0]; a.y = p[1]; a._st = null; receive(price, 'Venda de ' + a.n + ' para ' + NPCDEF[id].n); S.stats.sold++; addFr(id, 15); remember(id, 'comprou ' + a.n + ' de você'); if (q && q.k === 'animal' && a.sp === q.sp && stars(a) >= q.st) { M.txt = finishQuest(id); } }
 A.tBuy = () => { const id0 = M.npc, a0 = byId(M.tsel.theirs); if (npcState(id0).noDeal === S.day) { M.txt = 'Hoje eu não negocio mais, já falei.'; M.sub = null; return renderModal(); } if (a0) return openHaggle(id0, a0, false); const id = M.npc, hm = hearts(id), a = byId(M.tsel.theirs); if (npcBuy(id, a, animalValue(a) * (1.1 - hm * 0.015))) { M.txt = 'Negócio fechado! Amanhã cedo ' + a.n + ' tá no seu Recebimento.'; M.sub = null; } renderModal(); };
 A.tSell = () => { const id0 = M.npc, a0 = byId(M.tsel.mine); if (npcState(id0).noDeal === S.day) { M.txt = 'Hoje eu não negocio mais, já falei.'; M.sub = null; return renderModal(); } if (a0) return openHaggle(id0, a0, true); const id = M.npc, hm = hearts(id), a = byId(M.tsel.mine); npcSell(id, a, animalValue(a) * (0.88 + hm * 0.012)); if (!M.txt || M.txt.indexOf('obrigado') < 0) M.txt = 'Bom animal! Fechado.'; M.sub = null; renderModal(); };
 A.tSwap = () => { const id = M.npc, hm = hearts(id), T = byId(M.tsel.theirs), Mi = byId(M.tsel.mine); const diff = animalValue(T) * (1.1 - hm * 0.015) - animalValue(Mi) * (0.88 + hm * 0.012); if (diff > 0 && !canPay(diff)) return say('Saldo insuficiente para a troca.'); if (diff > 0) pay(diff, 'Diferença de troca'); npcSell(id, Mi, diff < 0 ? -diff : 0); S.delivery.push({ id: T.id, day: S.day + 1, to: 'receb' }); T.own = 'delivery'; T.x = T.y = -999; M.txt = 'Troca feita! Amanhã ' + T.n + ' chega no seu Recebimento.'; M.sub = null; renderModal(); };
@@ -6370,6 +6511,7 @@ function gadoTab() {
   const sec = (t, arr, extra) => arr.length ? `<div class="card"><b>${t} (${arr.length})</b>${extra ? '<br><span class="mut">' + extra + '</span>' : ''}<div class="row">${arr.slice(0, 24).map(link).join('')}</div></div>` : '';
   const tot = L.reduce((s, a) => s + (a.wt || 0), 0), gm = L.filter(a => a.gmd !== undefined);
   let h = `<div class="card"><b>📒 Caderneta do rebanho — ${L.length} cabeça(s)</b><br>${Object.keys(cat).map(c => c + ': <b>' + cat[c] + '</b>').join(' · ')}<br><span class="mut">Peso vivo ${Math.round(tot)} kg (≈ ${(tot / 30).toFixed(0)} @) · ECC médio ${(L.reduce((s, a) => s + ecc(a), 0) / L.length).toFixed(1)} · ganho médio ${gm.length ? (gm.reduce((s, a) => s + a.gmd, 0) / gm.length).toFixed(2) : '—'} kg/dia</span><div class="row">${btn('🔢 Contar o gado', 'contar')}</div></div>`;
+  h += engordaHTML();
   h += sec('⚠️ Em trabalho de parto', L.filter(a => a.labor), 'Corra para ajudar!');
   h += sec('🤒 Doentes', L.filter(a => a.sick), L.filter(a => a.sick).map(a => a.n + ': ' + dzOf(a).n + (dzCure(a) ? ' (' + IT[dzCure(a)].n.split(' (')[0].toLowerCase() + ')' : ' (sem cura)')).join(' · '));
   h += sec('🔎 Fugidos para a mata', L.filter(a => a._fug), 'Campeie na Mata dos Fundos e traga de volta pelo cabresto ou laço.');
@@ -6399,6 +6541,53 @@ function geneticaTab() {
   return h;
 }
 A.buySem = v => { const [k, n] = v.split('|'); if (!pay(SEMEN[k][1] * +n * priceMul(), 'Sêmen ' + SEMEN[k][0] + ' x' + n)) return; S.semen = S.semen || {}; S.semen[k] = (S.semen[k] || 0) + +n; toast('🧪 +' + n + ' dose(s) de ' + SEMEN[k][0]); renderModal(); };
+/* ---------- FEIRA DE ANIMAIS: catálogo que gira todo dia, com tema por dia da semana ---------- */
+const FEIRA_TEMA = ['Feira geral de domingo', 'Feira de bezerros', 'Reposição: garrotes e boi magro', 'Matrizes: vacas e novilhas', 'Genética: touros e novilhas de raça', 'Equinos, muares e jumentos', 'Pequenos animais e bezerros'];
+const BR_COMUM = ['nelore', 'nelore', 'nelore', 'nelore', 'mestico', 'mestico', 'nelMocho', 'girolando', 'guzera', 'tabapua', 'brahman', 'canchim', 'sindi', 'indubrasil', 'gir', 'peduro'];
+const BR_LEITE = ['holandes', 'girolando', 'girolando', 'jersey', 'pardoSuico', 'guzolando'];
+const BR_RARA = () => Object.keys(CATTLE).filter(k => !CATTLE[k].old && !BR_COMUM.includes(k));
+function feiraLot(kind, sp, br, n, mk) { const animals = []; for (let i = 0; i < n; i++) { const a = mk(i); if (a) animals.push(a); } return { kind, sp, br, animals }; }
+function genFeira() {
+  const w = wday(), L = [], R = BR_RARA();
+  const boi = (br, o) => { const a = mkAnimal('boi', br, Object.assign({ own: 'agro' }, o)); return a; };
+  const bezerros = (br, n, sex) => L.push(feiraLot('Bezerros desmamados', 'boi', br, n, () => boi(br, { age: rint(8, 10), sex: sex || pick(['M', 'M', 'F']) })));
+  const leite = (n) => { const br = pick(BR_LEITE); L.push(feiraLot('Bezerros de leite (machos de leiteira)', 'boi', br, n, () => boi(br, { age: rint(3, 5), sex: 'M', gen: rint(40, 62) }))); };
+  const garrotes = (br, n) => L.push(feiraLot('Garrotes', 'boi', br, n, () => boi(br, { age: rint(14, 20), sex: 'M' })));
+  const magro = (br, n) => L.push(feiraLot('Boi magro (reposição)', 'boi', br, n, () => { const a = boi(br, { age: rint(24, 32), sex: 'M' }); a.cast = 1; a.wt = Math.round(expWt(a) * rnd(0.72, 0.82)); a.cond = rint(25, 40); return a; }));
+  const novilhas = (br, n) => L.push(feiraLot('Novilhas', 'boi', br, n, () => boi(br, { age: rint(16, 24), sex: 'F' })));
+  const vacas = (br, n, tipo) => L.push(feiraLot(tipo === 'prenhe' ? 'Vacas prenhes (confirmado no toque)' : tipo === 'parida' ? 'Vacas paridas com bezerro ao pé' : 'Vacas', 'boi', br, n, () => { const a = boi(br, { age: rint(32, 70), sex: 'F' }); if (tipo === 'prenhe') { a.preg = rint(2, 6); a.exam = S.day; a._paiBr = br; a._paiN = 'Touro ' + CATTLE[br].n; a._paiGen = rint(50, 75); } if (tipo === 'parida') { a.lact = rint(8, 16); const c = boi(br, { age: rint(1, 4), sex: pick(['M', 'F']), mae: a.n }); c.maeId = a.id; a._calf = c; } return a; }));
+  const touro = (br) => L.push(feiraLot('Touro reprodutor (PO)', 'boi', br, 1, () => { const a = boi(br, { age: rint(30, 50), sex: 'M', gen: rint(76, 92) }); a.repro = 1; return a; }));
+  const eq = (sp, n) => L.push(feiraLot(sp === 'cavalo' ? 'Cavalos' : sp === 'burro' ? 'Muares' : 'Jumentos', sp, null, n, () => mkAnimal(sp, null, { own: 'agro', age: rint(30, 90) })));
+  const peq = (sp, n, o) => L.push(feiraLot(sp === 'cabra' ? 'Cabras e bodes' : sp === 'galinha' ? 'Galinhas' : 'Cães', sp, null, n, () => mkAnimal(sp, sp === 'cao' ? pick(Object.keys(DOGS).filter(k => !DOGS[k].old)) : null, Object.assign({ own: 'agro', age: sp === 'galinha' ? 10 : rint(8, 24) }, o || {}))));
+  switch (w) {
+    case 1: for (let i = 0; i < 4; i++) bezerros(pick(BR_COMUM), rint(3, 6)); leite(rint(3, 6)); leite(rint(2, 4)); bezerros(pick(R), rint(2, 3)); break;
+    case 2: for (let i = 0; i < 3; i++) garrotes(pick(BR_COMUM), rint(3, 5)); magro(pick(BR_COMUM), rint(4, 8)); magro(pick(BR_COMUM), rint(3, 6)); garrotes(pick(R), 2); break;
+    case 3: novilhas(pick(BR_COMUM), rint(3, 5)); novilhas(pick(BR_LEITE), rint(2, 4)); vacas(pick(BR_COMUM), rint(2, 4), 'prenhe'); vacas(pick(BR_COMUM), rint(2, 3), 'parida'); vacas(pick(BR_LEITE), 2, 'parida'); vacas(pick(BR_COMUM), rint(3, 5)); break;
+    case 4: for (let i = 0; i < 3; i++) touro(pick(R)); touro(pick(['nelore', 'nelMocho', 'gir', 'guzera', 'brahman', 'tabapua'])); touro(pick(['nelore', 'girolando'])); novilhas(pick(R), 2); break;
+    case 5: eq('cavalo', rint(4, 6)); eq('burro', rint(2, 3)); eq('jumento', 2); bezerros(pick(BR_COMUM), rint(3, 4)); break;
+    case 6: peq('cabra', rint(4, 6)); peq('galinha', rint(4, 6), { sex: 'F' }); peq('cao', 2); bezerros(pick(BR_COMUM), rint(3, 5)); leite(rint(2, 4)); break;
+    default: bezerros(pick(BR_COMUM), rint(3, 4)); garrotes(pick(BR_COMUM), 3); novilhas(pick(BR_COMUM), 2); vacas(pick(BR_COMUM), 2, 'parida'); eq('cavalo', 2); peq('cabra', 3); peq('galinha', 3, { sex: 'F' }); break;
+  }
+  // oportunidade do dia: um lote fora do tema
+  if (w !== 1) bezerros(pick(BR_COMUM), rint(2, 4)); if (Math.random() < 0.6) L.push(feiraLot('Oportunidade: raça especial', 'boi', null, 1, () => mkAnimal('boi', pick(R), { own: 'agro', age: rint(10, 30) })));
+  S.feira = { day: S.day, lots: L };
+}
+const feiraPrice = a => Math.round(animalValue(a) * (a.sp === 'boi' ? 1.03 : 1.05) * priceMul() * (a.sp === 'boi' ? repoF() : 1) + (a._calf ? animalValue(a._calf) * 1.05 * priceMul() : 0));
+function feiraTab() {
+  if (!S.feira || S.feira.day !== S.day) genFeira();
+  const w = wday(); let h = `<div class="card"><b>📅 Hoje: ${FEIRA_TEMA[w]}</b><br><span class="mut">O catálogo muda todo dia. Semana: Seg bezerros · Ter reposição · Qua matrizes · Qui touros de raça · Sex equinos · Sáb pequenos animais · Dom feira geral. Entrega no Recebimento amanhã às 6h.</span><br><span class="mut">Arroba hoje ${fmt2(S.arroba)} · boi gordo ≈ ${fmt2(kgPrice())}/kg vivo · reposição ${season() === 0 ? 'em alta (águas)' : 'em baixa (seca)'}</span></div>`;
+  S.feira.lots.forEach((lot, i) => { if (!lot.animals.length) return; const A0 = lot.animals[0], tot = lot.animals.reduce((s, a) => s + feiraPrice(a), 0), wt = lot.animals.reduce((s, a) => s + (a.wt || 0), 0) / lot.animals.length;
+    h += `<div class="card"><div class="row sp">${lot.animals.slice(0, 3).map(a => animalImg(a, 1)).join('')}<span style="flex:1"><b>${lot.kind}</b> · ${lot.animals.length} cab.<br><span class="mut">${[...new Set(lot.animals.map(a => breedOf(a).n))].join(', ')} · ${ageStr(A0)}${lot.sp === 'boi' ? ' · média ' + Math.round(wt) + ' kg · ' + fmt2(tot / lot.animals.length / Math.max(1, wt)) + '/kg' : ''}</span></span><b>${fmt(tot / lot.animals.length)}<br><span class="mut">por cabeça</span></b></div>`;
+    h += `<div class="row">${lot.animals.map((a, j) => `<button data-a="feiraPick" data-v="${i}|${j}" class="${M.fsel === i + '|' + j ? 'on' : ''}" style="margin:1px">${esc(a.n)} ${a.sex === 'F' ? '♀' : '♂'} ${lot.sp === 'boi' ? Math.round(a.wt) + 'kg ' : ''}${starStr(stars(a)).replace(/☆/g, '')}</button>`).join('')}</div>`;
+    const sel = M.fsel && M.fsel.split('|')[0] === String(i) ? lot.animals[+M.fsel.split('|')[1]] : null;
+    if (sel) h += `<p class="mut">${esc(sel.n)}: ${catName(sel)} ${breedOf(sel).n}, ${ageStr(sel)}${sel.wt ? ', ' + Math.round(sel.wt) + ' kg' : ''}, genética ${Math.round(sel.gen)}. ${esc((breedOf(sel).d || '').slice(0, 120))}${sel._calf ? ' Com o bezerro ' + esc(sel._calf.n) + ' ao pé.' : ''}</p>`;
+    h += `<div class="row">${sel ? btn('Comprar ' + esc(sel.n) + ' (' + fmt(feiraPrice(sel)) + ')', 'feiraBuy', i + '|' + lot.animals.indexOf(sel)) : btn('Comprar 1 (' + fmt(feiraPrice(A0)) + ')', 'feiraBuy', i + '|0')}${lot.animals.length > 1 ? btn('Comprar o lote todo (' + fmt(tot * 0.97) + ', -3%)', 'feiraLote', i) : ''}</div></div>`; });
+  return h;
+}
+A.feiraPick = v => { M.fsel = M.fsel === v ? null : v; renderModal(); };
+function feiraDeliver(a, price) { if (a.sp === 'cao' && myAnimals('cao').length >= 2) { say('Dois cães já bastam na fazenda!'); return false; } a.own = 'delivery'; a.x = a.y = -999; markBought(a, price); S.animals.push(a); S.delivery.push({ id: a.id, day: S.day + 1, to: a.sp === 'galinha' ? 'galin' : 'receb' }); if (a._calf) { const c = a._calf; delete a._calf; c.own = 'delivery'; c.x = c.y = -999; c.maeId = a.id; markBought(c, 0); S.animals.push(c); S.delivery.push({ id: c.id, day: S.day + 1, to: 'receb' }); } return true; }
+A.feiraBuy = v => { const [i, j] = v.split('|').map(Number), lot = S.feira.lots[i], a = lot && lot.animals[j]; if (!a) return; const pr = feiraPrice(a); if (!pay(pr, 'Feira: ' + a.n + ' (' + breedOf(a).n + ')')) return; if (!feiraDeliver(a, pr - (a._calf ? 0 : 0))) return; lot.animals.splice(j, 1); M.fsel = null; toast('🔨 ' + a.n + ' comprado(a)! Chega amanhã cedo.'); renderModal(); };
+A.feiraLote = v => { const lot = S.feira.lots[+v]; if (!lot) return; const tot = lot.animals.reduce((s, a) => s + feiraPrice(a), 0) * 0.97; if (!pay(tot, 'Feira: lote de ' + lot.animals.length + ' ' + lot.kind.toLowerCase())) return; const n = lot.animals.length; lot.animals.forEach(a => feiraDeliver(a, feiraPrice(a) * 0.97)); lot.animals = []; M.fsel = null; toast('🔨 Lote de ' + n + ' arrematado! Chega amanhã cedo no Recebimento.'); renderModal(); };
 /* ---------- lojas ---------- */
 function shopCart() { return hyp(S.cart.x - P.x, S.cart.y - P.y) < 110 || P.cart; }
 function buyItem(id, n, dest) {
@@ -6438,13 +6627,13 @@ function oxTab() {
   return h;
 }
 A.buyOxCart = () => { if (S.veh.boi.own) return; if (!pay(OXCART_P * priceMul(), 'Carro de boi (carpintaria)')) return; Object.assign(S.veh.boi, newOxCart(), { own: true }); toast('🐂 O carro de boi chegou à fazenda!'); AU.jingle(); renderModal(); };
-A.buyOxPair = v => { const pr = S.oxStock.list[+v]; if (!pr) return; const cost = (animalValue(pr[0]) + animalValue(pr[1])) * 1.05 * priceMul(); if (!pay(cost, 'Junta de bois ' + pr[0].n + ' e ' + pr[1].n)) return; for (const a of pr) { a.own = 'delivery'; a.x = a.y = -999; S.animals.push(a); S.delivery.push({ id: a.id, day: S.day + 1, to: 'receb' }); } S.oxStock.list.splice(+v, 1); toast('🐂 Junta comprada! Chega amanhã cedo no Recebimento.'); renderModal(); };
-function openAgro() { showModal('🌿 Casa do Agro', [['ins', 'Insumos'], ['sel', 'Selaria'], ['ani', 'Animais'], ['boi', 'Carro de boi'], ['vet', 'Veterinária'], ['gen', 'Genética']], 'ins', t => {
+A.buyOxPair = v => { const pr = S.oxStock.list[+v]; if (!pr) return; const cost = (animalValue(pr[0]) + animalValue(pr[1])) * 1.05 * priceMul(); if (!pay(cost, 'Junta de bois ' + pr[0].n + ' e ' + pr[1].n)) return; for (const a of pr) { a.own = 'delivery'; a.x = a.y = -999; markBought(a, cost / 2); S.animals.push(a); S.delivery.push({ id: a.id, day: S.day + 1, to: 'receb' }); } S.oxStock.list.splice(+v, 1); toast('🐂 Junta comprada! Chega amanhã cedo no Recebimento.'); renderModal(); };
+function openAgro() { showModal('🌿 Casa do Agro', [['ins', 'Insumos'], ['sel', 'Selaria'], ['ani', 'Feira de animais'], ['boi', 'Carro de boi'], ['vet', 'Veterinária'], ['gen', 'Genética']], 'ins', t => {
   let h = keeperBanner('agro'); if (!shopCart()) h += '<p class="mut">💡 Estacione a carroça aqui perto para levar sacos pesados, ou peça entrega.</p>';
   if (t === 'ins') h += ['racao', 'milho', 'sal', 'palma', 'silagem', 'galaoV', 'galao', 'lenha', 'carvao'].map(id => shopRow(id, { frete: 1 })).join('');
   if (t === 'gen') h += geneticaTab();
   if (t === 'sel') { h += ['escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho'].map(id => shopRow(id)).join(''); h += SADDLES.filter(s => s.p).map(s => `<div class="card"><b>${s.n}</b> — ${fmt(s.p)}<p class="mut">${s.d}</p>${S.saddles.includes(s.id) ? '✅ Você já tem' : btn('Comprar', 'buySad', s.id)}</div>`).join(''); }
-  if (t === 'ani') { if (!S.agroStock || S.agroStock.day !== S.day) genAgroStock(); h += '<p class="mut">Leilão do dia: animais entregues no Recebimento amanhã às 6h.</p>' + S.agroStock.list.map((a, i) => `<div class="card"><div class="row sp">${animalImg(a, 1)}<span style="flex:1">${esc(a.n)} · ${catName(a)} ${breedOf(a).n}<br><span class="stars">${starStr(stars(a))}</span> <span class="mut">${a.skills.join(', ')}</span></span><b>${fmt(animalValue(a) * 1.05 * priceMul())}</b></div>${btn('Arrematar', 'agroBuy', i)}</div>`).join(''); }
+  if (t === 'ani') h += feiraTab();
   if (t === 'boi') h += oxTab();
   if (t === 'vet') h += ['vacina', 'vacRaiva', 'pouron', 'vermifugo', 'remedio', 'mataBicheira', 'iodo', 'soro', 'brinco', 'mamadeira', 'balde', 'ferroMarca'].map(id => shopRow(id)).join('') + '<p class="mut">Brucelose: a vacina das bezerras (3 a 8 meses) é aplicada pela veterinária Joana, pelo Manejo da ficha ou no brete.</p>' + '' + `<div class="card"><b>Consulta veterinária</b> — ${fmt(150)}<p class="mut">Joana visita a fazenda e trata todos os animais doentes hoje.</p>${btn('Chamar veterinária', 'vetCall')}</div>`;
   return h; }); }
@@ -7159,12 +7348,12 @@ function aucHammer() {
   const c = AUC.cur, lot = c.lot, a = AUC.lotA; c.done = 1; c.after = 2.6; AU.hammer && AU.hammer(102.6 * TS, 50 * TS);
   if (!c.lead) { aucLog('Sem lances. Lote retirado.'); AUC.unsold.push(lot); if (lot.mine) { aucReturn(lot.a); } return renderAuc(); }
   const nm = c.lead === 'player' ? 'você' : BUYERS[c.lead].n; aucLog(`VENDIDO para ${nm} por ${fmt(c.bid)}!`); AUC.sold.push({ lot, by: c.lead, price: c.bid });
-  if (c.lead === 'player') { pay(c.bid, 'Leilão: ' + lot.a.n); const b = Object.assign({}, lot.a, { own: 'delivery' }); delete b._px; b.x = -999; b.y = -999; b.id = S.nextId ? S.nextId++ : b.id; S.animals.push(b); S.delivery.push({ id: b.id, day: S.day + 1, to: 'receb' }); hist(b, 'Arrematado no ' + AUC_TYPES[AUC.type].n + ' por ' + fmt(c.bid)); AUC.my.push(lot.a.n); P._emo = 1; toast('Arrematou ' + lot.a.n + '! Chega amanhã cedo no Recebimento.'); }
+  if (c.lead === 'player') { pay(c.bid, 'Leilão: ' + lot.a.n); const b = Object.assign({}, lot.a, { own: 'delivery' }); delete b._px; b.x = -999; b.y = -999; b.id = S.nextId ? S.nextId++ : b.id; markBought(b, c.bid); S.animals.push(b); S.delivery.push({ id: b.id, day: S.day + 1, to: 'receb' }); hist(b, 'Arrematado no ' + AUC_TYPES[AUC.type].n + ' por ' + fmt(c.bid)); AUC.my.push(lot.a.n); P._emo = 1; toast('Arrematou ' + lot.a.n + '! Chega amanhã cedo no Recebimento.'); }
   else {
     const B = BUYERS[c.lead]; if (B.farm && S.region && S.region.farms[B.farm]) S.region.farms[B.farm].money -= c.bid; addFr(c.lead, 2);
     if (B.farm && FARMS[B.farm].near && AREAS[B.farm]) { const b = Object.assign({}, lot.a, { own: FARMS[B.farm].own }); const p = randIn(B.farm); b.x = p[0]; b.y = p[1]; b.area = B.farm; S.animals.push(b); }
     else if (B.farm && S.region) { const H = S.region.farms[B.farm].herd; H[lot.a.sp] = (H[lot.a.sp] || 0) + 1; }
-    if (lot.mine) { const net = Math.round(c.bid * (AUC_TYPES[AUC.type].charity ? 0.5 : 0.95)); receive(net, 'Leilão: venda de ' + lot.a.n + (AUC_TYPES[AUC.type].charity ? ' (metade para a festa)' : ' (−5% de comissão)')); if (AUC_TYPES[AUC.type].charity) { addFr('padre', 40); addFr('felipe', 10); } }
+    if (lot.mine) { const net = Math.round(c.bid * (AUC_TYPES[AUC.type].charity ? 0.5 : 0.95)); soldRecord(lot.a, net, 'leilão'); receive(net, 'Leilão: venda de ' + lot.a.n + (AUC_TYPES[AUC.type].charity ? ' (metade para a festa)' : ' (−5% de comissão)')); if (AUC_TYPES[AUC.type].charity) { addFr('padre', 40); addFr('felipe', 10); } }
     const e = npcs.find(n => n.id === c.lead); if (e) { e.emote = '♥'; e.et = 2; aucFocus('npc', 1.6, e.x, e.y - 14); }
     if (lot.seller !== 'player' && FARMS[lot.sellerFarm]) S.region.farms[lot.sellerFarm].money += c.bid;
   }
@@ -8851,7 +9040,7 @@ const SAVE = {
     v = o.v || v || 1; while (v < SAVE_V && MIGR[v]) v = MIGR[v](o); o.v = SAVE_V;
     const base = newState(); for (const k in base) if (o[k] === undefined) o[k] = base[k];
     for (const k in base.dep) if (o.dep[k] === undefined) o.dep[k] = 0;
-    S = o; P = S.p; initVeh(S); lasso.t = null; parts = []; rings = []; if (S.cf && S.cf.ap) delete S.cf.ap.tool; if (!S.chest) S.chest = {}; if (!S.esc) S.esc = []; S.esc = []; S.animals.forEach(a => { if (!a.hist) a.hist = []; if (a._st === 'route') a._st = null; });
+    S = o; P = S.p; initVeh(S); if (!S.gadoV) { S.animals.forEach(a => { if (a.own === 'player' && a.sp === 'boi' && a.sex === 'M' && a.age >= 24) a.cast = 1; }); S.gadoV = 2; } lasso.t = null; parts = []; rings = []; if (S.cf && S.cf.ap) delete S.cf.ap.tool; if (!S.chest) S.chest = {}; if (!S.esc) S.esc = []; S.esc = []; S.animals.forEach(a => { if (!a.hist) a.hist = []; if (a._st === 'route') a._st = null; });
     genMap(); initGrass(); if (S.grass) { const u = new Uint8Array(MW * MH); decodeU8(S.grass, u); for (let i = 0; i < u.length; i++) if (ground[i] === G.PAST) grass[i] = u[i]; }
     GATES.forEach((g, i) => { g.open = !!S.gates[i]; g.anim = g.open ? 1 : 0; });
     while (S.tr.length < TROUGHS.length) S.tr.push(TROUGHS[S.tr.length].cap * 0.5);
@@ -9018,7 +9207,7 @@ function newGame(cf) {
   const h = mkAnimal(sp, cf.hbr, { sex: cf.hsex, n: cf.hn, main: true, age: ageDays(y0), gen: rnd(62, 78), hap: 85, saddle: S.saddleSel, cond: y0 >= 14 ? 50 : 60, coat: cf.coat, mk: cf.mt !== 'jegue' ? cf.mk : 0, aff: 60, cust: cf.cust, temp: am0 });
   S.tack = {}; if (cf.cust) { if (cf.cust.peit) S.tack.peit = 1; if (cf.cust.orn && cf.cust.orn !== 'none') S.tack[cf.cust.orn] = 1; } h.x = 12.5 * TS + 10; h.y = 31 * TS; S.animals.push(h);
   // dois bois Pé-Duro
-  const bois = [put(mkAnimal('boi', 'peduro', { sex: 'M', age: 34, n: 'Malhado', coat: 'peVermelho' }), 'p1'), put(mkAnimal('boi', 'peduro', { sex: 'M', age: 30, n: 'Fumaça', coat: 'amarelo' }), 'p1')];
+  const bois = [put(mkAnimal('boi', 'peduro', { sex: 'M', age: 34, n: 'Malhado', coat: 'peVermelho' }), 'p1'), put(mkAnimal('boi', 'peduro', { sex: 'M', age: 30, n: 'Fumaça', coat: 'amarelo' }), 'p1')]; bois.forEach(b => { b.cast = 1; b.marca = 'TS'; }); S.gadoV = 2;
   const dog = mkAnimal('cao', 'caramelo', { n: 'Caramelo', sex: 'M', age: 30, skills: ['Boiadeiro'] }); dog.x = 14 * TS; dog.y = 32 * TS; S.animals.push(dog);
   for (let i = 0; i < 5; i++) put(mkAnimal('boi', pick(['nelore', 'nelore', 'guzera', 'gir', 'tabapua']), { own: 'felipe' }), 'campos');
   for (let i = 0; i < 3; i++) put(mkAnimal('cavalo', pick(['mm', 'qm', 'campolina', 'crioulo', 'arabe']), { own: 'ryan' }), 'duarte');
@@ -9351,7 +9540,7 @@ function handleTap(cx, cy) {
   } else if (SET.mode === 'touch' && P.cart) say('Na carroça, use o Joystick (Configurações › Controles) ou desça dela.', 2400);
 }
 /* ---------- venda no curral ---------- */
-function frigPrice(a) { let k = 0.97; if (a.sp === 'boi') { if (a.sex === 'M' && a.age >= 24) k *= a.cast ? 1.05 : 0.93; if (a.marca || a.brinco) k *= 1.02; if ((a.carr || 0) > 60 || (a.verme || 0) > 60) k *= 0.95; if (a.sick) k *= 0.7; } return Math.round(animalValue(a) * k); }
+function frigPrice(a) { if (a.sp === 'boi') return frigPriceBoi(a); let k = 0.97; if (a.sp === 'boi') { if (a.sex === 'M' && a.age >= 24) k *= a.cast ? 1.05 : 0.93; if (a.marca || a.brinco) k *= 1.02; if ((a.carr || 0) > 60 || (a.verme || 0) > 60) k *= 0.95; if (a.sick) k *= 0.7; } return Math.round(animalValue(a) * k); }
 function embMul() { return (S.rankI >= 1 ? 1.1 : 1.05) + (S.cadastro ? 0.03 : 0); }
 function openEmbarque() { M.emb = true; openSell(true); }
 function openSell(emb) {
