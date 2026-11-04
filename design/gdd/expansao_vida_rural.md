@@ -230,7 +230,7 @@ nas estradas, missões e memória dos NPCs.
 ### Mapa maior: Retiro do Umbuzeiro
 
 O mundo passou de 110 para 150 linhas (`MH`); os interiores das casas ficam abaixo (`MHT = MH + 32`). Abaixo do Pomar (y 110–149) fica o
-**Retiro do Umbuzeiro**, terra comprável (`PARCELS.retiro`, R$ 52 000). Ele tem:
+**Retiro**, parte da Fazenda Boa Esperança desde o jogo novo (sem compra; na tela aparece "Fazenda Boa Esperança · Sua propriedade · Retiro"). Ele tem:
 - 4 piquetes (9 a 12) de arame farpado em volta de um **corredor de manejo**: todas as porteiras abrem no corredor, que leva à estrada;
 - o **Piquete da Aguada**, com açude natural (o gado bebe no açude, sem bebedouro);
 - o **Curral do Retiro** (tábua), a casa do retireiro e o **brete com tronco de contenção e balança**;
