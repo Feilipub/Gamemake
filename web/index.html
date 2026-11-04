@@ -393,6 +393,27 @@ input,select{border:3px solid #5a3418;background:#fff6d8;box-shadow:inset 0 2px 
 .thg button{min-height:72px}
 /* toque confortável */
 @media (pointer:coarse){.mb button,.ch button,.tabs button{min-height:38px}}
+
+/* ===== menu em 3D: botões com espessura, cartões que saltam da tela, animal no pedestal ===== */
+.mgrid button{position:relative;transform:perspective(420px) rotateX(10deg);box-shadow:0 6px 0 #2a1608,0 10px 12px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,240,200,.35)!important;transition:transform .08s,box-shadow .08s}
+.mgrid button:active,.mgrid button.on{transform:perspective(420px) rotateX(10deg) translateY(4px);box-shadow:0 2px 0 #2a1608,0 4px 6px rgba(0,0,0,.4),inset 0 2px 0 rgba(255,240,200,.35)!important}
+.mgrid button svg,.mgrid button img,.mgrid button canvas{filter:drop-shadow(0 3px 0 rgba(0,0,0,.35))}
+.an3dHead{display:flex;justify-content:space-between;gap:8px;margin:2px 0 8px;padding:6px 10px;background:linear-gradient(#5a3418,#3a2010);color:#fbe9c0;border:3px solid #1c0e05;box-shadow:0 4px 0 #1c0e05;font-size:13px}
+.sp3dGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px;margin-bottom:12px}
+.sp3d{border-image:none!important;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-height:86px;padding:6px 4px 6px!important;background:linear-gradient(170deg,#f8e8c0 0%,#e8cf98 55%,#c9a868 100%)!important;border:3px solid #2b1608!important;border-radius:10px!important;transform:perspective(500px) rotateX(14deg);box-shadow:0 7px 0 #6a4422,0 8px 0 #2b1608,0 14px 14px rgba(0,0,0,.4),inset 0 3px 0 rgba(255,255,255,.55)!important;transition:transform .1s,box-shadow .1s;color:#2b1608!important}
+.sp3d:active{transform:perspective(500px) rotateX(14deg) translateY(5px);box-shadow:0 2px 0 #6a4422,0 3px 0 #2b1608,0 5px 6px rgba(0,0,0,.35),inset 0 3px 0 rgba(255,255,255,.55)!important}
+.sp3d.on{background:linear-gradient(170deg,#fff4c8 0%,#f4cf62 60%,#c8902a 100%)!important;transform:perspective(500px) rotateX(14deg) translateY(-3px) scale(1.04);box-shadow:0 9px 0 #8a5a16,0 10px 0 #2b1608,0 18px 18px rgba(0,0,0,.45),0 0 0 3px #fff3b0,inset 0 3px 0 rgba(255,255,255,.7)!important}
+.sp3d .nm{font-size:11px;font-weight:bold;margin-top:2px;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+.sp3d .badge{position:absolute;top:-8px;right:-6px;min-width:22px;height:22px;line-height:18px;border-radius:11px;background:radial-gradient(circle at 35% 30%,#ff8a6a,#b02a1a);color:#fff;font-size:12px;font-weight:bold;border:2px solid #2b1608;box-shadow:0 3px 0 #2b1608}
+.ped{position:relative;display:flex;align-items:flex-end;justify-content:center;min-height:40px;padding-bottom:6px}
+.ped::after{content:'';position:absolute;bottom:0;left:50%;width:70%;height:10px;transform:translateX(-50%);background:radial-gradient(ellipse at center,rgba(40,20,5,.55),rgba(40,20,5,0) 70%);z-index:0}
+.ped>*{position:relative;z-index:1;filter:drop-shadow(0 4px 2px rgba(0,0,0,.35))}
+.ped.big{min-width:96px;min-height:70px;background:radial-gradient(ellipse at 50% 85%,#b8955c 0 28%,transparent 30%),linear-gradient(#dfc694,#cdae74);border-radius:8px;border:2px solid #6a4422;box-shadow:inset 0 -6px 10px rgba(80,40,10,.35),inset 0 3px 0 rgba(255,255,255,.4)}
+.an3d{display:flex;gap:10px;align-items:center;margin:0 0 12px;padding:8px;background:linear-gradient(175deg,#fbf0d4,#ead6a6);border:3px solid #2b1608;border-radius:10px;transform:perspective(700px) rotateX(6deg);box-shadow:0 6px 0 #7a5228,0 7px 0 #2b1608,0 12px 14px rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.6);transition:transform .1s}
+.an3d:active{transform:perspective(700px) rotateX(6deg) translateY(4px);box-shadow:0 2px 0 #7a5228,0 3px 0 #2b1608,0 5px 6px rgba(0,0,0,.3)}
+.an3d .inf{flex:1;min-width:0}.an3d.empty{opacity:.85}
+.bars3d{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:5px 0 3px}.bars3d i{display:block;height:7px;background:#3a2414;border:1px solid #1c0e05;border-radius:4px;overflow:hidden;box-shadow:inset 0 2px 2px rgba(0,0,0,.5)}.bars3d b{display:block;height:100%;box-shadow:inset 0 2px 0 rgba(255,255,255,.35)}
+.tags3d em{display:inline-block;font-style:normal;font-size:10px;margin:2px 3px 0 0;padding:1px 5px;background:#7a4a22;color:#fbe9c0;border-radius:6px;box-shadow:0 2px 0 #3a2010}
 </style>
 </head>
 <body class="ttl">
@@ -893,6 +914,9 @@ const SHEEP = {
 };
 const RUM = sp => sp === 'cabra' || sp === 'ovelha'; // pequenos ruminantes: aprisco, rebanho, reprodução parecida
 const SPECIES = { boi: CATTLE, cavalo: HORSES, jumento: DONKEYS, burro: MULES, galinha: CHICKENS, cao: DOGS, cabra: GOATS, porco: PIGS, ovelha: SHEEP };
+const SPN3 = { boi: 'Bovinos', cavalo: 'Cavalos', burro: 'Muares', jumento: 'Jumentos', cabra: 'Cabras', ovelha: 'Ovelhas', porco: 'Porcos', galinha: 'Aves', cao: 'Cães' };
+const SPIC = new Map();
+function spIcon(sp, sc) { const k = sp + (sc || 1); if (SPIC.has(k)) return SPIC.get(k); const own = S && S.animals.find(a => a.own === 'player' && a.sp === sp && a.age >= 12); let a = own; if (!a) { const n0 = S.nid; a = mkAnimal(sp, null, { age: 30, sex: sp === 'galinha' ? 'F' : 'M' }); a.id = 9000 + sp.length; S.nid = n0; } const h = animalImg(a, sc || 1); if (!own) SPIC.set(k, h); return h; }
 const SPN = { boi: 'Bovino', cavalo: 'Cavalo', jumento: 'Jumento', burro: 'Muar', galinha: 'Ave', cao: 'Cão', cabra: 'Caprino', porco: 'Suíno', ovelha: 'Ovino' };
 const SKILLS = {
   boi: ['Rústico', 'Precoce', 'Dócil', 'Boa Mãe', 'Ganho de Peso'], cavalo: ['Faro de Gado', 'Fôlego', 'Arrancada', 'Marcha Macia', 'Coragem'],
@@ -7213,12 +7237,15 @@ function menuTab(t) {
     return h;
   }
   if (t === 'inv') return bagHTML();
-  if (t === 'ani') {
-    const f = M.sub || 'boi'; const sps = ['boi', 'cavalo', 'jumento', 'burro', 'galinha', 'cao'];
-    let h = '<div class="ch">' + sps.map(s => `<button data-a="aniF" data-v="${s}" class="${s === f ? 'on' : ''}">${SPN[s]} (${myAnimals(s).length})</button>`).join('') + '</div><p class="mut">Dica: toque direto no animal no mapa para abrir a ficha dele.</p>';
+  if (t === 'ani') { // menu Animais em "3D": cartões com volume, animal num pedestal com sombra, todas as espécies
+    const sps = ['boi', 'cavalo', 'burro', 'jumento', 'cabra', 'ovelha', 'porco', 'galinha', 'cao'], cnt = s => myAnimals(s).length;
+    const f = M.sub || sps.find(s => cnt(s)) || 'boi', mine = myAnimals().filter(a => a.sp !== 'cao'), val = mine.reduce((t, a) => t + animalValue(a), 0);
+    let h = `<div class="an3dHead"><span><b>${mine.length}</b> animais de criação</span><span>Rebanho vale <b>${fmt(val)}</b></span></div><div class="sp3dGrid">` + sps.map(s => `<button class="sp3d${s === f ? ' on' : ''}" data-a="aniF" data-v="${s}"><span class="ped">${spIcon(s, ['boi', 'cavalo', 'burro', 'jumento'].includes(s) ? 1 : 2)}</span><span class="nm">${SPN3[s]}</span><span class="badge">${cnt(s)}</span></button>`).join('') + '</div>';
     const L = myAnimals(f).sort((a, b) => stars(b) - stars(a));
-    h += L.map(a => `<div class="card" data-a="aniOpen" data-v="${a.id}"><div class="row sp"><span>${animalImg(a, 1)}</span><span style="flex:1"><b>${esc(a.n)}</b> ${a.main ? '⭐' : ''} ${a.sick ? '🤒' : ''} ${a.preg ? '🤰' : ''}<br><span class="mut">${catName(a)} · ${breedOf(a).n} · ${a.area ? AREAS[a.area].n : 'solto'}</span></span><span class="stars">${starStr(stars(a))}</span></div></div>`).join('') || '<p class="mut">Nenhum animal desta espécie.</p>';
-    return h;
+    h += L.map(a => `<div class="an3d" data-a="aniOpen" data-v="${a.id}"><div class="ped big">${animalImg(a, 2)}</div><div class="inf"><div class="row sp"><b>${esc(a.n)}${a.main ? ' ⭐' : ''}</b><span class="stars">${starStr(stars(a))}</span></div><span class="mut">${catName(a)} · ${breedOf(a).n || ''} · ${a.area ? AREAS[a.area].n : 'solto'}${a.wt ? ' · ' + Math.round(a.wt) + ' kg' : ''}</span>
+      <div class="bars3d"><i title="Saúde"><b style="width:${a.hp}%;background:#d04a3a"></b></i><i title="Fome"><b style="width:${a.food}%;background:#e8b030"></b></i><i title="Sede"><b style="width:${a.water}%;background:#3a8ac8"></b></i></div>
+      <span class="tags3d">${[a.sick ? 'doente' : '', a.bich ? 'bicheira' : '', a.preg ? 'prenhe' : '', a.lact ? 'lactação' : '', a.cast ? 'capão' : '', a.brand ? 'ferrado' : ''].filter(Boolean).map(t => '<em>' + t + '</em>').join('')}</span></div></div>`).join('') || `<div class="an3d empty"><div class="ped big">${spIcon(f, 2)}</div><div class="inf"><b>Nenhum ${SPN3[f].toLowerCase()} ainda</b><br><span class="mut">Compre na Casa do Agro, com os criadores da região ou no leilão.</span></div></div>`;
+    return h + '<p class="mut">Toque num animal para abrir a ficha. Também dá para tocar direto nele no mapa.</p>';
   }
   if (t === 'faz') return farmTab();
   if (t === 'map') return mapHTML() + `<div class="row" style="margin-top:6px">${btn('Região e fazendas vizinhas', 'region')}${btn('Calendário', 'calendar')}</div>`;
