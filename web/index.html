@@ -5374,6 +5374,7 @@ function horseStats(h) { const B = mountBreed(h); const sd = SADDLES.find(s => s
 function updPlayer(dt) {
   if (P._vx === undefined) { P._vx = P._vy = 0; P._dist = 0; }
   if (P._act) { updAct(dt); P._vx *= 0.7; P._vy *= 0.7; return; }
+  if (jumpUpdate(dt)) return;
   if (inst.on) { P._vx = P._vy = 0; P._st = 'play'; return; }
   if (MOVE.edit) { P._vx = P._vy = 0; P._st = 'idle'; P._mv = 0; return; }
   if (AUC.on) { P._vx = P._vy = 0; P._st = 'idle'; P._mv = 0; P.dir = 1; return; }
@@ -8912,7 +8913,7 @@ function render(dt) {
   if (P.inside) { const RB = roomById(P.inside);
     if (RB) { for (const f of FURN) { if (f.r !== RB.id) continue; const [c, up] = furnSpr(f.t, f.w, f.h, RB.H.wall); const sx2 = f.tx * TS, sy2 = f.ty * TS - up; add(f.wall ? -1e9 + f.ty : f.t === 'tapete' ? -1e8 : f.y - (f.t === 'rede' ? 30 : 0), () => X.drawImage(c, sx2, sy2)); }
       const op = roomOwnerPos(RB); if (op) add(op.y, () => drawPerson(op.e.d.ap, op.x, op.y, op.dir, op.pose === 'feed' ? Math.floor(drawT * 2) % 2 : 0, op.pose)); } }
-  add(iy(P) + 0.5, drawPlayer); FISH.draw(add); if (!P.inside) { bDraw(); drawPOIs(add, inV); LIFE.update(dt); LIFE.ground(add, inV); }
+  add(iy(P) + 0.5, () => { if (P._jz > 0.3) { X.fillStyle = 'rgba(20,12,4,0.25)'; X.beginPath(); X.ellipse(ix(P), iy(P), 12 - P._jz * 0.3, 3, 0, 0, 7); X.fill(); X.save(); X.translate(0, -Math.round(P._jz)); drawPlayer(); X.restore(); } else drawPlayer(); }); FISH.draw(add); if (!P.inside) { bDraw(); drawPOIs(add, inV); LIFE.update(dt); LIFE.ground(add, inV); }
   L.sort((a, b) => a.y - b.y); for (const o of L) o.f(); ambFx(dt); LIFE.air(); FLOCK.draw();
   forestOverlay(tx0, ty0, tx1, ty1); drawEventDecor(true); drawMemGlints(); misMarkers(); questMarkers(); drawMoveFx(); drawDebugCol();
   for (const e of npcs) if (!e.hidden && e.bt > 0 && inV(e.x, e.y, 30)) drawBubble(e);
@@ -10595,6 +10596,25 @@ function bStop() { BLD2.on = false; document.body.classList.remove('building'); 
 function bSpr(t, v) { return cached('bs|' + t + '|' + v, 64, 72, g => { const p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
   if (t === 'b_abrigo') { const W = v ? 32 : 48, x0 = 32 - W / 2; for (const x of [x0 + 1, x0 + W - 4]) { p(x, 34, 3, 36, '#6a4422'); p(x, 34, 1, 36, '#8a5a32'); } p(x0 - 3, 22, W + 6, 14, '#b8502a'); for (let y = 24; y < 36; y += 3) p(x0 - 3, y, W + 6, 1, '#8a3a1a'); for (let x = x0 - 3; x < x0 + W + 3; x += 4) p(x, 22, 1, 14, '#d0703a'); p(x0 - 3, 22, W + 6, 1, '#e08a4a'); p(x0 - 3, 35, W + 6, 1, '#5a2410'); }
   else if (t === 'b_espantalho') { p(31, 30, 2, 40, '#6a4422'); p(22, 38, 20, 2, '#6a4422'); p(25, 36, 14, 14, '#3a6ab0'); for (let y = 37; y < 50; y += 3) p(25, y, 14, 1, '#c03030'); p(28, 26, 8, 9, '#e8d8a8'); p(30, 29, 1, 1, '#2a1a10'); p(33, 29, 1, 1, '#2a1a10'); p(23, 23, 18, 3, '#d8b860'); p(26, 19, 12, 5, '#d8b860'); p(21, 49, 4, 3, '#d8b860'); p(39, 49, 4, 3, '#d8b860'); } }, true); }
+/* ===================== SALTO A CAVALO =====================
+   Galopando em direção a uma cerca (lance de arame ou de madeira de um ladrilho de espessura), aparece "Saltar a
+   cerca". O cavalo faz o arco por cima e cai do outro lado, se o chão de lá estiver livre. Pode refugar: depende do
+   embalo, do temperamento e do treino (cada salto bem feito deixa o próximo mais fácil). Gasta fôlego. */
+function jumpTarget() { const h = P.mnt && byId(P.mnt); if (!h || P._act || P._jump || (P._mv || 0) < 26 || (h._stam || 0) < 12) return null;
+  const vl = hyp(P._vx || 0, P._vy || 0); if (vl < 20) return null; const ux = P._vx / vl, uy = P._vy / vl;
+  let fx = null, fy = null; for (let r = 6; r <= 40; r += 3) { const tx = Math.floor((P.x + ux * r) / TS), ty = Math.floor((P.y + uy * r) / TS); if (obj[gi(tx, ty)] === 1) { fx = tx; fy = ty; break; } if (boxHit(P.x + ux * r, P.y + uy * r, [1, 1, 1], 'p')) return null; } // olha a linha à frente (até 2,5 ladrilhos)
+  if (fx === null) return null;
+  // o outro lado: primeiro ponto livre depois da cerca (até 3 ladrilhos), sem água e dentro do mapa
+  const d0 = hyp((fx + 0.5) * TS - P.x, (fy + 0.5) * TS - P.y); for (const r of [d0 + 16, d0 + 24, d0 + 32]) { const lx = P.x + ux * r, ly = P.y + uy * r, tx = Math.floor(lx / TS), ty = Math.floor(ly / TS); if (tx < 1 || ty < 1 || tx >= MW - 1 || ty >= MH - 1) return null; if (obj[gi(tx, ty)] === 1) continue; if (ground[gi(tx, ty)] === G.WATER) return null; if (!boxHit(lx, ly, HB.horse, 'p')) return { x: lx, y: ly, fx, fy }; }
+  return null; }
+function doJump(j) { const h = byId(P.mnt); if (!h || !j) return; h.jumps = h.jumps || 0;
+  const tempo = { nervoso: 0.12, arisco: 0.08, teimoso: 0.14, calmo: -0.04, 'dócil': -0.03 }[h.temp] || 0, emb = (P._mv || 0) > 40 ? -0.05 : 0.05;
+  const refuse = Math.max(0.03, 0.2 + tempo + emb - h.jumps * 0.015 - (hasT && hasT(h, 'corajoso') ? 0.06 : 0));
+  if (Math.random() < refuse) { P._vx = P._vy = 0; h._react = { a: 'idle', f: 0, t: 0.9 }; h._stam = Math.max(0, (h._stam || 0) - 4); AU.neigh && AU.neigh(h.x, h.y); toast('🐎 ' + h.n + ' refugou na cerca! Mais embalo e treino ajudam.'); return; }
+  P._jump = { t: 0, d: 0.62, x0: P.x, y0: P.y, x1: j.x, y1: j.y, hgt: 12, spd: P._mv }; h._stam = Math.max(0, (h._stam || 0) - 10); h.jumps++; S.stats.jumps = (S.stats.jumps || 0) + 1; AU.jump && AU.jump(); questEvent && questEvent('jump', h.id, 1);
+  if (h.jumps === 1 || h.jumps % 10 === 0) toast('🐎 Salto! ' + h.n + ' já saltou ' + h.jumps + (h.jumps > 1 ? ' vezes' : ' vez') + '.'); }
+function jumpUpdate(dt) { const J = P._jump; if (!J) return false; J.t += dt; const u = Math.min(1, J.t / J.d); P.x = lerp(J.x0, J.x1, u); P.y = lerp(J.y0, J.y1, u); P._jz = Math.sin(u * Math.PI) * J.hgt; P._mv = J.spd; const h = byId(P.mnt); if (h) { h.x = P.x; h.y = P.y; }
+  if (u >= 1) { P._jump = null; P._jz = 0; dust(P.x, P.y, 4); AU.step && AU.step(true); AU.saddleCreak && AU.saddleCreak(); } return true; }
 /* ===================== PESCA =====================
    Espécies do sertão baiano por lugar (açude, rio, riacho da mata), horário e tempo. Vara e isca de verdade (mochila),
    fisgada no tempo certo e briga com a linha (tensão). O peixe vai para a mochila, pode ser vendido no Mercadinho,
@@ -10693,6 +10713,7 @@ function computeCtx() {
   let best = null, bs = 1e9; const C2 = (score, label, fn, x, y) => { if (score < bs) { bs = score; best = { label, fn, x, y }; } };
   if (P.cart) { C2(0, '🛒 Carroça', openCart, S.cart.x, S.cart.y - 30); P._ctx = best; return; }
   if (P.inside) { furnCtx(C2); P._ctx = best; return; }
+  if (P.mnt) { const j = jumpTarget(); if (j) { C2(-80, '🐎 Saltar a cerca', () => doJump(j), (j.x + P.x) / 2, (j.y + P.y) / 2 - 20); P._ctx = best; return; } }
   for (const e of npcs) { if (e.hidden) continue; const d = hyp(e.x - P.x, e.y - P.y); if (d < 26) { const ev = S.event && S.event.day === S.day && e.act === 'festa' && has('assado') && npcState(e.id).served !== S.day; C2(d - 14, ev ? '🍽️ Servir ' + e.d.n.split(' ').pop() : '💬 ' + e.d.n, () => ev ? serve(e.id) : openNpc(e.id), e.x, e.y - 34); } }
   { const ch = chestAt(P.x, P.y, 24); if (ch) C2(hyp(ch.x - P.x, ch.y - P.y) - 6, '📦 ' + ch.name, () => openChestUI(ch), ch.x, ch.y - 16); }
   for (const o of interactables(false)) { const d = o.k === 'clean' ? 30 : hyp(o.x - P.x, o.y - P.y); if (d < o.r) C2(d - o.prio * 4, o.label, o.fn, o.k === 'clean' ? undefined : o.x, o.k === 'clean' ? undefined : o.y - 22); }
