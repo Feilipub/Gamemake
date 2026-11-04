@@ -621,6 +621,7 @@ function itemIconURL(id) {
     case 'limao': p(3, 3, 6, 6, '#9ad040'); p(2, 4, 8, 4, '#9ad040'); p(4, 3, 2, 1, '#ffffff'); p(6, 1, 1, 3, '#5a3a20'); p(7, 1, 2, 1, '#4a8a3a'); break;
     case 'laranja': p(3, 3, 6, 6, '#f09a20'); p(2, 4, 8, 4, '#f09a20'); p(4, 3, 2, 1, '#ffffff'); p(6, 1, 1, 3, '#5a3a20'); p(7, 1, 2, 1, '#4a8a3a'); break;
     case 'racaoPorco': sack('#e0c8b0', '#d06a7a'); break; case 'farelo': sack('#d8b878', '#8a5a2a'); break; case 'suplemento': sack('#c8d0a0', '#3a6a9a'); break;
+    case 'gibao': p(2, 2, 8, 9, '#8a5226'); p(2, 2, 8, 1, '#b07a40'); p(5, 3, 2, 8, '#6a3a18'); p(3, 5, 1, 1, '#d0a060'); p(8, 5, 1, 1, '#d0a060'); p(3, 8, 1, 1, '#d0a060'); p(8, 8, 1, 1, '#d0a060'); break;
     case 'iodo': p(4, 1, 4, 2, '#3a3a3a'); p(3, 3, 6, 8, '#8a3a1a'); p(4, 5, 4, 3, '#f4f0e8'); p(5, 6, 2, 1, '#8a3a1a'); break;
     case 'mataBicheira': p(5, 0, 2, 2, '#e8e8e8'); p(4, 2, 4, 2, '#3a3a3a'); p(3, 4, 6, 8, '#a8b0b8'); p(4, 6, 4, 3, '#e8c040'); break;
     case 'ferroMarca': p(1, 10, 6, 1, '#6a4422'); p(6, 8, 1, 4, '#5a5a62'); p(6, 3, 5, 1, '#4a4a52'); p(6, 3, 1, 6, '#4a4a52'); p(10, 3, 1, 6, '#4a4a52'); p(6, 8, 5, 1, '#4a4a52'); p(7, 2, 3, 1, '#c86a2a'); break;
@@ -973,6 +974,7 @@ const IT = {
   farelo: { i: '', n: 'Farelo de soja (saco 25kg)', kg: 25, p: 68, d: 'Proteína para misturar no cocho: bezerros, porcos e cabras crescem mais rápido.', c: 'trato' },
   suplemento: { i: '', n: 'Suplemento proteinado (25kg)', kg: 25, p: 74, d: 'Para a seca: no cocho de trato, o gado perde menos peso quando o capim acaba.', c: 'trato' },
   vermifugo: { i: '', n: 'Vermífugo (dose)', kg: 0.1, p: 14, d: 'Use pela ficha do animal: +saúde e evita doença por 30 dias.', c: 'vet' },
+  gibao: { i: '', n: 'Gibão de couro', kg: 3, p: 420, d: 'Gibão de couro curtido, feito à mão. Protege do espinho da caatinga na pega de boi no mato.', c: 'equip' },
   iodo: { i: '', n: 'Iodo 10% (cura de umbigo)', kg: 0.1, p: 16, d: 'Cura do umbigo do bezerro nos primeiros 3 dias: mergulhe o umbigo e evite bicheira e infecção.', c: 'vet' },
   mataBicheira: { i: '', n: 'Mata-bicheira (spray prata)', kg: 0.3, p: 26, d: 'Mata as larvas da mosca-varejeira e protege o ferimento. Use depois de castrar, ferrar ou quando aparecer bicheira.', c: 'vet' },
   ferroMarca: { i: '', n: 'Ferro de marcar (com sua marca)', kg: 2, p: 180, d: 'Ferro de marcar gado no curral. Gado ferrado tem procedência e vale um pouco mais. Trate a queimadura com mata-bicheira.', c: 'ferr' },
@@ -5364,7 +5366,7 @@ function dayTick() { rocaGrowTick(); hxDay(); { const bd = bdayToday(); if (bd.l
   // peões
   for (const w of S.workers) { w.fat = Math.max(0, w.fat - (built('casapeao') ? 70 : 45)); }
   if (S.day % 7 === 1) payWorkers();
-  ctrDay();
+  ctrDay(); pegaDay();
   if (S.day % 3 === 0) genCandidates();
   // NPCs: estoque de animais e favores vencidos
   merchWeek(); restockNpc('felipe', 'campos', 'boi', ['nelore', 'nelore', 'guzera', 'gir', 'tabapua']);
@@ -5498,6 +5500,7 @@ function updAnimal(a, dt, gm, threats) {
   if ((a._at = (a._at || 0) - dt) < 0) { a._at = 0.8; a.area = areaAt(a.x, a.y); }
   if (a.id === P.mnt || a._wr) { a._st = 'ridden'; return; }
   if (S.cart.hitch === a.id) { a._st = 'hitched'; return; }
+  if (a.wild && lasso.t !== a && pegaMove(a, dt)) return;
   if (lasso.t === a) { a._mv = P._mv; const ddx = P.x - a.x, ddy = P.y - a.y, dd = hyp(ddx, ddy) || 1; a._hx = ddx / dd; a._hy = ddy / dd; a.f = ddx > 0 ? 1 : -1; a._dist = (a._dist || 0) + P._mv * dt; a._pose = P._mv > 3 ? 'walk' : 'idle'; return; }
   if (a._st === 'tied') { const p = POSTS[a.tie]; if (p) { a.x = p.x + 10; a.y = p.y + 4; } a._pose = 'idle'; return; }
   if (P.lead === a.id) { const d = hyp(P.x - a.x, P.y - a.y); if (d > 22) { const r = stepTo(a, P.x, P.y, Math.min(60, d * 1.4), dt, 'route'); if (r === 'stuck') { a.x = lerp(a.x, P.x, 0.3); a.y = lerp(a.y, P.y, 0.3); } } a._pose = d > 22 ? 'walk' : 'idle'; return; }
@@ -5886,7 +5889,7 @@ function updEscorts(dt) {
 }
 /* ---------- animais: atualização com nível de detalhe ---------- */
 function updAnimals(dt, gm) {
-  buildGrid(); updPulses(dt); const th = pressureSources();
+  buildGrid(); updPulses(dt); pegaUpd(dt); const th = pressureSources();
   const cx = cam.x + VW() / 2, cy = cam.y + VH() / 2, R = Math.max(VW(), VH()) * 0.75 + 160;
   for (const a of S.animals) {
     const far = hyp(a.x - cx, a.y - cy) > R && a.id !== P.mnt && lasso.t !== a && P.lead !== a.id && S.cart.hitch !== a.id && a._st !== 'route' && a.sp !== 'cao';
@@ -7440,6 +7443,35 @@ function weighLot(ak) {
   showModal('⚖️ Balança — ' + AREAS[ak].n, null, null, () => L.length ? `<p class="mut">Lote passado no brete e pesado um a um. GMD = ganho médio diário desde a pesagem anterior (1 dia de jogo ≈ 1 mês do animal). Arroba = 15 kg de carcaça (~52% do peso vivo).</p><div class="card">${L.map(a => `<div class="row sp"><span>${esc(a.n)} <span class="mut">${catName(a)}</span></span><span>${Math.round(a.wt)} kg · ${arrobas(a).toFixed(1)} @${a.wH.length > 1 ? ' · <b>' + gmd(a).toFixed(2) + '</b> kg/d' : ''}</span></div>`).join('')}</div><p><b>${L.length}</b> cabeças · <b>${Math.round(tot)}</b> kg · média ${Math.round(tot / L.length)} kg · ${(L.reduce((t, a) => t + arrobas(a), 0)).toFixed(1)} @ (${fmt(L.reduce((t, a) => t + (a.sp === 'boi' ? animalValue(a) : 0), 0))} no preço de hoje)</p>` : '<p>Não há animais neste curral. Traga o lote para o curral e passe pelo brete.</p>');
 }
 A.retFix = k => retFix(k);
+/* ============ PEGA DE BOI NO MATO ============
+   De tempos em tempos um boi barbatão (criado solto, arisco) do Seu Abílio se esconde na caatinga ao sul da cidade.
+   Ele foge quando o vaqueiro chega perto e corre até cansar (fôlego ~9 s, recupera parado). Laçe e traga para qualquer
+   cercado seu: o dono paga a recompensa. Galopar na caatinga sem gibão arranha (espinho de jurema e xique-xique). */
+const PEGA = { x0: 64, x1: 108, y0: 114, y1: 146 };
+function pegaS() { return S.pega || null; }
+function pegaSpawn() { for (let k = 0; k < 60; k++) { const tx = rint(PEGA.x0, PEGA.x1), ty = rint(PEGA.y0, PEGA.y1), i = gi(tx, ty); if (obj[i] || ground[i] === G.WATER) continue;
+    const a = mkAnimal('boi', pick(['nelore', 'guzera', 'curraleiro'].filter(b => CATTLE[b])), { own: 'abilio', age: rint(30, 60), sex: 'M', n: 'Barbatão', temp: 'arisco', x: (tx + 0.5) * TS, y: (ty + 0.5) * TS });
+    a.wild = 1; a._stam = 9; a.vip = 1; S.animals.push(a); const rew = 700 + rint(0, 8) * 100; S.pega = { aid: a.id, due: S.day + 6, rew };
+    regionNews && regionNews('Um boi barbatão do Seu Abílio fugiu para a caatinga ao sul de Itarantim.');
+    say('Seu Bené mandou recado: "Tem um barbatão do Seu Abílio entocado na caatinga ao sul da cidade. Quem pegar no laço e trouxer pro seu curral ganha ' + fmt(rew) + '. Vá de gibão, que a jurema rasga!"', 7000); return a; } return null; }
+function pegaDay() { const g = pegaS(); if (g) { if (S.day > g.due) { S.animals = S.animals.filter(a => a.id !== g.aid); S.pega = null; regionNews && regionNews('O barbatão do Seu Abílio sumiu de vez na caatinga.'); toast('🐂 O barbatão sumiu na caatinga. Fica para a próxima.'); } return; }
+  if (S.day >= 4 && (S.pegaNext || 0) <= S.day && Math.random() < 0.2) { S.pegaNext = S.day + rint(6, 10); pegaSpawn(); } }
+function pegaMove(a, dt) { // foge do vaqueiro dentro da caatinga; cansa e para
+  const d = hyp(P.x - a.x, P.y - a.y), near = d < (P.mnt ? 140 : 100);
+  a._stam = cl((a._stam === undefined ? 9 : a._stam) + (near && a._stam > 0 ? -dt : dt * 0.35), -2, 9);
+  if (near && a._stam > 0) { let ux = (a.x - P.x) / (d || 1), uy = (a.y - P.y) / (d || 1); const tx = a.x / TS, ty = a.y / TS; if (tx < PEGA.x0 + 2) ux = Math.abs(ux); if (tx > PEGA.x1 - 2) ux = -Math.abs(ux); if (ty < PEGA.y0 + 2) uy = Math.abs(uy); if (ty > PEGA.y1 - 2) uy = -Math.abs(uy);
+    const wob = Math.sin(drawT * 2 + a.id) * 0.6, r = stepTo(a, a.x + (ux - uy * wob) * 50, a.y + (uy + ux * wob) * 50, 74, dt, 'a'); if (r === 'stuck') { a._tw = (a._tw || 0) + 1; a.x += uy * 6 * (a._tw % 2 ? 1 : -1); } a._pose = 'run'; a._st = 'flee'; return true; }
+  if (near) { a._pose = 'idle'; a._st = 'tired'; if (Math.random() < dt * 0.4) part(a.x + 8 * a.f, a.y - 16, 'dust', { vx: 0, vy: -6, m: 0.5, c: '#e8e0d0', s: 1 }); return true; }
+  if ((a._wt = (a._wt || 0) - dt) < 0) { a._wt = rnd(2, 5); a._wx = cl(a.x + rnd(-60, 60), PEGA.x0 * TS, PEGA.x1 * TS); a._wy = cl(a.y + rnd(-60, 60), PEGA.y0 * TS, PEGA.y1 * TS); }
+  if (a._wx !== undefined && stepTo(a, a._wx, a._wy, 12, dt, 'a') === false) a._pose = 'walk'; else a._pose = 'graze'; return true; }
+let pegaT = 0;
+function pegaUpd(dt) { const g = pegaS(); if (!g) return; const a = byId(g.aid); if (!a) { S.pega = null; return; }
+  // espinho: galopar no mato sem gibão
+  const tx = P.x / TS, ty = P.y / TS; if (P.mnt && P._mv > 60 && tx > 62 && tx < 111 && ty > 110 && !(has('gibao') || (S.cf.ap.shirt === 2))) { if ((pegaT -= dt) < 0) { pegaT = 2.2; P.en = Math.max(0, P.en - 2); if (!g.thorn) { g.thorn = 1; say('Ai! Espinho de jurema. Sem gibão a caatinga rasga a roupa e o couro (−energia). A Casa do Agro vende gibão de couro.', 4000); } } }
+  // pegou: barbatão laçado dentro de um cercado seu
+  if (lasso.t === a) { const ak = areaAt(a.x, a.y); if (ak && AREAS[ak].k !== 'npc' && owned(ak) && !(AREAS[ak].exp && !S.exp[AREAS[ak].exp])) {
+    lasso.t = null; S.animals = S.animals.filter(x => x !== a); S.pega = null; S.stats.pegas = (S.stats.pegas || 0) + 1; receive(g.rew, 'Pega de boi no mato (Seu Abílio)'); skXp('lid', 15); skXp('lac', 10); addFr && addFr('abilio', 10); addFr && addFr('bene', 8);
+    regionNews && regionNews(S.cf.name + ' pegou no laço o barbatão do Seu Abílio. O povo já comenta na praça.'); AU.jingle && AU.jingle(); toast('🏆 Pegou o barbatão! Seu Abílio pagou ' + fmt(g.rew) + '.'); } } }
 /* ============ CONTRATOS DE VENDA ============
    Toda semana chegam propostas: frigorífico (bois gordos acima de um peso, com prêmio sobre a arroba), laticínio (litros de
    leite), restaurante e padaria (queijo, requeijão, manteiga, ovos). Aceite até 2 de cada vez; entregue até o prazo (pode
@@ -7926,7 +7958,7 @@ function prodHTML() {
 const AGRO_ITEMS = {
   nut: ['racao', 'racaoPorco', 'milho', 'farelo', 'suplemento', 'sal', 'racaoCao'],
   vet: ['vacina', 'remedio', 'vermifugo', 'carrapaticida', 'cicatrizante', 'iodo', 'mataBicheira'],
-  fer: ['ferroMarca', 'regador', 'enxada', 'tesoura', 'galaoV', 'galao', 'escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho', 'lenha', 'carvao', 'bau'],
+  fer: ['gibao', 'ferroMarca', 'regador', 'enxada', 'tesoura', 'galaoV', 'galao', 'escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho', 'lenha', 'carvao', 'bau'],
   cer: ['kitCocho', 'kitBoia']
 };
 const AGRO_BUYS = { esterco: 8, leiteCabra: 5.5, fPalma: 9, fMandacaru: 8, fManicoba: 11 }; // o que a loja compra do produtor (R$ por unidade)
@@ -8457,7 +8489,7 @@ function farmBalance(st, base, n, news) { const hi = base * 1.6, lo = base * 0.3
   else if (st.money < lo) { const d = Math.round((lo - st.money) * 0.08); st.money += d; if (Math.random() < 0.06) news && news(n + ' pegou crédito rural e apertou os gastos.'); } }
 function regionInit() { if (S.region && S.region.farms) return; S.region = { farms: {}, news: [], demand: { boi: 1, cavalo: 1, cabra: 1, jumento: 1 } }; for (const k in FARMS) { const F = FARMS[k]; S.region.farms[k] = { money: F.money, workers: F.workers, herd: Object.assign({}, F.herd || {}), built: [] }; } }
 function farmHerd(k) { const F = FARMS[k]; if (!F.near) return S.region.farms[k].herd; const h = {}; for (const a of S.animals) if (a.own === F.own) h[a.sp] = (h[a.sp] || 0) + 1; return h; }
-function regionNews(t) { S.region.news.unshift({ d: S.day, t }); if (S.region.news.length > 14) S.region.news.pop(); }
+function regionNews(t) { regionInit(); S.region.news.unshift({ d: S.day, t }); if (S.region.news.length > 14) S.region.news.pop(); }
 // simulação diária resumida das fazendas
 function regionDay() {
   regionInit(); const R = S.region, se = season();
