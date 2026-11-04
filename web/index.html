@@ -4532,9 +4532,12 @@ const MUS = {
     this.cur = k; this.tgt[k] = 1; this.spd[k] = 1 / fade; this.xf = false;
     if (a.paused && !this.hidden) { const p = a.play(); if (p && p.catch) p.catch(() => { }); }
   },
-  nextGame(fade) { const n = this.cur === 'game1' ? 'game2' : 'game1'; const a = this.make(n); try { a.currentTime = 0; } catch (e) { } this.play(n, fade || 3.5); },
+  nextGame(fade) { const n = this.cur === 'game1' ? 'game2' : 'game1';
+    if (typeof SONG !== 'undefined' && !SONG.festa && (this.songTurn = !this.songTurn) && AU.ok && AU.ok()) { this.lastGame = n === 'game1' ? 'game2' : 'game1'; this.play(null, fade || 3.5); SONG.play(SONG.pickForNow(), { loops: 2, onEnd: () => { if (this.scene === 'game') this.nextGame(2); } }); return; } // peça original entre as faixas
+    const a = this.make(n); try { a.currentTime = 0; } catch (e) { } this.play(n, fade || 3.5); },
   vol() { return AU.on ? AU.vol.m * AU.vol.mu : 0; },
   update(dt) {
+    if (typeof SONG !== 'undefined') { SONG.tick(); if (this.scene !== 'game' && SONG.cur && !SONG._stopping) SONG.stop(1.5); if (this.scene === 'game' && mode === 'play' && S) songFesta(); if (this.scene === 'game' && !SONG.cur && this.missing.game1 && this.missing.game2 && this.unlocked && AU.ok && AU.ok()) SONG.play(SONG.pickForNow(), { loops: 2 }); } // sem os arquivos das faixas, as peças tocam sozinhas
     if (!this.unlocked) return;
     this.duck += (this.duckT - this.duck) * Math.min(1, dt * 3);
     const cur = this.cur, ca = cur && this.el[cur];
@@ -10615,6 +10618,73 @@ function doJump(j) { const h = byId(P.mnt); if (!h || !j) return; h.jumps = h.ju
   if (h.jumps === 1 || h.jumps % 10 === 0) toast('🐎 Salto! ' + h.n + ' já saltou ' + h.jumps + (h.jumps > 1 ? ' vezes' : ' vez') + '.'); }
 function jumpUpdate(dt) { const J = P._jump; if (!J) return false; J.t += dt; const u = Math.min(1, J.t / J.d); P.x = lerp(J.x0, J.x1, u); P.y = lerp(J.y0, J.y1, u); P._jz = Math.sin(u * Math.PI) * J.hgt; P._mv = J.spd; const h = byId(P.mnt); if (h) { h.x = P.x; h.y = P.y; }
   if (u >= 1) { P._jump = null; P._jz = 0; dust(P.x, P.y, 4); AU.step && AU.step(true); AU.saddleCreak && AU.saddleCreak(); } return true; }
+/* ===================== MÚSICA ORIGINAL SINTETIZADA =====================
+   Quatro peças compostas para o jogo e tocadas ao vivo pelo WebAudio (sem gravações): sanfona (duas palhetas
+   desafinadas + oitava de baixo, fole com tremolo), baixos e acordes da mão esquerda, zabumba (pancada grave e
+   bacalhau), triângulo (abafado e aberto) e viola ponteada. Modos do Nordeste: mixolídio (sétima menor) e o "modo
+   nordestino" com a quarta aumentada. Entram no revezamento das faixas, tocam nas festas e à noite. */
+const SONGS = (() => {
+  const NN = { C: 0, 'C#': 1, D: 2, 'D#': 3, E: 4, F: 5, 'F#': 6, G: 7, 'G#': 8, A: 9, 'A#': 10, B: 11 };
+  const mel = s => s.trim().split(/\s+/).map(t => { const [n, d] = t.split(':'); if (n === '-') return [null, +d]; const m = n.match(/^([A-G]#?)(\d)$/); return [12 * (+m[2] + 1) + NN[m[1]], +d]; });
+  return {
+    baiao: { n: 'Baião da Boa Esperança', bpm: 112, bar: 8, style: 'baiao',
+      mel: mel(`D5:2 B4:2 D5:2 B4:2 C5:3 B4:1 A4:4 G4:2 A4:2 B4:2 D5:2 F5:6 -:2 E5:2 D5:2 C5:2 A4:2 B4:3 A4:1 G4:4 A4:2 B4:2 C5:2 E5:2 D5:8
+                G5:2 F5:2 E5:2 D5:2 C#5:3 D5:1 E5:4 D5:2 C5:2 B4:2 A4:2 G4:6 -:2 B4:2 D5:2 G5:2 F5:2 E5:3 D5:1 C5:4 B4:2 A4:2 F4:2 A4:2 G4:8`),
+      roots: [43, 48, 43, 41, 48, 43, 50, 43, 43, 45, 50, 43, 43, 48, 50, 43] },
+    xote: { n: 'Xote da Saudade', bpm: 92, bar: 16, style: 'xote',
+      mel: mel(`A4:4 B4:2 C5:2 D5:8 C5:4 B4:2 A4:2 G4:8 F4:4 G4:2 A4:2 C5:4 A4:4 D4:12 -:4 D5:4 E5:2 F5:2 G5:6 F5:2 E5:4 D5:4 C5:8 A4:4 C5:2 B4:2 A4:4 G4:4 A4:16`),
+      roots: [38, 36, 41, 38, 43, 36, 41, 38] },
+    toada: { n: 'Toada da Noite', bpm: 72, bar: 12, style: 'toada',
+      mel: mel(`E4:6 G4:3 A4:3 B4:9 A4:3 G4:6 F#4:3 E4:3 D4:12 E4:6 G4:3 B4:3 D5:9 C5:3 B4:6 A4:3 F#4:3 E4:12`),
+      roots: [40, 40, 36, 38, 40, 43, 47, 40] },
+    quadrilha: { n: 'Quadrilha do Arraiá', bpm: 138, bar: 8, style: 'baiao',
+      mel: mel(`C5:2 E5:2 G5:2 E5:2 F5:2 A5:2 G5:4 E5:2 D5:2 C5:2 E5:2 D5:6 -:2 B4:2 D5:2 F5:2 D5:2 E5:2 G5:2 F5:4 D5:2 C5:2 B4:2 D5:2 C5:6 -:2`),
+      roots: [48, 41, 48, 43, 43, 48, 43, 48] }
+  };
+})();
+const SONG = { cur: null, step: 0, nextT: 0, loops: 0, onEnd: null, g: null, ev: null, len: 0,
+  hz: m => 440 * Math.pow(2, (m - 69) / 12),
+  out() { const C = AU.ctx; if (!this.g) { this.g = C.createGain(); this.g.gain.value = 0; this.g.connect(AU.buses.mu || AU.ctx.destination); } return this.g; },
+  play(id, o) { if (!AU.ok || !AU.ok()) return false; const S0 = SONGS[id]; if (!S0) return false; o = o || {}; const C = AU.ctx; this._stopping = false; this.cur = id; this.loops = o.loops === undefined ? 2 : o.loops; this.onEnd = o.onEnd || null; this.step = 0; this.nextT = C.currentTime + 0.15;
+    this.ev = []; let st = 0; for (const [m, d] of S0.mel) { if (m) this.ev.push([st, m, d]); st += d; } this.len = st; const g = this.out(); g.gain.cancelScheduledValues(C.currentTime); g.gain.setValueAtTime(g.gain.value, C.currentTime); g.gain.linearRampToValueAtTime(0.9, C.currentTime + 1.2); return true; },
+  stop(fade) { if (!this.cur || !AU.ctx) return; const C = AU.ctx, g = this.out(); g.gain.cancelScheduledValues(C.currentTime); g.gain.setValueAtTime(g.gain.value, C.currentTime); g.gain.linearRampToValueAtTime(0, C.currentTime + (fade || 1.5)); const id = this.cur; setTimeout(() => { if (this.cur === id && this._stopping) { this.cur = null; this._stopping = false; } }, (fade || 1.5) * 1000); this._stopping = true; },
+  // agenda as próximas semicolcheias (olhando 0,15 s à frente)
+  tick(ahead) { if (!this.cur || !AU.ctx) return; const C = AU.ctx, S0 = SONGS[this.cur], sp = 60 / S0.bpm / 4; if (!ahead && C.currentTime > this.nextT + 1) this.nextT = C.currentTime + 0.05;
+    while (this.nextT < C.currentTime + (ahead || 0.15)) { const st = this.step % this.len, t = this.nextT, bar = Math.floor(st / S0.bar), inb = st % S0.bar, root = S0.roots[bar % S0.roots.length];
+      for (const [s0, m, d] of this.ev) if (s0 === st) (S0.style === 'toada' ? this.viola(this.hz(m), t, d * sp) : this.sanfona(this.hz(m), t, d * sp * 0.95));
+      this.groove(S0.style, inb, S0.bar, root, t, sp);
+      this.step++; this.nextT += sp;
+      if (this.step % this.len === 0 && this.step > 0) { this.loops--; if (this.loops <= 0 && this.loops > -90) { const cb = this.onEnd; this.stop(2.5); this.onEnd = null; if (cb) setTimeout(cb, 1800); return; } } } },
+  groove(style, i, bar, root, t, sp) {
+    if (style === 'baiao') { // zabumba: pancada no 1, no "e" do 1 com antecipação, bacalhau no contratempo; triângulo em semicolcheias
+      if (i === 0 || i === 3) this.zab(t, i === 0 ? 1 : 0.8); if (i === 4 || i === 6) this.bac(t); this.tri(t, i % 4 === 2);
+      if (i === 0) this.bass(this.hz(root), t, sp * 3); if (i === 4) this.bass(this.hz(root + 7), t, sp * 3); if (i === 2 || i === 6) this.chord(root, t, sp * 1.5); }
+    else if (style === 'xote') { if (i === 0 || i === 10) this.zab(t, 1); if (i === 6) this.zab(t, 0.6); if (i === 4 || i === 12) this.bac(t); if (i % 2 === 0) this.tri(t, i % 8 === 4);
+      if (i === 0) this.bass(this.hz(root), t, sp * 6); if (i === 8) this.bass(this.hz(root + 7), t, sp * 6); if (i === 4 || i === 12) this.chord(root, t, sp * 3); }
+    else { if (i === 0) this.viola(this.hz(root - 12 + 12), t, sp * 10, 0.55); if (i === 4 || i === 8) this.viola(this.hz(root + 7), t, sp * 3, 0.35); } },
+  env(g, t, a, v, dur, r) { g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + a); g.gain.setValueAtTime(v, t + Math.max(a, dur - r)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + r); },
+  sanfona(f, t, dur) { const C = AU.ctx, g = C.createGain(), lp = C.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600; lp.Q.value = 0.7; lp.connect(g); g.connect(this.out());
+    const trem = C.createOscillator(), tg = C.createGain(); trem.frequency.value = 5.8; tg.gain.value = 0.018; trem.connect(tg); tg.connect(g.gain);
+    for (const [ty, k, v] of [['sawtooth', 1, 0.05], ['square', 1.004, 0.03], ['sawtooth', 0.5, 0.025]]) { const o = C.createOscillator(), og = C.createGain(); o.type = ty; o.frequency.value = f * k; og.gain.value = v; o.connect(og); og.connect(lp); o.start(t); o.stop(t + dur + 0.1); }
+    this.env(g, t, 0.025, 1, dur, 0.06); trem.start(t); trem.stop(t + dur + 0.1); },
+  bass(f, t, dur) { const C = AU.ctx, o = C.createOscillator(), g = C.createGain(); o.type = 'triangle'; o.frequency.value = f; o.connect(g); g.connect(this.out()); this.env(g, t, 0.01, 0.16, dur * 0.6, 0.05); o.start(t); o.stop(t + dur + 0.1); },
+  chord(root, t, dur) { for (const iv of [12, 16, 19]) { const C = AU.ctx, o = C.createOscillator(), g = C.createGain(); o.type = 'square'; o.frequency.value = this.hz(root + iv); const lp = C.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400; o.connect(lp); lp.connect(g); g.connect(this.out()); this.env(g, t, 0.01, 0.022, dur * 0.5, 0.04); o.start(t); o.stop(t + dur + 0.1); } },
+  zab(t, v) { const C = AU.ctx, o = C.createOscillator(), g = C.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(115, t); o.frequency.exponentialRampToValueAtTime(46, t + 0.2); o.connect(g); g.connect(this.out()); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.42 * v, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32); o.start(t); o.stop(t + 0.35); this.noise(t, 0.04, 'lowpass', 300, 0.12 * v); },
+  bac(t) { this.noise(t, 0.035, 'highpass', 2500, 0.07); },
+  tri(t, open) { const C = AU.ctx; for (const [f, v] of [[3900, 0.028], [5850, 0.016]]) { const o = C.createOscillator(), g = C.createGain(); o.type = 'sine'; o.frequency.value = f; o.connect(g); g.connect(this.out()); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, t + (open ? 0.38 : 0.06)); o.start(t); o.stop(t + 0.42); } },
+  viola(f, t, dur, vol) { const C = AU.ctx; for (const k of [1, 2.002]) { const o = C.createOscillator(), g = C.createGain(); o.type = 'triangle'; o.frequency.value = f * k; o.connect(g); g.connect(this.out()); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime((vol || 0.7) * (k > 1 ? 0.05 : 0.12), t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + Math.min(2.2, dur + 0.6)); o.start(t); o.stop(t + Math.min(2.3, dur + 0.7)); } },
+  noise(t, dur, type, f, v) { const C = AU.ctx; if (!this.nb) { const n = C.sampleRate * 0.5, b = C.createBuffer(1, n, C.sampleRate), d = b.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; this.nb = b; }
+    const s = C.createBufferSource(), fl = C.createBiquadFilter(), g = C.createGain(); s.buffer = this.nb; fl.type = type; fl.frequency.value = f; s.connect(fl); fl.connect(g); g.connect(this.out()); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); s.start(t); s.stop(t + dur + 0.02); },
+  // escolha da peça conforme a hora
+  pickForNow() { const h = hour(); return h >= 19 || h < 5 ? 'toada' : h >= 14 ? 'xote' : 'baiao'; }
+};
+// festa na praça: quadrilha/baião enquanto o vaqueiro estiver por perto do arraiá
+function songFesta() { const h = hour(); let want = null;
+  const fk = ['junina', 'forro', 'carnaval', 'vaqueiro'].find(k => typeof eventNow === 'function' && eventNow(k)); // festa do calendário na praça
+  if (fk && hyp(P.x - 84 * TS, P.y - 50 * TS) < 14 * TS) want = fk === 'junina' ? 'quadrilha' : 'baiao';
+  if (!want && S.event && S.event.day === S.day && h >= 18 && h < 21.6) { const c = typeof objPos === 'function' && objPos('churrasqueira'); if (c && hyp(P.x - c.x, P.y - c.y) < 8 * TS) want = 'baiao'; } // churrasco na fazenda
+  if (want && SONG.cur !== want) { MUS.duckT = 0.15; SONG.play(want, { loops: -99 }); SONG.festa = 1; }
+  else if (!want && SONG.festa) { SONG.festa = 0; MUS.duckT = 1; SONG.stop(2); } }
 /* ===================== PESCA =====================
    Espécies do sertão baiano por lugar (açude, rio, riacho da mata), horário e tempo. Vara e isca de verdade (mochila),
    fisgada no tempo certo e briga com a linha (tensão). O peixe vai para a mochila, pode ser vendido no Mercadinho,
