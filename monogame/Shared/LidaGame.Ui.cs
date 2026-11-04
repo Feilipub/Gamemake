@@ -29,7 +29,7 @@ namespace Lida
         void Layout()
         {
             var vp = GraphicsDevice.Viewport; int W = vp.Width, H = vp.Height;
-            zoom = Math.Max(2, (float)Math.Round(Math.Min(W, H) / 230f));
+            zoom = Math.Max(2, (float)Math.Round(Math.Min(W, H) / 180f));
             U = Math.Max(2, Math.Min(W, H) / 270); int m = 6 * U;
             rClock = new Rectangle(W - m - 80 * U, m, 80 * U, 42 * U);
             rMoney = new Rectangle(rClock.X, rClock.Bottom + 2 * U, rClock.Width, 20 * U);

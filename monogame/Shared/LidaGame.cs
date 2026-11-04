@@ -57,7 +57,7 @@ namespace Lida
                 if (args[i] == "--menu" && i + 1 < args.Length) OpenMenu(int.Parse(args[i + 1]));
                 if (args[i] == "--toast" && i + 1 < args.Length) Toast(args[i + 1]);
             }
-            spr.LoadTerrain(GraphicsDevice, season); FxInit();
+            spr.LoadTerrain(GraphicsDevice, season); FxInit(); GroundInit();
             for (int i = 0; i < args.Length; i++) if (args[i] == "--rain" && i + 1 < args.Length) { raining = args[i + 1] == "1"; rainK = raining ? 1 : 0; rainCheck = 9999; }
             cam = pl.Pos;
         }
@@ -154,7 +154,7 @@ namespace Lida
 
             // chão
             sb.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, M);
-            sb.Draw(spr.Terrain[season], new Vector2(cx, cy), new Rectangle((int)cx, (int)cy, (int)vw + 2, (int)vh + 2), tint);
+            DrawGround(view);
             sb.End();
 
             // objetos ordenados pela altura do pé (profundidade)
@@ -174,7 +174,7 @@ namespace Lida
             foreach (var g in world.Gates) { if (!view.Near(g.X, g.Y, 60)) continue; var gg = g; L.Add((g.SortY, () => spr.Draw(sb, gg.Sprite + "|" + (gg.Open ? 1 : 0), gg.X, gg.Y, tint))); }
             foreach (var t in world.Troughs) { if (!view.Near(t.X, t.Y, 40)) continue; var tt = t; L.Add((t.Y + 15, () => spr.Draw(sb, tt.Sprite + "|" + (tt.Level > tt.Cap * 0.1f ? 1 : 0), tt.X, tt.Y, tint))); }
             foreach (var a in animals) { if (!view.Near(a.Pos.X, a.Pos.Y, 60)) continue; var aa = a; L.Add((a.Pos.Y, () => { var f = aa.Frame(); spr.Shadow(sb, aa.Pos.X, aa.Pos.Y, aa.Sp == "galinha" ? 5 : aa.Sp == "cao" ? 8 : 14, 3.5f, 0.3f); spr.Draw(sb, f.key, aa.Pos.X, aa.Pos.Y, tint, f.flip); })); }
-            L.Add((pl.Pos.Y, () => { var f = pl.Frame(); spr.Shadow(sb, pl.Pos.X, pl.Pos.Y, 7, 2.5f, 0.32f); spr.Draw(sb, f.key, pl.Pos.X, pl.Pos.Y, tint, f.flip); }));
+            L.Add((pl.Pos.Y, () => DrawHero(tint)));
             L.Sort((p, q) => p.y.CompareTo(q.y));
             sb.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, M);
             foreach (var d in L) d.draw();
