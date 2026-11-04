@@ -36,5 +36,5 @@ ok('construções voltam no carregamento',await E("builtS().length")>=7&&await E
 // remover devolve material
 const m0=await E("S.inv.tabua||0");await E(`bRemoveAt(${spot[0]},${spot[1]})`);ok('remover abrigo devolve metade',await E("(S.inv.tabua||0)")===m0+3&&!(await E("PROPS.some(q=>q.t==='b_abrigo')")));
 const nT2=await E("TROUGHS.length");await E(`bRemoveAt(${ps[0]},${ps[1]})`);ok('remover cocho tira da lista sem desalinhar',await E("TROUGHS.length")===nT2-1&&await E("S.tr.length===TROUGHS.length"));
-await E("openMenu('obr')");await p.waitForTimeout(200);ok('botão Construir no menu Obras',await E("!!document.querySelector('#mc button[data-a=buildStart]')"));await E("closeModal()");
+await E("qState('q4').s='done';openMenu('obr')");await p.waitForTimeout(200);ok('botão Construir no menu Obras',await E("!!document.querySelector('#mc button[data-a=buildStart]')"));await E("closeModal()");
 console.log(R.join('\n'));console.log([...new Set(errs)].join('\n')||'sem erros');await b.close();})();

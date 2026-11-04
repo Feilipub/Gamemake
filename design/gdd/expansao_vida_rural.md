@@ -278,3 +278,17 @@ Evidência: `production/qa/evidence/personagens-classico-x-novo.png`, `personage
 | São João | Arraiá nos sábados de junho e em 15, 23 e 24/6. Quadrilha com marcador (8 passos, 3 s cada), correio elegante, pescaria de prendas e comidas típicas | `saojoao_test.js` |
 | Casa e móveis | Marcenaria do Bira: o conforto deixa o cansaço até 24% mais lento. Cama de casal (−15% no dia seguinte), sofá, TV com previsão e troféus | `moveis_test.js` |
 | Diário, mapa, animações e sons | Diário com urgente, hoje e quando der. Mapa com pastos coloridos pelo capim e marcadores. Partículas na lida (spray, brasa, leite, coice). Sons novos: chocalho, cigarra, berrante, jato de leite, bem-te-vi | `diario_test.js` |
+
+## Rodada 5 — o que a auditoria pediu
+
+| Recomendação | O que entrou |
+|---|---|
+| Objetivo grande com capítulos | **Herança** em 5 capítulos, conferidos sozinhos: 1. O rancho do avô; 2. A dívida do avô (hipoteca de R$ 40 mil em 60 dias); 3. O Retiro renasce; 4. Nome na região; 5. O legado de Tiãozinho, com epílogo. Prazo perdido uma vez: +20% e +30 dias, e o Seu Abílio passa a ser o credor. Perdido de novo: o Abílio fica com o Retiro (recompra por R$ 80 mil). |
+| Risco de verdade | **Seca braba**: só na seca, com 3 dias de aviso; o capim rebrota a 12% e o reservatório baixa 0,7%/h. **Roubo de gado à noite** em pasto longe da casa: o cadeado reduz o risco a 25%, peão a 60% e cachorro de guarda a 50%; em 40% dos casos a polícia devolve o gado. **Morte por descuido**: com saúde ≤ 6 avisa no 1º dia e o animal morre no 2º. |
+| Personagens que importam | 7 **histórias em sequência**: Bené (2), Nena, Zefa, Raimundo, Joana e Lourival. **Namoro e casamento** com 7 moradores: passeio a partir de 6 corações; pedido a partir de 9 (alianças R$ 1.200); casamento no domingo na Matriz; o cônjuge enche os bebedouros e trata das galinhas toda manhã. |
+| O verbo com peso | **Laço com mira**: o 1º toque gira o laço, o 2º solta quando o círculo encaixa; a margem cresce com a habilidade de laço; dá para desligar. Agora também laça o barbatão, o que antes era impossível. |
+| Começo guiado | As abas Banco, Obras e Peões aparecem conforme as primeiras missões. |
+| Voltar amanhã | **Notícias da manhã** ao acordar (previsão, arroba, festa, seca, hipoteca, desafio, região). **Desafio da semana** com prêmio. **Catálogo de raças** na Coleção. |
+| Interface e social | Botão **"O que fazer?"** na barra (abre o Diário). **Foto da fazenda** com moldura, para guardar e mandar no WhatsApp. |
+
+Teste: `tests/web/heranca_test.js` (28 verificações).
