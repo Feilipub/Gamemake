@@ -621,6 +621,9 @@ function itemIconURL(id) {
     case 'limao': p(3, 3, 6, 6, '#9ad040'); p(2, 4, 8, 4, '#9ad040'); p(4, 3, 2, 1, '#ffffff'); p(6, 1, 1, 3, '#5a3a20'); p(7, 1, 2, 1, '#4a8a3a'); break;
     case 'laranja': p(3, 3, 6, 6, '#f09a20'); p(2, 4, 8, 4, '#f09a20'); p(4, 3, 2, 1, '#ffffff'); p(6, 1, 1, 3, '#5a3a20'); p(7, 1, 2, 1, '#4a8a3a'); break;
     case 'racaoPorco': sack('#e0c8b0', '#d06a7a'); break; case 'farelo': sack('#d8b878', '#8a5a2a'); break; case 'suplemento': sack('#c8d0a0', '#3a6a9a'); break;
+    case 'peMoleque': p(2, 4, 8, 5, '#a0642a'); p(3, 5, 1, 1, '#e8c890'); p(6, 6, 1, 1, '#e8c890'); p(8, 5, 1, 1, '#e8c890'); p(4, 7, 1, 1, '#e8c890'); break;
+    case 'cocada': p(2, 4, 8, 5, '#f0e8d8'); p(2, 4, 8, 1, '#c89050'); p(4, 6, 1, 1, '#d8c8a8'); p(7, 7, 1, 1, '#d8c8a8'); break;
+    case 'quentao': p(3, 3, 6, 8, '#d8d0c0'); p(4, 4, 4, 2, '#c87028'); p(9, 5, 2, 3, '#d8d0c0'); p(5, 0, 1, 2, '#f0f0f0'); p(7, 1, 1, 2, '#f0f0f0'); break;
     case 'gibao': p(2, 2, 8, 9, '#8a5226'); p(2, 2, 8, 1, '#b07a40'); p(5, 3, 2, 8, '#6a3a18'); p(3, 5, 1, 1, '#d0a060'); p(8, 5, 1, 1, '#d0a060'); p(3, 8, 1, 1, '#d0a060'); p(8, 8, 1, 1, '#d0a060'); break;
     case 'iodo': p(4, 1, 4, 2, '#3a3a3a'); p(3, 3, 6, 8, '#8a3a1a'); p(4, 5, 4, 3, '#f4f0e8'); p(5, 6, 2, 1, '#8a3a1a'); break;
     case 'mataBicheira': p(5, 0, 2, 2, '#e8e8e8'); p(4, 2, 4, 2, '#3a3a3a'); p(3, 4, 6, 8, '#a8b0b8'); p(4, 6, 4, 3, '#e8c040'); break;
@@ -921,6 +924,9 @@ const STIM = [
 const IT = {
   milhoAssado: { i: '', n: 'Milho assado', kg: 0.3, p: 6, en: 6, fo: 16, d: 'Espiga assada na brasa, das barracas de festa e feira.', c: 'comida' },
   canjica: { i: '', n: 'Canjica (copo)', kg: 0.3, p: 7, en: 8, fo: 14, d: 'Doce de milho com leite e canela, de São João.', c: 'comida' },
+  peMoleque: { i: '', n: 'Pé de moleque', kg: 0.1, p: 4, en: 8, fo: 6, d: 'Rapadura com amendoim torrado. Doce de São João.', c: 'comida' },
+  cocada: { i: '', n: 'Cocada', kg: 0.1, p: 4, en: 7, fo: 6, d: 'Coco ralado com açúcar queimado.', c: 'comida' },
+  quentao: { i: '', n: 'Quentão de gengibre', kg: 0.3, p: 5, en: 10, fo: 4, d: 'Chá quente de gengibre com cravo e canela (sem álcool). Esquenta a noite de junho.', c: 'comida' },
   pamonha: { i: '', n: 'Pamonha', kg: 0.3, p: 6, en: 6, fo: 18, d: 'Feita de milho verde ralado, cozida na palha.', c: 'comida' },
   bau: { i: '📦', n: 'Baú de madeira', kg: 8, p: 180, d: 'Baú de tábua com cintas de ferro (24 espaços). Coloque na fazenda: selecione na barra rápida e toque de novo, ou use "Colocar no chão" na mochila.', c: 'equip' },
   ferroTS: { i: '', n: 'Ferro de marcar T.S.', kg: 2, p: 0, d: 'O ferro de marcar do avô Tiãozinho, com as letras T.S. Lembrança de família — não se vende.', c: 'ferr' },
@@ -8311,7 +8317,7 @@ const EVENTS = {
 function eventsOnDay(day) {
   const L = [], wd = day % 7, c = calDate(day), wk = Math.floor((c.d - 1) / 7); // semana do mês 0..3
   if (wd === 6) L.push('feira'); if (wd === 5) L.push('forro');
-  if (c.m === 5 && (c.d === 15 || c.d === 23 || c.d === 24)) L.push('junina'); // aniversário da cidade (15/6) e São João
+  if (c.m === 5 && (c.d === 15 || c.d === 23 || c.d === 24 || wd === 6)) L.push('junina'); // arraiá: sábados de junho, aniversário da cidade (15/6) e São João (23 e 24)
   if (wd === 0 && wk === 3) L.push('vaquejada'); // último domingo do mês
   if (c.m === 6 && wk === 1 && (wd === 6 || wd === 0)) L.push('agro'); // feira agropecuária: 2º fim de semana de julho
   if (wd === 0 && wk === 0) L.push('criadores'); // primeiro domingo do mês
@@ -8445,7 +8451,7 @@ function openEventDesk(ev) {
     let h = `<p>${EVENTS[ev].d}</p>`;
     if (ev === 'agro') { if (S.agroDay === S.day) h += '<p class="mut">Você já inscreveu um animal hoje.</p>'; else { const L = myAnimals().filter(a => a.sp !== 'galinha' && a.sp !== 'cao' && a.age >= 12).sort((a, b) => score(b) - score(a)).slice(0, 6); h += '<h3>Inscrever no concurso</h3>' + (L.map(a => `<div class="card"><div class="row sp">${animalImg(a, 1)}<span style="flex:1">${esc(a.n)} · ${catName(a)}<br><span class="stars">${starStr(stars(a))}</span></span>${btn('Inscrever', 'contest', a.id)}</div></div>`).join('') || '<p class="mut">Nenhum animal adulto para exibir.</p>'); } h += '<h3>Leilão de animais</h3>' + btn('Ver animais do leilão', 'evAuction'); }
     if (ev === 'criadores') { if ((S.rankI || 0) < 1) h += '<p class="mut">Só criadores com título de Criador regional participam.</p>'; else { const L = myAnimals().filter(a => a.sex === 'M' && stars(a) >= 3 && !a.main && a.age >= 16); h += L.map(a => `<div class="card"><div class="row sp">${animalImg(a, 1)}<span style="flex:1">${esc(a.n)} · ${catName(a)} <span class="stars">${starStr(stars(a))}</span></span><b>${fmt(Math.round(animalValue(a) * (1.2 + stars(a) * 0.08)))}</b></div>${btn('Vender como reprodutor', 'breedSell', a.id)}</div>`).join('') || '<p class="mut">Nenhum macho de 3★ ou mais para oferecer.</p>'; } }
-    if (ev === 'junina' || ev === 'forro') h += `<div class="card"><b>Dançar ${ev === 'junina' ? 'quadrilha' : 'forró'}</b><p class="mut">Dança com os moradores: amizade com todos que estiverem na praça.</p>${btn('Dançar', 'evDance')}</div>` + (ev === 'junina' ? '<h3>Barracas</h3>' + ['milhoAssado', 'canjica', 'pamonha'].map(id => IT[id] ? shopRow(id) : '').join('') + `<p class="mut">${esc(pick(ITA_FACTS))}</p>` : '');
+    if (ev === 'junina' || ev === 'forro') h += `<div class="card"><b>Dançar ${ev === 'junina' ? 'quadrilha' : 'forró'}</b><p class="mut">Dança com os moradores: amizade com todos que estiverem na praça.</p>${btn('Dançar', 'evDance')}</div>` + (ev === 'junina' ? `<div class="card"><b>💌 Correio elegante</b><p class="mut">Mande um bilhete (R$ 2) para alguém que está no arraiá.</p>${npcs.filter(e => !e.hidden && hyp(e.x - P.x, e.y - P.y) < 200 && NPCDEF[e.id]).slice(0, 8).map(e => btn(NPCDEF[e.id].n, 'sjMail', e.id, (S.sjMail || {})[e.id] === S.day)).join('') || '<span class="mut">Ninguém por perto.</span>'}</div><div class="card"><b>🎣 Pescaria de prendas</b><p class="mut">R$ 3 a vara. Sai doce, comida ou um prêmio raro.</p>${btn('Pescar uma prenda', 'sjFish')}</div>` + '<h3>Barracas</h3>' + ['milhoAssado', 'canjica', 'pamonha', 'peMoleque', 'cocada', 'quentao'].map(id => IT[id] ? shopRow(id) : '').join('') + `<p class="mut">${esc(pick(ITA_FACTS))}</p>` : '');
     if (ev === 'feira') h += '<h3>Barracas da feira</h3>' + ['queijo', 'rapadura', 'milhoAssado', 'pamonha'].map(id => IT[id] ? shopRow(id) : '').join('') + `<p class="mut">${esc(ITA_FACTS[0])}</p>`;
     return h;
   }, 'calendar');
@@ -8453,7 +8459,23 @@ function openEventDesk(ev) {
 A.contest = v => { const a = byId(+v); if (!a) return; S.agroDay = S.day; const sc = score(a) + rnd(-8, 8), place = sc > 78 ? 1 : sc > 64 ? 2 : sc > 52 ? 3 : 0; const prize = [0, 2500, 1200, 600][place]; if (place) { receive(prize, 'Concurso da feira: ' + place + 'º lugar com ' + a.n); hist(a, place + 'º lugar na feira agropecuária'); toast(a.n + ' ficou em ' + place + 'º lugar! Prêmio ' + fmt(prize)); a.hap = cl(a.hap + 10, 0, 100); } else toast(a.n + ' não ficou entre os três primeiros desta vez.'); renderModal(); checkRank(); };
 A.breedSell = v => { const a = byId(+v); if (!a) return; const val = Math.round(animalValue(a) * (1.2 + stars(a) * 0.08)); S.animals.splice(S.animals.indexOf(a), 1); receive(val, 'Reprodutor vendido no encontro: ' + a.n); toast('Vendeu ' + a.n + ' por ' + fmt(val)); renderModal(); checkRank(); };
 A.evAuction = () => { closeModal(); openAgro && openAgro(); };
-A.evDance = () => { closeModal(); act('wave', 2.4, null, () => { let n = 0; for (const e of npcs) if (!e.hidden && hyp(e.x - P.x, e.y - P.y) < 120) { addFr(e.id, 4); n++; e.emote = '♥'; e.et = 2; } P.en = Math.max(0, P.en - 6); toast(n ? 'Dançou com ' + n + ' morador(es)! Amizade aumentou.' : 'Dançou sozinho… chame o povo!'); }, { zoom: false }); };
+/* ---------- São João: quadrilha com marcador, correio elegante e pescaria de prendas ---------- */
+const QCALLS = [['Anarriê!', 'Cumprimentar o par'], ['Balancê!', 'Balançar no lugar'], ['Caminho da roça!', 'Andar em fila'], ['Olha a chuva!', 'Voltar correndo'], ['É mentira!', 'Seguir em frente'], ['Olha a cobra!', 'Pular'], ['Túnel!', 'Passar no túnel'], ['Coroa da rainha!', 'Fazer a roda']];
+const QD = { on: false };
+function quadStart() { if (S.quadD === S.day) return say('Você já dançou a quadrilha hoje. Volte no próximo arraiá!'); S.quadD = S.day; const seq = []; for (let i = 0; i < 8; i++) { let k = rint(0, QCALLS.length - 1); if (k === 4) k = 0; seq.push(k); if (k === 3 && i < 7) { seq.push(4); i++; } }
+  Object.assign(QD, { on: true, seq, i: 0, ok: 0, fb: '' }); quadRound(); }
+function quadRound() { clearTimeout(QD.tm); if (QD.i >= QD.seq.length) return quadEnd(); const k = QD.seq[QD.i], opts = [k]; while (opts.length < 4) { const r = rint(0, QCALLS.length - 1); if (!opts.includes(r)) opts.push(r); } opts.sort(() => Math.random() - 0.5); QD.opts = opts;
+  showModal('💃 Quadrilha', null, null, () => `<p class="mut">Passo ${QD.i + 1} de ${QD.seq.length} · acertos ${QD.ok}${QD.fb ? ' · ' + QD.fb : ''}</p><div class="card" style="text-align:center"><p>🎤 O marcador grita:</p><h2 style="margin:4px 0">${QCALLS[k][0]}</h2><div style="height:8px;background:#5a3a20;border-radius:4px;overflow:hidden"><div style="height:8px;width:100%;background:#e8c040;animation:qdT 3s linear forwards"></div></div></div><style>@keyframes qdT{to{width:0}}</style><div class="row">${opts.map(o => btn(QCALLS[o][1], 'quadPick', o)).join('')}</div><details class="mut"><summary>Colinha do marcador</summary>${QCALLS.map(c => c[0] + ' → ' + c[1]).join('<br>')}</details>`, 'calendar');
+  QD.tm = setTimeout(() => { if (!QD.on) return; QD.fb = '⏰ atrasou'; QD.i++; quadRound(); }, 3000); }
+A.quadPick = v => { if (!QD.on) return; clearTimeout(QD.tm); const ok = +v === QD.seq[QD.i]; if (ok) { QD.ok++; AU.chime && AU.chime(); } else AU.err && AU.err(); QD.fb = ok ? '✅ certo' : '❌ errou'; QD.i++; quadRound(); };
+function quadEnd() { QD.on = false; clearTimeout(QD.tm); const n = QD.seq.length, r = QD.ok / n; let m = 0; for (const e of npcs) if (!e.hidden && hyp(e.x - P.x, e.y - P.y) < 160) { addFr(e.id, r >= 0.85 ? 6 : r >= 0.6 ? 3 : 1); e.emote = '♥'; e.et = 2; m++; } P.en = Math.max(0, P.en - 8); skXp('lid', 2);
+  let prize = ''; if (r >= 0.85) { receive(300, 'Quadrilha: melhor par do arraiá'); addInv('peMoleque', 2, true); prize = 'Melhor par do arraiá! Prêmio de R$ 300 e pé de moleque.'; S.stats.quadWin = (S.stats.quadWin || 0) + 1; }
+  showModal('💃 Quadrilha', null, null, () => `<div class="card"><h3>${QD.ok} de ${n} passos certos</h3><p>${prize || (r >= 0.6 ? 'Boa dança! O povo gostou.' : 'Pisou no pé do par algumas vezes… ano que vem melhora!')}</p><p class="mut">Amizade com ${m} morador(es) no arraiá.</p></div>`, 'calendar'); }
+A.sjMail = id => { S.sjMail = S.sjMail || {}; if (S.sjMail[id] === S.day || !canPay(2)) return; pay(2, 'Correio elegante'); S.sjMail[id] = S.day; addFr(id, 6); const e = npcs.find(q => q.id === id); if (e) { e.emote = '♥'; e.et = 3; } const L = ['Recebi seu bilhete! Fiquei vermelho(a)…', 'Que bilhete bonito! Guardo comigo.', 'Ah, então era você! Obrigado(a)!', 'Vou te responder no próximo arraiá…']; toast('💌 ' + NPCDEF[id].n + ': "' + pick(L) + '"'); renderModal(); };
+A.sjFish = () => { if (!canPay(3)) return say('Falta dinheiro.'); pay(3, 'Pescaria de prendas'); const r = Math.random(); const it = r < 0.02 ? 'gibao' : r < 0.1 ? 'quentao' : r < 0.45 ? 'peMoleque' : r < 0.75 ? 'cocada' : 'milhoAssado'; addInv(it, 1, true); toast(r < 0.02 ? '🎉 Prenda rara: ' + IT[it].n + '!' : '🎣 Pescou: ' + IT[it].n); renderModal(); };
+A.evDance = () => { if (eventNow('junina')) { return quadStart(); }
+  A.evDance0(); };
+A.evDance0 = () => { closeModal(); act('wave', 2.4, null, () => { let n = 0; for (const e of npcs) if (!e.hidden && hyp(e.x - P.x, e.y - P.y) < 120) { addFr(e.id, 4); n++; e.emote = '♥'; e.et = 2; } P.en = Math.max(0, P.en - 6); toast(n ? 'Dançou com ' + n + ' morador(es)! Amizade aumentou.' : 'Dançou sozinho… chame o povo!'); }, { zoom: false }); };
 
 /* ============ REGIÃO: FAZENDAS VIZINHAS, PROPRIETÁRIOS, NEGOCIAÇÃO E MISSÕES ============ */
 // Fazendas distantes não aparecem no mapa de perto: são simuladas de forma resumida, dia a dia.
