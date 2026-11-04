@@ -5212,7 +5212,7 @@ function pressureSources() {
   const L = [];
   if (!P.cart && mode === 'play') {
     const h = P.mnt ? byId(P.mnt) : null, gal = P._gal === 2;
-    const R = h ? 50 * (1 + skill('lid') * 0.08) * (S.cf.aj === 1 && gal ? 1.3 : 1) : 26;
+    const R = h ? 64 * (1 + skill('lid') * 0.08) * (S.cf.aj === 1 && gal ? 1.3 : 1) : 26;
     L.push({ x: P.x, y: P.y, R, k: h ? (gal ? 1.5 : P._mv > 6 ? 1.1 : 0.75) : (P._mv > 30 ? 0.9 : 0.6), vx: P._vx || 0, vy: P._vy || 0, who: 'p', mv: P._mv > 6 });
   }
   for (const a of S.animals) if (a.sp === 'cao' && a.own === 'player' && (a._st === 'work' || a._st === 'run' || a._barkT > 0)) { const B = DOGS[a.br] || DOGS.caramelo; L.push({ x: a.x, y: a.y, R: (a._barkT > 0 ? 52 : 34) * (0.8 + B.herd * 0.2), k: 0.85 * B.herd, vx: a._vx || 0, vy: a._vy || 0, who: 'd', mv: true }); }
@@ -5237,16 +5237,18 @@ function feel(a, hx, hy, dist) {
   return [sx, sy, hit];
 }
 function gatePull(a, vx, vy) { // porteira aberta à frente atrai o animal conduzido: alinha pela frente e atravessa
-  let best = null, bd = 88;
-  for (const g of GATES) { if (g.anim < 0.65) continue; const gx = g.x * TS, gy = g.y * TS, d = hyp(gx - a.x, gy - a.y); if (d < bd && ((gx - a.x) * vx + (gy - a.y) * vy) > -d * 0.15) { bd = d; best = [gx, gy, g]; } }
+  const GR2 = 150; let best = null, bd = GR2;
+  for (const g of GATES) { if (g.anim < 0.65) continue; const gx = g.x * TS, gy = g.y * TS, d = hyp(gx - a.x, gy - a.y), vl = hyp(vx, vy) || 1; if (d < bd && ((gx - a.x) * vx + (gy - a.y) * vy) / vl > d * (d > 70 ? 0.25 : -0.2)) { bd = d; best = [gx, gy, g]; } } /* longe: só a porteira no rumo da tocada; perto: qualquer porteira à frente */
   if (!best) { a._gNear = 0; return [0, 0]; }
   const [gx, gy, g] = best, nx = g.h ? 0 : 1, ny = g.h ? 1 : 0; // normal da porteira
-  const side = (a.x - gx) * nx + (a.y - gy) * ny, s = side >= 0 ? 1 : -1; // de que lado o animal está
+  const side = (a.x - gx) * nx + (a.y - gy) * ny; let s = side >= 0 ? 1 : -1; // de que lado o animal está
+  if (a._gc > 0 && a._gG === g && a._gS) s = a._gS; // já decidiu atravessar: mantém o sentido (antes virava em cima da porteira)
   const lat = g.h ? a.x - gx : a.y - gy; // desvio lateral em relação ao vão
   let tx, ty;
-  if (Math.abs(side) > 10 && Math.abs(lat) > 7) { tx = gx + nx * s * 14; ty = gy + ny * s * 14; } // primeiro se alinha com o vão
+  if (Math.abs(side) > 8 && Math.abs(lat) > 7) { const ap = Math.min(30, Math.abs(side) * 0.5); tx = gx + nx * s * ap; ty = gy + ny * s * ap; } // primeiro se alinha com o vão (funil): o ponto fica sempre entre o boi e a porteira
   else { tx = gx - nx * s * 22; ty = gy - ny * s * 22; } // depois atravessa
-  const d = hyp(tx - a.x, ty - a.y) || 1, k = (1 - bd / 88) * 2.8 + 0.6; a._gNear = bd < 46 ? 0.35 : 0; return [(tx - a.x) / d * k, (ty - a.y) / d * k];
+  if (bd < 62 && Math.abs(lat) < 18 && !(a._gc > 0 && a._gG === g)) { a._gc = 2.5; a._gG = g; a._gS = s; a._gT = [gx - nx * s * 34, gy - ny * s * 34]; } // na boca da porteira: compromete a passar
+  const d = hyp(tx - a.x, ty - a.y) || 1, k = (1 - bd / GR2) * 3.4 + 0.9; a._gNear = bd < 100 ? 0.3 : 0; /* perto da porteira o rebanho afrouxa e entra em fila */ return [(tx - a.x) / d * k, (ty - a.y) / d * k];
 }
 function herdMates(a) { const own = a.own; return near(a.x, a.y, 74).filter(b => b !== a && b.sp === a.sp && b.own === own && !b._hid && b._st !== 'route' && b._st !== 'tied' && !b._cut === !a._cut && free(b)); }
 function updHerdAnimal(a, dt, gm, srcs) {
@@ -5260,7 +5262,10 @@ function updHerdAnimal(a, dt, gm, srcs) {
       let k = s.k * Math.pow(1 - d / R, 1.1) * 1.7 * (s.who === 'n' || s.who === 'x' ? 1 : obey);
       // ponto de equilíbrio: pressão de trás empurra para a frente; de frente faz virar de lado
       const hx = a._hx || 0, hy = a._hy || 0, front = (-(dx) * hx + -(dy) * hy) / d; // >0: fonte à frente
-      let fx = dx / d, fy = dy / d; if (front > 0.4 && hyp(a._vx, a._vy) > 4) { const sd = (hx * fy - hy * fx) >= 0 ? 1 : -1; fx += -hy * sd * 0.8; fy += hx * sd * 0.8; }
+      let fx = dx / d, fy = dy / d;
+      // o vaqueiro dá a direção: o boi que está à frente dele no sentido em que ele anda segue esse rumo, em vez de só fugir em linha reta
+      if (s.who === 'p') { const sv = hyp(s.vx || 0, s.vy || 0); if (sv > 10) { const hx2 = s.vx / sv, hy2 = s.vy / sv, ahead = (dx * hx2 + dy * hy2) / d; if (ahead > 0.6) { const w = Math.min(0.4, (ahead - 0.6) * 1.0); fx = fx * (1 - w) + hx2 * w; fy = fy * (1 - w) + hy2 * w; const fl = hyp(fx, fy) || 1; fx /= fl; fy /= fl; } } }
+      if (front > 0.6 && hyp(a._vx, a._vy) > 4) { const sd = (hx * fy - hy * fx) >= 0 ? 1 : -1; fx += -hy * sd * 0.8; fy += hx * sd * 0.8; }
       px += fx * k; py += fy * k; pmag += k; if (s.who === 'x') panic = Math.max(panic, 1);
       if (s.k > 1.3 && d < R * 0.6) panic = Math.max(panic, 0.6 + (s.k - 1.3));
     } else if (d < R * 1.6 && !alertSrc) alertSrc = s;
@@ -5274,12 +5279,14 @@ function updHerdAnimal(a, dt, gm, srcs) {
   }
   const pressured = pmag > 0.05;
   if (pressured) { a._pt = 0; a._st = 'driven'; a._calm = 2 + Math.random(); }
-  else if (a._st === 'driven') { a._calm -= dt; if (a._calm <= 0) { a._st = null; a._t = 0; } }
+  else if (a._st === 'driven') { a._calm -= dt; if (a._gc > 0) a._calm = Math.max(a._calm, 0.4); if (a._calm <= 0) { a._st = null; a._t = 0; } }
+  if (a._gc > 0) { a._gc -= dt; if ((a._gT && hyp(a._gT[0] - a.x, a._gT[1] - a.y) < 10) || !a._gG || hyp(a._gG.x * TS - a.x, a._gG.y * TS - a.y) > 120) a._gc = 0; }
   // ---- vizinhos ----
   const mates = (pressured || a._st === 'driven' || a._st === 'regroup' || Math.random() < 0.25) ? herdMates(a) : [];
   let cx = 0, cy = 0, ax = 0, ay = 0, sx = 0, sy = 0, n = 0;
-  const hb = hbOf(a), pers = (hb[0] * 2.2 + 4);
+  const hb = hbOf(a), pers = (hb[0] * 2.2 + 4) * (a._gc > 0 ? 0.55 : a._gNear ? 0.8 : 1); // na porteira aceitam ficar mais juntos e passam em fila
   const ldr = herdLeader(a);
+  for (const b of mates) if (!(a._gc > 0) && b._gc > 0.9 && b._gG && b._gG.anim >= 0.65 && hyp(b.x - a.x, b.y - a.y) < 44 && hyp(b._gG.x * TS - a.x, b._gG.y * TS - a.y) < 110 && (a._st === 'driven' || pressured)) { a._gc = b._gc - 0.7; a._gG = b._gG; a._gS = b._gS; a._gT = b._gT; break; } // segue o companheiro que está passando pela porteira
   for (const b of mates) { const dx = a.x - b.x, dy = (a.y - b.y) * 1.3, d = hyp(dx, dy) || 0.1, lw = b === ldr ? 3 : 1; cx += b.x * lw; cy += b.y * lw; ax += (b._vx || 0) * lw; ay += (b._vy || 0) * lw; n += lw; if (d < pers) { const k = (pers - d) / pers; sx += dx / d * k * 2.2; sy += dy / d * k * 2.2; } }
   // ---- comportamento calmo (pasto, água, sombra, descanso) quando não pressionado ----
   let tx = 0, ty = 0, want = 0;
@@ -5294,15 +5301,16 @@ function updHerdAnimal(a, dt, gm, srcs) {
     const disp = a._fear > 0.78 ? 1 : 0; // dispersão por susto
     const wc = (disp ? 0.08 : a._gNear ? 0.15 : 0.5) * tmod(a, 'coh'), wa = disp ? 0.1 : 0.55;
     dvx += px * 1.6; dvy += py * 1.6;
+    if (a._gc > 0 && a._gT) { const gdx = a._gT[0] - a.x, gdy = a._gT[1] - a.y, gl = hyp(gdx, gdy) || 1; dvx += gdx / gl * 1.5; dvy += gdy / gl * 1.5; } // segue pela porteira sem voltar para o rebanho
     if (n) { const mx = cx / n - a.x, my = cy / n - a.y, md = hyp(mx, my) || 1; if (md > pers * 0.9) { dvx += mx / md * wc; dvy += my / md * wc; } const vm = hyp(ax, ay) || 1; if (vm > n * 2) { dvx += ax / vm * wa; dvy += ay / vm * wa; } }
     if (disp) { a._jit = a._jit || Math.random() * 6.28; a._jit += (Math.random() - 0.5) * dt * 4; dvx += Math.cos(a._jit) * 0.5; dvy += Math.sin(a._jit) * 0.5; }
     const dl = hyp(dvx, dvy) || 1; tx = dvx / dl; ty = dvy / dl;
-    want = pressured ? (a._fear > 0.7 || pmag > 1.6 ? SP.run : pmag > 0.55 ? SP.trot : SP.walk * 1.4) : SP.walk;
+    want = pressured ? (a._fear > 0.7 || pmag > 1.6 ? SP.run : pmag > 0.55 ? SP.trot : SP.walk * 1.4) : a._gc > 0 ? SP.walk * 1.5 : SP.walk;
     want *= (a.age < 8 ? 0.85 : 1) * (a.spdF || 1) * tmod(a, 'spd') * (a === ldr && pressured ? 1.12 : 1);
     // teimoso: empaca um instante no meio da tocada
     if (hasT(a, 'teimoso') && pressured && !(a._halt > 0) && Math.random() < dt * 0.22) { a._halt = 0.7 + Math.random() * 0.6; if (a.sp === 'boi') AU.moo(a.x, a.y, 0.8); }
     if (a._halt > 0) { a._halt -= dt; want *= 0.15; }
-    const gp = gatePull(a, tx, ty); tx += gp[0]; ty += gp[1];
+    const gp = pmag > 0.05 ? gatePull(a, px, py) : gatePull(a, tx, ty); tx += gp[0]; ty += gp[1]; // a porteira é escolhida pelo rumo do empurrão, não pelo zigue-zague do boi
     if (Math.random() < dt * (pmag > 1 ? 0.35 : 0.12) && a.sp === 'boi') AU.moo(a.x, a.y, a.sex === 'M' ? 0.85 : a.age < 12 ? 1.5 : 1.05);
     if (Math.random() < dt * (pmag > 1 ? 0.3 : 0.08) && a.sp === 'cabra' && AU.bleat) AU.bleat(a.x, a.y, a.age < 6 ? 1.4 : a.sex === 'M' ? 0.8 : 1);
   }
@@ -8511,7 +8519,8 @@ const FX = {
   VS: 'attribute vec2 a;varying vec2 v;void main(){v=a;gl_Position=vec4(a.x*2.0-1.0,1.0-a.y*2.0,0.0,1.0);}',
   FS: `precision mediump float;
 uniform sampler2D uS,uL,uM;uniform vec2 uR,uC,uSD;uniform float uK,uT,uTa,uH,uF,uFl,uW,uRy,uV,uN,uSat,uCon,uIn,uWm;uniform vec4 uA,uMR;uniform vec3 uSky;varying vec2 v;
-float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float h(vec2 p){vec3 q=fract(vec3(p.xyx)*0.1031);q+=dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);} /* hash sem seno (mais leve no celular) */
+float n1(float x){float i=floor(x),f=fract(x);f=f*f*(3.0-2.0*f);return mix(h(vec2(i,7.0)),h(vec2(i+1.0,7.0)),f);}
 float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(h(i),h(i+vec2(1.0,0.0)),f.x),mix(h(i+vec2(0.0,1.0)),h(i+vec2(1.0,1.0)),f.x),f.y);}
 void main(){
  vec2 fr=v*uR,wp=uC+fr/uK;vec4 M=texture2D(uM,(wp/16.0-uMR.xy)/uMR.zw);vec2 o=vec2(0.0);
@@ -8524,10 +8533,10 @@ void main(){
  c*=1.0-uW*0.1;
  vec3 tc=uA.yzw,sl=mix(2.0*c*tc+c*c*(1.0-2.0*tc),sqrt(c)*(2.0*tc-1.0)+2.0*c*(1.0-tc),step(0.5,tc));c=mix(c,sl,clamp(uTa*2.0,0.0,1.0));
  c*=mix(vec3(1.0),vec3(1.16,0.96,0.76),uWm);
- if(uRy>0.0){vec2 pd=vec2(-uSD.y,uSD.x);float b=dot(wp,pd)*0.011+uT*0.025;float r=n(vec2(b,0.5))*n(vec2(b*2.7+1.3,3.1));c+=vec3(1.0,0.86,0.58)*smoothstep(0.3,0.7,r)*uRy*0.22*(1.0-v.y*0.45);}
+ if(uRy>0.0){vec2 pd=vec2(-uSD.y,uSD.x);float b=dot(wp,pd)*0.011+uT*0.025;float r=n1(b)*n1(b*2.7+1.3);c+=vec3(1.0,0.86,0.58)*smoothstep(0.3,0.7,r)*uRy*0.22*(1.0-v.y*0.45);}
  float dk=uA.x;vec3 L=texture2D(uL,v).rgb;vec3 nt=mix(vec3(1.0),vec3(0.52,0.63,1.0),clamp(dk*1.6,0.0,1.0));
  c=c*nt*(1.0-dk)+c*L*1.3+L*L*0.3;
- if(uF>0.0){float f=n(wp*0.011+vec2(uT*0.05,0.0))*0.6+n(wp*0.031-vec2(uT*0.09,0.0))*0.4;c=mix(c,vec3(0.86,0.88,0.9)*(1.0-dk*0.75),uF*smoothstep(0.28,0.85,f));}
+ if(uF>0.0){float f=n(wp*0.011+vec2(uT*0.05,0.0))*0.75+n1(wp.x*0.03-uT*0.09+wp.y*0.02)*0.25;c=mix(c,vec3(0.86,0.88,0.9)*(1.0-dk*0.75),uF*smoothstep(0.28,0.85,f));}
  c+=uFl*vec3(0.75,0.8,0.95);
  float lu=dot(c,vec3(0.299,0.587,0.114));c=mix(vec3(lu),c,uSat);c=(c-0.5)*uCon+0.5;
  vec2 q=v-0.5;c*=1.0-uV*dot(q,q)*1.4;gl_FragColor=vec4(c,1.0);}`,

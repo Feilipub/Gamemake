@@ -35,3 +35,13 @@
 Entrar, dormir na cama, parede bloqueia, sair no lugar certo, 10 entradas/saídas seguidas, morador
 dormindo, recusa à noite sem amizade, porta trancada, horário da escola, salvar dentro de casa, sem
 duplicar NPC; pedir (recusa e aceite), montar, galopar, não vender, devolver, atraso, salvar empréstimo.
+
+## Tocada do gado (IA dos bovinos conduzidos)
+- O vaqueiro montado influencia de mais longe (raio 64 em vez de 50) e, quando vem por trás andando,
+  o boi à frente dele segue o rumo do cavalo (mistura de até 40% com a fuga em linha reta).
+- A porteira é escolhida pelo rumo do empurrão, não pelo zigue-zague do boi; funil com ponto de
+  alinhamento sempre entre o boi e o vão; na boca da porteira o boi se compromete a atravessar e
+  mantém o sentido (antes virava em cima dela); perto da porteira o rebanho afrouxa a distância e passa
+  em fila; quem está ao lado de um companheiro atravessando segue junto (só perto da porteira, com prazo).
+- Teste (`herd_test90.js`, `herd_in.js`, `campo.js`): saindo do pasto 30–33 de 36 bois (antes 13–14);
+  entrando pela estrada 15–18 de 24 (antes 12–14); tocada em campo aberto mantém o rumo como antes.
