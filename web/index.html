@@ -457,9 +457,9 @@ input,select{border:3px solid #5a3418;background:#fff6d8;box-shadow:inset 0 2px 
 'use strict';
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
-const TS = 16, MW = 240, MH = 110, WPX = MW * TS, HPX = MH * TS;
+const TS = 16, MW = 240, MH = 150, WPX = MW * TS, HPX = MH * TS;
 // o mundo tem MH linhas; abaixo dele ficam os interiores das casas (até MHT). Os arrays do mapa cobrem MHT.
-const WMH = MH, MHT = 142, HPXT = MHT * TS;
+const WMH = MH, MHT = MH + 32, HPXT = MHT * TS;
 const GAME_V = '3.2.0', SAVE_V = 7;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
@@ -621,6 +621,9 @@ function itemIconURL(id) {
     case 'limao': p(3, 3, 6, 6, '#9ad040'); p(2, 4, 8, 4, '#9ad040'); p(4, 3, 2, 1, '#ffffff'); p(6, 1, 1, 3, '#5a3a20'); p(7, 1, 2, 1, '#4a8a3a'); break;
     case 'laranja': p(3, 3, 6, 6, '#f09a20'); p(2, 4, 8, 4, '#f09a20'); p(4, 3, 2, 1, '#ffffff'); p(6, 1, 1, 3, '#5a3a20'); p(7, 1, 2, 1, '#4a8a3a'); break;
     case 'racaoPorco': sack('#e0c8b0', '#d06a7a'); break; case 'farelo': sack('#d8b878', '#8a5a2a'); break; case 'suplemento': sack('#c8d0a0', '#3a6a9a'); break;
+    case 'iodo': p(4, 1, 4, 2, '#3a3a3a'); p(3, 3, 6, 8, '#8a3a1a'); p(4, 5, 4, 3, '#f4f0e8'); p(5, 6, 2, 1, '#8a3a1a'); break;
+    case 'mataBicheira': p(5, 0, 2, 2, '#e8e8e8'); p(4, 2, 4, 2, '#3a3a3a'); p(3, 4, 6, 8, '#a8b0b8'); p(4, 6, 4, 3, '#e8c040'); break;
+    case 'ferroMarca': p(1, 10, 6, 1, '#6a4422'); p(6, 8, 1, 4, '#5a5a62'); p(6, 3, 5, 1, '#4a4a52'); p(6, 3, 1, 6, '#4a4a52'); p(10, 3, 1, 6, '#4a4a52'); p(6, 8, 5, 1, '#4a4a52'); p(7, 2, 3, 1, '#c86a2a'); break;
     case 'vermifugo': case 'carrapaticida': case 'cicatrizante': p(4, 1, 4, 2, '#3a3a3a'); p(3, 3, 6, 8, id === 'vermifugo' ? '#e8e0c8' : id === 'carrapaticida' ? '#6aa040' : '#4a8ac8'); p(4, 5, 4, 3, '#f4f0e8'); break;
     case 'regador': p(2, 4, 7, 6, '#4a8a5a'); p(2, 4, 7, 1, '#6aaa7a'); p(9, 3, 2, 2, '#4a8a5a'); p(10, 2, 2, 1, '#4a8a5a'); p(3, 2, 5, 2, '#3a6a4a'); break;
     case 'enxada': p(5, 1, 1, 10, '#8a6a44'); p(2, 8, 6, 3, '#8a8a92'); p(2, 8, 6, 1, '#b8b8c0'); break;
@@ -967,6 +970,9 @@ const IT = {
   farelo: { i: '', n: 'Farelo de soja (saco 25kg)', kg: 25, p: 68, d: 'Proteína para misturar no cocho: bezerros, porcos e cabras crescem mais rápido.', c: 'trato' },
   suplemento: { i: '', n: 'Suplemento proteinado (25kg)', kg: 25, p: 74, d: 'Para a seca: no cocho de trato, o gado perde menos peso quando o capim acaba.', c: 'trato' },
   vermifugo: { i: '', n: 'Vermífugo (dose)', kg: 0.1, p: 14, d: 'Use pela ficha do animal: +saúde e evita doença por 30 dias.', c: 'vet' },
+  iodo: { i: '', n: 'Iodo 10% (cura de umbigo)', kg: 0.1, p: 16, d: 'Cura do umbigo do bezerro nos primeiros 3 dias: mergulhe o umbigo e evite bicheira e infecção.', c: 'vet' },
+  mataBicheira: { i: '', n: 'Mata-bicheira (spray prata)', kg: 0.3, p: 26, d: 'Mata as larvas da mosca-varejeira e protege o ferimento. Use depois de castrar, ferrar ou quando aparecer bicheira.', c: 'vet' },
+  ferroMarca: { i: '', n: 'Ferro de marcar (com sua marca)', kg: 2, p: 180, d: 'Ferro de marcar gado no curral. Gado ferrado tem procedência e vale um pouco mais. Trate a queimadura com mata-bicheira.', c: 'ferr' },
   carrapaticida: { i: '', n: 'Carrapaticida (frasco)', kg: 0.5, p: 28, d: 'Banho contra carrapato e mosca-do-chifre: +felicidade e +saúde.', c: 'vet' },
   cicatrizante: { i: '', n: 'Spray cicatrizante', kg: 0.2, p: 22, d: 'Trata ferimentos (ataque de bicho, arame): recupera saúde.', c: 'vet' },
   regador: { i: '', n: 'Regador', kg: 1.5, p: 38, d: 'Rega as mudas do pomar (Ação perto da muda). Sem irrigação, as mudas precisam de água na seca.', c: 'ferr' },
@@ -1030,7 +1036,14 @@ const AREAS = {
   // Gleba do Pomar e das Criações (ao sul, livre desde o início)
   chiq: { n: 'Chiqueiro', k: 'chiq', r: [41, 91, 49, 98], g: [[41, 94], [41, 95]] },
   aprisco: { n: 'Aprisco (cabras)', k: 'pasto', r: [41, 100, 57, 108], g: [[41, 103], [41, 104]] },
-  pomar: { n: 'Pomar', k: 'pomar', r: [2, 91, 30, 107], g: [[30, 98], [30, 99]] }
+  pomar: { n: 'Pomar', k: 'pomar', r: [2, 91, 30, 107], g: [[30, 98], [30, 99]] },
+  // Retiro do Umbuzeiro (ao sul do Pomar, comprável): 4 piquetes em volta de um corredor de manejo, piquete da aguada e curral com brete e balança
+  r1: { n: 'Piquete 9 (Retiro)', k: 'pasto', r: [1, 112, 18, 128], g: [[9, 128], [10, 128]] },
+  r2: { n: 'Piquete 10 (Retiro)', k: 'pasto', r: [18, 112, 36, 128], g: [[27, 128], [28, 128]] },
+  r3: { n: 'Piquete 11 (Retiro)', k: 'pasto', r: [1, 132, 18, 147], g: [[9, 132], [10, 132]] },
+  r4: { n: 'Piquete 12 (Retiro)', k: 'pasto', r: [18, 132, 36, 147], g: [[27, 132], [28, 132]] },
+  r5: { n: 'Piquete da Aguada (Retiro)', k: 'pasto', r: [40, 124, 58, 147], g: [[40, 130], [40, 131]] },
+  rcur: { n: 'Curral do Retiro', k: 'pen', r: [41, 112, 52, 120], g: [[41, 116], [41, 117]] }
 };
 /* ============ REGIÃO DAS SERRAS (depois de Itarantim pela estrada do leste) ============ */
 // Mapa contínuo a leste (x 112 a 239), separado da cidade por uma serra intransponível: só se chega pela viagem.
@@ -1370,6 +1383,7 @@ function genMap() {
   genRegion(R);
   for (const k of AKEYS) { const a = AREAS[k], r = a.r; if ((a.k === 'pasto' || a.k === 'npc' || a.k === 'haras') && !a.noPast) fillR(r[0] + 1, r[1] + 1, r[2] - 1, r[3] - 1, G.PAST); }
   fillR(42, 92, 48, 97, G.MUD); fillR(1, 90, 58, 90, G.DIRT); // chão do chiqueiro e carreador da gleba
+  fillR(1, 129, 36, 131, G.DIRT); fillR(42, 113, 51, 119, G.MUD); fillR(53, 113, 58, 121, G.FLOOR); fillR(40, 121, 58, 122, G.DIRT); fillR(1, 111, 58, 111, G.DRY); // Retiro: corredor de manejo, chão do curral, terreiro do brete e carreador
   fillR(41, 34, 48, 41, G.MUD); fillR(52, 36, 57, 41, G.MUD); fillR(41, 47, 48, 55, G.MUD); fillR(52, 47, 57, 52, G.MUD); fillR(3, 33, 8, 38, G.FLOOR);
   // estradas
   fillR(1, 43, 58, 45, G.DIRT); fillR(37, 1, 39, MH - 2, G.DIRT); fillR(59, 43, 69, 44, G.DIRT);
@@ -1391,9 +1405,10 @@ function genMap() {
   for (let y = 0; y < MH; y++) { if (y >= 41 && y <= 46) continue; const cx = Math.floor(creekX(y)); for (const x of [cx - 2, cx + 1]) { const t = ground[gi(x, y)]; if ((t === G.GRASS || t === G.PAST || t === G.DRY) && !obj[gi(x, y)] && H2(x, y, 31) < 0.62) ground[gi(x, y)] = G.SAND; } }
   // reservatório e açude
   const pond = (cx, cy, rx, ry) => { for (let y = Math.floor(cy - ry - 2); y <= cy + ry + 2; y++) for (let x = Math.floor(cx - rx - 2); x <= cx + rx + 2; x++) { const d = ((x + .5 - cx) / rx) ** 2 + ((y + .5 - cy) / ry) ** 2 + (H2(x, y, 7) - .5) * 0.25; if (d < 1) { ground[gi(x, y)] = G.WATER; pondT[gi(x, y)] = 1; } else if (d < 1.45 && ground[gi(x, y)] !== G.WATER) ground[gi(x, y)] = G.SAND; } };
-  pondT.fill(0); pond(31.6, 26.4, 4.0, 2.9); pond(49.5, 78.5, 6.5, 6.2); pond(75, 20, 2.6, 1.8); pond(76, 80, 3, 2);
+  pondT.fill(0); pond(31.6, 26.4, 4.0, 2.9); pond(49.5, 78.5, 6.5, 6.2); pond(75, 20, 2.6, 1.8); pond(76, 80, 3, 2); pond(50.5, 137.5, 5.2, 4.3); // aguada do Retiro
   // cercas: perímetro da fazenda, divisas, áreas
   fenceLine(0, 0, 59, 0); fenceLine(0, MH - 1, 59, MH - 1); fenceLine(0, 0, 0, MH - 1); fenceLine(59, 0, 59, MH - 1);
+  fenceLine(0, 110, 59, 110); // divisa do Retiro (a estrada passa livre)
   for (const ek of ['norte', 'sul']) { const y = EXP[ek].y; fenceLine(0, y, 59, y); for (let x = 37; x <= 39; x++) lockId[gi(x, y)] = ek === 'norte' ? 0 : -1; } // sul: a estrada fica livre (leva à Gleba do Pomar); os piquetes da gleba ficam trancados pela porteira até a compra
   for (const k of AKEYS) fenceRect(AREAS[k].r);
   // limpar cercas sobre a estrada/lanes (não sobre divisas)
@@ -1423,7 +1438,8 @@ function genMap() {
   tr('p6', 'agua', 42, 2, 2, 400); tr('p7', 'agua', 2, 70, 2, 400);
   tr('campos', 'agua', 65, 4, 2, 400); tr('duarte', 'agua', 65, 65, 2, 400);
   tr('p1', 'racao', 7, 47, 2, 150); tr('p2', 'racao', 16, 47, 2, 150);
-  tr('chiq', 'racao', 43, 92, 2, 120); tr('chiq', 'agua', 47, 92, 2, 120); tr('aprisco', 'agua', 43, 101, 2, 150); tr('aprisco', 'racao', 47, 101, 2, 80); // cochos de trato nos piquetes (ração ou forragem da roça)
+  tr('chiq', 'racao', 43, 92, 2, 120); tr('chiq', 'agua', 47, 92, 2, 120); tr('aprisco', 'agua', 43, 101, 2, 150); tr('aprisco', 'racao', 47, 101, 2, 80);
+  tr('r1', 'agua', 2, 113, 2, 400); tr('r2', 'agua', 19, 113, 2, 400); tr('r3', 'agua', 2, 133, 2, 400); tr('r4', 'agua', 19, 133, 2, 400); tr('rcur', 'agua', 42, 113, 2, 200); tr('rcur', 'racao', 48, 113, 3, 200); // Retiro (o piquete da aguada bebe no açude) // cochos de trato nos piquetes (ração ou forragem da roça)
   // prédios
   for (const b of BDEF) { const o = Object.assign({}, b); BLD.push(o); for (let y = b.r[1]; y <= b.r[3]; y++) for (let x = b.r[0]; x <= b.r[2]; x++) obj[gi(x, y)] = 3; o.dp = [b.door, b.r[3] + 1.35]; }
   // props fixos
@@ -1433,7 +1449,13 @@ function genMap() {
   P('placa', 38.5 - 1.6, 22.6, 0); P('placa', 38.5 - 1.6, 66.6, 0);
   P('pocilga', 46.5, 97.6, 0); for (let x = 44; x <= 48; x++) for (let y = 96; y <= 97; y++) obj[gi(x, y)] = 3; // abrigo coberto do chiqueiro
   P('abrigoCabra', 54.5, 103.6, 0); for (let x = 52; x <= 56; x++) for (let y = 102; y <= 103; y++) obj[gi(x, y)] = 3; // aprisco suspenso
-  P('esterqueira', 52.6, 94.8, 1); P('placaPomar', 32.2, 97.4, 0);
+  P('esterqueira', 52.6, 94.8, 1);
+  // Retiro do Umbuzeiro: casa do retireiro, brete com balança, cochos de sal cobertos e umbuzeiros de sombra nos piquetes
+  P('casaRetiro', 55.5, 115.8, 0); for (let x = 53; x <= 57; x++) for (let y = 113; y <= 115; y++) obj[gi(x, y)] = 3;
+  P('brete', 55.5, 120.8, 0); for (let x = 53; x <= 57; x++) for (let y = 119; y <= 120; y++) obj[gi(x, y)] = 3;
+  for (const [x, y] of [[6.5, 114.7], [32.5, 114.7], [6.5, 145.7], [32.5, 145.7], [55.5, 126.7]]) P('cochoSal', x, y, 1);
+  for (const [x, y] of [[13.5, 121.85], [24.5, 119.85], [12.5, 141.85], [30.5, 140.85], [44.5, 144.85], [56.5, 133.85]]) P('umbu', x, y, 1);
+  P('placaRetiro', 35.8, 111.7, 0); P('placaPomar', 32.2, 97.4, 0);
   P('caixa', 2, 29.5, 1); P('catavento', 35.5, 30.95, 1); /* ao lado do açude, bombeando água */ P('bau', 9.4, 29.7, 1); P('forrageira', 26.6, 28.6, 1); P('coqueiro', 11.6, 27.6, 1); P('caju', 22.4, 38.2, 1); P('manga', 2.2, 42.2, 1);
   [[12.5, 30.8], [39.5, 42.4], [106.6, 45.6], [104, 58.4], [97, 13.2], [97, 75.2]].forEach(p => { POSTS.push({ x: p[0] * TS, y: p[1] * TS }); P('mourao', p[0], p[1], 0); });
   genRegionPost(P);
@@ -1453,7 +1475,8 @@ function genMap() {
     for (const b of BLD) if (x >= b.r[0] - 1 && x <= b.r[2] + 1 && y >= b.r[1] - 2 && y <= b.r[3] + 2) return true;
     for (const k in LOTS) { const r = LOTS[k].r; if (x >= r[0] - 1 && x <= r[2] + 1 && y >= r[1] - 2 && y <= r[3] + 2) return true; }
     if (x >= 1 && x <= 36 && y >= 28 && y <= 42) return true;
-    if (x >= 1 && x <= 58 && y >= 89) return true; // Gleba do Pomar: sem mato aleatório
+    if (x >= 1 && x <= 58 && y >= 89 && y < 110) return true; // Gleba do Pomar: sem mato aleatório (o Retiro, abaixo, tem)
+    if (x >= 52 && x <= 58 && y >= 111 && y <= 123) return true; // casa do retireiro e brete
     if (x >= 78 && x <= 89 && y >= 45 && y <= 58) return true;
     return false;
   };
@@ -1868,13 +1891,14 @@ const GR = (() => {
 const PARCELS = {
   piquetes: { n: 'Terreno dos Piquetes 3 e 4', p: 14000, areas: ['p3', 'p4'], d: 'Dois piquetes cercados a leste do Piquete 2, com bebedouros.' },
   leste: { n: 'Terreno do Curral Grande', p: 24000, areas: ['receb', 'conf', 'quar', 'haras'], lots: ['B'], d: 'Recebimento, confinamento, quarentena, haras e o Lote B para obras.' },
-  galinheiro: { n: 'Cercado do galinheiro', p: 2500, areas: ['galin'], d: 'Cercado com poleiro ao lado da casa.' }
+  galinheiro: { n: 'Cercado do galinheiro', p: 2500, areas: ['galin'], d: 'Cercado com poleiro ao lado da casa.' },
+  retiro: { n: 'Retiro do Umbuzeiro', p: 52000, areas: ['r1', 'r2', 'r3', 'r4', 'r5', 'rcur'], d: 'Terra grande ao sul do Pomar: 5 piquetes de capim com cerca de arame farpado, corredor de manejo, aguada com açude e curral com brete e balança.' }
 };
 const RANKS = [[0, 'Pequeno produtor'], [60000, 'Criador regional'], [200000, 'Fazendeiro reconhecido'], [600000, 'Grande pecuarista']];
 function owned(areaKey) { if (!S || !S.land) return true; for (const k in PARCELS) if (PARCELS[k].areas.includes(areaKey)) return !!S.land[k]; return true; }
 function lotOwned(l) { if (!S || !S.land) return true; for (const k in PARCELS) if ((PARCELS[k].lots || []).includes(l)) return !!S.land[k]; return true; }
 function startSmall() { // novo jogo: começa com o rancho, o curral, dois piquetes e a mata dos fundos
-  S.land = { piquetes: false, leste: false, galinheiro: false }; S.house = 0; S.cash = 1500; S.acct = 2500; S.rankI = 0;
+  S.land = { piquetes: false, leste: false, galinheiro: false, retiro: false }; S.house = 0; S.cash = 1500; S.acct = 2500; S.rankI = 0;
   S.dep = { racao: 60, milho: 20, sal: 10, lenha: 4, carvao: 0, madeira: 0, tijolo: 0, cimento: 0, telha: 0, arame: 0 };
 }
 function patrimonio() { let v = 0; for (const a of S.animals) if (a.own === 'player') v += animalValue(a); for (const k in PARCELS) if (S.land && S.land[k]) v += PARCELS[k].p; if (S.exp.norte) v += EXP.norte.p; if (S.exp.sul) v += EXP.sul.p; v += [8000, 30000, 70000][S.house || 0]; v += Object.values(S.lots).filter(l => l && l.done).length * 9000; return Math.round(v + S.cash + S.acct - (typeof debt === 'function' ? debt() : 0)); }
@@ -3142,6 +3166,20 @@ function rpropSpr(p) { const k = p.t + '|' + (p.v || 0) + '|' + (isNight() ? 1 :
       q(16, 76, 64, 4, '#2a2420'); for (let x = 18; x < 78; x += 4) q(x, 76, 2, 4, '#9a9a9a'); }); break;
     case 'porteiraEstrada': c = mk(64, 36, q => { q(2, 6, 5, 30, '#5a3a20'); q(57, 6, 5, 30, '#5a3a20'); for (let y = 10; y < 32; y += 6) q(7, y, 50, 3, '#8a6a44'); q(7, 10, 50, 1, '#a88a5a'); for (let k = 0; k < 5; k++) q(9 + k * 10, 10 + k * 4, 3, 3, '#6a4a2a'); }); break;
     case 'placaSC': c = mk(20, 26, q => { q(9, 8, 2, 18, '#5a3a20'); q(1, 2, 18, 9, '#f4f0e8'); q(3, 4, 14, 1, '#2a5a8a'); q(3, 7, 10, 1, '#2a5a8a'); }); break;
+    case 'brete': c = mk(80, 44, q => { // seringa + brete de tábua com passarela, tronco de contenção e gaiola da balança no fim
+      q(0, 30, 80, 12, '#6a5a44'); for (let x = 0; x < 58; x += 9) { q(x, 6, 4, 36, '#4a3424'); q(x, 6, 4, 1, '#7a5a3a'); } for (const y of [10, 17, 24, 31]) { q(0, y, 58, 3, '#8f7558'); q(0, y, 58, 1, '#b09070'); }
+      q(0, 4, 58, 3, '#7a6448'); q(0, 4, 58, 1, '#a88a62'); for (let x = 2; x < 56; x += 6) q(x, 5, 1, 2, '#5a4430'); // passarela de cima
+      q(46, 2, 3, 40, '#5a5a62'); q(54, 2, 3, 40, '#5a5a62'); q(44, 0, 15, 3, '#7a7a84'); q(47, 12, 8, 2, '#8a8a92'); // tronco de contenção (pescoceira de ferro)
+      q(58, 14, 22, 26, '#8a8a92'); q(58, 14, 22, 2, '#b8b8c0'); for (let x = 60; x < 80; x += 4) q(x, 16, 1, 22, '#5a5a62'); q(58, 36, 22, 4, '#4a4a52'); q(63, 4, 12, 9, '#f4f0e8'); q(64, 5, 10, 4, '#1a3a1a'); q(65, 6, 7, 2, '#5ad06a'); q(68, 13, 2, 2, '#5a5a62'); }); break;
+    case 'casaRetiro': c = mk(64, 56, q => { // casa de taipa caiada do retireiro, telha colonial e alpendre
+      for (let y = 0; y < 16; y++) { const w = 40 + y * 1.5; q(32 - w / 2, 4 + y, w, 1, y % 4 === 3 ? '#7e2f1a' : y % 2 ? '#a8462a' : '#b8563a'); } q(31, 3, 2, 2, '#7e2f1a');
+      q(4, 20, 56, 30, '#efe6d2'); q(4, 20, 56, 2, '#c8bca4'); q(4, 43, 56, 7, '#7a8a5a'); q(4, 43, 56, 1, '#5a6a3a');
+      q(10, 27, 10, 9, '#3a4a5a'); q(10, 27, 10, 1, '#6a4a2a'); q(14, 27, 2, 9, '#6a4a2a'); q(26, 28, 11, 22, '#6a3e22'); q(26, 28, 11, 1, '#4a2a14'); q(34, 38, 2, 2, '#d8b060'); q(44, 27, 10, 9, '#3a4a5a'); q(48, 27, 2, 9, '#6a4a2a');
+      for (const x of [2, 60]) q(x, 20, 2, 30, '#5a3a20'); q(0, 50, 64, 6, '#c8b088'); q(0, 50, 64, 1, '#a89068'); q(42, 46, 6, 4, '#8a5a3a'); q(43, 44, 4, 2, '#4a8a3a'); }); break;
+    case 'cochoSal': c = mk(32, 30, q => { // cocho de sal mineral coberto (o sal não molha na chuva)
+      for (const x of [3, 27]) q(x, 6, 2, 22, '#5a3a20'); for (let y = 0; y < 6; y++) q(1 + y * 0.5, y + 2, 30 - y, 1, y % 2 ? '#8a9098' : '#a8b0b8'); q(0, 7, 32, 1, '#5a6068');
+      q(4, 18, 24, 8, '#7a5a3a'); q(4, 18, 24, 1, '#a07a50'); q(6, 19, 20, 3, '#f0f0ea'); q(8, 19, 4, 1, '#ffffff'); q(16, 20, 5, 1, '#d8dce0'); q(4, 25, 24, 1, '#4a3420'); }); break;
+    case 'placaRetiro': c = mk(52, 34, q => { q(6, 10, 3, 24, '#5a3a20'); q(43, 10, 3, 24, '#5a3a20'); q(1, 2, 50, 13, '#8a5a2a'); q(1, 2, 50, 1, '#b07a40'); q(1, 14, 50, 1, '#4a2a14'); txt(q, 'RETIRO', 8, 5, '#f4e8c8'); }); break;
     case 'tronco2': c = mk(44, 30, q => { for (const x of [2, 40]) q(x, 4, 3, 26, '#5a3a20'); for (let y = 8; y < 28; y += 5) q(5, y, 35, 2, '#8a6a44'); q(18, 2, 8, 4, '#8a8a92'); }); break;
     case 'curralNovo': c = mk(96, 34, q => { for (let x = 0; x < 96; x += 12) q(x, 4, 4, 30, '#4a3424'); for (let y = 8; y < 30; y += 6) q(0, y, 96, 3, '#8f7558'); }); break;
     case 'tanque': c = mk(80, 30, q => { q(2, 8, 76, 20, '#b8a888'); q(6, 11, 68, 14, '#3a88b0'); for (let k = 0; k < 8; k++) q(10 + k * 8, 14 + (k % 2) * 4, 5, 1, '#7ac0dc'); }); break;
@@ -3187,7 +3225,7 @@ function fenceSprOld(style, L, Rt, U, D, cond, pst) {
     }
   });
 }
-function fenceStyleAt(tx, ty) { const inR = r => tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]; if (inR(ROCA.r)) return 'v'; if (tx > 112) { for (const k of ['rd_curral', 'sc_manejo', 'mr_curral', 'rd_galin', 'ps_galin']) if (inR(AREAS[k].r)) return 'm'; for (const k of ['mr_pista', 'ps_chiq', 'ps_cabra', 'sc_bez']) if (inR(AREAS[k].r)) return 'v'; return 'a'; } for (const k of ['galin', 'haras']) if (inR(AREAS[k].r)) return 'v'; for (const k of ['curral', 'receb', 'conf', 'quar']) if (inR(AREAS[k].r)) return 'm'; if (tx >= 96 && tx <= 110 && ty >= 45 && ty <= 51) return 'm'; return 'a'; } // recinto do leilão: tábua de curral
+function fenceStyleAt(tx, ty) { const inR = r => tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]; if (inR(ROCA.r)) return 'v'; if (tx > 112) { for (const k of ['rd_curral', 'sc_manejo', 'mr_curral', 'rd_galin', 'ps_galin']) if (inR(AREAS[k].r)) return 'm'; for (const k of ['mr_pista', 'ps_chiq', 'ps_cabra', 'sc_bez']) if (inR(AREAS[k].r)) return 'v'; return 'a'; } for (const k of ['galin', 'haras']) if (inR(AREAS[k].r)) return 'v'; for (const k of ['curral', 'receb', 'conf', 'quar', 'rcur']) if (inR(AREAS[k].r)) return 'm'; if (tx >= 96 && tx <= 110 && ty >= 45 && ty <= 51) return 'm'; return 'a'; } // recinto do leilão: tábua de curral
 function drawGate(gt, X) { // porteira maior: pilares grossos com chapéu, folha de 5 travessas com mão-francesa, dobradiças e trava
   const a = gt.anim, th = a * Math.PI / 2 * 0.92, curral = gt.a && ['curral', 'receb', 'conf', 'quar', 'galin', 'haras'].includes(gt.a);
   const wood = curral ? '#d6c8aa' : '#a06a36', wd = shade(wood, -.45), wl = shade(wood, .22), post = '#5e3e22', pl = shade(post, .3), pd = shade(post, -.3), iron = '#3a3a42', ironL = '#7a7a84';
@@ -4648,7 +4686,7 @@ function starStr(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
 function cattleAgio(a) { const w = a.wt || 300; let k = 1 + 0.25 * cl((300 - w) / 180, 0, 1); if (a.sex === 'M' && w >= 450) k *= 1.06; return k; }
 function animalValue(a) {
   const st = stars(a), q = 0.82 + st * 0.08;
-  if (a.sp === 'boi') return Math.round(a.wt / 15 * S.arroba * q * (CATTLE[a.br].p || 1) * cattleAgio(a)); // ágio do bezerro some aos poucos com o peso; boi gordo tem prêmio
+  if (a.sp === 'boi') return Math.round(a.wt / 15 * S.arroba * q * (CATTLE[a.br].p || 1) * cattleAgio(a) * (a.brand ? 1.03 : 1) * (a.bich ? 0.9 : 1)); // ágio do bezerro some aos poucos com o peso; boi gordo tem prêmio
   if (a.sp === 'cavalo') return Math.round((HORSES[a.br].cost * 420 + 2500) * q * (a.age < 12 ? 0.6 : 1) * (a.hx ? 1 + Math.max(0, hxTotal(a) - 5) * 0.025 : 1));
   if (a.sp === 'burro') return Math.round(4200 * q); if (a.sp === 'jumento') return Math.round(1800 * q);
   if (a.sp === 'galinha') return Math.round((a.sex === 'M' ? 70 : 55) * q); if (a.sp === 'cao') return Math.round(600 * q);
@@ -5064,6 +5102,7 @@ function dayTick() { rocaGrowTick(); hxDay(); { const bd = bdayToday(); if (bd.l
     const crowd = a.area && AREAS[a.area].k === 'pasto' ? areaCount(a.area, 'boi') : 0; if (crowd > 14) dh -= 4;
     a.hap = cl(a.hap + (dh < 0 ? dh * tr : dh) - 1 * tr, 5, 100);
     a.care = cl(a.care + (a.food > 50 && a.water > 50 && dirt < 50 ? 2 : -3), 0, 100);
+    lidaDay(a, se);
     // saúde
     let pr = 0.006; if (dirt > 60) pr += 0.03; if (a.food < 25 || a.water < 25) pr += 0.03; if (a.newArr && a.area !== 'quar') pr += 0.05;
     if (a.vacc >= S.day || S.vacUntil >= S.day) pr *= 0.25; if (B.rust) pr /= B.rust; if (a.skills.includes('Rústico')) pr *= 0.6;
@@ -5074,7 +5113,7 @@ function dayTick() { rocaGrowTick(); hxDay(); { const bd = bdayToday(); if (bd.l
     if (a.sp === 'boi') {
       const eat = cl(a.dayFood / 100, 0, 1.2);
       let gain = (B.gain || 1) * (0.25 + 0.55 * eat) * (a.ration ? 1.45 : 1) * (a.area === 'conf' && built('cocho') ? 1.25 : 1) * (0.8 + a.gen / 250) * (a.hp / 100) * (1 + skill('pec') * 0.05) * (a.skills.includes('Ganho de Peso') ? 1.15 : 1) * (se && !a.ration ? 0.7 : 1);
-      if (a.age < 12) gain *= 1.6; if (a.stress > 40) gain *= 0.8;
+      if (a.age < 12) gain *= 1.6; if (a.stress > 40) gain *= 0.8; if (a.bich) gain *= 0.5; if (a.cast && a.age >= 12) gain *= 1.08; if (a.age < 12 && a.desm && a.dayFood < 60) gain *= 0.85;
       if (a.food < 15) gain = -2.5;
       const cap = a.sex === 'M' ? 900 : 560; a.wt = Math.round(cl(a.wt + gain * 3.3, 30, cap) * 10) / 10; a.lastGain = Math.round(gain * 33) / 10; // kg do dia
     }
@@ -5085,7 +5124,7 @@ function dayTick() { rocaGrowTick(); hxDay(); { const bd = bdayToday(); if (bd.l
     // reprodução
     if (a.preg > 0) { a.preg--; if (a.preg === 0) born.push(a); }
     else if (a.sex === 'F' && a.age >= (RUM(a.sp) ? 10 : a.sp === 'porco' ? 9 : 20) && a.hp > 40) {
-      const males = S.animals.filter(m => m.own === 'player' && m.sex === 'M' && m.age >= (RUM(m.sp) ? 10 : m.sp === 'porco' ? 9 : 20) && m.area === a.area && a.area && !m.sick);
+      const males = S.animals.filter(m => m.own === 'player' && m.sex === 'M' && !m.cast && m.age >= (RUM(m.sp) ? 10 : m.sp === 'porco' ? 9 : 20) && m.area === a.area && a.area && !m.sick);
       let mate = null;
       if (a.sp === 'boi') mate = males.find(m => m.sp === 'boi');
       if ((a.sp === 'cavalo') && built('estrebaria')) mate = males.find(m => m.sp === 'cavalo' || m.sp === 'jumento');
@@ -5093,7 +5132,7 @@ function dayTick() { rocaGrowTick(); hxDay(); { const bd = bdayToday(); if (bd.l
       if (a.sp === 'cabra') mate = males.find(m => m.sp === 'cabra');
       if (a.sp === 'ovelha') mate = males.find(m => m.sp === 'ovelha');
       if (a.sp === 'porco') mate = males.find(m => m.sp === 'porco');
-      if (mate && Math.random() < (a.sp === 'boi' ? 0.1 : RUM(a.sp) ? 0.14 : a.sp === 'porco' ? 0.18 : 0.07) * (a.hap / 80)) { a.preg = a.sp === 'boi' ? 7 : RUM(a.sp) ? 5 : a.sp === 'porco' ? 4 : 9; a._pai = mate.id; a._paiN = mate.n; a._paiSp = mate.sp; a._paiBr = mate.br; a._paiGen = mate.gen; }
+      if (mate && Math.random() < (a.sp === 'boi' ? 0.1 : RUM(a.sp) ? 0.14 : a.sp === 'porco' ? 0.18 : 0.07) * (a.hap / 80) * lidaFert(a)) { a.preg = a.sp === 'boi' ? 7 : RUM(a.sp) ? 5 : a.sp === 'porco' ? 4 : 9; a._pai = mate.id; a._paiN = mate.n; a._paiSp = mate.sp; a._paiBr = mate.br; a._paiGen = mate.gen; }
     }
   }
   for (const m of born) {
@@ -5101,7 +5140,7 @@ function dayTick() { rocaGrowTick(); hxDay(); { const bd = bdayToday(); if (bd.l
     if (m.sp === 'cavalo' && m._paiSp === 'jumento') { sp = 'burro'; br = 'burro'; }
     else if (m._paiBr && m._paiBr !== m.br && sp === 'boi') br = (m.br === 'nelore' && m._paiBr === 'gir') || (m.br === 'gir' && m._paiBr === 'nelore') ? 'mestico' : (Math.random() < .5 ? m.br : (m._paiBr || m.br));
     const gen = ((m.gen + (m._paiGen || m.gen)) / 2) + gauss() * 9;
-    const c = mkAnimal(sp, br, { age: 0, gen, mae: m.n, pai: m._paiN || '—', x: m.x + 8, y: m.y + 4, hap: 80, hp: 90 }); c.mid = m.id;
+    const c = mkAnimal(sp, br, { age: 0, gen, mae: m.n, pai: m._paiN || '—', x: m.x + 8, y: m.y + 4, hap: 80, hp: 90 }); c.mid = m.id; if (sp === 'boi' || RUM(sp) || sp === 'cavalo') c.umb = 1;
     S.animals.push(c); if (sp === 'porco') { const B = PIGS[br] || PIGS.piau, n = rint(B.litter[0], B.litter[1]) - 1 + (m.skills.includes('Prolífica') ? 1 : 0); for (let k = 0; k < n; k++) { const c2 = mkAnimal(sp, br, { age: 0, gen: gen + gauss() * 5, mae: m.n, pai: m._paiN || '—', x: m.x + rnd(-10, 10), y: m.y + rnd(2, 10), hap: 80, hp: 88 }); c2.mid = m.id; S.animals.push(c2); } toast('🐖 ' + m.n + ' pariu ' + (n + 1) + ' leitões!'); questEvent('produce', 'leitao'); S.firsts = S.firsts || {}; if (!S.firsts.leitoes) { S.firsts.leitoes = 1; setTimeout(() => typeof csNascimento === 'function' && csNascimento(m), 400); } }
     if (RUM(sp) && Math.random() < (sp === 'ovelha' ? ((SHEEP[br] || {}).twin || 0.3) : 0.45)) { const c2 = mkAnimal(sp, br, { age: 0, gen: gen + gauss() * 4, mae: m.n, pai: m._paiN || '—', x: m.x - 6, y: m.y + 5, hap: 80, hp: 90 }); S.animals.push(c2); toast('Gêmeos! Nasceu também ' + c2.n + '.'); } m.lact = 20; S.stats.born++; toast('🐣 Nasceu ' + catName(c).toLowerCase() + ': ' + c.n + ' (' + starStr(stars(c)) + ')');
   }
@@ -6993,9 +7032,9 @@ function pastureInfo(ak) { const r = AREAS[ak].r; let n = 0, sum = 0; for (let y
   return { n, avg, pct: Math.round(avg / 255 * 100), heads: L.length, ua: Math.round(ua * 10) / 10, days, cap, water: ti >= 0 ? Math.round(S.tr[ti] / trCap(ti) * 100) : null, rest: S.rest[ak] || 0 }; }
 function pasturesHTML() { const ks = AKEYS.filter(k => AREAS[k].k === 'pasto' && owned(k) && !(AREAS[k].exp && !S.exp[AREAS[k].exp])); if (!ks.length) return '';
   return '<h3>🌾 Pastos</h3><p class="mut">Capim baixa quando o gado pasta e rebrota com o tempo (bem mais nas águas que na seca). Rodízio: tire o lote quando o capim ficar baixo e deixe o piquete descansar; pasto descansado rebrota 50% mais rápido.</p>' + ks.map(k => { const q = pastureInfo(k), tip = q.heads && q.pct < 25 ? '⚠️ Capim rapado: troque o lote de piquete ou dê trato no cocho.' : q.heads && q.days < 4 ? '⏳ Dá para mais ' + q.days + ' dia(s). Prepare o próximo piquete.' : !q.heads && q.pct < 60 ? '😴 Descansando (' + q.rest + ' dia' + (q.rest === 1 ? '' : 's') + ').' : q.heads > 0 && q.ua > q.cap * 1.3 ? '🐄 Lotação acima do que o pasto aguenta nesta estação.' : '✅ Pasto bom.';
-    return `<div class="card"><div class="row sp"><b>${AREAS[k].n}</b><span class="mut">${q.heads} cabeça(s) · ${q.ua} UA</span></div><div class="row sp"><span>Capim</span>${bar(q.pct, q.pct < 25 ? 'r' : q.pct < 50 ? 'y' : '')}<span>${q.pct}%</span></div>${q.water !== null ? `<div class="row sp"><span>Bebedouro</span>${bar(q.water, 'w')}<span>${q.water}%</span></div>` : ''}<p class="mut" style="margin:2px 0">Aguenta ~${q.cap} UA nesta estação${q.heads ? ' · pasto para ' + (q.days >= 99 ? 'muitos dias' : q.days + ' dia(s)') : ''}. ${tip}</p></div>`; }).join(''); }
+    return `<div class="card"><div class="row sp"><b>${AREAS[k].n}</b><span class="mut">${q.heads} cabeça(s) · ${q.ua} UA</span></div><div class="row sp"><span>Capim</span>${bar(q.pct, q.pct < 25 ? 'r' : q.pct < 50 ? 'y' : '')}<span>${q.pct}%</span></div>${q.water !== null ? `<div class="row sp"><span>Bebedouro</span>${bar(q.water, 'w')}<span>${q.water}%</span></div>` : ''}<p class="mut" style="margin:2px 0">${S.salt && S.salt[k] >= S.day ? '🧂 Sal no cocho até o dia ' + S.salt[k] + '. ' : '🧂 Cocho de sal vazio. '}Aguenta ~${q.cap} UA nesta estação${q.heads ? ' · pasto para ' + (q.days >= 99 ? 'muitos dias' : q.days + ' dia(s)') : ''}. ${tip}</p></div>`; }).join(''); }
 function farmTab() {
-  let h = pasturesHTML() + `<div class="card"><div class="row sp"><span>💧 Reservatório</span>${bar(S.res, 'w')}<span>${Math.round(S.res)}%</span></div><div class="row sp"><span>🌽 Depósito</span><span>${Math.round(depKg())} / ${depCap()} kg</span></div><p class="mut">Ração ${Math.round(S.dep.racao)} kg · Milho ${Math.round(S.dep.milho)} kg · Sal ${Math.round(S.dep.sal)} kg · Lenha ${S.dep.lenha} · Carvão ${S.dep.carvao}<br>Materiais: ${Object.keys(MATS).map(k => MATS[k][0] + ' ' + (S.dep[k] || 0)).join(' · ')}</p></div>`;
+  let h = `<div class="row">${btn('📒 Contar o gado (caderneta de campo)', 'lidaCount')}</div>` + pasturesHTML() + `<div class="card"><div class="row sp"><span>💧 Reservatório</span>${bar(S.res, 'w')}<span>${Math.round(S.res)}%</span></div><div class="row sp"><span>🌽 Depósito</span><span>${Math.round(depKg())} / ${depCap()} kg</span></div><p class="mut">Ração ${Math.round(S.dep.racao)} kg · Milho ${Math.round(S.dep.milho)} kg · Sal ${Math.round(S.dep.sal)} kg · Lenha ${S.dep.lenha} · Carvão ${S.dep.carvao}<br>Materiais: ${Object.keys(MATS).map(k => MATS[k][0] + ' ' + (S.dep[k] || 0)).join(' · ')}</p></div>`;
   if (S.land) {
     const pv = patrimonio(), ri = rankOf(pv), nx = RANKS[ri + 1];
     h += `<div class="card"><b>${RANKS[ri][1]}</b> · patrimônio ${fmt(pv)}${nx ? `<br><span class="mut">Próximo título: ${nx[1]} (${fmt(nx[0])})</span>` : ''}</div>`;
@@ -7086,6 +7125,7 @@ function sheetStats(a) {
   const co = a.coat && RIG.COATS[a.coat] ? RIG.COATS[a.coat].n : ''; const sp2 = (SPECIES[a.sp] || {})[a.br];
   h += `<div class="row mut" style="margin:2px 0">Nº ${a.id}${co ? ' · ' + co : ''}${a.temp && !(a.traits && a.traits.length) ? ' · ' + (TEMPS[a.temp] || a.temp) : ''}${eqn && sp2 && sp2.v ? ' · velocidade ' + Math.round(sp2.v[2] * (a.spdF || 1)) + ' · resistência ' + Math.round((30 - sp2.cost) * 5 * (a.endF || 1)) : ''}${a._cut ? ' · <b>apartado</b>' : ''}</div>`;
   const flags = []; if (a.sick) flags.push('<b style="color:#b02020">🤒 doente</b>'); if (a.preg && (a.exam >= S.day - 7 || a.preg <= 3)) flags.push('🤰 prenhe (' + a.preg + 'd)'); if (a.lact) flags.push('🍼 lactação'); if (a.newArr) flags.push('📦 recém-chegado'); if (a.vacc >= S.day || S.vacUntil >= S.day) flags.push('💉 vacinado'); if (a._st === 'tied') flags.push('🪢 amarrado'); if (P.lead === a.id) flags.push('🪢 no cabresto'); if (a._st === 'route') flags.push('🚶 sendo conduzido');
+  flags.push(...lidaFlags(a));
   h += `<div class="row mut" style="margin:2px 0">${a.area ? AREAS[a.area].n : a.id === P.mnt ? 'montado' : 'solto'} ${flags.join(' · ')}</div>`;
   return h;
 }
@@ -7117,6 +7157,7 @@ function sheetActions(a) {
   if (a.sp !== 'galinha') L.push(['plus', a.verm >= S.day ? 'Vermifugado' : 'Vermifugar', 'verm', !has('vermifugo') || a.verm >= S.day]);
   if (a.sp === 'boi' || a.sp === 'cavalo' || RUM(a.sp) || a.sp === 'cao') L.push(['water', 'Banho carrapaticida', 'carrap', !has('carrapaticida') || a.carrap >= S.day]);
   if (a.hp < 70) L.push(['plus', 'Cicatrizante', 'cicat', !has('cicatrizante')]);
+  for (const x of lidaActions(a)) L.push(x);
   L.push(['water', 'Vacinar', 'vacc', !has('vacina') || a.vacc >= S.day]);
   if (!a.main) L.push(['sell', 'Vender', 'sell']);
   let h = '<div class="ag">' + L.map(([i, l, k, dis]) => ibtn(i, l, 'sa', k, dis)).join('') + '</div>';
@@ -7140,6 +7181,70 @@ A.shClose = () => closeSheet();
 A.saNo = () => { SH.conf = null; renderSheet(); };
 A.saTo = k => { const a = SH.a; SH.sub = null; renderSheet(); escort(a, k); };
 A.saSell = () => { const a = SH.a; questEvent('trade', 'venda'); const p = a.area === 'curral' ? frigPrice(a) : Math.round(frigPrice(a) - 80); if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; if (S.cart.hitch === a.id) S.cart.hitch = null; if (P.mnt === a.id) return; S.animals = S.animals.filter(x => x !== a); S.stats.sold++; receive(p, 'Venda de ' + a.n + (a.area === 'curral' ? '' : ' (com frete)')); toast('💰 ' + a.n + ' vendido(a) por ' + fmt(p)); closeSheet(); };
+/* ============ LIDA DO GADO: cura de umbigo, bicheira, castração, desmama, ferra, pesagem, contagem e sal ============
+   Baseado no manejo de cria do sertão (Embrapa, extensão rural): umbigo curado com iodo nos 3 primeiros dias; a mosca-varejeira
+   bota nos ferimentos e no umbigo mal curado (bicheira), mais nas águas; castrar e ferrar no curral deixa ferida que pede
+   mata-bicheira; desmamar o bezerro (6–9 meses no jogo: dias 6–10) recupera a vaca e ela volta a emprenhar mais cedo;
+   pesar na balança mostra o ganho médio diário (GMD) e quantas arrobas o boi tem; contar o gado é a caderneta de campo. */
+const LIDA_PEN = ['curral', 'pen', 'conf'];
+function inPen(a) { return !!(a.area && AREAS[a.area] && LIDA_PEN.includes(AREAS[a.area].k)); }
+function hasScale() { return !!((S.land && S.land.retiro) || Object.values(S.lots || {}).some(l => l && l.done && l.b === 'tronco')); }
+function nursing(c) { return c.mid && !c.desm && c.age <= 10 && (c.sp === 'boi' || RUM(c.sp)); }
+function lidaFert(cow) { let f = 1; if (S.animals.some(c => c.mid === cow.id && nursing(c) && c.age >= 4)) f *= 0.6; if (cow._desmB >= S.day) f *= 1.5; return f; } // vaca amamentando bezerro grande demora a emprenhar; desmamada volta ao cio
+function lidaActions(a) {
+  const L = [], cat = a.sp === 'boi' || RUM(a.sp) || a.sp === 'porco';
+  if (a.umb === 1) L.push(['plus', 'Curar umbigo', 'umbigo', !has('iodo')]);
+  if (a.bich) L.push(['plus', 'Curar bicheira', 'bicheira', !has('mataBicheira')]);
+  if (cat && a.sex === 'M' && !a.cast && !a.main && a.age >= 3 && a.age <= 18) L.push(['plus', 'Castrar', 'castrar', !inPen(a) || !has('mataBicheira')]);
+  if ((a.sp === 'boi' || RUM(a.sp)) && nursing(a) && a.age >= (a.sp === 'boi' ? 6 : 3)) L.push(['gate', 'Desmamar', 'desmamar']);
+  if ((a.sp === 'boi' || a.sp === 'cavalo' || a.sp === 'burro') && !a.brand && a.age >= 6) L.push(['pin', 'Ferrar (marcar)', 'ferrar', !inPen(a) || !(has('ferroTS') || has('ferroMarca'))]);
+  if (a.sp === 'boi' || RUM(a.sp) || a.sp === 'porco') L.push(['eye', 'Pesar na balança', 'pesar', !inPen(a) || !hasScale()]);
+  return L;
+}
+function lidaFlags(a) { const f = []; if (a.bich) f.push('<b style="color:#b02020">🪰 bicheira</b>'); if (a.umb === 1) f.push('<b style="color:#a06010">umbigo por curar</b>'); if (a.cast) f.push(a.sp === 'boi' ? 'capão' : 'castrado'); if (a.brand) f.push('ferrado'); if (nursing(a)) f.push('mamando'); else if (a.desm) f.push('desmamado'); if (a.wH && a.wH.length > 1) f.push('GMD ' + gmd(a).toFixed(2) + ' kg/dia'); return f; }
+function gmd(a) { const w = a.wH || []; if (w.length < 2) return 0; const [d0, w0] = w[w.length - 2], [d1, w1] = w[w.length - 1]; return d1 > d0 ? (w1 - w0) / ((d1 - d0) * 30) : 0; } // 1 dia de jogo ≈ 1 mês do animal
+function lidaDay(a, se) {
+  if (!(a.sp === 'boi' || RUM(a.sp) || a.sp === 'cavalo' || a.sp === 'burro' || a.sp === 'porco')) return;
+  if (a.umb === 1 && a.age > 3) a.umb = 0; // passou a janela da cura
+  if (nursing(a) === false && a.mid && !a.desm && a.age > 10) a.desm = 1; // desmama natural
+  if (nursing(a) && a.age >= 8) { const m = S.animals.find(x => x.id === a.mid); if (m) m.cond = cl(m.cond - 1.5, 0, 100); } // bezerro grande mamando derruba a vaca
+  if (a.bich) { a.hp = cl(a.hp - 7, 5, 100); a.hap = cl(a.hap - 5, 5, 100); a.bichD = (a.bichD || 0) + 1; if (a.bichD === 3) toast('🪰 A bicheira de ' + a.n + ' está piorando. Mata-bicheira já!'); return; }
+  let r = 0; if (a.umb === 1) r += 0.14; if (a.wound >= S.day) r += 0.12; if (a.hp < 60) r += 0.015; if (a.carrap >= S.day) r *= 0.6;
+  r *= se ? 0.6 : 1.5; // a varejeira gosta das águas
+  if (r && Math.random() < r) { a.bich = 1; a.bichD = 0; hist(a, 'Pegou bicheira'); toast('🪰 Bicheira em ' + a.n + '! Use mata-bicheira pela ficha.'); }
+}
+function lidaDo(a, k) {
+  const need = (it, msg) => { if (!has(it)) { say(msg); AU.err(); return false; } return true; };
+  if (k === 'umbigo') { if (!need('iodo', 'Precisa de iodo 10% (Casa do Agro).')) return; return doAnimal(a, 'exam', 1.4, () => { if (!useInv('iodo', 0.25)) return; a.umb = 2; a.hp = cl(a.hp + 5, 0, 100); bond(a, 2); hist(a, 'Umbigo curado com iodo'); toast('🩹 Umbigo de ' + a.n + ' curado.'); }); }
+  if (k === 'bicheira') { if (!need('mataBicheira', 'Precisa de mata-bicheira (Casa do Agro).')) return; return doAnimal(a, 'exam', 1.6, () => { if (!useInv('mataBicheira', 0.25)) return; a.bich = 0; a.bichD = 0; a.wound = 0; a.hp = cl(a.hp + 8, 0, 100); hist(a, 'Bicheira curada'); toast('✅ Bicheira de ' + a.n + ' curada.'); }); }
+  if (!inPen(a) && k !== 'desmamar') { say('Leve o animal para um curral: no pasto não dá para conter.'); AU.err(); return; }
+  if (k === 'castrar') { if (!need('mataBicheira', 'Depois de castrar precisa de mata-bicheira na ferida.')) return; return doAnimal(a, 'exam', 2.2, () => { if (!useInv('mataBicheira', 0.25)) return; a.cast = 1; a.wound = S.day + 3; a.hap = cl(a.hap - 12, 5, 100); a.stress = (a.stress || 0) + 25; if (a.temp === 'nervoso' || a.temp === 'arisco') a.temp = 'calmo'; hist(a, 'Castrado'); toast('✂️ ' + a.n + ' castrado: fica mais manso e engorda melhor. Olho na ferida por 3 dias.'); }); }
+  if (k === 'ferrar') { const it = has('ferroMarca') ? 'Sua marca' : 'Marca T.S. do avô'; return doAnimal(a, 'exam', 2.0, () => { a.brand = 1; a.wound = S.day + 3; a.hap = cl(a.hap - 8, 5, 100); a.stress = (a.stress || 0) + 15; hist(a, 'Ferrado: ' + it); part(a.x, a.y - 14, 'dust', { vx: 0, vy: -14, m: .6, c: '#c8c8c8', s: 2 }); toast('🔥 ' + a.n + ' ferrado (' + it + '). Passe mata-bicheira na queimadura.'); }); }
+  if (k === 'desmamar') return doAnimal(a, 'pet', 1.2, () => { a.desm = 1; a.hap = cl(a.hap - 10, 5, 100); const m = S.animals.find(x => x.id === a.mid); if (m) { m.cond = cl(m.cond + 15, 0, 100); m._desmB = S.day + 20; m.lact = Math.min(m.lact || 0, 2); hist(m, 'Bezerro ' + a.n + ' desmamado'); } hist(a, 'Desmamado'); toast('🐮 ' + a.n + ' desmamado. Separe de pasto da mãe; dê ração no cocho para não perder peso.'); });
+  if (k === 'pesar') { if (!hasScale()) { say('Precisa de balança: a do Retiro ou um tronco com balança num lote.'); return; } return doAnimal(a, 'exam', 1.2, () => { weighOne(a); toast('⚖️ ' + a.n + ': ' + Math.round(a.wt) + ' kg' + (a.wH.length > 1 ? ' · GMD ' + gmd(a).toFixed(2) + ' kg/dia' : '')); }); }
+}
+function weighOne(a) { a.wH = a.wH || []; const last = a.wH[a.wH.length - 1]; if (last && last[0] === S.day) last[1] = Math.round(a.wt); else a.wH.push([S.day, Math.round(a.wt)]); if (a.wH.length > 8) a.wH.shift(); hist(a, 'Pesado: ' + Math.round(a.wt) + ' kg'); }
+function arrobas(a) { return a.wt * 0.52 / 15; } // rendimento de carcaça ~52%; arroba = 15 kg de carcaça
+function weighLot(ak) {
+  const L = myAnimals().filter(a => a.area === ak && (a.sp === 'boi' || RUM(a.sp) || a.sp === 'porco')); L.forEach(weighOne);
+  const tot = L.reduce((t, a) => t + a.wt, 0);
+  showModal('⚖️ Balança — ' + AREAS[ak].n, null, null, () => L.length ? `<p class="mut">Lote passado no brete e pesado um a um. GMD = ganho médio diário desde a pesagem anterior (1 dia de jogo ≈ 1 mês do animal). Arroba = 15 kg de carcaça (~52% do peso vivo).</p><div class="card">${L.map(a => `<div class="row sp"><span>${esc(a.n)} <span class="mut">${catName(a)}</span></span><span>${Math.round(a.wt)} kg · ${arrobas(a).toFixed(1)} @${a.wH.length > 1 ? ' · <b>' + gmd(a).toFixed(2) + '</b> kg/d' : ''}</span></div>`).join('')}</div><p><b>${L.length}</b> cabeças · <b>${Math.round(tot)}</b> kg · média ${Math.round(tot / L.length)} kg · ${(L.reduce((t, a) => t + arrobas(a), 0)).toFixed(1)} @ (${fmt(L.reduce((t, a) => t + (a.sp === 'boi' ? animalValue(a) : 0), 0))} no preço de hoje)</p>` : '<p>Não há animais neste curral. Traga o lote para o curral e passe pelo brete.</p>');
+}
+A.lidaCount = () => {
+  const L = myAnimals().filter(a => a.sp !== 'cao' && !a._hid), by = {};
+  for (const a of L) { const k = a.area ? AREAS[a.area].n : 'Fora dos cercados'; (by[k] = by[k] || []).push(a); }
+  const sick = L.filter(a => a.sick), bich = L.filter(a => a.bich), umb = L.filter(a => a.umb === 1), desm = L.filter(a => nursing(a) && a.age >= (a.sp === 'boi' ? 6 : 3)), cast = L.filter(a => (a.sp === 'boi' || RUM(a.sp)) && a.sex === 'M' && !a.cast && !a.main && a.age >= 3 && a.age <= 18), ferr = L.filter(a => a.sp === 'boi' && !a.brand && a.age >= 6), preg = L.filter(a => a.preg > 0 && a.preg <= 2);
+  const nm = A2 => A2.slice(0, 8).map(a => esc(a.n)).join(', ') + (A2.length > 8 ? '…' : '');
+  const todo = [[bich, '🪰 Com bicheira (urgente: mata-bicheira)'], [sick, '🤒 Doentes (remédio)'], [umb, '🩹 Umbigo por curar (iodo, até 3 dias de vida)'], [preg, '🤰 Para parir nos próximos dias (deixe em pasto limpo, perto de casa)'], [desm, '🍼 Bezerros no ponto de desmama'], [cast, '✂️ Machos que podem ser castrados (no curral)'], [ferr, '🔥 Gado sem ferro']].filter(x => x[0].length);
+  showModal('📒 Caderneta de campo', null, null, () => `<p class="mut">Contagem do dia ${S.day}: ${L.length} animais.</p><div class="card">${Object.entries(by).map(([k, A2]) => `<div class="row sp"><span>${k}</span><b>${A2.length}</b></div><div class="mut" style="margin:-2px 0 4px">${Object.entries(A2.reduce((o, a) => (o[catName(a)] = (o[catName(a)] || 0) + 1, o), {})).map(([c, n]) => n + ' ' + c).join(' · ')}</div>`).join('')}</div>` + (todo.length ? '<h3>Lida pendente</h3>' + todo.map(([A2, t]) => `<div class="card"><b>${t}</b>: ${A2.length}<br><span class="mut">${nm(A2)}</span></div>`).join('') : '<p>✅ Nada pendente na lida. Gado em dia!</p>'));
+  if (L.length) { S.stats.counts = (S.stats.counts || 0) + 1; }
+};
+function lidaInteractables(add, foot) {
+  if (!foot) return;
+  for (const p of PROPS) { if (p.t !== 'cochoSal' || Math.abs(p.x - P.x) > 60 || Math.abs(p.y - P.y) > 60) continue; const ak = areaAt(p.x, p.y + 20) || areaAt(p.x, p.y - 4); if (!ak || !owned(ak)) continue; const on = S.salt && S.salt[ak] >= S.day;
+    add({ k: 'sal', label: on ? '🧂 Sal no cocho (até o dia ' + S.salt[ak] + ')' : '🧂 Pôr sal mineral no cocho', x: p.x, y: p.y, r: 24, prio: 2, hit: [p.x - 14, p.y - 26, p.x + 14, p.y + 2], fn: () => { if (on) return say('O cocho ainda tem sal.'); if (!has('sal')) return say('Precisa de 1 saco de sal mineral (Casa do Agro).'); act('feed', 1.2, { x: p.x, y: p.y }, () => { if (!useInv('sal')) return; S.salt = S.salt || {}; S.salt[ak] = S.day + 7; toast('🧂 Sal mineral no cocho coberto: 7 dias de gado mais saudável, mais apetite e menos fraqueza na seca.'); }); } }); }
+  if (S.land && S.land.retiro && Math.abs(P.x - 55.5 * TS) < 70 && Math.abs(P.y - 120.5 * TS) < 60) add({ k: 'brete', label: '⚖️ Brete: pesar o lote do Curral do Retiro', x: 55.5 * TS, y: 121.2 * TS, r: 30, prio: 3, hit: [53 * TS, 118.5 * TS, 58 * TS, 121.3 * TS], fn: () => act('reach', 0.6, { x: 55.5 * TS, y: 121 * TS }, () => weighLot('rcur'), { zoom: false }) });
+}
 function nearPost(a) { const t = a || P; let b = -1, bd = 46; POSTS.forEach((p, i) => { const d = hyp(p.x - t.x, p.y - t.y); if (d < bd) { bd = d; b = i; } }); return b; }
 // executa a ação: caminha até o animal e toca a animação correspondente
 function doAnimal(a, k, dur, fn, opt) {
@@ -7162,6 +7267,7 @@ A.sa = k => {
     case 'feed': { const f = feedItem(a); if (!f) { SH.sub = 'feedHint'; renderSheet(); AU.err(); return; } return doAnimal(a, 'feed', 1.6, () => { if (!useInv(f[0], f[1])) return; questEvent('feedAnimal', a.sp); bond(a, 3); a.food = cl(a.food + (a.sp === 'boi' ? 55 : 100), 0, 100); a.dayFood += 55; if (a.sp === 'boi') a.ration = 1; a.hap = cl(a.hap + 4, 0, 100); a.care = cl(a.care + 2, 0, 100); a.fedDay = S.day; if (a.sp === 'cavalo' || a.sp === 'burro') a._stam = 100; hist(a, 'Alimentado com ' + IT[f[0]].n.split(' (')[0].toLowerCase()); heart(a.x, a.y - 22); AU.munch(); }); }
     case 'verm': return doAnimal(a, 'exam', 1.2, () => { if (!useInv('vermifugo')) return; a.verm = S.day + 30; a.hp = cl(a.hp + 8, 0, 100); hist(a, 'Vermifugado'); toast('💊 ' + a.n + ' vermifugado (30 dias).'); });
     case 'carrap': return doAnimal(a, 'water', 1.6, () => { if (!useInv('carrapaticida', 0.25)) return; a.carrap = S.day + 14; a.hap = cl(a.hap + 8, 0, 100); a.hp = cl(a.hp + 4, 0, 100); hist(a, 'Banho carrapaticida'); AU.splash(); });
+    case 'umbigo': case 'bicheira': case 'castrar': case 'desmamar': case 'ferrar': case 'pesar': return lidaDo(a, k);
     case 'cicat': return doAnimal(a, 'exam', 1.2, () => { if (!useInv('cicatrizante')) return; a.hp = cl(a.hp + 25, 0, 100); hist(a, 'Ferimento tratado'); });
     case 'tackEdit': closeSheet(); return openTack(a);
     case 'collarEdit': closeSheet(); return showModal('Coleira de ' + a.n, null, null, () => `<div class="row">${animalImg(a, 3)}</div>` + COLLARN.map((n, i) => btn(((a.collar || 0) === i ? '● ' : '') + n, 'collarSet', a.id + '|' + i)).join(''));
@@ -7574,8 +7680,8 @@ function prodHTML() {
 /* ============ CASA DO AGRO: loja agropecuária completa (estoque semanal, preço regional, animais com ficha) ============ */
 const AGRO_ITEMS = {
   nut: ['racao', 'racaoPorco', 'milho', 'farelo', 'suplemento', 'sal', 'racaoCao'],
-  vet: ['vacina', 'remedio', 'vermifugo', 'carrapaticida', 'cicatrizante'],
-  fer: ['regador', 'enxada', 'tesoura', 'galaoV', 'galao', 'escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho', 'lenha', 'carvao', 'bau'],
+  vet: ['vacina', 'remedio', 'vermifugo', 'carrapaticida', 'cicatrizante', 'iodo', 'mataBicheira'],
+  fer: ['ferroMarca', 'regador', 'enxada', 'tesoura', 'galaoV', 'galao', 'escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho', 'lenha', 'carvao', 'bau'],
   cer: ['kitCocho', 'kitBoia']
 };
 const AGRO_BUYS = { esterco: 8, leiteCabra: 5.5, fPalma: 9, fMandacaru: 8, fManicoba: 11 }; // o que a loja compra do produtor (R$ por unidade)
@@ -9139,6 +9245,7 @@ let hudT = 0, regT = 0, curReg = null, regHide = null;
 const WXIC = { sol: 'sun', nublado: 'cloud', chuva: 'rain', neblina: 'fog', vento: 'wind' };
 function regionAt(x, y) { if (P && P.inside) { const b = BLD.find(q => q.id === P.inside), R0 = roomById(P.inside); if (b) return [b.n, R0 && R0.H.own !== 'player' && NPCDEF[R0.H.own] ? 'Casa de ' + NPCDEF[R0.H.own].n : 'Dentro de casa']; } const tx = x / TS, ty = y / TS;
   if (tx >= 112) { if (tx < 118) return ['Serra do Leste', 'ESTRADA PARA A REGIÃO']; for (const k in RFARMS) { const r = RFARMS[k].rect; if (tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]) return [RFARMS[k].n, NPCDEF[RFARMS[k].own].n.toUpperCase()]; } return ['Região das Serras', 'ESTRADA DO LESTE']; }
+  if (tx < 60 && ty >= 110) return S.land && S.land.retiro ? ['Retiro do Umbuzeiro', 'FAZENDA BOA ESPERANÇA'] : ['Retiro do Umbuzeiro', 'TERRA À VENDA'];
   if (tx < 60) return ty < 21 && S.exp.norte ? ['Gleba do Mandacaru', 'FAZENDA BOA ESPERANÇA'] : ty > 67 && S.exp.sul ? ['Gleba do Açude', 'FAZENDA BOA ESPERANÇA'] : ['Fazenda Boa Esperança', 'SUA PROPRIEDADE']; if (tx > 66 && ty < 27) return ['Fazenda Campos', 'SR. FELIPE']; if (tx > 66 && ty > 62) return ['Fazenda Duarte', 'SR. RYAN']; if (tx >= 63 && ty >= 28 && ty <= 67) return ['Itarantim', 'CENTRO DA CIDADE']; return ['Estrada do Riacho', 'ITARANTIM · BAHIA']; }
 function hud(dt) {
   if ((regT -= dt) < 0 && mode === 'play') { regT = 0.5; const r = regionAt(P.x, P.y); if (!curReg) curReg = r[0]; else if (r[0] !== curReg) { curReg = r[0]; CINE.maybe(r[0]); const el = $('reg'); el.innerHTML = r[0] + '<small>' + r[1] + '</small>'; el.classList.add('on'); clearTimeout(regHide); regHide = setTimeout(() => el.classList.remove('on'), 2400); AU.jingle(); } }
@@ -10210,7 +10317,7 @@ function interactables(forTap) {
   for (const k of ['norte', 'sul']) { const s = EXP[k].sign, x = (s[0] - 1.6) * TS, y = s[1] * TS + 6; add({ k: 'sign', label: '🪧 ' + (S.exp[k] ? EXP[k].n : 'Terreno à venda'), x, y, r: 26, prio: 2, hit: [x - 12, y - 30, x + 12, y], fn: () => openSign(k) }); }
   for (const k in LOTS) { if ((LOTS[k].exp && !S.exp[LOTS[k].exp]) || !lotOwned(k)) continue; const r = LOTS[k].r, x = (r[0] + r[2] + 1) / 2 * TS, y = (r[3] + 1.4) * TS; add({ k: 'lot', label: '🏗️ Lote ' + k + (S.lots[k] ? ': ' + BUILD[S.lots[k].b].n : ''), x, y, r: 28, prio: 1, hit: S.lots[k] ? [r[0] * TS, r[1] * TS - 20, (r[2] + 1) * TS, (r[3] + 1) * TS] : null, fn: () => openLot(k) }); }
   if (foot) add({ k: 'cart', label: '🛒 Carroça', x: S.cart.x, y: S.cart.y, r: 28, prio: 2, hit: [S.cart.x - 18, S.cart.y - 22, S.cart.x + 18, S.cart.y + 4], fn: openCart });
-  storyInteractables(add); misInteractables(add); aucInteractables(add); rocaInteractables(add, foot); fishInteractables(add, foot); exploreInteractables(add, foot); lifeInteractables(add, foot); pomarInteractables(add, foot); bicoInteractables(add, foot); jobInteractables(add, foot);
+  lidaInteractables(add, foot); storyInteractables(add); misInteractables(add); aucInteractables(add); rocaInteractables(add, foot); fishInteractables(add, foot); exploreInteractables(add, foot); lifeInteractables(add, foot); pomarInteractables(add, foot); bicoInteractables(add, foot); jobInteractables(add, foot);
   if (Math.abs(P.y - 44 * TS) < 60) { if (Math.abs(P.x - 110.6 * TS) < 50) add({ k: 'viagem', label: '🛤️ Viajar para a Região das Serras', x: 110.8 * TS, y: 44 * TS, r: 40, prio: 6, hit: [109.5 * TS, 41.5 * TS, 112 * TS, 46 * TS], fn: () => travelAsk('go') }); if (Math.abs(P.x - 118.8 * TS) < 50) add({ k: 'viagem', label: '🛤️ Voltar para Itarantim', x: 118.8 * TS, y: 44 * TS, r: 40, prio: 6, hit: [117.5 * TS, 41.5 * TS, 120 * TS, 46 * TS], fn: () => travelAsk('back') }); }
   if (foot) { const e = objPos('esterqueira') || { x: 52.6 * TS, y: 94.8 * TS }, n = Math.floor(S.esterco || 0); add({ k: 'esterco', label: n ? '💩 Recolher esterco (' + n + ' saco' + (n > 1 ? 's' : '') + ')' : 'Esterqueira (vazia)', x: e.x, y: e.y + 6, r: 24, prio: 2, hit: [e.x - 18, e.y - 20, e.x + 18, e.y + 6], fn: () => n ? act('pickup', 1.2, { x: e.x, y: e.y }, collectManure) : say('A esterqueira enche com o esterco do chiqueiro e do aprisco, dia a dia.') }); }
   if (foot) { const ak = areaAt(P.x, P.y); if (ak && S.dirt[ak] > 20) add({ k: 'clean', label: '🧹 Limpar ' + AREAS[ak].n, x: P.x, y: P.y, r: 999, prio: -3, fn: () => cleanCurral(ak) }); }

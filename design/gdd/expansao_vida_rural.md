@@ -214,3 +214,42 @@ nas estradas, missões e memória dos NPCs.
   - Corajoso salta melhor e não se assusta.
 - **Valor de mercado:** +2,5% por nível acima do inicial.
 - **Teste:** `tests/web/cavalo_test.js`, 18/18.
+
+## Rodada 3 — terra, pasto e lida do gado
+
+### Pesquisa (fontes)
+
+- Cura do umbigo com iodo nos primeiros dias; umbigo mal curado atrai a mosca-varejeira (bicheira); a ivermectina/mata-bicheira protege
+  ([Agrolink](https://www.agrolink.com.br/noticias/bezerros-recem-nascidos-demandam-grande-atencao-no-manejo-sanitario_185509.html), [Embrapa COT48](https://www.infoteca.cnptia.embrapa.br/infoteca/bitstream/doc/320642/1/COT48.pdf.pdf)).
+- Sal mineral o ano todo; na seca, sal com ureia/proteinado ([IF Goiano](https://repositorio.ifgoiano.edu.br/bitstream/prefix/5495/1/Tcc_%20Gustavo%20Lima.pdf)).
+- Pastejo rotacionado: ocupação de até 7 dias, nº de piquetes = descanso/ocupação + 1; na caatinga, 28–42 dias de descanso e 1–2 UA/ha
+  ([Embrapa guia](https://www.infoteca.cnptia.embrapa.br/infoteca/bitstream/doc/47246/1/GuiaPraticoImplantacao.pdf), [Embrapa Petrolina](https://www.alice.cnptia.embrapa.br/alice/bitstream/doc/397966/1/1651.pdf)).
+- A lida do vaqueiro: tanger o gado manso, ordenhar, curar bicheira, aboiar; gibão e perneiras contra o espinho
+  ([Diário do Nordeste](https://diariodonordeste.verdesmares.com.br/opiniao/colunistas/xico-sa/lengo-lengo-tengo-pense-na-importancia-do-vaqueiro-1.3537487), [A Tarde](https://atarde.com.br/fenagro/estas-pecas-de-couro-salvam-vaqueiros-todos-os-dias-entenda-como-1370687)).
+
+### Mapa maior: Retiro do Umbuzeiro
+
+O mundo passou de 110 para 150 linhas (`MH`); os interiores das casas ficam abaixo (`MHT = MH + 32`). Abaixo do Pomar (y 110–149) fica o
+**Retiro do Umbuzeiro**, terra comprável (`PARCELS.retiro`, R$ 52 000). Ele tem:
+- 4 piquetes (9 a 12) de arame farpado em volta de um **corredor de manejo**: todas as porteiras abrem no corredor, que leva à estrada;
+- o **Piquete da Aguada**, com açude natural (o gado bebe no açude, sem bebedouro);
+- o **Curral do Retiro** (tábua), a casa do retireiro e o **brete com tronco de contenção e balança**;
+- cochos de sal **cobertos** em cada piquete e umbuzeiros de sombra.
+
+### Lida do gado (ficha do animal, caderneta e objetos)
+
+| Lida | Onde | Precisa | Efeito |
+|---|---|---|---|
+| Curar umbigo | ficha do bezerro, até 3 dias de vida | iodo (¼ frasco) | sem cura: 14%/dia de bicheira (×1,5 nas águas) |
+| Bicheira | aparece sozinha | mata-bicheira | −7 saúde e −5 felicidade por dia; ganho de peso ×0,5; valor −10% |
+| Castrar | macho de 3 a 18 dias, num curral | mata-bicheira | capão: não cobre, fica manso, ganho ×1,08 depois de adulto; ferida 3 dias |
+| Desmamar | bezerro ≥ 6 dias (cabrito ≥ 3) mamando | — | vaca +15 condição e fertilidade ×1,5 por 20 dias; mamando com 4+ dias, a vaca emprenha ×0,6 |
+| Ferrar | boi/cavalo ≥ 6 dias, num curral | ferro T.S. do avô ou ferro novo | +3% no valor; ferida 3 dias |
+| Pesar | num curral, com a balança do Retiro ou um tronco | — | guarda o histórico e mostra o GMD (kg/dia) |
+| Brete | objeto no Retiro | — | pesa o lote do Curral do Retiro: kg, arrobas (52% de carcaça) e valor |
+| Caderneta | botão na aba Fazenda | — | conta por cercado e lista a lida pendente |
+| Sal no cocho coberto | objeto nos piquetes | 1 saco de sal | 7 dias de sal (o cocho comum dá 3) |
+
+GMD = (peso atual − peso anterior) / (dias entre pesagens × 30), já que 1 dia de jogo vale cerca de 1 mês do animal.
+
+Teste: `tests/web/lida_test.js` (23 verificações).
