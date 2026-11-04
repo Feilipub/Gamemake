@@ -59,3 +59,26 @@ desativado → `--bD` com opacidade 0,78.
 ## Evidência
 
 `production/qa/evidence/ui-redesign-*.png` (antes/depois, retrato e paisagem).
+
+## HUD 2 (pesquisa de projetos de interface)
+
+| Fonte | Licença | O que aproveitamos |
+|---|---|---|
+| [RPGUI](https://www.npmjs.com/package/rpgui) (RonenNess) | zlib | Molduras e botões de RPG com volume; inspirou os botões redondos da roda |
+| NES.css | MIT | Contornos pixelados e estados de botão; confirmou o estilo de contorno de 3 px |
+| [Kenney UI Pack](https://www.kenney.nl/assets/ui-pack) | CC0 | Referência de ícones circulares e badges (não embutido: a interface continua desenhada por código, offline) |
+| Guias de HUD ([strayspark](https://www.strayspark.studio/blog/game-ui-ux-design-principles), [300mind](https://300mind.studio/blog/radial-menus-in-game-design/), [playbooks](https://playbooks.com/skills/a5c-ai/babysitter/game-hud)) | — | Informação fixa nos cantos, o resto só quando precisa; menu radial para escolhas rápidas; alvos ≥ 44 px; barras que mudam suave |
+
+**O que entrou:**
+- **Minimapa redondo com bússola**, logo acima dos botões de ação. Mostra:
+  - o rumo do vaqueiro (seta vermelha), o gado (branco), outros animais e os moradores (azul);
+  - o barbatão (vermelho), a festa (★) e o objetivo (losango dourado, preso na borda quando está longe).
+  - Tocar no minimapa abre o mapa grande.
+- **Seta do objetivo na borda da tela**, com a distância em metros. Vale para a missão rastreada, o barbatão, o serviço ou o bico.
+- **Roda de ações** ao tocar num animal seu: Ficha, Curar (bicheira, umbigo ou doença), Alimentar, Dar água, Ordenhar, Carinho, Conduzir ou Montar. O toque na roda não vaza para o chão.
+- **Avisos por tipo** (verde = dinheiro, vermelho = alerta, dourado = conquista), entrando deslizando. Aviso repetido agrupa (×2, ×3…).
+- **Barras de energia e fome** mudam suave e piscam abaixo de 25%.
+- **Botões de ação e da barra de baixo em 3D** (espessura e afundam ao tocar).
+- Opções: mostrar ou esconder o minimapa; o toque no animal abre a roda ou a ficha completa.
+
+Teste: `tests/web/hud2_test.js` (9 verificações). Evidência: `hud2-minimapa-seta.png`, `hud2-roda-acoes.png`.

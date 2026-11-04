@@ -414,6 +414,35 @@ input,select{border:3px solid #5a3418;background:#fff6d8;box-shadow:inset 0 2px 
 .an3d .inf{flex:1;min-width:0}.an3d.empty{opacity:.85}
 .bars3d{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:5px 0 3px}.bars3d i{display:block;height:7px;background:#3a2414;border:1px solid #1c0e05;border-radius:4px;overflow:hidden;box-shadow:inset 0 2px 2px rgba(0,0,0,.5)}.bars3d b{display:block;height:100%;box-shadow:inset 0 2px 0 rgba(255,255,255,.35)}
 .tags3d em{display:inline-block;font-style:normal;font-size:10px;margin:2px 3px 0 0;padding:1px 5px;background:#7a4a22;color:#fbe9c0;border-radius:6px;box-shadow:0 2px 0 #3a2010}
+
+/* ===== HUD 2: minimapa com bússola, seta do objetivo, roda de ações, avisos por tipo, barras suaves, botões 3D ===== */
+#mmap{position:absolute;z-index:6;right:calc(8px + var(--sar));top:calc(50px + var(--sat));width:104px;height:104px;border-radius:50%;padding:0;cursor:pointer;background:#2b1608;box-shadow:0 0 0 3px #2b1608,0 0 0 6px #b07a40,0 0 0 8px #2b1608,0 6px 12px rgba(0,0,0,.5);display:none}
+#mmap canvas{width:104px;height:104px;border-radius:50%;image-rendering:pixelated;display:block}
+#mmap .mmN{position:absolute;top:-9px;left:50%;transform:translateX(-50%);font-size:11px;color:#fff3c0;background:#8a2a1a;border:2px solid #2b1608;border-radius:50%;width:18px;height:18px;line-height:14px;text-align:center;box-shadow:0 2px 0 #2b1608}
+#objArr{position:absolute;z-index:6;display:none;align-items:center;gap:2px;transform:translate(-50%,-50%);pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
+#objArr i{width:0;height:0;border-top:9px solid transparent;border-bottom:9px solid transparent;border-left:16px solid #ffd040;display:block;animation:objP 1s ease-in-out infinite}
+#objArr span{font:bold 11px sans-serif;color:#fff3c0;background:rgba(43,22,8,.85);padding:1px 5px;border-radius:6px;border:1px solid #ffd040}
+@keyframes objP{50%{opacity:.55}}
+#wheel{position:absolute;inset:0;z-index:30;background:radial-gradient(circle at 50% 50%,rgba(0,0,0,.05),rgba(0,0,0,.35))}
+#wheel .wc{position:absolute;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;border:3px dashed rgba(255,240,190,.85);animation:wSpin 6s linear infinite}
+#wheel .wn{position:absolute;top:50px;left:50%;transform:translateX(-50%);white-space:nowrap;font:bold 12px sans-serif;color:#fff3c0;background:rgba(43,22,8,.9);padding:2px 8px;border-radius:8px;border:2px solid #b07a40}
+#wheel .wb{position:absolute;transform:translate(-50%,-50%) scale(0);width:58px;height:58px;border-radius:50%!important;border:3px solid #2b1608!important;border-image:none!important;background:radial-gradient(circle at 35% 30%,#fff3c8,#e8c47a 55%,#b0803a)!important;color:#2b1608!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0!important;font-size:9px;font-weight:bold;line-height:1;box-shadow:0 5px 0 #6a4422,0 9px 10px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.7)!important;animation:wPop .18s ease-out forwards}
+#wheel .wb span{max-width:56px;text-align:center}
+#wheel .wb:active{transform:translate(-50%,-48%) scale(.95);box-shadow:0 1px 0 #6a4422,0 3px 4px rgba(0,0,0,.4)!important}
+@keyframes wPop{to{transform:translate(-50%,-50%) scale(1)}}@keyframes wSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+#toast .t2{display:flex;align-items:center;gap:6px;animation:tIn .22s ease-out}
+#toast .t2 .ti{flex:0 0 10px;height:10px;border-radius:50%;background:#e8c47a;box-shadow:0 0 0 2px #2b1608}
+#toast .t2.warn .ti{background:#e04a2a}#toast .t2.money .ti{background:#5ad06a}#toast .t2.win .ti{background:#ffd040}
+#toast .t2.warn{border-color:#a02a1a!important}
+#toast .t2 .tn{margin-left:auto;font-size:11px;color:#ffd040}
+#toast .t2.bump{animation:tBump .25s}
+@keyframes tIn{from{transform:translateX(-24px);opacity:0}}@keyframes tBump{50%{transform:scale(1.06)}}
+#hEn,#hFo,#hHp{transition:width .5s ease}
+#hEnC.low,#hFoC.low{animation:lowP 1s ease-in-out infinite}
+@keyframes lowP{50%{filter:brightness(1.5) drop-shadow(0 0 4px #ff4020)}}
+.pad button{transform:perspective(400px) rotateX(8deg);box-shadow:0 6px 0 #2a1608,0 9px 10px rgba(0,0,0,.45)!important;transition:transform .07s,box-shadow .07s}
+.pad button:active{transform:perspective(400px) rotateX(8deg) translateY(4px);box-shadow:0 2px 0 #2a1608,0 3px 4px rgba(0,0,0,.4)!important}
+#bar button{box-shadow:0 5px 0 #1c0e05,0 8px 10px rgba(0,0,0,.45)!important}#bar button:active{transform:translateY(3px);box-shadow:0 2px 0 #1c0e05!important}
 </style>
 </head>
 <body class="ttl">
@@ -531,12 +560,16 @@ const EMO_IC = { '🐄': 'cow', '🐕': 'dog', '🐎': 'horse', '🐴': 'horse',
 const noEmo = t => String(t).replace(EMO_RE, '').replace(/^\s+/, '');
 function emoHTML(h) { return String(h).replace(/✅|✔️?/gu, '<b style="color:#2a7a2a">✓</b>').replace(/⭐/gu, '★').replace(/⚠️?/gu, '<b style="color:#b02020">!</b>').replace(EMO_RE, m => { const k = m.trim().replace(/\uFE0F/g, ''); return EMO_IC[k] && typeof ic === 'function' ? ic(EMO_IC[k], 14) + ' ' : ''; }); }
 function say(t, ms) { const m = $('msg'); t = noEmo(t); m.textContent = t; m.classList.add('on'); msgT = ms || 3500; }
-function toast(t) { const box = $('toast'), d = document.createElement('div'); if (/^\s*(✅|🏆|🎉|📜 Missão aceita|🎂)/.test(t) || /concluíd|Conquista|parabéns/i.test(t)) d.className = 'win'; d.textContent = noEmo(t).replace(/^\s*([!✓])?/, '$1'); box.appendChild(d); while (box.children.length > 4) box.firstChild.remove(); setTimeout(() => d.remove(), 2700); } // no máximo 4 avisos na tela
+function toast(t) { const box = $('toast'), clean = noEmo(t).replace(/^\s*([!✓])?/, '$1'), last = box.lastElementChild;
+  if (last && last.dataset.t === clean) { const n = (+last.dataset.n || 1) + 1; last.dataset.n = n; last.querySelector('.tn').textContent = '×' + n; last.classList.remove('bump'); void last.offsetWidth; last.classList.add('bump'); clearTimeout(last._tm); last._tm = setTimeout(() => last.remove(), 2700); return; } // aviso repetido: agrupa (×2, ×3…)
+  const d = document.createElement('div'); d.dataset.t = clean;
+  const cat = /^\s*(✅|🏆|🎉|🏅|📜 Missão aceita|🎂)/.test(t) || /concluíd|Conquista|parabéns|cumprido/i.test(t) ? 'win' : /^\s*(⚠️|🚨|🪰|🤒|🕯️|☀️ Começou)/.test(t) || /morreu|Roubaram|Falta|vencid|multa/i.test(t) ? 'warn' : /^\s*(💰|🥛|🧀)/.test(t) || /R\$|\+R/.test(t) ? 'money' : 'info';
+  d.className = 't2 ' + cat + (cat === 'win' ? ' win' : ''); d.innerHTML = '<i class="ti"></i><span class="tx"></span><b class="tn"></b>'; d.querySelector('.tx').textContent = clean; box.appendChild(d); while (box.children.length > 4) box.firstChild.remove(); d._tm = setTimeout(() => d.remove(), 2700); } // no máximo 4 avisos na tela; cores por tipo
 const shownTips = {};
 function tip(k, t) { if (S && S.flags['tip_' + k]) return; if (S) S.flags['tip_' + k] = 1; say(t, 6500); }
 
 /* ============ CONFIGURAÇÕES, ÍCONES E MOLDURAS PIXEL ============ */
-const SET = { fx: 'alta', tspd: 'normal', q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on', cine: 'on', lean: 'on', chr: 'rig', news: 'on', laco: 'on', cine2: 'on' };
+const SET = { fx: 'alta', tspd: 'normal', q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on', cine: 'on', lean: 'on', chr: 'rig', news: 'on', laco: 'on', cine2: 'on', mmap: 'on', roda: 'on' };
 try { Object.assign(SET, JSON.parse(localStorage.getItem('lida_set') || '{}')); } catch (e) { }
 setTimeout(() => applyTimeSpeed(), 0);
 function saveSet() { try { localStorage.setItem('lida_set', JSON.stringify(SET)); } catch (e) { } document.documentElement.style.setProperty('--ctl', SET.ctl); document.body && document.body.classList.toggle('tapmode', SET.mode === 'touch'); }
@@ -7010,6 +7043,7 @@ const M = { open: false, tabs: null, tab: null, fn: null, title: '', sel: null, 
 const A = {};
 const EMO = { '🌿': 'farm', '🧺': 'bag', '🍺': 'meat', '🥩': 'meat', '🔨': 'build', '🏧': 'bank', '🏦': 'bank', '🏡': 'farm', '🔧': 'gear', '🌽': 'feed', '⛪': 'heart', '🪧': 'map', '🛒': 'farm', '🔥': 'sun', '❓': 'scroll', '⚙️': 'gear', '💰': 'sell', '🎒': 'bag', '📦': 'chest', '⚙': 'gear' };
 function showModal(title, tabs, tab, fn, icon) {
+  closeWheel();
   if (SH.a) closeSheet();
   const was = M.open; M.open = true; M.title = title; M.tabs = tabs; M.tab = tab || (tabs && tabs[0][0]); M.fn = fn; M.sel = null; M.sub = null; M.icon = icon || null;
   paused = mode === 'play'; input.x = input.y = 0; P && (P._auto = null);
@@ -7269,7 +7303,7 @@ function cfgHTML(inGame) {
   const opt = (k, v, l) => `<button data-a="setOpt" data-v="${k}|${v}" class="${SET[k] === v ? 'on' : ''}">${l}</button>`;
   let h = volHTML();
   h += `<div class="card"><b>Velocidade do tempo</b><div class="ch">${opt('tspd', 'lento', 'Lento (dia de 36 min)')}${opt('tspd', 'normal', 'Normal (24 min)')}${opt('tspd', 'rapido', 'Rápido (16 min)')}</div></div>`;
-  h += `<div class="card"><b>Efeitos gráficos</b><div class="ch">${opt('fx', 'alta', 'Alta (luz, bloom, água, calor, raios de sol, neblina)')}${opt('fx', 'media', 'Média (luz, bloom, água, calor)')}${opt('fx', 'baixa', 'Baixa (sem shader)')}</div><p class="mut">Se o aparelho não acompanhar, o jogo desce a qualidade sozinho.</p><b>Visual de cinema (profundidade de campo e grão de filme)</b><div class="ch">${opt('cine2', 'on', 'Ligado')}${opt('cine2', 'off', 'Desligado')}</div><b>Laço com mira (toque duas vezes)</b><div class="ch">${opt('laco', 'on', 'Ligado')}${opt('laco', 'off', 'Automático')}</div><b>Notícias da manhã ao acordar</b><div class="ch">${opt('news', 'on', 'Mostrar')}${opt('news', 'off', 'Não mostrar')}</div><b>Desenho das pessoas</b><div class="ch">${opt('chr', 'rig', 'Novo (mesmo estilo dos animais)')}${opt('chr', 'classico', 'Clássico')}</div><b>Profundidade 2.5D (copas e telhados inclinam com a câmera)</b><div class="ch">${opt('lean', 'on', 'Ligada')}${opt('lean', 'off', 'Desligada')}</div><b>Apresentação ao chegar num lugar novo</b><div class="ch">${opt('cine', 'on', 'Mostrar')}${opt('cine', 'off', 'Pular')}</div></div>`;
+  h += `<div class="card"><b>Efeitos gráficos</b><div class="ch">${opt('fx', 'alta', 'Alta (luz, bloom, água, calor, raios de sol, neblina)')}${opt('fx', 'media', 'Média (luz, bloom, água, calor)')}${opt('fx', 'baixa', 'Baixa (sem shader)')}</div><p class="mut">Se o aparelho não acompanhar, o jogo desce a qualidade sozinho.</p><b>Minimapa com bússola</b><div class="ch">${opt('mmap', 'on', 'Mostrar')}${opt('mmap', 'off', 'Esconder')}</div><b>Toque no animal abre</b><div class="ch">${opt('roda', 'on', 'Roda de ações')}${opt('roda', 'off', 'Ficha completa')}</div><b>Visual de cinema (profundidade de campo e grão de filme)</b><div class="ch">${opt('cine2', 'on', 'Ligado')}${opt('cine2', 'off', 'Desligado')}</div><b>Laço com mira (toque duas vezes)</b><div class="ch">${opt('laco', 'on', 'Ligado')}${opt('laco', 'off', 'Automático')}</div><b>Notícias da manhã ao acordar</b><div class="ch">${opt('news', 'on', 'Mostrar')}${opt('news', 'off', 'Não mostrar')}</div><b>Desenho das pessoas</b><div class="ch">${opt('chr', 'rig', 'Novo (mesmo estilo dos animais)')}${opt('chr', 'classico', 'Clássico')}</div><b>Profundidade 2.5D (copas e telhados inclinam com a câmera)</b><div class="ch">${opt('lean', 'on', 'Ligada')}${opt('lean', 'off', 'Desligada')}</div><b>Apresentação ao chegar num lugar novo</b><div class="ch">${opt('cine', 'on', 'Mostrar')}${opt('cine', 'off', 'Pular')}</div></div>`;
   h += `<div class="card"><b>Gráficos</b><div class="ch">${opt('q', 'alta', 'Alta resolução')}${opt('q', 'media', 'Desempenho')}</div><b>Modo de controle</b><div class="ch">${opt('mode', 'joy', 'Joystick')}${opt('mode', 'touch', 'Toque na tela')}</div><p class="mut">${SET.mode === 'touch' ? 'Toque no chão para ir até lá; toque duas vezes para correr ou galopar. Os botões de ação continuam na tela.' : 'Joystick virtual (ou WASD/setas no teclado). Segure “Correr” para correr ou galopar.'}</p><b>Tamanho dos botões</b><div class="ch">${opt('ctl', 1, 'Normal')}${opt('ctl', 1.2, 'Grandes')}</div><b>Orientação da tela</b><div class="ch">${opt('ori', 'livre', 'Livre')}${opt('ori', 'retrato', 'Retrato')}${opt('ori', 'paisagem', 'Paisagem')}</div><p class="mut">Travar a orientação só funciona em tela cheia no celular.</p><div class="row">${btn('Tela cheia', 'fs')}</div><b>Cenas dos leilões</b><div class="ch">${opt('aucCs', 'on', 'Mostrar')}${opt('aucCs', 'off', 'Pular sempre')}</div><b>Vibração</b><div class="ch">${opt('vib', true, 'Ligada')}${opt('vib', false, 'Desligada')}</div><b>Zoom</b><p class="mut">Use dois dedos na tela (pinça) ou a rodinha do mouse.</p><div class="row">${btn('Zoom padrão', 'zoomReset')}</div></div>`;
   if (inGame) h += `<div class="card"><div class="row">${ibtn('disk', 'Salvar', 'saveNow')}${ibtn('play', 'Carregar', 'loadNow')}${ibtn('scroll', 'Ajuda', 'help')}${ibtn('book', 'Créditos', 'credits')}${ibtn('farm', 'Tela inicial', 'toTitle')}</div><p class="mut" id="saveInfo">Partida ${SAVE.slot}. Salvamento automático às 6h, ao dormir e a cada 60 s, com cópia de segurança.</p></div>`;
   { const ms = MUS.missingList(), tr = Object.keys(MUS.files).map(k => `<li>${k.toUpperCase()} — <code>${MUS.files[k]}</code> ${MUS.missing[k] ? '<b style="color:#b02020">faltando</b>' : MUS.el && MUS.el[k] ? 'ok' : 'carrega no primeiro toque'}</li>`).join('');
@@ -7740,6 +7774,54 @@ A.farmPhoto = () => { const src = $('c'); if (!src) return; const w = src.width,
   g.fillStyle = '#1a120c'; g.font = 'bold 26px serif'; g.textAlign = 'center'; g.fillText('FAZENDA BOA ESPERANÇA', cv.width / 2, h + 52); g.font = '16px serif'; g.fillText(S.cf.name + ' · dia ' + S.day + ' · ' + myAnimals().filter(a => a.sp !== 'cao').length + ' animais · Itarantim, Bahia', cv.width / 2, h + 74);
   const url = cv.toDataURL('image/png'); try { const a = document.createElement('a'); a.href = url; a.download = 'fazenda-boa-esperanca-dia' + S.day + '.png'; a.click(); } catch (e) { }
   showModal('📸 Foto da fazenda', null, null, () => `<img src="${url}" style="width:100%;border:3px solid #2b1608"><p class="mut">A foto foi salva (ou toque e segure a imagem para guardar e mandar no WhatsApp).</p>`); };
+/* ============ HUD 2: MINIMAPA COM BÚSSOLA, SETA DO OBJETIVO E RODA DE AÇÕES ============
+   Seguindo guias de HUD para celular: informação fixa nos cantos, o resto só quando precisa; alvos de toque ≥ 44 px;
+   roda (menu radial) para escolhas rápidas no lugar de fichas longas. Inspiração visual: RPGUI (zlib) e NES.css (MIT). */
+const HUD2 = { t: 0, cv: null, g: null, el: null, arr: null };
+function objTarget() { // objetivo atual: missão rastreada › barbatão › serviço › bico
+  const q = QBY[qS().track], st = q && qState(q.id); if (q && st.s === 'active') { const sp = q.steps[st.step]; if (sp && sp.at) return { x: sp.at[0] * TS, y: sp.at[1] * TS, n: q.n }; }
+  if (S.pega) { const a = byId(S.pega.aid); if (a) return { x: a.x, y: a.y, n: 'Barbatão' }; }
+  if (S.job) { const pt = S.job.pts.find(p => !p.ok); if (pt) return { x: pt.x * TS, y: pt.y * TS, n: 'Serviço' }; }
+  for (const b of S.bicos || []) if (b.st === 'active') { const p = bicoPoint(b); if (p) return { x: p[0] * TS, y: p[1] * TS, n: BICOS[b.k].n }; }
+  return null; }
+function hud2Init() { if (HUD2.cv) return; const w = $('wrap'); if (!w) return;
+  const d = document.createElement('div'); d.id = 'mmap'; d.innerHTML = '<canvas width="104" height="104"></canvas><b class="mmN">N</b>'; w.appendChild(d); HUD2.el = d; HUD2.cv = d.firstChild; HUD2.g = HUD2.cv.getContext('2d');
+  d.onclick = () => { if (mode === 'play') openMenu('map'); };
+  const a = document.createElement('div'); a.id = 'objArr'; a.innerHTML = '<i></i><span></span>'; w.appendChild(a); HUD2.arr = a; }
+function hud2(dt) { if ((HUD2.t -= dt) > 0) return; HUD2.t = 0.2; hud2Init(); if (!HUD2.cv) return;
+  const show = mode === 'play' && !M.open && !SH.a && !P.inside && SET.mmap !== 'off' && !(typeof CS !== 'undefined' && CS.on); HUD2.el.style.display = show ? 'block' : 'none'; HUD2.arr.style.display = 'none'; if (!show) return;
+  { const pad = document.querySelector('.pad'), wr = $('wrap').getBoundingClientRect(); if (pad) { const r = pad.getBoundingClientRect(); if (r.height) { HUD2.el.style.top = Math.max(60, r.top - wr.top - 122) + 'px'; HUD2.el.style.right = Math.max(8, wr.right - r.right) + 'px'; } } } // logo acima dos botões de ação (a caixa de fala usa o alto da tela)
+  const g = HUD2.g, W2 = 104, k = 2.2, cx = P.x / TS, cy = P.y / TS; g.clearRect(0, 0, W2, W2); g.save(); g.beginPath(); g.arc(52, 52, 50, 0, 7); g.clip();
+  g.imageSmoothingEnabled = false; g.fillStyle = '#3a2a18'; g.fillRect(0, 0, W2, W2); const mini = GR.mini(season()); g.drawImage(mini, cx - 52 / k, cy - 52 / k, W2 / k, W2 / k, 0, 0, W2, W2);
+  const toM = (x, y) => [52 + (x / TS - cx) * k, 52 + (y / TS - cy) * k];
+  g.fillStyle = 'rgba(70,40,15,0.9)'; for (let y = Math.floor(cy - 24); y <= cy + 24; y++) for (let x = Math.floor(cx - 24); x <= cx + 24; x++) { if (x < 0 || y < 0 || x >= MW || y >= MH) continue; const o = obj[gi(x, y)]; if (o === 1 || o === 2) g.fillRect(52 + (x - cx) * k, 52 + (y - cy) * k, k, k); }
+  for (const a of S.animals) { if (a._hid) continue; const [x, y] = toM(a.x, a.y); if (x < 0 || y < 0 || x > W2 || y > W2) continue; g.fillStyle = a.wild ? '#ff4030' : a.own === 'player' ? (a.sp === 'boi' ? '#ffffff' : '#f0b050') : 'rgba(255,255,255,0.35)'; g.fillRect(x - 1, y - 1, a.wild ? 4 : 2.5, a.wild ? 4 : 2.5); }
+  for (const e of npcs) if (!e.hidden) { const [x, y] = toM(e.x, e.y); if (x > 0 && y > 0 && x < W2 && y < W2) { g.fillStyle = '#50b0f0'; g.fillRect(x - 1.5, y - 1.5, 3, 3); } }
+  const T = objTarget(); if (T) { let [x, y] = toM(T.x, T.y); const dx = x - 52, dy = y - 52, dd = Math.hypot(dx, dy); if (dd > 44) { x = 52 + dx / dd * 44; y = 52 + dy / dd * 44; } g.fillStyle = '#ffd040'; g.strokeStyle = '#3a2010'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x, y - 6); g.lineTo(x + 5, y); g.lineTo(x, y + 6); g.lineTo(x - 5, y); g.closePath(); g.fill(); g.stroke(); }
+  if (eventsOnDay(S.day).length) { let [x, y] = toM(84 * TS, 50 * TS); const dx = x - 52, dy = y - 52, dd = Math.hypot(dx, dy); if (dd > 44) { x = 52 + dx / dd * 44; y = 52 + dy / dd * 44; } g.fillStyle = '#ff8a30'; g.font = 'bold 11px sans-serif'; g.textAlign = 'center'; g.fillText('★', x, y + 4); }
+  const hx = P._vx || 0, hy = P._vy || 0, hl = Math.hypot(hx, hy); if (hl > 2) HUD2.ang = Math.atan2(hy, hx); const an = HUD2.ang === undefined ? Math.PI / 2 : HUD2.ang;
+  g.translate(52, 52); g.rotate(an + Math.PI / 2); g.fillStyle = '#ff3020'; g.strokeStyle = '#fff'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(0, -7); g.lineTo(5, 5); g.lineTo(0, 2); g.lineTo(-5, 5); g.closePath(); g.fill(); g.stroke(); g.restore();
+  // seta do objetivo na borda da tela, com a distância
+  if (T) { const s = SCL(), sx = (T.x - cam.x) * s, sy = (T.y - cam.y) * s, Wv = C.clientWidth || W, Hv = C.clientHeight || H, off = sx < 0 || sy < 60 || sx > Wv || sy > Hv - 120;
+    if (off) { const mx = Wv / 2, my = Hv / 2, dx = sx * (Wv / (W || Wv)) - mx, dy = sy * (Hv / (H || Hv)) - my, a2 = Math.atan2(dy, dx), r = Math.min((Wv / 2 - 34) / Math.abs(Math.cos(a2) || 1e-3), (Hv / 2 - 120) / Math.abs(Math.sin(a2) || 1e-3));
+      const ax = mx + Math.cos(a2) * r, ay = my + Math.sin(a2) * r, m = Math.round(hyp(T.x - P.x, T.y - P.y) / TS); HUD2.arr.style.display = 'flex'; HUD2.arr.style.left = ax + 'px'; HUD2.arr.style.top = ay + 'px'; HUD2.arr.firstChild.style.transform = 'rotate(' + a2 + 'rad)'; HUD2.arr.lastChild.textContent = m + ' m'; HUD2.arr.title = T.n; } } }
+
+// roda de ações: toque no animal abre as ações mais usadas em volta dele
+function wheelActs(a) { const L = [['eye', 'Ficha', () => openSheet(a)]], big = a.sp !== 'galinha' && a.sp !== 'cao', isH = a.sp === 'cavalo' || a.sp === 'burro';
+  const run = k => { const prev = SH.a; SH.a = a; try { A.sa(k); } finally { if (!$('ap').classList.contains('on')) SH.a = prev; } };
+  if (a.bich) L.push(['plus', 'Curar bicheira', () => run('bicheira')]); else if (a.umb === 1) L.push(['plus', 'Curar umbigo', () => run('umbigo')]); else if (a.sick) L.push(['plus', 'Tratar', () => run('cure')]);
+  L.push(['feed', 'Alimentar', () => feedItem(a) ? run('feed') : say('Precisa de comida para ' + (SPN[a.sp] || 'o animal').toLowerCase() + ' na mochila.')]);
+  if (a.sp !== 'cao') L.push(['water', 'Dar água', () => has('galao') ? run('water') : say('Precisa de um galão cheio (encha no reservatório).')]);
+  if (a.sex === 'F' && a.lact > 0 && (a.sp === 'boi' || a.sp === 'cabra')) L.push(['water', 'Ordenhar', () => run(a.sp === 'boi' ? 'milkCow' : 'milkGoat')]);
+  L.push(['heart', 'Carinho', () => run('pet')]);
+  if (isH) L.push(['mount', P.mnt === a.id ? 'Desmontar' : 'Montar', () => run(P.mnt === a.id ? 'dismount' : 'mount')]); else if (big) L.push(['lasso', P.lead === a.id ? 'Soltar' : 'Conduzir', () => run('lead')]);
+  return L.slice(0, 7); }
+function openWheel(a, cx, cy) { closeWheel(); const w = $('wrap'), d = document.createElement('div'); d.id = 'wheel'; const L = wheelActs(a), R0 = 78, Wv = w.clientWidth, Hv = w.clientHeight;
+  const x0 = Math.max(R0 + 30, Math.min(Wv - R0 - 30, cx)), y0 = Math.max(R0 + 70, Math.min(Hv - R0 - 140, cy));
+  d.innerHTML = `<div class="wc" style="left:${x0}px;top:${y0}px"><span class="wn">${esc(a.n)}</span></div>` + L.map(([i, l], k) => { const an = -Math.PI / 2 + k * Math.PI * 2 / L.length; return `<button class="wb" data-k="${k}" style="left:${x0 + Math.cos(an) * R0}px;top:${y0 + Math.sin(an) * R0}px;animation-delay:${k * 0.03}s">${ic(i, 20)}<span>${l}</span></button>`; }).join('');
+  for (const ev of ['pointerdown', 'pointerup', 'pointermove', 'touchstart', 'touchend', 'mousedown', 'mouseup']) d.addEventListener(ev, e => e.stopPropagation()); // o toque na roda não chega ao chão do jogo
+  d.onclick = e => { e.stopPropagation(); const b = e.target.closest('.wb'); closeWheel(); if (b) { AU.click(); setTimeout(() => L[+b.dataset.k][2](), 0); } }; w.appendChild(d); AU.select && AU.select(); buzz(8); }
+function closeWheel() { const d = document.getElementById('wheel'); if (d) d.remove(); }
 function nearPost(a) { const t = a || P; let b = -1, bd = 46; POSTS.forEach((p, i) => { const d = hyp(p.x - t.x, p.y - t.y); if (d < bd) { bd = d; b = i; } }); return b; }
 // executa a ação: caminha até o animal e toca a animação correspondente
 function doAnimal(a, k, dur, fn, opt) {
@@ -9813,13 +9895,14 @@ function regionAt(x, y) { if (P && P.inside) { const b = BLD.find(q => q.id === 
   if (tx < 60 && ty >= 110) return ['Fazenda Boa Esperança', Object.keys(RETIRO).some(retOk) ? 'SUA PROPRIEDADE · RETIRO' : 'SUA PROPRIEDADE · RETIRO ABANDONADO'];
   if (tx < 60) return ty < 21 && S.exp.norte ? ['Gleba do Mandacaru', 'FAZENDA BOA ESPERANÇA'] : ty > 67 && S.exp.sul ? ['Gleba do Açude', 'FAZENDA BOA ESPERANÇA'] : ['Fazenda Boa Esperança', 'SUA PROPRIEDADE']; if (tx > 66 && ty < 27) return ['Fazenda Campos', 'SR. FELIPE']; if (tx > 66 && ty > 62) return ['Fazenda Duarte', 'SR. RYAN']; if (tx >= 63 && ty >= 28 && ty <= 67) return ['Itarantim', 'CENTRO DA CIDADE']; return ['Estrada do Riacho', 'ITARANTIM · BAHIA']; }
 function hud(dt) {
+  hud2(dt);
   if ((regT -= dt) < 0 && mode === 'play') { regT = 0.5; const r = regionAt(P.x, P.y); if (!curReg) curReg = r[0]; else if (r[0] !== curReg) { curReg = r[0]; CINE.maybe(r[0]); const el = $('reg'); el.innerHTML = r[0] + '<small>' + r[1] + '</small>'; el.classList.add('on'); clearTimeout(regHide); regHide = setTimeout(() => el.classList.remove('on'), 2400); AU.jingle(); } }
   if ((hudT -= dt) > 0) return; hudT = 0.25;
   const night = isNight();
   $('hDay').innerHTML = ic(SEAS4_IC[season4()], 14) + ` ${WEEK[wday()]} ${dateStr()} · ${SEAS4[season4()]}`; $('hTime').innerHTML = `<img class="dial" src="${dialURL()}" width="36" height="18" alt="">` + ' ' + clock(); $('hWx').innerHTML = ic((WXT[S.weather] || WXT.sol).ic, 14) + '<span class="wt"> ' + WX[S.weather][1] + '</span>';
   $('hMoney').innerHTML = ic('coin', 14) + ' ' + fmt(S.cash) + '&nbsp; ' + ic('bank', 14) + ' ' + fmt(S.acct);
   $('hEnC').firstElementChild.title = 'Energia'; if (!$('hEnC').dataset.i) { $('hEnC').insertAdjacentHTML('afterbegin', ic('bolt', 12)); $('hEnC').dataset.i = 1; $('hFoC').insertAdjacentHTML('afterbegin', ic('meat', 12)); $('hFoC').dataset.i = 1; }
-  $('hEn').style.width = P.en + '%'; $('hFo').style.width = P.fo + '%';
+  $('hEn').style.width = P.en + '%'; $('hFo').style.width = P.fo + '%'; $('hEnC').classList.toggle('low', P.en < 25); $('hFoC').classList.toggle('low', P.fo < 25);
   const h = P.mnt ? byId(P.mnt) : null;
   $('bm').innerHTML = (P.mnt ? '' : ic('mount', 14)) + (P.cart ? 'Descer' : P.mnt ? 'Desmontar' : 'Montar'); $('bl').innerHTML = ic('lasso', 14) + (lasso.t ? 'Soltar' : 'Laço'); $('ba').innerHTML = ic('note', 14) + 'Aboio';
   $('bg').innerHTML = ic(h ? 'horse' : 'boot', 14) + (h ? Math.round(h._stam || 0) + '%' : P.cart ? '—' : 'Correr');
@@ -10831,7 +10914,7 @@ function handleTap(cx, cy) {
   for (const w of WILD) if (hyp(w.x - wx, w.y - 6 - wy) < 12) { const K = WKIND[w.k]; say(K.n + ': ' + K.d, 3200); part(wx, wy, 'ring', { vx: 0, vy: 0, m: 0.35 }); return; }
   // 1) animais (o mais à frente primeiro)
   let best = null; for (const a of S.animals) { if (a._hid || a.id === P.mnt || a.own === 'delivery' || a.own === 'agro') continue; const r = hitRect(a); if (wx >= r[0] && wx <= r[2] && wy >= r[1] && wy <= r[3] && (!best || a.y > best.y)) best = a; }
-  if (best) { openSheet(best); part(wx, wy, 'ring', { vx: 0, vy: 0, m: 0.35 }); return; }
+  if (best) { if (SET.roda !== 'off' && best.own === 'player') { const k2 = C.clientWidth / (C.width || 1), s2 = SCL(); openWheel(best, (best.x - cam.x) * s2 * k2, (best.y - 14 - cam.y) * s2 * k2); } else openSheet(best); part(wx, wy, 'ring', { vx: 0, vy: 0, m: 0.35 }); return; }
   // 2) pessoas
   let np = null; for (const e of npcs) { if (e.hidden) continue; if (wx > e.x - 8 && wx < e.x + 8 && wy > e.y - 30 && wy < e.y + 3 && (!np || e.y > np.y)) np = e; }
   if (np) { closeSheet(); AU.select(); return approach(np, 24, () => openNpc(np.id), 'Falar'); }
