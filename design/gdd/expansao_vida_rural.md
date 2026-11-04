@@ -265,3 +265,16 @@ As pessoas passaram a ser desenhadas pelo mesmo esqueleto (`RIG`) dos bois e cav
 Em Opções › Desenho das pessoas dá para voltar ao desenho **Clássico**. Os retratos dos diálogos não mudaram.
 
 Evidência: `production/qa/evidence/personagens-classico-x-novo.png`, `personagens-novo-com-cavalo.png`, `retiro-mapa.png`, `retiro-brete.png`, `lida-caderneta.png`, `lida-balanca.png`.
+
+## Rodada 4 — escolhas do jogador
+
+| Item | O que faz | Teste |
+|---|---|---|
+| Vizinhos equilibrados | O caixa das fazendas fica entre ~35% e ~160% do valor inicial: o excedente é reinvestido e quem fica sem dinheiro pega crédito rural | `econ_sim` (80 dias) |
+| Ordenha e laticínios | Ordenha de vaca na mão, uma vez por dia; com bezerro ao pé sai a metade. No fogão: queijo coalho (5 L), requeijão (6 L), manteiga de garrafa (8 L) e doce de leite | `leite_test.js` |
+| Contratos de venda | 3 propostas por semana (frigorífico com prêmio na arroba, laticínio, restaurante, padaria). Até 2 ao mesmo tempo, entrega aos poucos e multa de 10% se vencer | `contrato_test.js` |
+| Habilidades do vaqueiro | Lida, pecuária, laço, montaria e negócio, de 0 a 10. Sobem fazendo a lida; cada nível pede 25 xp a mais | `habil_test.js` |
+| Pega de boi no mato | Barbatão na caatinga ao sul da cidade. Foge, cansa (~9 s), recupera longe do vaqueiro; laçado e levado ao curral paga a recompensa. Gibão protege do espinho | `pega_test.js` |
+| São João | Arraiá nos sábados de junho e em 15, 23 e 24/6. Quadrilha com marcador (8 passos, 3 s cada), correio elegante, pescaria de prendas e comidas típicas | `saojoao_test.js` |
+| Casa e móveis | Marcenaria do Bira: o conforto deixa o cansaço até 24% mais lento. Cama de casal (−15% no dia seguinte), sofá, TV com previsão e troféus | `moveis_test.js` |
+| Diário, mapa, animações e sons | Diário com urgente, hoje e quando der. Mapa com pastos coloridos pelo capim e marcadores. Partículas na lida (spray, brasa, leite, coice). Sons novos: chocalho, cigarra, berrante, jato de leite, bem-te-vi | `diario_test.js` |
