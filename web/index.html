@@ -1107,6 +1107,11 @@ function roomOwnerPos(R0) {
   if (atHome && hr >= 16 && hr < 21 && stove) return { e, x: stove.x, y: stove.y + 12, pose: 'feed', dir: 1 };
   return { e, x: seat.x, y: seat.y + (seat.t === 'sofa' || seat.t === 'banco' ? 2 : 14), pose: seat.t === 'sofa' || seat.t === 'banco' ? 'sit' : 'idle', dir: 0 };
 }
+function sitOn(f) { // senta no assento e levanta de volta no mesmo lugar (antes o vaqueiro entrava no móvel e travava)
+  if (P._act) return; const px = P.x, py = P.y; P._vx = P._vy = 0;
+  P.x = f.x; P.y = f.y + 1; P.dir = 0; // desenhado na frente do assento
+  act('sit', 3, null, () => { P.x = px; P.y = py; }, { zoom: false, keep: 1 });
+}
 function furnCtx(C2) {
   if (!P.inside) return; const R0 = roomById(P.inside); if (!R0) return;
   const op = roomOwnerPos(R0); if (op) { const d = hyp(op.x - P.x, op.y - P.y); if (d < 30) C2(d - 10, op.sleep ? '💤 ' + op.e.d.n + ' está dormindo' : '💬 ' + op.e.d.n, () => op.sleep ? say(op.e.d.n + ' ronca baixinho. Melhor não acordar.') : openNpc(op.e.id), op.x, op.y - 30); }
@@ -1116,7 +1121,7 @@ function furnCtx(C2) {
     else if (mine && f.t === 'fogao') C2(d, '🍳 Fogão e casa', openHouse, fx, fy - 20);
     else if (mine && f.t === 'bau') C2(d, '📦 Baú da casa', openChest, fx, fy - 20);
     else if (mine && f.t === 'guardaRoupa') C2(d, '👕 Guarda-roupa', () => openSetup(true), fx, fy - 20);
-    else if (f.t === 'cadeira' || f.t === 'sofa' || f.t === 'banco' || f.t === 'rede') C2(d + 4, '🪑 Sentar', () => { act('sit', 2.5, { x: fx, y: fy }, null, { zoom: false }); }, fx, fy - 20);
+    else if (f.t === 'cadeira' || f.t === 'sofa' || f.t === 'banco' || f.t === 'rede') C2(d + 4, '🪑 Sentar', () => sitOn(f), fx, fy - 20);
     else if (f.look) C2(d + 2, '👁️ Olhar', () => say(f.look, 5200), fx, fy - 20);
     else if (f.t === 'filtro') C2(d + 2, '💧 Beber água', () => { P.en = cl(P.en + 2, 0, 100); say('Água fresquinha do filtro de barro.'); }, fx, fy - 20); }
 }
@@ -4723,7 +4728,7 @@ function sleep(faint) {
     const was = S.min; const skip = was > 6 * 60 ? (1440 - was) / 60 + 6 : (6 * 60 - was) / 60; if (S.min > 6 * 60) { S.min = 1440 - 0.001; updTime(0.01 / GMPS); } /* vira o dia uma única vez, qualquer que seja a velocidade do tempo */ S.min = 6 * 60; regrow(Math.max(0, Math.floor(skip) - 1)); layEggs(); deliveries(); P._auto = null; P._act = null; P._vx = P._vy = 0;
     if (was < 6 * 60 && was >= 0) { /* madrugada: mesmo dia */ }
     P.en = faint ? 55 : 100; P.fo = cl(P.fo - 20, 0, 100); if (faint) { const fee = Math.min(S.cash, 80); S.cash -= fee; if (fee) ledger('Remédio (desmaio)', -fee, 'cx'); }
-    P.mnt = null; P.cart = false; P.x = 7 * TS; P.y = 30.4 * TS; P.dir = 0;
+    P.mnt = null; P.cart = false; P.dir = 0; { const RB = P.inside ? roomById(P.inside) : null, bed = RB && FURN.find(f => f.r === RB.id && (f.t === 'camaC' || f.t === 'cama')); if (bed) { P.x = bed.x; P.y = bed.y + 12; } else { P.inside = null; P.out = null; P.x = 7 * TS; P.y = 30.4 * TS; } } /* acorda ao lado da cama, dentro de casa */
     const h = mainHorse(); if (h && h._st !== 'tied') { h.x = 12 * TS; h.y = 31.6 * TS; h._st = 'tied'; h.tie = 0; }
     npcs.forEach(placeNpc); SAVE.save('auto', true);
     fadeTo(0); say(WEEK[wday()] + ', dia ' + S.day + ' — ' + seasonName() + '. ' + WX[S.weather][0] + ' ' + WX[S.weather][1] + '.', 4000);
@@ -5138,14 +5143,16 @@ function useGate(g) { act('gate', 0.38, { x: g.x * TS, y: g.y * TS }, () => togg
 function updDog(a, dt) {
   dogGuard(a, dt);
   if (a.own === 'player' && updWorkDog(a, dt)) return;
-  const d = hyp(P.x - a.x, P.y - a.y), far = P.mnt ? 30 : 22;
+  if (P.inside && P.out) { const ox = P.out.x + 14, oy = P.out.y + 8; if (a.y >= WMH * TS) { a.x = ox; a.y = oy; } const dd = hyp(ox - a.x, oy - a.y); if (dd > 18) { stepTo(a, ox, oy, 40, dt, 'a'); a._pose = 'walk'; } else { a._pose = 'sit'; a._st = 'idle'; } return; } // espera na porta
+  const d = hyp(P.x - a.x, P.y - a.y), far = P.mnt ? 54 : 44;
   if (a._st === 'fetch') { const r = stepTo(a, a._tg[0], a._tg[1], 80, dt, 'a'); a._pose = 'run'; if (r === true || r === 'stuck' || (a._t -= dt) < 0) { a._st = 'back'; } return; }
   if (a._st === 'back') { const r = stepTo(a, P.x + 10, P.y + 4, 75, dt, 'a'); a._pose = 'run'; if (r === true || hyp(P.x - a.x, P.y - a.y) < 16) { a._st = 'sitc'; a._t = 2; heart(a.x, a.y - 18); AU.bark(a.x, a.y); } return; }
   if (a._st === 'sitc') { a._pose = 'sit'; a.f = P.x > a.x ? 1 : -1; if ((a._t -= dt) < 0) a._st = null; return; }
   let herdT = null; if (d < 140 && P._mv > 10) for (const b of near(a.x, a.y, 70)) if (b.sp === 'boi' && b.own === 'player') { herdT = b; break; }
   if (herdT && Math.random() < dt * 0.5) AU.bark(a.x, a.y);
   if (d > 260) { a.x = P.x - 20; a.y = P.y + 6; }
-  if (d > far) { a._st = 'run'; const sp = Math.min(90, 30 + d * 0.9); const r = stepTo(a, P.x - (P.dir === 3 ? 18 : -18), P.y + 6, sp, dt, 'a'); if (r === 'stuck') moveBox(a, (P.x - a.x) / d * sp * dt, (P.y - a.y) / d * sp * dt, HB.dog, 'ghost'); a._pose = 'run'; a._sitT = 0; }
+  const bk = [[6, -30], [6, 30], [30, 6], [-30, 6]][P.dir || 0], gx = P.x + bk[0] * (P.mnt ? 1.4 : 1), gy = P.y + bk[1] * (P.mnt ? 1.4 : 1); /* fica uns passos atrás, não grudado */
+  if (d > far || (a._st === 'run' && hyp(gx - a.x, gy - a.y) > 10 && d > 26)) { a._st = 'run'; const sp = Math.min(90, 26 + d * 0.7); const r = stepTo(a, gx, gy, sp, dt, 'a'); if (r === 'stuck') moveBox(a, (P.x - a.x) / d * sp * dt, (P.y - a.y) / d * sp * dt, HB.dog, 'ghost'); a._pose = 'run'; a._sitT = 0; }
   else { a._sitT = (a._sitT || 0) + dt; a._st = herdT ? 'run' : 'idle'; a._pose = a._sitT > 3 ? 'sit' : 'idle'; a.f = P.x > a.x ? 1 : -1; }
 }
 /* ---------- carroça ---------- */
@@ -8595,7 +8602,7 @@ const FILM = {
     const sx = x + (r.seat[0] - r.ox), sy = y + (r.seat[1] - r.oy), rf = an === 'gallop' ? fr % 4 : an === 'trot' ? (fr % 2) * 2 : an === 'walk' ? fr % 2 : 0;
     this.g.drawImage(charSpr(S.cf.ap, 3, rf, 'ride'), Math.round(sx - 12), Math.round(sy - 21));
   },
-  walker(x, y, dir, fr, pose, ap) { this.shadow(x, y, 6); this.g.drawImage(charSpr(ap || S.cf.ap, dir, fr, pose), Math.round(x - 12), Math.round(y - 31)); },
+  walker(x, y, dir, fr, pose, ap) { this.shadow(x, y, 6); const c = charSpr(ap || S.cf.ap, dir, fr, pose), g = this.g; if (dir === 2) { g.save(); g.translate(Math.round(x), 0); g.scale(-1, 1); g.drawImage(c, -12, Math.round(y - 31)); g.restore(); } else g.drawImage(c, Math.round(x - 12), Math.round(y - 31)); }, // dir 2 = esquerda: o desenho de perfil é espelhado, como no jogo
   dogAt(x, y, an, fr, flip) { const d = this.dog; if (!d) return; this.shadow(x, y + 1, 7); this.drawR(RIG.get(rigBreed(d), rigCoat(d), 'side', an, fr % (RIG.frames(an) || 1), rigOpts(d, 1)), x, y, flip); },
   puff(x, y) { this.dust.push({ x, y, l: 1.2, r: 1 }); },
   // ===================== cenas =====================
