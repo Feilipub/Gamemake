@@ -323,7 +323,7 @@ body.lan .sw2 .pvbox{position:sticky;top:0}
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 150, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '5.9.0', SAVE_V = 9;
+const GAME_V = '6.0.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -702,15 +702,48 @@ const CHICKENS = {
   angola: { n: "Galinha d'Angola", c: '#5a5e66', s: '#3a3c42', l: '#7a7e86', pat: 'pontos', egg: 0.9, gen: [40, 75], d: 'Barulhenta, ótima vigia do terreiro.' }
 };
 const DOGS = {
-  caramelo: { n: 'Vira-lata Caramelo', c: '#d08a3c', s: '#a0602a', l: '#f0c080', gen: [40, 85], herd: 0.8, guard: 0.7, track: 0.6, temp: ['amigo', 'esperto'], d: 'Esperto e companheiro, aprende de tudo um pouco.' },
-  fila: { n: 'Fila Brasileiro', c: '#c08a48', s: '#8a5a28', l: '#d8a868', gen: [50, 85], herd: 0.55, guard: 1.3, track: 0.8, big: 1, temp: ['protetor', 'desconfiado'], d: 'Grande e corajoso: protege a família e os animais, enfrenta predadores.' },
-  terrier: { n: 'Terrier Brasileiro', c: '#f2eee6', s: '#c8c0b2', l: '#ffffff', gen: [50, 88], herd: 0.6, guard: 0.9, track: 1.0, temp: ['agitado', 'esperto'], d: 'Pequeno, ágil e atento; bom para afastar bichos miúdos do terreiro.' },
-  rastreador: { n: 'Rastreador Brasileiro', c: '#f0ebe0', s: '#c8bca8', l: '#ffffff', gen: [52, 86], herd: 0.65, guard: 0.7, track: 1.4, temp: ['dócil', 'farejador'], d: 'Farejador de orelhas compridas: acha animal fujão e rastro no mato.' },
-  mantiqueira: { n: 'Pastor da Mantiqueira', c: '#2a2420', s: '#1a1614', l: '#b8702e', gen: [55, 90], herd: 1.35, guard: 0.9, track: 0.8, temp: ['trabalhador', 'atento'], d: 'Cão boiadeiro brasileiro de orelhas eretas: o melhor para tocar e juntar gado.' },
-  collie: { n: 'Border Collie', c: '#1e1c1a', s: '#0c0b0a', l: '#f2f0ea', gen: [55, 90], herd: 1.2, guard: 0.6, track: 0.7, old: 1, d: 'Inteligente, ótimo tocador de gado.' },
-  boiadeiro: { n: 'Boiadeiro Australiano', c: '#6a7a8a', s: '#3e4a56', l: '#c88a50', gen: [55, 90], herd: 1.2, guard: 0.8, track: 0.7, old: 1, d: 'Nascido para a lida com o gado.' },
-  ovelheiro: { n: 'Ovelheiro Gaúcho', c: '#2a2420', s: '#141110', l: '#efe8dc', gen: [50, 86], herd: 1.1, guard: 0.7, track: 0.7, old: 1, d: 'Pastor do pampa, incansável.' }
+  // brasileiras
+  caramelo: { n: 'Vira-lata Caramelo', o: 'BR', sz: 'M', c: '#d08a3c', s: '#a0602a', l: '#f0c080', gen: [40, 85], herd: 0.8, guard: 0.75, track: 0.75, spd: 1, sta: 1.15, obey: 1.05, p: 0.4, temp: ['amigo', 'esperto'], d: 'O SRD (sem raça definida) mais famoso do Brasil: esperto, resistente, quase não adoece e aprende de tudo um pouco.' },
+  fila: { n: 'Fila Brasileiro', o: 'BR', sz: 'G', c: '#c08a48', s: '#8a5a28', l: '#d8a868', gen: [50, 85], herd: 0.55, guard: 1.4, track: 0.85, spd: 0.92, sta: 0.9, obey: 0.85, big: 1, p: 1.5, temp: ['protetor', 'desconfiado'], d: 'Gigante e corajoso, desconfia de estranhos. Protege a família e os animais e enfrenta onça. Pouco tocador.' },
+  terrier: { n: 'Terrier Brasileiro (Fox Paulistinha)', o: 'BR', sz: 'P', c: '#f2eee6', s: '#c8c0b2', l: '#ffffff', gen: [50, 88], herd: 0.6, guard: 0.95, track: 1.05, spd: 1.05, sta: 1, obey: 1, p: 0.9, temp: ['agitado', 'esperto'], d: 'Pequeno, ligeiro e atento. Caça rato e preá e espanta bicho miúdo do terreiro e do galinheiro.' },
+  rastreador: { n: 'Rastreador Brasileiro (Urrador)', o: 'BR', sz: 'G', c: '#f0ebe0', s: '#c8bca8', l: '#ffffff', gen: [52, 86], herd: 0.65, guard: 0.7, track: 1.5, spd: 1, sta: 1.2, obey: 0.95, p: 1.1, temp: ['dócil', 'farejador'], d: 'Farejador de orelhas compridas e latido de urro. É o melhor para achar boi fujão no mato.' },
+  mantiqueira: { n: 'Pastor da Mantiqueira', o: 'BR', sz: 'M', c: '#2a2420', s: '#1a1614', l: '#b8702e', gen: [55, 90], herd: 1.35, guard: 0.9, track: 0.8, spd: 1.05, sta: 1.15, obey: 1.15, p: 1.2, temp: ['trabalhador', 'atento'], d: 'Boiadeiro mineiro de orelhas em pé, nascido na serra. Tocador de gado nato.' },
+  ovelheiro: { n: 'Ovelheiro Gaúcho', o: 'BR', sz: 'M', c: '#2a2420', s: '#141110', l: '#efe8dc', gen: [50, 86], herd: 1.3, guard: 0.75, track: 0.75, spd: 1.05, sta: 1.2, obey: 1.15, p: 1, temp: ['trabalhador', 'dócil'], d: 'Pastor do pampa, de pelo médio e rabo cheio. Incansável na lida com ovelha e gado.' },
+  campeiro: { n: 'Buldogue Campeiro', o: 'BR', sz: 'M', c: '#f0ece4', s: '#8a5a30', l: '#ffffff', gen: [50, 85], herd: 1.0, guard: 1.15, track: 0.6, spd: 0.92, sta: 0.85, obey: 0.95, p: 1.1, temp: ['protetor', 'trabalhador'], d: 'Cão de pega do Sul, forte e baixo. Segura boi bravo pela orelha e guarda o curral.' },
+  veadeiro: { n: 'Veadeiro Pampeano', o: 'BR', sz: 'M', c: '#f0ece4', s: '#2a2420', l: '#ffffff', gen: [48, 84], herd: 0.75, guard: 0.7, track: 1.25, spd: 1.15, sta: 1.1, obey: 0.95, p: 0.9, temp: ['farejador', 'agitado'], d: 'Corredor leve do pampa e do cerrado, de faro bom. Acha rastro e corre muito.' },
+  dogue: { n: 'Dogue Brasileiro', o: 'BR', sz: 'G', c: '#c08a48', s: '#8a5a28', l: '#d8a868', gen: [50, 85], herd: 0.7, guard: 1.25, track: 0.7, spd: 0.95, sta: 0.95, obey: 1.05, big: 1, p: 1.2, temp: ['protetor', 'dócil'], d: 'Cruzamento brasileiro de Bull Terrier com Boxer: guarda firme e muito ligado à família.' },
+  sertanejo: { n: 'Cão Sertanejo', o: 'BR', sz: 'M', c: '#c89048', s: '#8a5a28', l: '#f0d8a8', gen: [45, 84], herd: 1.05, guard: 0.9, track: 1.05, spd: 1.05, sta: 1.3, obey: 1, p: 0.7, temp: ['trabalhador', 'esperto'], d: 'O cão da caatinga: magro, rústico e resistente ao calor. Ajuda o vaqueiro a campear no mato fechado.' },
+  // estrangeiras
+  collie: { n: 'Border Collie', o: 'EX', sz: 'M', c: '#1e1c1a', s: '#0c0b0a', l: '#f2f0ea', gen: [55, 92], herd: 1.45, guard: 0.6, track: 0.75, spd: 1.1, sta: 1.15, obey: 1.35, p: 1.6, temp: ['trabalhador', 'esperto'], d: 'Escócia/Inglaterra. O pastor mais inteligente do mundo: entende comando no assobio e no olhar.' },
+  boiadeiro: { n: 'Boiadeiro Australiano (Blue Heeler)', o: 'EX', sz: 'M', c: '#6a7a8a', s: '#3e4a56', l: '#c88a50', gen: [55, 90], herd: 1.4, guard: 0.95, track: 0.75, spd: 1.05, sta: 1.25, obey: 1.1, p: 1.4, temp: ['trabalhador', 'atento'], d: 'Austrália. Toca o gado beliscando o calcanhar; duro, teimoso e incansável.' },
+  pastorAlemao: { n: 'Pastor Alemão', o: 'EX', sz: 'G', c: '#b8823e', s: '#2a2420', l: '#d8a868', gen: [55, 90], herd: 1.05, guard: 1.3, track: 1.15, spd: 1.05, sta: 1.05, obey: 1.3, big: 1, p: 1.6, temp: ['protetor', 'trabalhador'], d: 'Alemanha. Guarda, farejador e pastor ao mesmo tempo. Muito obediente.' },
+  pastorAustraliano: { n: 'Pastor Australiano', o: 'EX', sz: 'M', c: '#8a96a6', s: '#2a2e36', l: '#f2f0ea', gen: [55, 90], herd: 1.35, guard: 0.7, track: 0.8, spd: 1.05, sta: 1.15, obey: 1.25, p: 1.5, temp: ['trabalhador', 'amigo'], d: 'Estados Unidos (apesar do nome). Pastor de pelagem merle, cheio de energia.' },
+  kelpie: { n: 'Kelpie Australiano', o: 'EX', sz: 'M', c: '#2a2420', s: '#1a1614', l: '#b8702e', gen: [55, 90], herd: 1.4, guard: 0.65, track: 0.8, spd: 1.15, sta: 1.35, obey: 1.15, p: 1.3, temp: ['trabalhador', 'agitado'], d: 'Austrália. Trabalha no calor o dia todo; corre por cima do lombo das ovelhas.' },
+  malinois: { n: 'Pastor Belga Malinois', o: 'EX', sz: 'G', c: '#c08a48', s: '#8a5a28', l: '#d8a868', gen: [58, 92], herd: 0.95, guard: 1.35, track: 1.2, spd: 1.15, sta: 1.15, obey: 1.3, p: 1.8, temp: ['atento', 'agitado'], d: 'Bélgica. Cão de polícia: rápido, valente e muito treinável. Precisa de serviço.' },
+  labrador: { n: 'Labrador Retriever', o: 'EX', sz: 'G', c: '#e0c080', s: '#c0a060', l: '#f0dca8', gen: [52, 88], herd: 0.6, guard: 0.5, track: 1.15, spd: 1, sta: 1, obey: 1.3, p: 1.2, temp: ['amigo', 'dócil'], d: 'Canadá/Inglaterra. Amigo de todo mundo, ótimo nadador e farejador. Péssimo vigia.' },
+  golden: { n: 'Golden Retriever', o: 'EX', sz: 'G', c: '#d8a050', s: '#b07a30', l: '#f0c880', gen: [52, 88], herd: 0.6, guard: 0.45, track: 1.1, spd: 0.98, sta: 1, obey: 1.3, p: 1.3, temp: ['amigo', 'dócil'], d: 'Escócia. Carinhoso e paciente. Busca qualquer coisa que você jogar.' },
+  rottweiler: { n: 'Rottweiler', o: 'EX', sz: 'G', c: '#1e1a18', s: '#0e0c0b', l: '#a0582a', gen: [52, 88], herd: 0.95, guard: 1.4, track: 0.8, spd: 0.95, sta: 0.95, obey: 1.1, big: 1, p: 1.4, temp: ['protetor', 'desconfiado'], d: 'Alemanha. Antigo cão de boiadeiro e açougueiro: forte, guarda e toca gado pesado.' },
+  dobermann: { n: 'Dobermann', o: 'EX', sz: 'G', c: '#1e1a18', s: '#0e0c0b', l: '#a0582a', gen: [52, 88], herd: 0.6, guard: 1.35, track: 0.95, spd: 1.15, sta: 1, obey: 1.2, p: 1.4, temp: ['protetor', 'atento'], d: 'Alemanha. Vigia elegante e muito rápido.' },
+  pitbull: { n: 'Pit Bull', o: 'EX', sz: 'M', c: '#7a8088', s: '#4a5058', l: '#f0ece4', gen: [48, 86], herd: 0.75, guard: 1.05, track: 0.7, spd: 1, sta: 1, obey: 1, p: 0.9, temp: ['amigo', 'protetor'], d: 'Estados Unidos. Musculoso e brincalhão com a família. Segura boi na pega.' },
+  beagle: { n: 'Beagle', o: 'EX', sz: 'P', c: '#f0ebe0', s: '#2a2420', l: '#b8743a', gen: [48, 86], herd: 0.45, guard: 0.55, track: 1.4, spd: 0.95, sta: 1.1, obey: 0.8, p: 1, temp: ['farejador', 'amigo'], d: 'Inglaterra. Faro de primeira; quando pega um rastro, esquece do mundo.' },
+  dachshund: { n: 'Dachshund (Salsicha)', o: 'EX', sz: 'P', c: '#a0582a', s: '#6a3418', l: '#c87840', gen: [45, 84], herd: 0.3, guard: 0.8, track: 1.2, spd: 0.75, sta: 0.85, obey: 0.85, p: 0.9, temp: ['desconfiado', 'farejador'], d: 'Alemanha. Feito para entrar em toca de tatu e raposa. Late alto para o tamanho.' },
+  pinscher: { n: 'Pinscher Miniatura', o: 'EX', sz: 'P', c: '#1e1a18', s: '#0e0c0b', l: '#a0582a', gen: [42, 82], herd: 0.25, guard: 0.95, track: 0.7, spd: 1.05, sta: 0.8, obey: 0.85, p: 0.6, temp: ['agitado', 'desconfiado'], d: 'Alemanha. Pequeno no tamanho, gigante no latido: avisa quando qualquer um chega.' },
+  husky: { n: 'Husky Siberiano', o: 'EX', sz: 'M', c: '#8a8a90', s: '#2a2a30', l: '#f2f0ea', gen: [52, 88], herd: 0.55, guard: 0.45, track: 0.9, spd: 1.1, sta: 1.4, obey: 0.75, p: 1.5, temp: ['agitado', 'amigo'], d: 'Sibéria. Puxador de trenó de olhos claros; sofre no calor do sertão e foge quando pode.' },
+  dogoArgentino: { n: 'Dogo Argentino', o: 'EX', sz: 'G', c: '#f4f2ee', s: '#d8d2c8', l: '#ffffff', gen: [52, 88], herd: 0.85, guard: 1.3, track: 1.05, spd: 1.05, sta: 1.05, obey: 1.05, big: 1, p: 1.5, temp: ['protetor', 'trabalhador'], d: 'Argentina. Todo branco, criado para caçar javali e enfrentar onça.' },
+  cimarron: { n: 'Cimarrón Uruguaio', o: 'EX', sz: 'G', c: '#8a5a30', s: '#4a2c14', l: '#c08a48', gen: [50, 86], herd: 1.05, guard: 1.2, track: 0.85, spd: 1.05, sta: 1.15, obey: 1.05, p: 1.2, temp: ['protetor', 'trabalhador'], d: 'Uruguai. Cão de campo dos gaúchos de lá: pega gado xucro e guarda a estância.' },
+  catahoula: { n: 'Catahoula Leopard', o: 'EX', sz: 'G', c: '#8a96a6', s: '#2a2e36', l: '#c8823a', gen: [50, 86], herd: 1.2, guard: 0.9, track: 1.1, spd: 1.05, sta: 1.2, obey: 1, p: 1.3, temp: ['trabalhador', 'farejador'], d: 'Estados Unidos (Louisiana). Cão de vaqueiro do pântano, de pelagem leopardo e olhos de vidro.' },
+  jackRussell: { n: 'Jack Russell Terrier', o: 'EX', sz: 'P', c: '#f2eee6', s: '#b8743a', l: '#ffffff', gen: [48, 86], herd: 0.5, guard: 0.85, track: 1.1, spd: 1.15, sta: 1.15, obey: 0.85, p: 1, temp: ['agitado', 'esperto'], d: 'Inglaterra. Caçador de toca elétrico, nunca cansa.' },
+  pointer: { n: 'Pointer Inglês', o: 'EX', sz: 'G', c: '#f0ece4', s: '#6a3418', l: '#ffffff', gen: [50, 86], herd: 0.5, guard: 0.5, track: 1.35, spd: 1.15, sta: 1.15, obey: 1.15, p: 1.2, temp: ['farejador', 'dócil'], d: 'Inglaterra. Para e aponta a caça com o corpo todo. Faro fino e muito rápido.' }
 };
+const DOG_BR = Object.keys(DOGS).filter(k => !DOGS[k].old && DOGS[k].o === 'BR'), DOG_EX = Object.keys(DOGS).filter(k => !DOGS[k].old && DOGS[k].o === 'EX');
+const DOG_SZ = { P: 'Pequeno', M: 'Médio', G: 'Grande' };
+const DOG_AGES = [['Filhote', 6], ['Jovem', 14], ['Adulto', 32], ['Maduro', 62], ['Veterano', 100]]; // dias de jogo (14 dias = 1 ano de cão)
+const DOG_PORTE = [['Menor que o padrão', 0.9], ['Padrão da raça', 1], ['Maior que o padrão', 1.1]];
+const COLLARS = [['#8a4a1e', 'Couro marrom'], ['#2a1a10', 'Couro preto'], ['#b02020', 'Vermelha'], ['#2a5aa0', 'Azul'], ['#2a8a4a', 'Verde'], ['#e0b020', 'Amarela'], ['#e05a9a', 'Rosa'], ['#f0f0f0', 'Branca'], ['#e07020', 'Laranja']];
+const COLLAR_T = [['couro', 'Coleira simples'], ['tacha', 'Couro com tachas'], ['sino', 'Com sininho'], ['placa', 'Com plaquinha de nome'], ['nada', 'Sem coleira']];
+const BANDANAS = [['', 'Sem lenço'], ['#b02020', 'Lenço vermelho'], ['#2a5aa0', 'Lenço azul'], ['#e0b020', 'Lenço amarelo'], ['#2a8a4a', 'Lenço verde'], ['#f0f0f0', 'Lenço branco'], ['#1e1a18', 'Lenço preto'], ['#e05a9a', 'Lenço rosa'], ['chita', 'Lenço de chita']];
+const DOG_ESP = { boiadeiro: ['Boiadeiro', 'Tocar e juntar o gado', 'cow'], guarda: ['Guarda', 'Vigiar a fazenda e espantar bicho e estranho', 'gate'], rastreador: ['Rastreador', 'Farejar boi fujão e rastro no mato', 'eye'], companheiro: ['Companheiro', 'Ficar colado em você, aprender rápido e animar a lida', 'heart'] };
+const DOG_TRAITS = ['docil', 'curioso', 'preguicoso', 'agitado', 'corajoso', 'territorial', 'sociavel', 'independente', 'obediente', 'teimoso'];
 const GOATS = {
   moxoto: { n: 'Moxotó', c: '#ece2c8', s: '#c8bca0', l: '#fff8e8', gen: [45, 80], milk: 0.6, meat: 1, rust: 1.2, d: 'Raça nativa do Nordeste, pelagem clara com listras escuras; muito rústica.' },
   caninde: { n: 'Canindé', c: '#25211f', s: '#151211', l: '#4a423d', gen: [45, 80], milk: 0.8, meat: 0.9, rust: 1.15, d: 'Raça nativa do Nordeste, pelagem preta com faces claras.' },
@@ -758,7 +791,7 @@ const SKILLS = {
 const NAMES = {
   F: ['Mimosa', 'Estrela', 'Malhada', 'Pintada', 'Fumaça', 'Boneca', 'Faceira', 'Bonita', 'Jabuticaba', 'Princesa', 'Serena', 'Graúna', 'Rosinha', 'Cigana', 'Formosa', 'Pérola', 'Açucena', 'Baronesa', 'Chuvisco', 'Lua', 'Brisa', 'Moreninha', 'Flor', 'Jurema'],
   M: ['Sultão', 'Brutus', 'Valente', 'Pé-de-Pano', 'Bandido', 'Moreno', 'Faísca', 'Trovão', 'Barão', 'Tufão', 'Cacique', 'Lampião', 'Corisco', 'Zabumba', 'Xaxado', 'Matuto', 'Rojão', 'Caboclo', 'Gavião', 'Ventania', 'Bonito', 'Pajeú', 'Soberano', 'Mandacaru'],
-  cao: ['Caramelo', 'Baleia', 'Rex', 'Pipoca', 'Tupã', 'Paçoca', 'Bolinha', 'Faro', 'Valente', 'Pretinha', 'Lobo', 'Pingo'],
+  cao: ['Caramelo', 'Baleia', 'Rex', 'Pipoca', 'Tupã', 'Paçoca', 'Bolinha', 'Faro', 'Valente', 'Pretinha', 'Lobo', 'Pingo', 'Fumaça', 'Trovão', 'Mel', 'Tigre', 'Sansão', 'Jagunço', 'Pitoco', 'Jabuti', 'Rapadura', 'Cuscuz', 'Pandora', 'Cacau', 'Chumbinho', 'Xodó', 'Brisa', 'Sertão'],
   galinha: ['Cocota', 'Pintadinha', 'Zezé', 'Carijó', 'Penosa', 'Dona Chica', 'Quitéria', 'Galega', 'Fofinha', 'Clotilde'],
   galo: ['Garnisé', 'Carijó', 'Cantador', 'Coronel', 'Brigão', 'Despertador'],
   cabra: ['Branquinha', 'Mocinha', 'Cabocla', 'Faceira', 'Cheirosa', 'Lili', 'Rapadura', 'Pipoca', 'Zabelê', 'Chiquinha', 'Graúna', 'Totonha'],
@@ -787,7 +820,7 @@ const IT = {
   racao: { i: '🌽', n: 'Ração (saco 25kg)', kg: 25, p: 45, d: 'Engorda o gado no cocho. Pode ir para o depósito.', c: 'trato' },
   milho: { i: '🌾', n: 'Milho (saco 20kg)', kg: 20, p: 38, d: 'Trato de aves e equinos.', c: 'trato' },
   sal: { i: '🧂', n: 'Sal Mineral (10kg)', kg: 10, p: 38, d: 'No cocho: +saúde e +felicidade do gado por 3 dias.', c: 'trato' },
-  racaoCao: { i: '🦴', n: 'Ração de cão (10kg)', kg: 10, p: 85, d: 'Alimento para os cães da fazenda.', c: 'trato' },
+  racaoCao: { i: '🦴', n: 'Ração de cão (10kg)', kg: 10, p: 85, d: 'Alimento para os cães da fazenda. Guarde no depósito: toda manhã cada cão come sozinho (pequeno 250 g, médio 400 g, grande 600 g).', c: 'trato' },
   galao: { i: '💧', n: 'Galão cheio (20L)', kg: 20, p: 12, d: 'Abastece cochos d’água ou mata a sede.', c: 'trato' },
   galaoV: { i: '🫙', n: 'Galão vazio', kg: 1, p: 8, d: 'Encha no reservatório da fazenda.', c: 'trato' },
   lenha: { i: '🪵', n: 'Feixe de lenha', kg: 8, p: 15, d: 'Para fogueira e churrasqueira.', c: 'trato' },
@@ -2879,6 +2912,85 @@ const RIG = (() => {
     rastreadorAzul: { n: 'Azul mosqueado', b: '#8a96a6', m: '#2a2e36', mz: '#c8b8a0', pat: 'ticked', patC: '#3a4250', tan: '#b8743a' },
     mantiqueira: { n: 'Preto e castanho', b: '#2a2420', m: '#1a1614', mz: '#a8642c', pat: 'blacktan', patC: '#b8702e' },
     mantiqueiraFulvo: { n: 'Fulvo', b: '#b8823e', m: '#8a5a24', mz: '#2a2420' },
+    mantiqueiraCinza: { n: 'Cinza lobeiro', b: '#7a7470', m: '#3a3634', mz: '#2a2420', pat: 'grizzle', patC: '#3a3634', belly: '#a8a098' },
+    // vira-latas
+    vlPreto: { n: 'Preto', b: '#25211f', m: '#141110', mz: '#2a2420' },
+    vlPretoBranco: { n: 'Preto de peito branco', b: '#25211f', m: '#141110', mz: '#2a2420', belly: '#f0ece4', tip: '#f0ece4' },
+    vlMalhado: { n: 'Malhado (branco e preto)', b: '#f0ece4', m: '#1e1a18', mz: '#e0d8cc', pat: 'malhado', patC: '#1e1a18', tail: '#1e1a18' },
+    vlMalhadoCar: { n: 'Malhado caramelo', b: '#f0ece4', m: '#b8702e', mz: '#e8d4b8', pat: 'malhado', patC: '#c07a34', tail: '#c07a34' },
+    vlTigrado: { n: 'Rajado (tigrado)', b: '#8a5a30', m: '#4a2c14', mz: '#2a1e16', pat: 'brindle', patC: '#2a1a10' },
+    vlBranco: { n: 'Branco', b: '#f0ece4', m: '#d8d0c4', mz: '#e8dcc8' },
+    vlCinza: { n: 'Cinza', b: '#8a8580', m: '#4a4642', mz: '#5a5450', belly: '#b8b2aa' },
+    vlChocolate: { n: 'Chocolate', b: '#6a3e22', m: '#3e2212', mz: '#8a5a38' },
+    // ovelheiro, campeiro, veadeiro, dogue, sertanejo
+    ovelPB: { n: 'Preto e branco', b: '#2a2420', m: '#141110', mz: '#f0ece4', belly: '#efe8dc', leg: '#efe8dc', tip: '#efe8dc' },
+    ovelMerle: { n: 'Merle (mosqueado azul)', b: '#8a96a6', m: '#2a2e36', mz: '#f0ece4', pat: 'merle', patC: '#25282e', belly: '#efe8dc', tip: '#efe8dc' },
+    ovelVermelho: { n: 'Vermelho e branco', b: '#9a4a22', m: '#5a2a12', mz: '#f0ece4', belly: '#efe8dc', leg: '#efe8dc', tip: '#efe8dc' },
+    campBranco: { n: 'Branco com manchas tigradas', b: '#f0ece4', m: '#6a4426', mz: '#3a2a20', pat: 'malhado', patC: '#7a4a24' },
+    campTigrado: { n: 'Tigrado', b: '#8a5a30', m: '#4a2c14', mz: '#1e1612', pat: 'brindle', patC: '#2a1a10', mask: 1 },
+    campFulvo: { n: 'Fulvo de máscara', b: '#c8904a', m: '#8a5a28', mz: '#1e1612', mask: 1, belly: '#f0e0c8' },
+    veadPB: { n: 'Branco e preto', b: '#f0ece4', m: '#1e1a18', mz: '#e0d8cc', pat: 'malhado', patC: '#1e1a18' },
+    veadCar: { n: 'Branco e canela', b: '#f0ece4', m: '#b8702e', mz: '#e8d4b8', pat: 'malhado', patC: '#b8702e' },
+    veadTri: { n: 'Tricolor', b: '#f0ebe0', m: '#2a2420', mz: '#e8dcc8', pat: 'hound', patC: '#2a2420', tan: '#b8743a' },
+    dogueFulvo: { n: 'Fulvo de máscara negra', b: '#c08a48', m: '#8a5a28', mz: '#1e1612', mask: 1, belly: '#f0dcc0' },
+    dogueTigrado: { n: 'Tigrado', b: '#8a5a30', m: '#4a2c14', mz: '#1e1612', pat: 'brindle', patC: '#2a1a10', mask: 1, belly: '#f0dcc0' },
+    dogueBranco: { n: 'Branco com manchas', b: '#f0ece4', m: '#8a5a28', mz: '#2a1e16', pat: 'malhado', patC: '#a8743c' },
+    sertCaramelo: { n: 'Caramelo', b: '#c89048', m: '#8a5a28', mz: '#e8c890', belly: '#f0d8a8' },
+    sertPreto: { n: 'Preto de focinho cinza', b: '#2a2420', m: '#141110', mz: '#8a8278' },
+    sertMalhado: { n: 'Malhado', b: '#f0ece4', m: '#8a5a28', mz: '#e0c8a8', pat: 'malhado', patC: '#9a6230' },
+    sertCinza: { n: 'Cinza rajado', b: '#8a8070', m: '#2a2622', mz: '#5a524a', pat: 'grizzle', patC: '#4a443e' },
+    // pastores e boiadeiros estrangeiros
+    colliePB: { n: 'Preto e branco', b: '#1e1c1a', m: '#0c0b0a', mz: '#f2f0ea', belly: '#f2f0ea', leg: '#f2f0ea', tip: '#f2f0ea' },
+    collieVB: { n: 'Vermelho e branco', b: '#8a4a26', m: '#5a2a14', mz: '#f2f0ea', belly: '#f2f0ea', leg: '#f2f0ea', tip: '#f2f0ea' },
+    collieMerle: { n: 'Merle azul', b: '#8a96a6', m: '#2a2e36', mz: '#f2f0ea', pat: 'merle', patC: '#1e2026', belly: '#f2f0ea', leg: '#f2f0ea', tip: '#f2f0ea' },
+    heelerAzul: { n: 'Azul mosqueado', b: '#6a7a8a', m: '#2a3038', mz: '#1e2228', pat: 'ticked', patC: '#2e3640', leg: '#b87a44', tip: '#e8e8ec' },
+    heelerVerm: { n: 'Vermelho mosqueado', b: '#a85a34', m: '#6a2e16', mz: '#5a2a14', pat: 'ticked', patC: '#e8c8b0', leg: '#c88a5a' },
+    paCapa: { n: 'Capa preta e castanho', b: '#b8823e', m: '#2a2420', mz: '#1e1a18', pat: 'saddle', patC: '#221e1c', tail: '#2a2420' },
+    paPreto: { n: 'Preto', b: '#1e1a18', m: '#0e0c0b', mz: '#1e1a18' },
+    paCinza: { n: 'Cinza lobeiro', b: '#8a7a64', m: '#2a2420', mz: '#1e1a18', pat: 'grizzle', patC: '#3a3430', tail: '#3a3430' },
+    paBranco: { n: 'Branco', b: '#f2eee6', m: '#d8d0c4', mz: '#e8e0d4' },
+    aussieMerle: { n: 'Merle azul', b: '#8a96a6', m: '#2a2e36', mz: '#f2f0ea', pat: 'merle', patC: '#1e2026', belly: '#f2f0ea', leg: '#c8823a' },
+    aussieVerm: { n: 'Merle vermelho', b: '#c89878', m: '#7a3e1e', mz: '#f2f0ea', pat: 'merle', patC: '#8a3e1e', belly: '#f2f0ea', leg: '#e8c8a8' },
+    aussieTri: { n: 'Tricolor preto', b: '#1e1c1a', m: '#0c0b0a', mz: '#f2f0ea', belly: '#f2f0ea', leg: '#c8823a' },
+    kelpiePC: { n: 'Preto e castanho', b: '#2a2420', m: '#1a1614', mz: '#a8642c', pat: 'blacktan', patC: '#b8702e' },
+    kelpieVerm: { n: 'Vermelho', b: '#9a4a22', m: '#5a2a12', mz: '#7a3a1a' },
+    kelpieChoc: { n: 'Chocolate', b: '#5a3420', m: '#3a2012', mz: '#7a4a2a' },
+    malFulvo: { n: 'Fulvo de máscara negra', b: '#c08a48', m: '#8a5a28', mz: '#1e1612', mask: 1, tip: '#2a1e16' },
+    malCarvao: { n: 'Fulvo carvão', b: '#a8743c', m: '#4a2c14', mz: '#1e1612', mask: 1, pat: 'grizzle', patC: '#3a2414', tip: '#1e1612' },
+    // retrievers e guardas
+    labAmarelo: { n: 'Amarelo', b: '#e0c080', m: '#c0a060', mz: '#d8b878' },
+    labPreto: { n: 'Preto', b: '#1e1a18', m: '#0e0c0b', mz: '#1e1a18' },
+    labChoc: { n: 'Chocolate', b: '#5a3420', m: '#3a2012', mz: '#6a4028' },
+    goldenD: { n: 'Dourado', b: '#d8a050', m: '#b07a30', mz: '#d8a050', belly: '#f0c880' },
+    goldenC: { n: 'Creme', b: '#f0d8a8', m: '#d8b880', mz: '#f0d8a8', belly: '#f8ead0' },
+    goldenV: { n: 'Dourado escuro', b: '#b8702e', m: '#8a4a1e', mz: '#b8702e', belly: '#d89a58' },
+    rottPC: { n: 'Preto e castanho', b: '#1e1a18', m: '#0e0c0b', mz: '#a0582a', pat: 'blacktan', patC: '#a0582a' },
+    dobPC: { n: 'Preto e ferrugem', b: '#1e1a18', m: '#0e0c0b', mz: '#a0582a', pat: 'blacktan', patC: '#a0582a' },
+    dobMarrom: { n: 'Marrom e ferrugem', b: '#5a3420', m: '#3a2012', mz: '#b8703a', pat: 'blacktan', patC: '#b8703a' },
+    pitAzul: { n: 'Azul (blue nose)', b: '#7a8088', m: '#4a5058', mz: '#5a6068', belly: '#f0ece4' },
+    pitCaramelo: { n: 'Caramelo (red nose)', b: '#c07a40', m: '#8a4a20', mz: '#d89a68', belly: '#f0dcc0' },
+    pitTigrado: { n: 'Tigrado', b: '#8a5a30', m: '#4a2c14', mz: '#3a2418', pat: 'brindle', patC: '#2a1a10', belly: '#f0ece4' },
+    pitBranco: { n: 'Branco malhado', b: '#f0ece4', m: '#6a4426', mz: '#e0c8b8', pat: 'malhado', patC: '#7a4a2a' },
+    // caça e companhia
+    beagleTri: { n: 'Tricolor', b: '#f0ebe0', m: '#2a2420', mz: '#f0ebe0', pat: 'hound', patC: '#2a2420', tan: '#b8743a', tip: '#f8f4ec' },
+    beagleLimao: { n: 'Limão e branco', b: '#f0ebe0', m: '#d8b070', mz: '#f0ebe0', pat: 'hound', patC: '#e0b870', tan: '#e0b870', tip: '#f8f4ec' },
+    daschVerm: { n: 'Vermelho', b: '#a0582a', m: '#6a3418', mz: '#8a4a22' },
+    daschPC: { n: 'Preto e castanho', b: '#1e1a18', m: '#0e0c0b', mz: '#a0582a', pat: 'blacktan', patC: '#a0582a' },
+    daschArl: { n: 'Arlequim (merle)', b: '#8a8a90', m: '#2a2a30', mz: '#a0582a', pat: 'merle', patC: '#1e1e22' },
+    pinscherPC: { n: 'Preto e ferrugem', b: '#1e1a18', m: '#0e0c0b', mz: '#a0582a', pat: 'blacktan', patC: '#a0582a' },
+    pinscherVerm: { n: 'Vermelho', b: '#a8502a', m: '#6a2e16', mz: '#8a4220' },
+    huskyCinza: { n: 'Cinza e branco', b: '#f2f0ea', m: '#4a4a50', mz: '#f2f0ea', pat: 'saddle', patC: '#5a5a62', tail: '#5a5a62' },
+    huskyPreto: { n: 'Preto e branco', b: '#f2f0ea', m: '#1e1c1a', mz: '#f2f0ea', pat: 'saddle', patC: '#25221f', tail: '#25221f' },
+    huskyVerm: { n: 'Cobre e branco', b: '#f2f0ea', m: '#8a4a26', mz: '#f2f0ea', pat: 'saddle', patC: '#a8582c', tail: '#a8582c' },
+    dogoBranco: { n: 'Branco', b: '#f4f2ee', m: '#d8d2c8', mz: '#e8d8d0' },
+    cimTigrado: { n: 'Tigrado', b: '#8a5a30', m: '#4a2c14', mz: '#1e1612', pat: 'brindle', patC: '#2a1a10', mask: 1 },
+    cimFulvo: { n: 'Fulvo', b: '#c08a48', m: '#8a5a28', mz: '#1e1612', mask: 1 },
+    cataMerle: { n: 'Leopardo azul', b: '#8a96a6', m: '#2a2e36', mz: '#c8823a', pat: 'merle', patC: '#1e2026', leg: '#c8823a' },
+    cataVerm: { n: 'Leopardo vermelho', b: '#c89878', m: '#7a3e1e', mz: '#c8823a', pat: 'merle', patC: '#7a3018' },
+    jrBranco: { n: 'Branco e castanho', b: '#f2eee6', m: '#b8743a', mz: '#e8dcc8', pat: 'terrier', patC: '#b8743a', tan: '#f2eee6' },
+    jrTri: { n: 'Tricolor', b: '#f2eee6', m: '#1e1a18', mz: '#e8dcc8', pat: 'terrier', patC: '#1e1a18', tan: '#c8823a' },
+    pointerFig: { n: 'Branco e fígado', b: '#f0ece4', m: '#6a3418', mz: '#e0c8b8', pat: 'malhado', patC: '#6a3418' },
+    pointerPreto: { n: 'Branco e preto', b: '#f0ece4', m: '#1e1a18', mz: '#e0d8cc', pat: 'malhado', patC: '#1e1a18' },
     // fauna
     veado: { n: '', b: '#8a6846', m: '#5a4430', mz: '#2a2420', belly: '#d8c4a4' },
     raposa: { n: '', b: '#8a8070', m: '#2a2622', mz: '#2a2622', belly: '#c8bca8', leg: '#3a3430', pat: 'grizzle', patC: '#5a524a' },
@@ -2987,12 +3099,33 @@ const RIG = (() => {
     fila: { t: 'canino', H: 17, L: 18.5, D: 8.6, legT: 1, neckL: 4.6, neckW: 3, headL: 6.4, jowl: 3, muzzle: 2, snout: 2.6, earT: 'drop', ear: 3.6, earW: 1.6, tailT: 'saber', tailL: 8.5, tailW: 1.4, jowls: 1, coats: ['filaFulvo', 'filaTigrado', 'filaPreto'] },
     terrier: { t: 'canino', H: 9.5, L: 10.5, D: 4.8, legT: 0.6, neckL: 3.4, neckW: 1.6, headL: 4.6, jowl: 1.7, muzzle: 1, snout: 2, earT: 'fold', ear: 2, earW: 1, tailT: 'up', tailL: 3.5, tailW: 0.8, coats: ['terrier', 'terrierAzul'] },
     rastreador: { t: 'canino', H: 14.5, L: 16, D: 6.8, legT: 0.78, neckL: 4.6, headL: 6.2, jowl: 2.1, muzzle: 1.3, snout: 3, earT: 'drop', ear: 4.8, earW: 1.4, tailT: 'saber', tailL: 8, coats: ['rastreador', 'rastreadorAzul'] },
-    caramelo: { t: 'canino', H: 12.5, L: 14, D: 6.2, earT: 'semi', ear: 2.8, tailT: 'curl', tailL: 6, coats: ['caramelo'] },
-    mantiqueira: { t: 'canino', H: 13.5, L: 14.6, D: 6.6, earT: 'erect', ear: 3.2, snout: 2.8, muzzle: 1.05, tailT: 'bushy', tailL: 8, tailW: 1.5, rough: 1, coats: ['mantiqueira', 'mantiqueiraFulvo'] },
-    // cães antigos (saves) — mantidos com anatomia própria
-    collie: { t: 'canino', H: 12, L: 14, D: 6, earT: 'semi', ear: 2.6, tailT: 'bushy', tailL: 8, tailW: 1.5, rough: 1, coats: ['mantiqueira'] },
-    boiadeiro: { t: 'canino', H: 12.5, L: 13.5, D: 6.4, earT: 'erect', ear: 3, tailT: 'saber', tailL: 7, coats: ['rastreadorAzul'] },
-    ovelheiro: { t: 'canino', H: 13, L: 14.5, D: 6.4, earT: 'semi', ear: 2.8, tailT: 'bushy', tailL: 8, tailW: 1.5, rough: 1, coats: ['terrier'] },
+    caramelo: { t: 'canino', H: 12.5, L: 14, D: 6.2, earT: 'semi', ear: 2.8, tailT: 'curl', tailL: 6, coats: ['caramelo', 'vlPreto', 'vlPretoBranco', 'vlMalhado', 'vlMalhadoCar', 'vlTigrado', 'vlBranco', 'vlCinza', 'vlChocolate'] },
+    mantiqueira: { t: 'canino', H: 13.5, L: 14.6, D: 6.6, earT: 'erect', ear: 3.2, snout: 2.8, muzzle: 1.05, tailT: 'bushy', tailL: 8, tailW: 1.5, rough: 1, coats: ['mantiqueira', 'mantiqueiraFulvo', 'mantiqueiraCinza'] },
+    ovelheiro: { t: 'canino', H: 13, L: 14.5, D: 6.4, earT: 'semi', ear: 2.8, tailT: 'bushy', tailL: 8, tailW: 1.5, rough: 1, coats: ['ovelPB', 'ovelMerle', 'ovelVermelho'] },
+    campeiro: { t: 'canino', H: 12.5, L: 14.5, D: 7.6, legT: 0.9, neckL: 3.8, neckW: 2.9, headL: 5.2, jowl: 2.9, muzzle: 1.8, snout: 1.5, earT: 'fold', ear: 2.2, earW: 1.1, tailT: 'saber', tailL: 5, tailW: 1.2, chest: 1.2, jowls: 1, coats: ['campBranco', 'campTigrado', 'campFulvo'] },
+    veadeiro: { t: 'canino', H: 12, L: 13.6, D: 5.6, legT: 0.75, neckL: 4.4, headL: 5.4, jowl: 1.9, muzzle: 1, snout: 2.7, earT: 'erect', ear: 3.2, tailT: 'saber', tailL: 6.5, tailW: 0.9, coats: ['veadPB', 'veadCar', 'veadTri'] },
+    dogue: { t: 'canino', H: 15.5, L: 16.8, D: 8, legT: 0.95, neckL: 4.4, neckW: 2.8, headL: 5.8, jowl: 2.8, muzzle: 1.7, snout: 1.9, earT: 'drop', ear: 2.8, earW: 1.4, tailT: 'saber', tailL: 7, tailW: 1.2, chest: 1.15, coats: ['dogueFulvo', 'dogueTigrado', 'dogueBranco'] },
+    sertanejo: { t: 'canino', H: 13, L: 14.4, D: 5.8, legT: 0.8, neckL: 4.6, headL: 5.6, jowl: 2, muzzle: 1.05, snout: 2.8, earT: 'erect', ear: 3, tailT: 'saber', tailL: 7.5, tailW: 0.9, tuck: 0.55, coats: ['sertCaramelo', 'sertPreto', 'sertMalhado', 'sertCinza'] },
+    collie: { t: 'canino', H: 12.5, L: 14.5, D: 6.2, earT: 'semi', ear: 2.6, snout: 2.6, tailT: 'bushy', tailL: 8.5, tailW: 1.5, rough: 1, coats: ['colliePB', 'collieVB', 'collieMerle'] },
+    boiadeiro: { t: 'canino', H: 12.5, L: 13.5, D: 6.6, legT: 0.8, neckW: 2.4, headL: 5.4, jowl: 2.4, muzzle: 1.3, snout: 2.4, earT: 'erect', ear: 3, earW: 1.3, tailT: 'brush', tailL: 7, tailW: 1.2, coats: ['heelerAzul', 'heelerVerm'] },
+    pastorAlemao: { t: 'canino', H: 16, L: 18.5, D: 7.6, legT: 0.95, neckL: 5, neckW: 2.6, headL: 6.4, jowl: 2.4, muzzle: 1.25, snout: 3, earT: 'erect', ear: 3.8, earW: 1.5, tailT: 'bushy', tailL: 9.5, tailW: 1.4, coats: ['paCapa', 'paPreto', 'paCinza', 'paBranco'] },
+    pastorAustraliano: { t: 'canino', H: 13.5, L: 15, D: 6.6, legT: 0.82, earT: 'fold', ear: 2.6, earW: 1.3, snout: 2.5, tailT: 'bushy', tailL: 5, tailW: 1.4, rough: 1, coats: ['aussieMerle', 'aussieVerm', 'aussieTri'] },
+    kelpie: { t: 'canino', H: 12.5, L: 13.8, D: 5.8, legT: 0.8, earT: 'erect', ear: 3.2, snout: 2.6, muzzle: 1.05, tailT: 'brush', tailL: 7.5, tailW: 1.2, coats: ['kelpiePC', 'kelpieVerm', 'kelpieChoc'] },
+    malinois: { t: 'canino', H: 15.5, L: 16.4, D: 6.8, legT: 0.95, neckL: 5, headL: 6.2, jowl: 2.2, muzzle: 1.1, snout: 2.9, earT: 'erect', ear: 3.6, earW: 1.4, tailT: 'saber', tailL: 8.5, tailW: 1.1, coats: ['malFulvo', 'malCarvao'] },
+    labrador: { t: 'canino', H: 14.5, L: 16.5, D: 7.6, legT: 0.85, neckW: 2.6, headL: 5.8, jowl: 2.5, muzzle: 1.5, snout: 2.4, earT: 'drop', ear: 3, earW: 1.4, tailT: 'saber', tailL: 8, tailW: 1.5, chest: 1.1, coats: ['labAmarelo', 'labPreto', 'labChoc'] },
+    golden: { t: 'canino', H: 14.5, L: 16.5, D: 7.4, legT: 0.85, neckW: 2.6, headL: 5.8, jowl: 2.4, muzzle: 1.4, snout: 2.5, earT: 'drop', ear: 3.2, earW: 1.5, tailT: 'bushy', tailL: 9, tailW: 1.5, rough: 1, coats: ['goldenD', 'goldenC', 'goldenV'] },
+    rottweiler: { t: 'canino', H: 16, L: 17.5, D: 8.4, legT: 1, neckL: 4.4, neckW: 3, headL: 6, jowl: 3, muzzle: 1.8, snout: 2, earT: 'drop', ear: 2.6, earW: 1.4, tailT: 'saber', tailL: 7, tailW: 1.4, chest: 1.15, jowls: 1, coats: ['rottPC'] },
+    dobermann: { t: 'canino', H: 17, L: 17, D: 7, legT: 1.05, neckL: 5.6, neckW: 2.4, headL: 6.6, jowl: 2, muzzle: 1.05, snout: 3.2, earT: 'drop', ear: 3, earW: 1.3, tailT: 'saber', tailL: 8, tailW: 0.9, tuck: 0.5, coats: ['dobPC', 'dobMarrom'] },
+    pitbull: { t: 'canino', H: 12.5, L: 14, D: 7.4, legT: 0.85, neckL: 3.8, neckW: 2.8, headL: 5.4, jowl: 2.9, muzzle: 1.8, snout: 1.8, earT: 'semi', ear: 2.4, earW: 1.1, tailT: 'saber', tailL: 6, tailW: 1.1, chest: 1.2, coats: ['pitAzul', 'pitCaramelo', 'pitTigrado', 'pitBranco'] },
+    beagle: { t: 'canino', H: 10.5, L: 12, D: 5.6, legT: 0.68, neckL: 3.6, headL: 5, jowl: 2, muzzle: 1.3, snout: 2.4, earT: 'drop', ear: 4.2, earW: 1.5, tailT: 'up', tailL: 5.5, tailW: 0.9, coats: ['beagleTri', 'beagleLimao'] },
+    dachshund: { t: 'canino', H: 7.2, L: 14, D: 5, legT: 0.42, neckL: 3.6, neckW: 1.9, headL: 5.6, jowl: 1.9, muzzle: 1, snout: 3, earT: 'drop', ear: 3.6, earW: 1.4, tailT: 'saber', tailL: 6, tailW: 0.9, chest: 1.1, tuck: 0.2, coats: ['daschVerm', 'daschPC', 'daschArl'] },
+    pinscher: { t: 'canino', H: 8.5, L: 9, D: 4, legT: 0.6, neckL: 3.6, neckW: 1.4, headL: 4.4, jowl: 1.5, muzzle: 0.85, snout: 1.8, earT: 'erect', ear: 2.6, earW: 1, tailT: 'up', tailL: 4, tailW: 0.7, tuck: 0.5, coats: ['pinscherPC', 'pinscherVerm'] },
+    husky: { t: 'canino', H: 14, L: 15.5, D: 6.8, legT: 0.85, neckW: 2.4, headL: 5.6, jowl: 2.3, muzzle: 1.2, snout: 2.6, earT: 'erect', ear: 3, earW: 1.4, tailT: 'curl', tailL: 8, tailW: 1.6, rough: 1, coats: ['huskyCinza', 'huskyPreto', 'huskyVerm'] },
+    dogoArgentino: { t: 'canino', H: 16, L: 17, D: 7.8, legT: 0.95, neckL: 4.6, neckW: 2.8, headL: 6, jowl: 2.7, muzzle: 1.7, snout: 2.4, earT: 'drop', ear: 2.6, earW: 1.3, tailT: 'saber', tailL: 8, tailW: 1.2, chest: 1.1, coats: ['dogoBranco'] },
+    cimarron: { t: 'canino', H: 15, L: 16.5, D: 7.4, legT: 0.92, neckW: 2.7, headL: 5.8, jowl: 2.6, muzzle: 1.6, snout: 2.4, earT: 'semi', ear: 2.6, tailT: 'saber', tailL: 8, tailW: 1.2, coats: ['cimTigrado', 'cimFulvo'] },
+    catahoula: { t: 'canino', H: 15, L: 16.5, D: 7, legT: 0.92, headL: 5.8, jowl: 2.3, muzzle: 1.3, snout: 2.6, earT: 'drop', ear: 3, earW: 1.3, tailT: 'saber', tailL: 8, tailW: 1, coats: ['cataMerle', 'cataVerm'] },
+    jackRussell: { t: 'canino', H: 8.5, L: 9.8, D: 4.4, legT: 0.6, neckL: 3.2, neckW: 1.5, headL: 4.4, jowl: 1.6, muzzle: 0.95, snout: 1.9, earT: 'fold', ear: 2, earW: 1, tailT: 'up', tailL: 3.8, tailW: 0.8, coats: ['jrBranco', 'jrTri'] },
+    pointer: { t: 'canino', H: 15, L: 16.5, D: 6.6, legT: 0.95, neckL: 5, headL: 6.2, jowl: 2.1, muzzle: 1.25, snout: 3, earT: 'drop', ear: 3.4, earW: 1.3, tailT: 'saber', tailL: 8, tailW: 0.9, tuck: 0.5, coats: ['pointerFig', 'pointerPreto'] },
     // fauna
     veado: { t: 'cervo', horn: 'espeto', hornL: 2.6, coats: ['veado'] },
     raposa: { t: 'canino', H: 9, L: 12, D: 5, legT: 0.55, neckL: 3.6, headL: 5, jowl: 1.8, muzzle: 0.9, snout: 2.8, earT: 'erect', ear: 2.4, tailT: 'brush', tailL: 8, tailW: 1.6, coats: ['raposa'] },
@@ -3091,6 +3224,8 @@ const RIG = (() => {
         case 'ticked': { if (part !== 'ear' && hsh(x, y, seed) < 0.4) return mixU(c, pC, 0.7); if (part === 'ear') return pick(pT); return; }
         case 'blacktan': { if (part === 'leg' && v > -s.H * 0.3) return pick(tn(co.patC)); if (part === 'body' && v > s.D * 0.3) return pick(tn(co.patC)); return; }
         case 'grizzle': { if ((part === 'body' || part === 'neck') && hsh(x, y, seed) < 0.3) return mixU(c, pC, 0.6); return; }
+        case 'saddle': { if (part === 'body' && (view === 'side' ? v < -0.6 : view === 'back' ? v < s.D * 0.2 : false)) return pick(pT); if (part === 'neck' && view !== 'front' && v < -s.H * 0.3) return pick(pT); if (part === 'head' && view === 'back') return pick(pT); if (part === 'ear') return pick(pT); return; }
+        case 'merle': { if (part === 'leg' && co.leg) return; if ((part === 'body' || part === 'neck' || part === 'head' || part === 'ear') && nz(u * 0.42 + seed, v * 0.48, seed + 5) > 0.62) return pick(pT); return; }
       }
     };
   }
@@ -3262,6 +3397,14 @@ const RIG = (() => {
     if (s.dew) { const d0 = lerpP(throat, chestFront, 0.2), d1 = add(chestFront, [-1 * K, 2 * K]); poly([d0, add(lerpP(d0, d1, 0.6), [-0.6 * K, s.dew * K * (hd > 0.5 ? 0.6 : 1.25)]), d1, lerpP(d0, d1, 0.5)]); }
     const neckFn = coatFn(co, s, oxB, oyB, 'side', seed, 'neck');
     paint(bodyT, 1, { sh2: false, fn: (x, y, c, t) => { if (co.bullC && o.sex === 'M' && o.adult) return mixU(c, C(co.bullC), 0.6); return neckFn(x, y, c, t); } });
+    if (can && s.t === 'canino' && (o.col || o.bnd)) { // coleira e lenço do cão
+      const c0 = lerpP(pollTop, withers, 0.3), c1 = lerpP(throat, chestFront, 0.25);
+      if (o.col) { mClear(); limb(c0[0], c0[1], c1[0], c1[1], K > 0.8 ? 2 : 1, K > 0.8 ? 2 : 1); paint(tn(o.col), 3, {});
+        if (o.colT === 'tacha') for (let k = 0.15; k < 0.95; k += 0.28) { const q = lerpP(c0, c1, k); dot(q[0], q[1], C('#e8e4d8')); }
+        if (o.colT === 'sino') { dot(c1[0], c1[1] + 1.4, C('#f0c020')); dot(c1[0] + 1, c1[1] + 1.4, C('#c89810')); dot(c1[0], c1[1] + 2.4, C('#a87808')); }
+        if (o.colT === 'placa') { dot(c1[0], c1[1] + 1.4, C('#d8d8e0')); dot(c1[0] + 1, c1[1] + 1.4, C('#a8a8b4')); } }
+      if (o.bnd) { const q = lerpP(c0, c1, 0.45); mClear(); poly([add(q, [-0.6 * K, -0.4 * K]), add(c1, [1.6 * K, 0.6 * K]), add(lerpP(q, c1, 0.6), [1.2 * K, 3.2 * K])]); const bt = o.bnd === 'chita' ? tn('#c02a2a') : tn(o.bnd); paint(bt, 3, { fn: o.bnd === 'chita' ? (x, y, c, t) => ((x * 3 + y * 5) % 4 === 0 ? C('#f0e060') : (x + y * 2) % 5 === 0 ? C('#2a6a3a') : undefined) : undefined }); }
+    }
     // ---------- cabeça ----------
     const fd = [Math.sin(ha), Math.cos(ha)], fnv = [Math.cos(ha), -Math.sin(ha)];
     const HL = s.headL * K, J = s.jowl * K, M = s.muzzle * K, PH = (k, n) => add(poll, add(sc(fd, k), sc(fnv, n)));
@@ -3449,6 +3592,11 @@ const RIG = (() => {
       poly([[cx - nwT + sway * 0.5, nTop], [cx + nwT + sway * 0.5, nTop], [cx + nwB + sway, nBot], [cx - nwB + sway, nBot]]);
       if (s.dew && !back) poly([[cx - 1.4 * K, nTop + 2], [cx + 1.4 * K, nTop + 2], [cx, nBot + s.dew * 0.8 * K]]);
       paint(bodyT, 1, { lay, fn: coatFn(co, s, cx, bodyY, back ? 'back' : 'front', seed, 'neck') });
+      if (s.t === 'canino' && (o.col || o.bnd) && hd < 0.5) { const yc = Math.round(lerp(nTop, nBot, back ? 0.35 : 0.62)), wc = lerp(nwT, nwB, back ? 0.35 : 0.62) + 0.4;
+        if (o.col) { mClear(); poly([[cx - wc + sway * 0.5, yc], [cx + wc + sway * 0.5, yc], [cx + wc + sway * 0.5, yc + (K > 0.8 ? 2 : 1)], [cx - wc + sway * 0.5, yc + (K > 0.8 ? 2 : 1)]]); paint(tn(o.col), 3, { lay });
+          if (!back && o.colT === 'sino') { dot(cx, yc + 2.2, C('#f0c020'), lay); dot(cx, yc + 3.2, C('#a87808'), lay); } if (!back && o.colT === 'placa') dot(cx, yc + 2.2, C('#d8d8e0'), lay); if (o.colT === 'tacha') for (let xx = -wc + 1; xx < wc; xx += 2) dot(cx + xx, yc, C('#e8e4d8'), lay); }
+        if (o.bnd && !back) { mClear(); poly([[cx - wc, yc + 1], [cx + wc, yc + 1], [cx, yc + 1 + wc * 1.3]]); paint(o.bnd === 'chita' ? tn('#c02a2a') : tn(o.bnd), 3, { lay }); }
+      }
       if (eq && s.mane && !back) { mClear(); const side = (seed % 2 ? 1 : -1); for (let y = nTop; y < nBot - 1; y += 1.5) cap(cx + side * (nwT * 0.9 + (y - nTop) / (nBot - nTop) * (nwB - nwT)), y, cx + side * (nwT + 1.2 * s.mane * K + (y - nTop) / (nBot - nTop) * (nwB - nwT)) + side * Q.flow * 1.5, y + 1 + Q.flow, 0.7, 0.5); paint(maneT, 2, { lay }); }
       if (eq && s.mane && back) { mClear(); cap(cx + sway * 0.5, nTop, cx + sway, nBot, s.mane * K * 0.7, s.mane * K * 0.6); paint(maneT, 2, { lay }); }
       // orelhas
@@ -3568,7 +3716,7 @@ const RIG = (() => {
     if ((o.mane || o.tail) && s.t === 'equino') { s = Object.assign({}, s);
       if (o.mane === 'tosada') { s.maneT = 'roach'; s.maneL = Math.min(s.maneL, 1.1); } else if (o.mane === 'longa') { s.maneL *= 1.6; s.mane *= 1.15; } else if (o.mane === 'trancada' && s.maneT !== 'roach') s.maneT = 'braid';
       if (s.tail === 'horse' || s.tail === 'mule') { if (o.tail === 'aparada') s.tailL *= 0.62; else if (o.tail === 'atada') { s.tailL *= 0.5; s.tailW *= 1.3; s.tailKnot = 1; } else if (o.tail === 'trancada') { s.tailW *= 0.55; s.tailBraid = 1; } } }
-    const key = br + '|' + coat + '|' + view + '|' + a + '|' + f + '|' + (o.k || 1) + '|' + (o.marks || 0) + '|' + (o.seed || 0) + '|' + (o.sex || '') + (o.adult ? 1 : 0) + '|' + (o.saddle ? o.saddle.id : '') + (o.pack ? 'p' + (o.load ? 1 : 0) : '') + (o.harness ? 'h' : '') + '|' + (o.mane || '') + (o.tail || '') + (o.pad || '') + (o.rein || '') + (o.peit ? 'P' : '') + (o.orn || '') + (o.noHorn ? 'm' : '') + (o.brand || '') + (o.bflip ? 'f' : '') + (o.tag ? 'T' : '');
+    const key = br + '|' + coat + '|' + view + '|' + a + '|' + f + '|' + (o.k || 1) + '|' + (o.marks || 0) + '|' + (o.seed || 0) + '|' + (o.sex || '') + (o.adult ? 1 : 0) + '|' + (o.saddle ? o.saddle.id : '') + (o.pack ? 'p' + (o.load ? 1 : 0) : '') + (o.harness ? 'h' : '') + '|' + (o.mane || '') + (o.tail || '') + (o.pad || '') + (o.rein || '') + (o.peit ? 'P' : '') + (o.orn || '') + (o.noHorn ? 'm' : '') + (o.brand || '') + (o.bflip ? 'f' : '') + (o.tag ? 'T' : '') + (o.col ? '|c' + o.col + (o.colT || '') : '') + (o.bnd ? '|b' + o.bnd : '');
     let r = CACHE.get(key); if (r) return r;
     if (CACHE.size > 2200) { let n = 0; for (const k of CACHE.keys()) { CACHE.delete(k); if (++n > 600) break; } }
     r = view === 'side' ? sideView(s, co, a, f, o) : fbView(s, co, a, f, o, view === 'back');
@@ -3908,6 +4056,7 @@ function mkAnimal(sp, br, o) {
   const tp = B.temp || (sp === 'boi' ? ['calmo', 'arisco', 'dócil', 'nervoso'] : sp === 'cabra' ? ['esperto', 'arisco', 'dócil'] : sp === 'jumento' ? ['calmo', 'teimoso', 'paciente'] : ['calmo', 'dócil', 'esperto']);
   a.temp = o.temp || pick(tp); a.aff = o.aff !== undefined ? o.aff : (o.main ? 55 : rint(5, 25)); a.spdF = o.spdF || +(0.92 + Math.random() * 0.16).toFixed(2); a.endF = o.endF || +(0.9 + Math.random() * 0.2).toFixed(2);
   rollTraits(a);
+  if (sp === 'cao') { a.dc = o.dc || { col: pick(COLLARS)[0], colT: 'couro', bnd: '' }; a.xp = { h: 0, g: 0, t: 0, o: 0 }; a.en = 100; }
   return a;
 }
 function hist(a, t) { if (!a.hist) a.hist = []; a.hist.unshift({ d: S.day, t }); if (a.hist.length > 14) a.hist.length = 14; }
@@ -3923,7 +4072,7 @@ function animalValue(a) {
   if (a.sp === 'boi') return Math.round((a.wt || 0) * kgPrice() * catFactor(a) * (0.94 + st * 0.03) * ((CATTLE[a.br] || {}).p || 1) * ((a.carro || 0) >= 100 ? 1.35 : 1) + (a.age < 1 ? 300 : 0));
   if (a.sp === 'cavalo') return Math.round((HORSES[a.br].cost * 420 + 2500) * q * (a.age < 12 ? 0.6 : 1));
   if (a.sp === 'burro') return Math.round(4200 * q * ((MULES[a.br] || {}).cost > 10 ? 1.15 : 1)); if (a.sp === 'jumento') return Math.round(1800 * q * (a.br === 'pega' || a.br === 'brasileiro' ? 1.3 : 1));
-  if (a.sp === 'galinha') return Math.round((a.sex === 'M' ? 70 : 55) * q); if (a.sp === 'cao') return Math.round(600 * q);
+  if (a.sp === 'galinha') return Math.round((a.sex === 'M' ? 70 : 55) * q); if (a.sp === 'cao') return Math.round(600 * q * ((DOGS[a.br] || {}).p || 1) * (a.skills.length ? 1 + a.skills.length * 0.15 : 1) * (a.age < 10 ? 0.8 : 1));
   if (a.sp === 'cabra') return Math.round((a.wt || 35) * 14 * q * ((GOATS[a.br] || {}).meat || 1) * (a.age < 6 ? 1.3 : 1));
   if (a.sp === 'fauna') return 0;
   return 100;
@@ -3978,7 +4127,7 @@ function cattleDayAfter() {
   for (const k in byArea) { const L = byArea[k].filter(b => b.age >= 30); if (L.length >= 2 && Math.random() < 0.15) { const [x, y] = L; x.hp = cl(x.hp - 10, 5, 100); y.hp = cl(y.hp - 10, 5, 100); x.wound = y.wound = S.day; hist(x, 'Brigou com ' + y.n); hist(y, 'Brigou com ' + x.n); toast('🐂⚔️ Os touros ' + x.n + ' e ' + y.n + ' brigaram no ' + AREAS[k].n + '. Deixe um touro por pasto!'); } }
   // ladrão de gado: leva gado sem marca dos pastos
   const loose = alive.filter(a => !a.marca && a.age >= 12 && !a.main && a.area && AREAS[a.area].k === 'pasto');
-  const guard = myAnimals('cao').some(d => d.skills.includes('Guarda')) ? 0.4 : 1;
+  const guard = myAnimals('cao').some(d => d.skills.includes('Guarda') || d._cmd === 'guardar') ? 0.4 * (myAnimals('cao').length > 1 ? 0.75 : 1) : 1;
   if (S.day > 15 && loose.length >= 6 && Math.random() < 0.025 * guard) { const n = Math.min(loose.length, rint(1, 2)); const took = [], tc = []; for (let i = 0; i < n; i++) { const a = loose.splice(rint(0, loose.length - 1), 1)[0]; took.push(a.n); tc.push({ id: a.id, sp: a.sp, br: a.br, coat: a.coat, sex: a.sex, age: a.age, wt: a.wt, n: a.n, x: a.x, y: a.y, f: a.f, gen: a.gen, mk: a.mk, skills: [], traits: a.traits }); S.animals = S.animals.filter(x => x !== a); } if (cenasOn()) S.pend.push({ k: 'theft', names: took, c: tc }); S.obito = S.obito || []; took.forEach(n2 => S.obito.unshift({ d: S.day, n: n2, c: 'roubado', cause: 'ladrão de gado' })); toast('🚨 Ladrões de gado levaram ' + took.join(' e ') + ' à noite! Gado marcado a ferro o ladrão não leva.'); ledger('Abigeato: ' + took.join(', '), 0); }
   // gado fugido para a Mata dos Fundos
   const esc = alive.filter(a => !a.main && !a._fug && a.age >= 8 && a.area && AREAS[a.area].k === 'pasto');
@@ -4471,7 +4620,11 @@ function deliveries() {
   const tIds = []; now.forEach(d => { const a = byId(d.id); if (!a) return; if ((d.to || 'receb') === 'receb' && cenasOn()) { tIds.push(a.id); a._hid = true; } a.own = 'player'; a.newArr = 1; const p = randIn(d.to || 'receb'); a.x = p[0]; a.y = p[1]; a._st = null; toast('🚚 ' + a.n + ' chegou ao ' + AREAS[d.to || 'receb'].n); }); if (tIds.length) S.pend.push({ k: 'truckIn', ids: tIds });
   if (S.frete && S.fretePend) { for (const k in S.fretePend) S.dep[k] = (S.dep[k] || 0) + S.fretePend[k]; S.fretePend = null; toast('🚚 Entrega da Casa do Agro no depósito.'); }
 }
-function dayTick() { storyCheck(); regionDay(); missionDay(); socialDay();
+function dogDay() { for (const d of myAnimals('cao')) { d.water = Math.max(d.water, 70); d.en = 100; d._dug = 0; const kg = (DOGS[d.br] || {}).sz === 'G' ? 0.6 : (DOGS[d.br] || {}).sz === 'P' ? 0.25 : 0.4;
+    if ((S.dep.racaoCao || 0) >= kg) { S.dep.racaoCao = +(S.dep.racaoCao - kg).toFixed(2); d.food = 100; d.fedDay = S.day; }
+    else if ((S.inv.racaoCao || 0) >= kg / 10) { useInv('racaoCao', kg / 10); d.food = 100; d.fedDay = S.day; }
+    else if (d.food < 40) { d.hap = cl(d.hap - 6, 0, 100); if (Math.random() < 0.4 * dogStat(d, 'track')) { d.food = cl(d.food + 45, 0, 100); toast('🐕 ' + d.n + ' caçou um preá no mato. Compre ração de cão e guarde no depósito: o cão come sozinho de manhã.'); } } } if (myAnimals('cao').length && (S.dep.racaoCao || 0) < 2 && !(S.inv.racaoCao > 0.1)) toast('🦴 A ração dos cães está acabando no depósito.'); }
+function dayTick() { storyCheck(); regionDay(); missionDay(); socialDay(); dogDay();
   wildDayTick(); rollOffer(); setTimeout(() => S && eventAnnounce(), 2500); if (S.offer && S.offer.day < S.day - 1) S.offer = null;
   S.day++;
   const se = season();
@@ -5046,20 +5199,6 @@ function toggleGate(g, silent) {
   g.open = !g.open; AU.creak(); buzz(10); if (!silent) say((g.open ? 'Abriu' : 'Fechou') + ' a porteira' + (g.a ? ' (' + AREAS[g.a].n + ')' : g.nm ? ' (' + g.nm + ')' : '') + '.', 1500); return true;
 }
 function useGate(g) { act('gate', 0.38, { x: g.x * TS, y: g.y * TS }, () => toggleGate(g), { zoom: false }); }
-/* ---------- cão ---------- */
-function updDog(a, dt) {
-  dogGuard(a, dt);
-  if (a.own === 'player' && updWorkDog(a, dt)) return;
-  const d = hyp(P.x - a.x, P.y - a.y), far = P.mnt ? 30 : 22;
-  if (a._st === 'fetch') { const r = stepTo(a, a._tg[0], a._tg[1], 80, dt, 'a'); a._pose = 'run'; if (r === true || r === 'stuck' || (a._t -= dt) < 0) { a._st = 'back'; } return; }
-  if (a._st === 'back') { const r = stepTo(a, P.x + 10, P.y + 4, 75, dt, 'a'); a._pose = 'run'; if (r === true || hyp(P.x - a.x, P.y - a.y) < 16) { a._st = 'sitc'; a._t = 2; heart(a.x, a.y - 18); AU.bark(a.x, a.y); } return; }
-  if (a._st === 'sitc') { a._pose = 'sit'; a.f = P.x > a.x ? 1 : -1; if ((a._t -= dt) < 0) a._st = null; return; }
-  let herdT = null; if (d < 140 && P._mv > 10) for (const b of near(a.x, a.y, 70)) if (b.sp === 'boi' && b.own === 'player') { herdT = b; break; }
-  if (herdT && Math.random() < dt * 0.5) AU.bark(a.x, a.y);
-  if (d > 260) { a.x = P.x - 20; a.y = P.y + 6; }
-  if (d > far) { a._st = 'run'; const sp = Math.min(90, 30 + d * 0.9); const r = stepTo(a, P.x - (P.dir === 3 ? 18 : -18), P.y + 6, sp, dt, 'a'); if (r === 'stuck') moveBox(a, (P.x - a.x) / d * sp * dt, (P.y - a.y) / d * sp * dt, HB.dog, 'ghost'); a._pose = 'run'; a._sitT = 0; }
-  else { a._sitT = (a._sitT || 0) + dt; a._st = herdT ? 'run' : 'idle'; a._pose = a._sitT > 3 ? 'sit' : 'idle'; a.f = P.x > a.x ? 1 : -1; }
-}
 /* ---------- carroça ---------- */
 function updCartDrive(dt, ix, iy, mag) {
   const an = cartAnimal(), isOx = S.cart.kind === 'boi'; if (!an || (isOx && !byId(S.cart.hitch2))) { P.cart = false; return; }
@@ -5120,7 +5259,7 @@ function pressureSources() {
     const R = h ? 50 * (1 + skill('lid') * 0.08) * (S.cf.aj === 1 && gal ? 1.3 : 1) : 26;
     L.push({ x: P.x, y: P.y, R, k: h ? (gal ? 1.5 : P._mv > 6 ? 1.1 : 0.75) : (P._mv > 30 ? 0.9 : 0.6), vx: P._vx || 0, vy: P._vy || 0, who: 'p', mv: P._mv > 6 });
   }
-  for (const a of S.animals) if (a.sp === 'cao' && a.own === 'player' && (a._st === 'work' || a._st === 'run' || a._barkT > 0)) { const B = DOGS[a.br] || DOGS.caramelo; L.push({ x: a.x, y: a.y, R: (a._barkT > 0 ? 52 : 34) * (0.8 + B.herd * 0.2), k: 0.85 * B.herd, vx: a._vx || 0, vy: a._vy || 0, who: 'd', mv: true }); }
+  for (const a of S.animals) if (a.sp === 'cao' && a.own === 'player' && !a._hid && (a._st === 'work' || a._st === 'run' || a._st === 'threat' || a._barkT > 0)) { const hk = a._st === 'work' ? dogStat(a, 'herd') : 0.6; L.push({ x: a.x, y: a.y, R: (a._barkT > 0 ? 52 : 34) * (0.8 + hk * 0.2) * (a._pose === 'stalk' ? 0.8 : 1), k: 0.85 * hk, vx: a._vx || 0, vy: a._vy || 0, who: 'd', mv: true }); }
   for (const w of S.workers) if (w._herd) L.push({ x: w.x, y: w.y, R: w._mnt ? 44 : 30, k: w._mnt ? 1 : 0.7, vx: 0, vy: 0, who: 'w' });
   if (typeof wildPressure === 'function') wildPressure(L);
   for (const n of HERD_PULSES) L.push(n);
@@ -5284,37 +5423,217 @@ function updHorseAI(a, dt, gm, srcs) {
   }
 }
 /* ---------- cão de trabalho ---------- */
-function herdCenter(R) {
-  let x = 0, y = 0, n = 0, rad = 0; const L = near(P.x, P.y, R).filter(a => (a.sp === 'boi' || a.sp === 'cabra') && a.own === 'player' && !a._hid && free(a));
+function herdCenter(R, ar) {
+  let x = 0, y = 0, n = 0, rad = 0; const L = near(P.x, P.y, R).filter(a => (a.sp === 'boi' || a.sp === 'cabra') && a.own === 'player' && !a._hid && free(a) && (!ar || areaAt(a.x, a.y) === ar || !areaAt(a.x, a.y)));
   for (const a of L) { x += a.x; y += a.y; n++; } if (!n) return null; x /= n; y /= n; for (const a of L) rad = Math.max(rad, hyp(a.x - x, a.y - y)); return { x, y, n, rad, L };
 }
+/* ============ CÃES: IA v6 ============
+   Cada cão tem energia, fome e sede, personalidade, idade, porte e o que já aprendeu.
+   Comandos: seguir, ficar, juntar, tocar, guardar a fazenda e farejar fujão.
+   Sozinho: anda do lado certo do vaqueiro, explora à frente no campo aberto, fica colado na cidade e para
+   quando passa carro, deita na sombra no calor, bebe no bebedouro, brinca com o outro cão, cumprimenta
+   gente conhecida, late para estranho, avisa cobra, enfrenta ou espanta bicho do mato e vigia a fazenda
+   de noite. Trabalhando, aprende: tocar gado vira Boiadeiro, vigiar vira Guarda, achar fujão vira Rastreador. */
+const DOG_SKILL = { h: 'Boiadeiro', g: 'Guarda', t: 'Rastreador', o: 'Obediente' };
+const DOG_SKN = { h: 'Tocar gado', g: 'Guarda', t: 'Faro', o: 'Obediência' };
+function dogAgeK(a) { const d = a.age || 0; return d < 10 ? 0 : d < 20 ? 1 : d < 50 ? 2 : d < 80 ? 3 : 4; }
+function dogStat(a, k) { // herd, guard, track, spd, sta, obey
+  const B = DOGS[a.br] || DOGS.caramelo, ag = dogAgeK(a); let v = B[k] === undefined ? 1 : B[k];
+  if (k === 'herd' || k === 'spd' || k === 'sta') v *= [0.7, 0.92, 1, 0.95, 0.8][ag];
+  if (k === 'obey') v *= [1.15, 1.05, 1, 1.05, 1.2][ag] * (0.8 + (a.aff || 0) / 250);
+  if (k === 'guard') v *= ag ? 0.9 + (a.sz || 1) * 0.1 : 0.6;
+  const sk = a.skills || []; if (k === 'herd' && sk.includes('Boiadeiro')) v *= 1.25; if (k === 'guard' && sk.includes('Guarda')) v *= 1.3; if (k === 'track' && sk.includes('Rastreador')) v *= 1.3; if (k === 'obey' && sk.includes('Obediente')) v *= 1.3;
+  if (k === 'spd') v *= tmod(a, 'spd') * (a.en < 25 ? 0.7 : 1); if (k === 'obey') v *= tmod(a, 'obey');
+  return v;
+}
+function dogLearnK(a) { return [1.8, 1.4, 1, 0.8, 0.6][dogAgeK(a)] * (a.esp === 'companheiro' ? 1.3 : 1); }
+function dogXP(a, k, v) { // experiência: ao chegar em 100 aprende a habilidade
+  if (a.own !== 'player') return; a.xp = a.xp || { h: 0, g: 0, t: 0, o: 0 }; const sk = DOG_SKILL[k]; if (a.skills.includes(sk)) { a.xp[k] = 100; return; }
+  a.xp[k] = Math.min(100, (a.xp[k] || 0) + v * dogLearnK(a)); if (a.xp[k] >= 100) { a.skills.push(sk); toast('🎓 ' + a.n + ' aprendeu na lida: ' + sk + '!'); hist(a, 'Aprendeu ' + sk + ' trabalhando'); AU.jingle && AU.jingle(); heart(a.x, a.y - 18); }
+}
+const myDogs = () => S.animals.filter(d => d.sp === 'cao' && d.own === 'player' && !d._hid);
+function dogSlot(a) { const L = myDogs(); return Math.max(0, L.indexOf(a)); }
+function dogCarNear(a, R) { if (a.x < 59 * TS || typeof TRAF === 'undefined') return null; for (const v of TRAF.list) { const [vx, vy] = vehXY(v); if (hyp(vx - a.x, vy - a.y) < R) return v; } return null; }
+function dogRun(a, tx, ty, v, dt) { // corre até o ponto; passa por baixo da cerca se emperrar
+  const d = hyp(tx - a.x, ty - a.y); if (d < 2) { a._mv = 0; return true; }
+  if (a._gh > 0) { a._gh -= dt; const ox = a.x, oy = a.y, s = Math.min(d, v * dt); moveBox(a, (tx - a.x) / d * s, (ty - a.y) / d * s, HB.dog, 'ghost'); a._dist = (a._dist || 0) + hyp(a.x - ox, a.y - oy); a._hx = (tx - a.x) / d; a._hy = (ty - a.y) / d; a._mv = v; if (Math.abs(tx - a.x) > 0.5) a.f = tx > a.x ? 1 : -1; return false; }
+  const r = stepTo(a, tx, ty, v, dt, 'a'); if (r === 'stuck') a._gh = 1.2; return r === true;
+}
+function dogTire(a, dt, k) { const hot = heatF() > 1.1 ? (a.br === 'husky' ? 1.7 : 1.25) : 1; a.en = cl((a.en === undefined ? 100 : a.en) - dt * k * hot / dogStat(a, 'sta'), 0, 100); }
+function dogRest(a, dt, k) { a.en = cl((a.en === undefined ? 100 : a.en) + dt * k * (a.food > 20 ? 1 : 0.4), 0, a.food > 20 ? 100 : 60); }
+function dogSay(a, t, ms) { if ((a._sayT || 0) > drawT) return; a._sayT = drawT + 12; say(t, ms || 2400); }
+function dogBark(a, n) { a._barkT = n || 0.6; a._pose = 'bark'; if ((a._bkS || 0) < drawT) { a._bkS = drawT + 0.45; AU.bark(a.x, a.y); } }
+// ---------- ameaças: bicho do mato, cobra e gente estranha ----------
+function dogThreat(a) {
+  if (typeof WILD === 'undefined' || !WILD.length) return null; const R = 70 + dogStat(a, 'guard') * 70; let best = null, bd = R;
+  for (const w of WILD) { const K = WKIND[w.k]; if (!K || K.bird || w.gone) continue; const d = hyp(w.x - a.x, w.y - a.y), dp = hyp(w.x - P.x, w.y - P.y); const want = K.pred || w.k === 'raposa' || (K.snake && dp < 90) || ((w.k === 'veado' || w.k === 'tatu' || w.k === 'sarue') && d < 90); if (want && d < bd) { bd = d; best = w; } }
+  return best;
+}
+function dogFace(a, x) { a.f = x > a.x ? 1 : -1; a._face = x > a.x ? 3 : 2; }
+function updDogThreat(a, dt, w) { // retorna true se está cuidando de uma ameaça
+  const K = WKIND[w.k], d = hyp(w.x - a.x, w.y - a.y), brave = hasT(a, 'corajoso') || (DOGS[a.br] || {}).big || dogStat(a, 'guard') > 1.15, scared = hasT(a, 'medroso') || (a.sz || 1) < 0.95 && (DOGS[a.br] || {}).sz === 'P';
+  a._st = 'threat'; dogXP(a, 'g', dt * 1.2); dogTire(a, dt, 1.5);
+  if (K.snake) { // cobra: late de longe e avisa o vaqueiro
+    if (d > 26) dogRun(a, w.x + (a.x > w.x ? 22 : -22), w.y + 4, 60, dt); else { a._mv = 0; dogFace(a, w.x); }
+    dogBark(a); if (K.ven) dogSay(a, '🐍 ' + a.n + ' está latindo para uma ' + K.n.toLowerCase() + '! Cuidado onde pisa.', 3400);
+    if (d < 12 && !a.skills.includes('Obediente') && Math.random() < dt * 0.02 && K.ven) { a.hp = cl(a.hp - 30, 5, 100); a.sick = 1; toast('🐍 ' + a.n + ' foi picado pela ' + K.n.toLowerCase() + '! Trate com remédio.'); hist(a, 'Picado por cobra'); a._noThr = drawT + 30; }
+    return true; }
+  if (K.pred && scared) { // medroso: se esconde atrás do vaqueiro e late
+    dogRun(a, P.x + (P.x - w.x) / (hyp(P.x - w.x, P.y - w.y) || 1) * 14, P.y + 4, 90 * dogStat(a, 'spd'), dt); a._pose = a._mv > 3 ? 'run' : 'bark'; if (a._mv < 3) dogBark(a); dogSay(a, a.n + ' se escondeu atrás de você e late para a ' + K.n.toLowerCase() + '.'); return true; }
+  // corre para cima, para a um palmo e late até o bicho ir embora
+  const stop = K.pred ? (brave ? 26 : 40) : 18;
+  if (d > stop) { dogRun(a, w.x, w.y, (78 + dogStat(a, 'spd') * 22), dt); a._pose = 'run'; if (Math.random() < dt * 1.6) dogBark(a, 0.3); }
+  else { a._mv = 0; dogFace(a, w.x); dogBark(a); if (K.pred) dogSay(a, '⚠️ ' + a.n + ' encarou a ' + K.n.toLowerCase() + '!', 3000); }
+  if (hyp(a.x - P.x, a.y - P.y) > 260) { a._noThr = drawT + 8; return false; } // não se perde no mato
+  return true;
+}
+// ---------- necessidades ----------
+function dogWaterSpot(a) { let b = -1, bd = 420; TROUGHS.forEach((t, i) => { if (t.k !== 'agua' || !(S.tr[i] > 1)) return; const x = (t.x + t.w / 2) * TS, y = (t.y + 1.3) * TS, d = hyp(x - a.x, y - a.y); if (d < bd) { bd = d; b = i; } }); return b; }
+function updDogNeeds(a, dt) { // retorna true se está bebendo / indo beber
+  if (a._st === 'drinkGo') { const t = TROUGHS[a._ti]; if (!t) { a._st = null; return false; } const x = (t.x + t.w / 2) * TS, y = (t.y + 1.3) * TS; if (dogRun(a, x, y, 55, dt) || hyp(x - a.x, y - a.y) < 6) { a._st = 'drinking'; a._t = 3; } a._pose = 'run'; if ((a._t -= dt) < -12) a._st = null; return true; }
+  if (a._st === 'drinking') { a._pose = 'drink'; a._mv = 0; if ((a._t -= dt) <= 0) { a.water = 100; if (S.tr[a._ti] > 0) S.tr[a._ti] = Math.max(0, S.tr[a._ti] - 0.5); a._st = null; AU.splash && AU.splash(); } return true; }
+  if (a.water < 35 && !IN.on && hyp(a.x - P.x, a.y - P.y) < 200 && a.x < 59 * TS) { const i = dogWaterSpot(a); if (i >= 0) { a._ti = i; a._st = 'drinkGo'; a._t = 0; dogSay(a, a.n + ' foi beber água.', 1800); return true; } }
+  return false;
+}
+// ---------- seguir o vaqueiro ----------
+function dogHeel(a) {
+  const sl = dogSlot(a), side = sl % 2 ? 1 : -1, city = P.x > 59 * TS, mnt = !!P.mnt;
+  let hx = 0, hy = 1; if (P._mv > 3 && P._hx !== undefined) { hx = P._hx; hy = P._hy; } else { const dv = { 0: [0, 1], 1: [0, -1], 2: [-1, 0], 3: [1, 0] }[P.dir] || [0, 1]; hx = dv[0]; hy = dv[1]; }
+  const back = city ? 8 : mnt ? 24 : 14 + sl * 6, lat = city ? 10 : mnt ? 18 : 12;
+  let tx = P.x - hx * back + (-hy) * side * lat, ty = P.y - hy * back * 0.8 + hx * side * lat * 0.6 + 4;
+  // no campo aberto, galopando: o cão sai na frente explorando
+  if (!city && P._mv > 40 && a._scout > 0) { tx = P.x + hx * (34 + sl * 10) + (-hy) * side * 14; ty = P.y + hy * 30 + hx * side * 10; }
+  return [tx, ty];
+}
+function updDogFollow(a, dt) {
+  const d = hyp(P.x - a.x, P.y - a.y); a._scoutT = (a._scoutT || 0) - dt; if (a._scoutT <= 0) { a._scoutT = rnd(6, 12); a._scout = Math.random() < (hasT(a, 'curioso') || hasT(a, 'agitado') ? 0.6 : 0.35) && dogStat(a, 'sta') > 0.9 ? 1 : 0; }
+  if (d > 320) { a.x = P.x - 20; a.y = P.y + 6; a._st = null; return; }
+  const car = dogCarNear(a, 40); if (car && ground[gi(Math.floor(a.x / TS), Math.floor(a.y / TS))] === G.PAVE) { const [vx, vy] = vehXY(car), ax = car.l.ax === 'x'; const ty = ax ? a.y + (a.y >= vy ? 1 : -1) * 24 : a.y, tx = ax ? a.x : a.x + (a.x >= vx ? 1 : -1) * 24; dogRun(a, tx, ty, 70, dt); a._pose = 'run'; a._st = 'run'; return; } // sai da pista quando vem carro
+  const [tx, ty] = dogHeel(a), dt2 = hyp(tx - a.x, ty - a.y);
+  const top = 70 + dogStat(a, 'spd') * 38, moving = P._mv > 3;
+  if (dt2 > (moving ? 6 : 16)) { const v = Math.min(top, (moving ? Math.max(P._mv * 1.05, 26) : 24) + dt2 * 1.4); dogRun(a, tx, ty, v, dt); a._pose = v > 48 ? 'run' : 'walk'; a._st = 'run'; a._idleT = 0; if (v > 48) dogTire(a, dt, 0.5); else dogRest(a, dt, 0.4); return; }
+  a._mv = 0; a._st = 'idle'; dogGuard(a, dt); if (a._barkT > 0) { a._pose = 'bark'; return; } updDogIdle(a, dt, d);
+}
+// ---------- à toa: senta, deita, fareja, brinca e cumprimenta ----------
+function updDogIdle(a, dt, dP) {
+  a._idleT = (a._idleT || 0) + dt; dogRest(a, dt, a._pose === 'lie' ? 3 : 1.6);
+  const h = hour(), night = h >= 21 || h < 5, hot = heatF() > 1.1;
+  if (a._idleT < 3) { a._pose = 'idle'; dogFace(a, P.x); return; }
+  if ((a._doT = (a._doT || 0) - dt) <= 0 || !a._do) {
+    const L = []; const w = (k, n) => { for (let i = 0; i < n; i++) L.push(k); };
+    w('sit', 4); w('lie', 2 + (hasT(a, 'preguicoso') ? 4 : 0) + (a.en < 40 ? 4 : 0) + (night ? 8 : 0) + (hot ? 3 : 0) + (dogAgeK(a) === 4 ? 3 : 0));
+    w('sniff', 3 + (hasT(a, 'curioso') ? 3 : 0) + Math.round(dogStat(a, 'track') * 2)); if (!night) { w('bark', hasT(a, 'agitado') ? 2 : 0); w('dig', 1); }
+    const other = myDogs().find(o => o !== a && hyp(o.x - a.x, o.y - a.y) < 70 && (o._st === 'idle' || !o._st) && (o._cmd || 'seguir') === 'seguir');
+    if (other && !night && a.en > 40 && other.en > 40) w('play', 3 + (hasT(a, 'sociavel') ? 3 : 0) + (dogAgeK(a) < 2 ? 4 : 0));
+    const npc = !night && typeof npcs !== 'undefined' ? npcs.find(e => !e.hidden && hyp(e.x - a.x, e.y - a.y) < 70) : null; if (npc) w('greet', hasT(a, 'sociavel') || hasT(a, 'docil') ? 4 : 1);
+    a._do = pick(L); a._doT = a._do === 'lie' ? rnd(10, 22) : rnd(4, 9); a._dTg = null; a._partner = other ? other.id : null; a._npc = npc ? npc.id : null;
+    if (a._do === 'play' && other) { other._do = 'play'; other._doT = a._doT; other._partner = a.id; other._dTg = null; }
+  }
+  switch (a._do) {
+    case 'sit': a._pose = 'sit'; if (Math.random() < dt * 0.2) dogFace(a, P.x); return;
+    case 'lie': a._pose = 'lie'; return;
+    case 'bark': if (Math.random() < dt * 2) dogBark(a, 0.4); else if (!(a._barkT > 0)) a._pose = 'idle'; return;
+    case 'sniff': case 'dig': { if (!a._dTg) { const an = Math.random() * 6.28, r = rnd(18, 46); a._dTg = [P.x + Math.cos(an) * r, P.y + Math.sin(an) * r * 0.7]; } const r = dogRun(a, a._dTg[0], a._dTg[1], 20, dt); a._pose = r ? (a._do === 'dig' ? 'sniff' : 'sniff') : 'sniff';
+      if (r && a._do === 'dig' && Math.random() < dt * 3) part(a.x + a.f * 4, a.y, 'dust', { vx: -a.f * 14, vy: -10, m: 0.5, c: '#a8845a', s: 1 });
+      if (r && a._do === 'dig' && !a._dug && Math.random() < dt * 0.06) { a._dug = 1; dogSay(a, a.n + ' cavou um buraco e desenterrou um osso velho.', 2600); a.hap = cl(a.hap + 4, 0, 100); }
+      if (r) a._dTg = Math.random() < dt * 0.4 ? null : a._dTg; return; }
+    case 'play': { const o = byId(a._partner); if (!o || o.sp !== 'cao' || hyp(o.x - a.x, o.y - a.y) > 140) { a._do = null; return; } const t = drawT * 1.7 + a.id, cx = (a.x + o.x) / 2, cy = (a.y + o.y) / 2; const tx = cx + Math.cos(t) * 18 * (a.id < o.id ? 1 : -1), ty = cy + Math.sin(t) * 11; dogRun(a, tx, ty, 62, dt); a._pose = 'run'; dogTire(a, dt, 0.8); if (Math.random() < dt * 0.5) dogBark(a, 0.3); if (Math.random() < dt * 0.15) { a.hap = cl(a.hap + 1, 0, 100); } return; }
+    case 'greet': { const e = typeof npcs !== 'undefined' ? npcs.find(q => q.id === a._npc) : null; if (!e || e.hidden || hyp(e.x - a.x, e.y - a.y) > 130) { a._do = null; return; } const ok = dogRun(a, e.x + (a.x > e.x ? 12 : -12), e.y + 6, 40, dt); a._pose = ok ? 'sit' : 'walk'; if (ok) { dogFace(a, e.x); if (!a._gr || a._gr !== e.id + S.day) { a._gr = e.id + S.day; heart(a.x, a.y - 16); if (typeof addFr === 'function' && Math.random() < 0.5) addFr(e.id, 1); } } return; }
+  }
+  a._pose = 'idle';
+}
+// ---------- vigiar a fazenda (comando ou à noite com o vaqueiro dentro de casa) ----------
+function dogPatrolPts() { const L = []; const hf = fpx('houseFront'); L.push([hf[0] + 14, hf[1] + 16]); for (const k of myAreas()) { const r = AREAS[k].r; if (!r || (r[2] - r[0]) * (r[3] - r[1]) > 900) continue; L.push([(r[0] + r[2]) / 2 * TS, (r[1] + r[3]) / 2 * TS]); } return L.slice(0, 8); }
+function updDogPatrol(a, dt) {
+  a._st = 'patrol'; dogXP(a, 'g', dt * 0.06);
+  if (!a._pp || !a._pp.length) { a._pp = dogPatrolPts(); a._pi = dogSlot(a) % Math.max(1, a._pp.length); }
+  if ((a._pw = (a._pw || 0) - dt) > 0) { a._mv = 0; a._pose = a._pw > 3 ? 'sniff' : 'sit'; dogRest(a, dt, 1); return; }
+  const q = a._pp[a._pi % a._pp.length]; if (dogRun(a, q[0] + (a.id % 3 - 1) * 8, q[1] + 6, 34, dt) || hyp(q[0] - a.x, q[1] - a.y) < 10) { a._pi++; a._pw = rnd(4, 9); } else a._pose = 'walk';
+  if (typeof npcs !== 'undefined' && (a._gT2 = (a._gT2 || 0) - dt) <= 0) { a._gT2 = 2; for (const e of npcs) { if (e.hidden || e.x > 59 * TS) continue; if (hyp(e.x - a.x, e.y - a.y) < 90 && !(relScore && relScore(e.id) > 35)) { dogFace(a, e.x); dogBark(a, 1); dogSay(a, a.n + ' late para ' + NPCDEF[e.id].n + ' chegando na fazenda.', 1800); a._gT2 = 8; break; } } }
+}
+// ---------- farejar fujão ----------
+function dogTrackTarget(a) {
+  const ok = b => b !== a && !b._hid && b.sp !== 'cao' && b.sp !== 'galinha' && b.own !== 'delivery' && b.own !== 'agro' && b.id !== P.mnt && !isHitched(b.id) && P.lead !== b.id && b._st !== 'tied';
+  const outside = b => !areaAt(b.x, b.y) && !areaAt(b.x + TS, b.y) && !areaAt(b.x - TS, b.y) && !areaAt(b.x, b.y + TS) && !areaAt(b.x, b.y - TS);
+  const pick1 = f => { let best = null, bd = 1e9; for (const b of S.animals) { if (!ok(b) || !f(b)) continue; const d = hyp(b.x - a.x, b.y - a.y); if (d < bd) { bd = d; best = b; } } return best; };
+  return pick1(b => b._fug || (b.own && b.own.startsWith('quest'))) || pick1(b => b.own === 'player' && (b.sp === 'boi' || b.sp === 'cabra') && outside(b) && hyp(b.x - P.x, b.y - P.y) > 150);
+}
+function updDogTrack(a, dt) {
+  a._st = 'track'; const tg = a._trk ? byId(a._trk) : null;
+  if (!tg || tg._hid || !S.animals.includes(tg)) { const n = dogTrackTarget(a); if (!n) { a._sniffT = (a._sniffT || 0) + dt; a._pose = 'sniff'; a._mv = 0; if (a._sniffT > 3.5) { a._cmd = 'seguir'; a._sniffT = 0; say(a.n + ' farejou e não achou rastro de animal perdido.', 2600); } return; } a._trk = n.id; a._trT = 0; say('🐾 ' + a.n + ' pegou o rastro! Siga o cão.', 2600); dogBark(a); return; }
+  a._trT = (a._trT || 0) + dt; dogTire(a, dt, 0.7);
+  const dT = hyp(tg.x - a.x, tg.y - a.y), dP = hyp(P.x - a.x, P.y - a.y), lead = 150 + dogStat(a, 'track') * 40;
+  if (dT < 26) { a._mv = 0; dogFace(a, tg.x); dogBark(a, 0.5); tg._alert = 1.2; if (!a._found) { a._found = 1; say('🐾 ' + a.n + ' achou ' + tg.n + '! Está latindo onde o animal está.', 3600); emoteA(a, '!'); dogXP(a, 't', 35); } if (dP < 64) { a._cmd = 'seguir'; a._trk = null; a._found = 0; heart(a.x, a.y - 18); bond(a, 2); } return; }
+  if (dP > lead) { a._mv = 0; a._pose = 'sit'; dogFace(a, P.x); if (Math.random() < dt * 1.2) dogBark(a, 0.4); return; } // espera o vaqueiro alcançar
+  // anda farejando o chão; quanto melhor o faro, mais reto vai ao alvo
+  const wob = (1.6 - Math.min(1.5, dogStat(a, 'track'))) * 26, t = drawT * 1.3 + a.id, tx = tg.x + Math.cos(t) * wob, ty = tg.y + Math.sin(t * 0.8) * wob;
+  dogRun(a, tx, ty, 44 + dogStat(a, 'track') * 14, dt); a._pose = Math.floor(drawT * 1.5) % 3 ? 'run' : 'sniff'; dogXP(a, 't', dt * 0.12);
+  if (a._trT > 150) { a._cmd = 'seguir'; a._trk = null; say(a.n + ' perdeu o rastro.', 2200); }
+}
+// ---------- cérebro ----------
+function updDog(a, dt) {
+  if (a.en === undefined) a.en = 100; if (a._barkT > 0) a._barkT -= dt;
+  if (a.own !== 'player') { a._pose = 'idle'; return; }
+  // obediência: cão teimoso ou sem vínculo às vezes demora a atender
+  if (a._cmdQ) { if ((a._cmdQ.t -= dt) <= 0) { a._cmd = a._cmdQ.c; a._ph2 = null; a._st = null; a._cmdQ = null; dogXP(a, 'o', 2); } }
+  if (a._st === 'fetch') { const r = dogRun(a, a._tg[0], a._tg[1], 60 + dogStat(a, 'spd') * 30, dt); a._pose = 'run'; dogTire(a, dt, 0.6); if (r || (a._t -= dt) < 0) { a._st = 'back'; } return; }
+  if (a._st === 'back') { const r = dogRun(a, P.x + 10, P.y + 4, 60 + dogStat(a, 'spd') * 25, dt); a._pose = 'run'; if (r || hyp(P.x - a.x, P.y - a.y) < 16) { a._st = 'sitc'; a._t = 2; heart(a.x, a.y - 18); AU.bark(a.x, a.y); } return; }
+  if (a._st === 'sitc') { a._pose = 'sit'; dogFace(a, P.x); if ((a._t -= dt) < 0) a._st = null; return; }
+  const mode2 = a._cmd || 'seguir';
+  // cansaço: para tudo e deita
+  if (a.en < 12 && mode2 !== 'ficar') { if (!a._tired) { a._tired = 1; dogSay(a, '😮‍💨 ' + a.n + ' está cansado e deitou para descansar.', 2600); if (mode2 === 'juntar' || mode2 === 'tocar') a._cmd = 'seguir'; } a._mv = 0; a._pose = 'lie'; a._st = 'rest'; dogRest(a, dt, 4); return; }
+  if (a._tired && a.en > 45) a._tired = 0; if (a._tired) { a._pose = 'lie'; a._mv = 0; dogRest(a, dt, 4); if (hyp(P.x - a.x, P.y - a.y) > 120) a._tired = 0; else return; }
+  // ameaças (menos quando está trabalhando no gado)
+  if (mode2 !== 'juntar' && mode2 !== 'tocar' && !(a._noThr > drawT) && (a._thT = (a._thT || 0) - dt) <= 0) { a._thT = 0.5; a._thr = dogThreat(a); if (a._thr && mode2 === 'ficar' && hyp(a._thr.x - a.x, a._thr.y - a.y) > 90) a._thr = null; }
+  if (a._thr) { if (a._thr.gone || !WILD.includes(a._thr) || !updDogThreat(a, dt, a._thr)) a._thr = null; else return; }
+  if (mode2 === 'ficar') { a._st = 'idle'; a._mv = 0; a._pose = (a._stayT = (a._stayT || 0) + dt) > 20 ? 'lie' : 'sit'; dogRest(a, dt, 2); a._miss = (a._miss || 0) + dt; return; }
+  if (mode2 === 'juntar' || mode2 === 'tocar') { if (updWorkDog(a, dt)) return; }
+  if (mode2 === 'guardar') return updDogPatrol(a, dt);
+  if (mode2 === 'farejar') return updDogTrack(a, dt);
+  if (updDogNeeds(a, dt)) return;
+  // vaqueiro dentro de casa à noite: os cães vigiam o terreiro
+  if (IN.on && isNightish()) return updDogPatrol(a, dt);
+  // reencontro depois de muito tempo longe
+  if ((a._miss || 0) > 40 && hyp(P.x - a.x, P.y - a.y) < 60) { a._miss = 0; heart(a.x, a.y - 18); heart(a.x + 4, a.y - 22); dogBark(a, 0.8); bond(a, 1); }
+  if (hyp(P.x - a.x, P.y - a.y) > 200) a._miss = (a._miss || 0) + dt; a._stayT = 0;
+  // cão sem obediência às vezes corre atrás de veado ou tatu
+  if (a._chase) { const w = a._chase; if (w.gone || !WILD.includes(w) || (a._chT -= dt) <= 0 || hyp(P.x - a.x, P.y - a.y) > 240) { a._chase = null; dogSay(a, a.n + ' desistiu e voltou.', 1600); } else { dogRun(a, w.x, w.y, 70 + dogStat(a, 'spd') * 30, dt); a._pose = 'run'; dogTire(a, dt, 1.2); if (Math.random() < dt) dogBark(a, 0.3); return; } }
+  if (!a.skills.includes('Obediente') && (hasT(a, 'agitado') || hasT(a, 'curioso') || hasT(a, 'independente')) && typeof WILD !== 'undefined' && Math.random() < dt * 0.05) { const w = WILD.find(w => (w.k === 'veado' || w.k === 'tatu' || w.k === 'seriema') && hyp(w.x - a.x, w.y - a.y) < 110); if (w) { a._chase = w; a._chT = rnd(4, 7); dogSay(a, '🐕 ' + a.n + ' saiu correndo atrás do ' + WKIND[w.k].n.toLowerCase() + '! Chame de volta.', 2600); return; } }
+  updDogFollow(a, dt);
+}
+// ---------- trabalho no gado ----------
+function herdStray(hc) { // o animal mais desgarrado do lote
+  if (!hc || hc.n < 2) return null; const ds = hc.L.map(b => hyp(b.x - hc.x, b.y - hc.y)).sort((x, y) => x - y), core = ds[Math.floor(ds.length / 2)] || 10, lim = Math.max(34, core * 2.1); let st = null, sd = lim;
+  for (const b of hc.L) { const d = hyp(b.x - hc.x, b.y - hc.y); if (d > sd) { sd = d; st = b; } } return st;
+}
 function updWorkDog(a, dt) {
-  const mode2 = a._cmd || 'seguir', B = DOGS[a.br] || DOGS.caramelo, spd = 70 + B.herd * 12;
-  if (a._barkT > 0) a._barkT -= dt;
-  if (mode2 === 'ficar') { a._st = 'idle'; a._pose = 'sit'; return true; }
+  const mode2 = a._cmd || 'seguir', herd = dogStat(a, 'herd'), spd = 62 + herd * 14 + dogStat(a, 'spd') * 10;
   if (mode2 !== 'juntar' && mode2 !== 'tocar') return false;
-  const hc = herdCenter(260); if (!hc) { a._cmdT = (a._cmdT || 0) + dt; if (a._cmdT > 4) { a._cmd = 'seguir'; say(a.n + ' não achou gado por perto e voltou.', 2200); } return false; }
-  a._cmdT = 0; let tx, ty;
+  const hc = herdCenter(270, areaAt(P.x, P.y)); if (!hc) { a._cmdT = (a._cmdT || 0) + dt; if (a._cmdT > 4) { a._cmd = 'seguir'; a._cmdT = 0; say(a.n + ' não achou gado por perto e voltou.', 2200); } return false; }
+  a._cmdT = 0; let tx, ty, gentle = false; dogTire(a, dt, 0.55); dogXP(a, 'h', dt * 0.35);
   const vx = hc.x - P.x, vy = hc.y - P.y, vd = hyp(vx, vy) || 1;
-  if (mode2 === 'juntar') { // vai para o lado de lá do rebanho e empurra na direção do vaqueiro
-    const far = [hc.x + vx / vd * (hc.rad + 26), hc.y + vy / vd * (hc.rad + 26)];
-    const atFar = hyp(a.x - far[0], a.y - far[1]) < 18;
-    if (!a._ph2 || (a._ph2 === 'go' && atFar)) a._ph2 = atFar ? 'push' : 'go';
-    if (a._ph2 === 'go') { // contorna pelo flanco (não atravessa o rebanho)
-      const side = ((a.x - hc.x) * -vy + (a.y - hc.y) * vx) >= 0 ? 1 : -1, fl = [hc.x + (-vy / vd) * side * (hc.rad + 30), hc.y + (vx / vd) * side * (hc.rad + 30)];
-      const dFar = hyp(a.x - far[0], a.y - far[1]); [tx, ty] = hyp(a.x - hc.x, a.y - hc.y) < hc.rad + 20 || dFar > hc.rad * 1.5 + 30 ? fl : far; if (hyp(a.x - fl[0], a.y - fl[1]) < 14) [tx, ty] = far;
-    } else { tx = hc.x + vx / vd * (hc.rad * 0.6 + 14); ty = hc.y + vy / vd * (hc.rad * 0.6 + 14); if (hc.rad < 30 && hyp(hc.x - P.x, hc.y - P.y) < 70) { a._cmd = 'seguir'; a._ph2 = null; say(a.n + ' juntou o gado!', 2000); heart(a.x, a.y - 16); } }
-  } else { // tocar: guarda o flanco oposto ao lado em que está o vaqueiro, alternando
-    a._flk = a._flk || 1; a._flT = (a._flT || 0) - dt; if (a._flT <= 0) { a._flT = 5 + Math.random() * 3; a._flk *= -1; }
+  // 1) desgarrado: contorna por fora e empurra de volta para o lote
+  if ((a._strT = (a._strT || 0) - dt) <= 0) { a._strT = 2.5; const s0 = herdStray(hc); a._stray = s0 ? s0.id : null; }
+  const st = a._stray ? byId(a._stray) : null;
+  if (mode2 === 'tocar' && st && hyp(st.x - hc.x, st.y - hc.y) > 30) { const ux = st.x - hc.x, uy = st.y - hc.y, ud = hyp(ux, uy) || 1; tx = st.x + ux / ud * 20; ty = st.y + uy / ud * 20; gentle = hyp(tx - a.x, ty - a.y) < 26; a._ph2 = a._ph2 === 'push' ? 'go' : a._ph2; }
+  else if (mode2 === 'juntar') { // 2) busca um por um: o mais longe do vaqueiro, contornando por fora e trazendo até você
+    a._jT = (a._jT || 0) + dt; const ds = hc.L.map(b => hyp(b.x - P.x, b.y - P.y)), far = Math.max(...ds), lim = 34 + Math.sqrt(hc.n) * 10;
+    if (far < lim || (hc.rad < 22 + Math.sqrt(hc.n) * 8 && hyp(hc.x - P.x, hc.y - P.y) < 46 + hc.rad * 0.6)) { a._cmd = 'seguir'; a._ph2 = null; a._jT = 0; a._jTg = null; say('✅ ' + a.n + ' juntou o gado!', 2000); heart(a.x, a.y - 16); dogXP(a, 'h', 12); bond(a, 1); return false; }
+    if (a._jT > 150) { a._cmd = 'seguir'; a._jT = 0; a._jTg = null; say(a.n + ' cansou de rodear: o gado está muito espalhado. Ajude tocando junto.', 3000); return false; }
+    let T = a._jTg ? byId(a._jTg) : null; if ((a._jTT = (a._jTT || 0) - dt) <= 0 || !T || !hc.L.includes(T) || hyp(T.x - P.x, T.y - P.y) < lim * 0.8) { a._jTT = 3; let bi = 0; ds.forEach((v, i) => { if (v > ds[bi]) bi = i; }); T = hc.L[bi]; a._jTg = T.id; }
+    const gx = T.x - P.x, gy = T.y - P.y, gd = hyp(gx, gy) || 1, ux = gx / gd, uy = gy / gd, back = [T.x + ux * 20, T.y + uy * 20];
+    const dDog = hyp(a.x - P.x, a.y - P.y), lat = (a.x - T.x) * -uy + (a.y - T.y) * ux; // lado do cão em relação à linha vaqueiro→boi
+    if (dDog < gd + 8) { const side = lat >= 0 ? 1 : -1, fl = [T.x + (-uy) * side * 26 + ux * 6, T.y + ux * side * 26 + uy * 6]; [tx, ty] = hyp(a.x - fl[0], a.y - fl[1]) < 10 ? back : fl; a._ph2 = 'go'; }
+    else { [tx, ty] = hyp(a.x - back[0], a.y - back[1]) > 10 ? back : [T.x + ux * 12, T.y + uy * 12]; gentle = true; a._ph2 = 'push'; }
+  } else { // tocar: guarda o flanco, troca de lado de tempos em tempos
+    a._flk = a._flk || (dogSlot(a) % 2 ? -1 : 1); a._flT = (a._flT || 0) - dt; if (a._flT <= 0 && myDogs().filter(d => d._cmd === 'tocar').length < 2) { a._flT = 5 + Math.random() * 3; a._flk *= -1; }
     tx = hc.x + (-vy / vd) * a._flk * (hc.rad + 22) + vx / vd * 8; ty = hc.y + (vx / vd) * a._flk * (hc.rad + 22) + vy / vd * 8;
   }
   const d = hyp(tx - a.x, ty - a.y); a._st = 'work';
-  if (d > 6) { const v = Math.min(spd, 30 + d * 1.5);
-    if (a._gh > 0) { a._gh -= dt; const ox = a.x, oy = a.y; moveBox(a, (tx - a.x) / d * v * dt, (ty - a.y) / d * v * dt, HB.dog, 'ghost'); a._dist = (a._dist || 0) + hyp(a.x - ox, a.y - oy); a._hx = (tx - a.x) / d; a._hy = (ty - a.y) / d; a._mv = v; } // passa por baixo da cerca
-    else { const r = stepTo(a, tx, ty, v, dt, 'a'); if (r === 'stuck') a._gh = 1.2; }
-    a._pose = 'run'; a._vx = (a._hx || 0) * a._mv; a._vy = (a._hy || 0) * a._mv; }
-  else { a._pose = 'idle'; a._vx = a._vy = 0; }
-  if (Math.random() < dt * 0.9) { a._barkT = 0.5; AU.bark(a.x, a.y); a._pose = 'bark'; }
+  if (d > 6) { const eye = herd > 1.3 && gentle && (a.br === 'collie' || a.br === 'kelpie' || a.br === 'mantiqueira' || a.br === 'ovelheiro' || a.br === 'pastorAustraliano'); const v = Math.min(eye ? 26 : spd, (gentle ? 22 : 30) + d * 1.5);
+    dogRun(a, tx, ty, v, dt); a._pose = eye ? 'stalk' : 'run'; a._vx = (a._hx || 0) * a._mv; a._vy = (a._hy || 0) * a._mv; }
+  else { a._pose = 'idle'; a._vx = a._vy = 0; dogFace(a, hc.x); }
+  if (Math.random() < dt * (a.br === 'boiadeiro' ? 0.4 : 0.9)) dogBark(a, 0.5);
   return true;
 }
 
@@ -5651,7 +5970,9 @@ function rollTraits(a) {
 function tmod(a, k) { let v = 1; if (!a.traits) return 1; for (const t of a.traits) { const T = TRAITS[t]; if (T && T[k] !== undefined) v *= T[k]; } return v; }
 const hasT = (a, t) => !!(a.traits && a.traits.includes(t));
 function traitNames(a) { return (a.traits || []).map(t => TRAITS[t] ? TRAITS[t].n : t).join(', '); }
-function traitDesc(a) { return (a.traits || []).map(t => TRAITS[t] ? TRAITS[t].n + ': ' + TRAITS[t].d : '').filter(Boolean).join(' · '); }
+const DOG_TRAIT_D = { docil: 'aceita carinho de todo mundo', curioso: 'fareja tudo e vai ver o que é novo', preguicoso: 'deita sempre que pode', agitado: 'não para quieto e corre atrás de bicho', corajoso: 'enfrenta bicho do mato', territorial: 'late para quem chega na fazenda', sociavel: 'adora gente e brincar com outros cães', independente: 'gosta de explorar sozinho', obediente: 'atende o comando de primeira', teimoso: 'às vezes finge que não ouviu' };
+const traitD = (a, t) => a && a.sp === 'cao' && DOG_TRAIT_D[t] ? DOG_TRAIT_D[t] : TRAITS[t].d;
+function traitDesc(a) { return (a.traits || []).map(t => TRAITS[t] ? TRAITS[t].n + ': ' + traitD(a, t) : '').filter(Boolean).join(' · '); }
 // vínculo (confiança) com o vaqueiro: cuidado aproxima, maus-tratos afastam
 function bond(a, v) { if (!a || a.own !== 'player') return; const k = v > 0 ? tmod(a, 'bond') : 1 / tmod(a, 'bond'); const was = a.aff || 0; a.aff = cl(was + v * k, 0, 100); if (was < 70 && a.aff >= 70) toast(a.n + ' já reconhece você de longe.'); if (was >= 25 && a.aff < 25 && v < 0) toast(a.n + ' ficou desconfiado(a) de você.'); }
 // líder do rebanho: o mais dominante (ou o mais velho e pesado) de cada dono e área
@@ -6152,7 +6473,7 @@ function animalCanvas(a) {
   if (RIGSP[a.sp]) { const k = rigK(a), r = RIG.get(rigBreed(a), rigCoat(a), 'side', 'idle', 0, rigOpts(a, k)); return trimC(r.b); }
   return chickenSpr(a, 'idle', 0);
 }
-function animalImg(a, sc) { const c = animalCanvas(a); return sprHTML(c, sc || 2, 'an|' + a.sp + a.br + rigCoat(a) + (a.mk || 0) + a.sex + (RIGSP[a.sp] ? rigK(a) : a.age >= 6) + (a.saddle || '') + (a.travel ? 't' : '') + a.id % 97); }
+function animalImg(a, sc) { const c = animalCanvas(a); return sprHTML(c, sc || 2, 'an|' + a.sp + a.br + rigCoat(a) + (a.mk || 0) + a.sex + (RIGSP[a.sp] ? rigK(a) : a.age >= 6) + (a.saddle || '') + (a.travel ? 't' : '') + a.id % 97 + (a.dc ? a.dc.col + a.dc.colT + a.dc.bnd : '')); }
 function charImg(ap, sc, dir, pose) { return sprHTML(charSpr(ap, dir || 0, 0, pose || 'idle'), sc || 2, 'ch|' + apKey(ap) + (dir || 0) + (pose || '')); }
 /* ---------- inventário ---------- */
 const fmtQ = n => Math.round(n * 100) / 100;
@@ -6352,9 +6673,10 @@ function prodStr(a) {
 function sheetStats(a) {
   const st = stars(a);
   const eqn = a.sp === 'cavalo' || a.sp === 'burro' || a.sp === 'jumento';
-  const rows = [['Saúde', a.hp, 'r'], ['Fome (saciedade)', a.food, 'y'], ['Sede (hidratação)', a.water, 'w'], ...(eqn ? [['Energia', a.id === P.mnt ? (a._stam === undefined ? 100 : a._stam) : Math.min(100, (a._stam === undefined ? 100 : a._stam)), 'y'], ['Vínculo com você', a.aff || 0, 'r']] : [['Energia', cl((a.food * 0.5 + a.water * 0.5) * (hour() > 20 || hour() < 5 ? 0.75 : 1), 0, 100), 'y'], ['Felicidade', a.hap, ''], ['Vínculo com você', a.aff || 0, 'r']]), ['Condicionamento', a.cond, ''], ['Genética', a.gen, ''], ['Desenvolvimento', dev(a), ''], ['Cuidados', a.care, '']];
+  const rows = [['Saúde', a.hp, 'r'], ['Fome (saciedade)', a.food, 'y'], ['Sede (hidratação)', a.water, 'w'], ...(eqn ? [['Energia', a.id === P.mnt ? (a._stam === undefined ? 100 : a._stam) : Math.min(100, (a._stam === undefined ? 100 : a._stam)), 'y'], ['Vínculo com você', a.aff || 0, 'r']] : [['Energia', a.sp === 'cao' ? (a.en === undefined ? 100 : a.en) : cl((a.food * 0.5 + a.water * 0.5) * (hour() > 20 || hour() < 5 ? 0.75 : 1), 0, 100), 'y'], ['Felicidade', a.hap, ''], ['Vínculo com você', a.aff || 0, 'r']]), ['Condicionamento', a.cond, ''], ['Genética', a.gen, ''], ['Desenvolvimento', dev(a), ''], ['Cuidados', a.care, '']];
   let h = `<div class="row sp"><span class="stars">${starStr(st)}</span><span class="mut">${Math.round(score(a))} pts · ${fmt(animalValue(a))}</span></div><div class="sg">` + rows.map(([n, v, c]) => `<span>${n}</span>${bar(v, c)}<b>${Math.round(v)}</b>`).join('') + '</div>';
   if (a.traits && a.traits.length) h += `<div class="card" style="margin:4px 0;padding:5px 8px"><b>Personalidade:</b> ${esc(traitNames(a))}${a === herdLeader(a) && (a.sp === 'boi' || a.sp === 'cabra') ? ' · <b>líder do grupo</b>' : ''}<br><span class="mut">${esc(traitDesc(a))}</span></div>`;
+  if (a.sp === 'cao' && a.own === 'player') h += dogInfoHTML(a);
   h += `<div class="row sp mut" style="margin-top:4px"><span>${ageStr(a)}${a.wt ? ' · ' + Math.round(a.wt) + ' kg' : ''}</span><span>${prodStr(a)}</span></div>`;
   const co = a.coat && RIG.COATS[rigCoat(a)] ? RIG.COATS[rigCoat(a)].n : ''; const sp2 = (SPECIES[a.sp] || {})[a.br];
   if (eqn && (a.sp === 'cavalo' || a.sp === 'burro')) h += `<div class="row mut" style="margin:2px 0">Sinais: ${markStr(a.mk)}${a.cust && (a.cust.mane !== 'natural' || a.cust.tail !== 'natural') ? ' · crina ' + MANES.find(m => m[0] === a.cust.mane)[1].toLowerCase() + ', cauda ' + TAILS.find(m => m[0] === a.cust.tail)[1].toLowerCase() : ''}</div>`;
@@ -6381,7 +6703,7 @@ function sheetActions(a) {
   if (a.sp === 'boi' || a.sp === 'cabra') { L.push(['gate', 'Levar ao curral', 'curral', a.area === 'curral']); L.push(['map', 'Trocar de pasto', 'transfer']); L.push(['lasso', a._cut ? 'Juntar ao rebanho' : 'Apartar', 'cut']); }
   if (isH || a.sp === 'jumento') { L.push(['boot', a._st === 'follow' ? 'Parar de seguir' : 'Me seguir', 'follow']); L.push(['pin', a._st === 'stay' ? 'Liberar' : 'Ficar aqui', 'stay']); }
   if (a.sp === 'galinha') L.push(['egg', 'Recolher ovos (' + S.eggs + ')', 'eggs', !S.eggs]);
-  if (a.sp === 'cao') { const c = a._cmd || 'seguir'; L.push(['cow', 'Juntar o gado', 'cmdjuntar', c === 'juntar']); L.push(['lasso', 'Tocar o gado', 'cmdtocar', c === 'tocar']); L.push(['pin', 'Ficar', 'cmdficar', c === 'ficar']); L.push(['boot', 'Seguir', 'cmdseguir', c === 'seguir']); L.push(['call', 'Chamar', 'call']); L.push(['ball', 'Brincar', 'play']); L.push(['book', 'Treinar', 'train']); }
+  if (a.sp === 'cao') { const c = a._cmd || 'seguir'; L.push(['cow', 'Juntar o gado', 'cmdjuntar', c === 'juntar']); L.push(['lasso', 'Tocar o gado', 'cmdtocar', c === 'tocar']); L.push(['eye', 'Farejar fujão', 'cmdfarejar', c === 'farejar']); L.push(['gate', 'Vigiar a fazenda', 'cmdguardar', c === 'guardar']); L.push(['pin', 'Ficar', 'cmdficar', c === 'ficar']); L.push(['boot', 'Seguir', 'cmdseguir', c === 'seguir']); L.push(['call', 'Chamar', 'call']); L.push(['ball', 'Brincar', 'play']); L.push(['book', 'Treinar', 'train']); L.push(['brush', 'Coleira e lenço', 'custom']); }
   if (isH) L.push(['bag', 'Preparar viagem', 'travel', !a.saddle || !has('alforje') || a.travel]);
   if (isPullOk(a) || ((a.sp === 'jumento' || a.sp === 'burro') && a.age >= 12)) L.push(['farm', 'Atrelar carroça', 'hitch', isHitched(a.id)]);
   if (a.sp === 'boi' && a.sex === 'M' && a.age >= 24) { if ((a.carro || 0) < 100) L.push(['book', 'Amansar p/ carro (' + Math.round(a.carro || 0) + '%)', 'tame', a.tameD === S.day]); else if (S.veh && S.veh.boi.own) L.push(['farm', 'Pôr na canga', 'hitchOx', isHitched(a.id)]); }
@@ -6394,7 +6716,7 @@ function sheetActions(a) {
   if (!a.main) L.push(['sell', 'Vender', 'sell']);
   let h = '<div class="ag">' + L.map(([i, l, k, dis]) => ibtn(i, l, 'sa', k, dis)).join('') + '</div>';
   if (SH.sub === 'transfer') h += '<div class="card"><b>Levar para:</b><div class="row">' + myAreas().filter(k => AREAS[k].k === 'pasto' || k === 'conf' || k === 'quar' || k === 'receb').map(k => btn(AREAS[k].n + ' (' + Math.round(areaGrass(k) || 0) + '% capim)', 'saTo', k, k === a.area)).join('') + '</div></div>';
-  if (SH.sub === 'custom') h += custHTML(a);
+  if (SH.sub === 'custom') h += a.sp === 'cao' ? dogCustHTML(a) : custHTML(a);
   if (SH.sub === 'manejo' || (a.sp === 'boi' && a.labor && SH.sub !== 'ia')) h += manejoHTML(a);
   if (SH.sub === 'ia') h += iaHTML(a);
   if (SH.sub === 'feedHint') h += `<p class="mut">Precisa de ${IT[food].n} na mochila${a.sp === 'cao' ? ' (ou algum corte de carne)' : ''}.</p>`;
@@ -6402,6 +6724,28 @@ function sheetActions(a) {
   if (!near2 && !P.mnt) h += '<p class="mut">O vaqueiro vai caminhar até o animal para executar a ação.</p>';
   return h;
 }
+const DOG_MODE_N = { seguir: 'seguindo você', ficar: 'de guarda no lugar', juntar: 'juntando o gado', tocar: 'tocando o gado', guardar: 'vigiando a fazenda', farejar: 'farejando rastro' };
+function dogInfoHTML(a) { const B = DOGS[a.br] || {}, xp = a.xp || {}; const st = a._tired ? 'cansado, descansando' : a._thr ? 'enfrentando bicho do mato' : a._chase ? 'correndo atrás de bicho' : DOG_MODE_N[a._cmd || 'seguir'];
+  let h = `<div class="card" style="margin:4px 0;padding:5px 8px"><b>${esc(a.n)}</b> está <b>${st}</b>. Porte ${DOG_SZ[B.sz || 'M'].toLowerCase()}${a.sz && a.sz !== 1 ? (a.sz < 1 ? ' (menor)' : ' (maior)') : ''} · ${B.o === 'EX' ? 'raça estrangeira' : 'raça brasileira'}${a.esp ? ' · especialidade: ' + DOG_ESP[a.esp][0].toLowerCase() : ''}<div class="sg" style="margin-top:3px">`;
+  for (const k of ['h', 'g', 't', 'o']) { const has = a.skills.includes(DOG_SKILL[k]); h += `<span>${DOG_SKN[k]}${has ? ' ✓' : ''}</span>${bar(has ? 100 : xp[k] || 0, has ? 'w' : '')}<b>${has ? 'sabe' : Math.round(xp[k] || 0) + '%'}</b>`; }
+  return h + `</div><span class="mut">Ele aprende trabalhando: tocando gado, vigiando, achando fujão e treinando com você. Nível na raça: gado ${Math.round(dogStat(a, 'herd') * 100)} · guarda ${Math.round(dogStat(a, 'guard') * 100)} · faro ${Math.round(dogStat(a, 'track') * 100)} · obediência ${Math.round(dogStat(a, 'obey') * 100)}</span></div>`; }
+function dogCommand(a, c, quiet) { // o cão atende — ou demora, se for teimoso
+  const ob = dogStat(a, 'obey'), pDelay = cl((1.15 - ob * 0.7) * (hasT(a, 'teimoso') ? 1.6 : 1), 0, 0.7); AU.whistle();
+  a._chase = null; a._tired = a.en > 25 ? 0 : a._tired; a._trk = null; a._found = 0; a._pp = null; a._stray = null;
+  const msg = { juntar: a.n + ' vai rodear o gado e trazer até você.', tocar: a.n + ' vai guardar o flanco do rebanho enquanto você toca.', ficar: a.n + ' ficou de guarda aqui.', seguir: a.n + ' volta a seguir você.', guardar: a.n + ' vai rondar a fazenda: currais, terreiro e casa.', farejar: a.n + ' baixou o focinho e começou a farejar…' }[c];
+  if (Math.random() < pDelay && c !== 'seguir') { a._cmdQ = { c, t: rnd(1.2, 3.2) }; emoteA(a, '?'); if (!quiet) say(a.n + ' fez que não ouviu… (' + (hasT(a, 'teimoso') ? 'teimoso' : 'ainda aprendendo') + ')', 2200); return; }
+  a._cmd = c; a._cmdQ = null; a._ph2 = null; a._st = null; dogXP(a, 'o', 1.5); if (!quiet) say(msg, 2600);
+}
+function dogCustHTML(a) { const dc = a.dc || { col: '#8a4a1e', colT: 'couro', bnd: '' };
+  let h = `<div class="card"><b>Coleira e lenço de ${esc(a.n)}</b><p class="mut">Pelagem: ${RIG.COATS[rigCoat(a)] ? RIG.COATS[rigCoat(a)].n : '—'} · ${yrs(a)} ano(s). Coleira nova ou lenço: R$ 20 cada troca (Casa do Agro entrega na hora).</p>`;
+  h += `<b>Coleira</b><div class="ch">${COLLAR_T.map(([v, n]) => `<button data-a="dcust" data-v="colT|${v}" class="${dc.colT === v ? 'on' : ''}">${n}</button>`).join('')}</div>`;
+  if (dc.colT !== 'nada') h += `<div class="ch">${COLLARS.map(([v, n]) => `<button data-a="dcust" data-v="col|${v}" class="sw ${dc.col === v ? 'on' : ''}" title="${n}" aria-label="${n}" style="background:${v}!important"></button>`).join('')}</div>`;
+  h += `<b>Lenço</b><div class="ch">${BANDANAS.map(([v, n]) => v === '' || v === 'chita' ? `<button data-a="dcust" data-v="bnd|${v}" class="${dc.bnd === v ? 'on' : ''}">${n}</button>` : `<button data-a="dcust" data-v="bnd|${v}" class="sw ${dc.bnd === v ? 'on' : ''}" title="${n}" aria-label="${n}" style="background:${v}!important"></button>`).join('')}</div>`;
+  return h + '</div>'; }
+A.dcust = v => { const a = SH.a; if (!a) return; const i = v.indexOf('|'), k = v.slice(0, i), x = v.slice(i + 1); a.dc = Object.assign({ col: '#8a4a1e', colT: 'couro', bnd: '' }, a.dc || {}); if (a.dc[k] === x) return;
+  if (!(k === 'colT' && x === 'nada') && !(k === 'bnd' && x === '') && !pay(20, (k === 'bnd' ? 'Lenço' : 'Coleira') + ' para ' + a.n)) return;
+  a.dc[k] = x; hist(a, k === 'bnd' ? (x ? 'Ganhou lenço novo' : 'Tirou o lenço') : 'Coleira nova'); bond(a, 1); a.hap = cl(a.hap + 3, 0, 100); AU.buckle(); heart(a.x, a.y - 16); renderSheet(); };
+function callDogs() { const L = myAnimals('cao').filter(d => !d._hid && d.own === 'player'); if (!L.length) return say('Você não tem cão.', 1500); AU.whistle(); L.forEach(d => { d._st = 'back'; d._cmd = 'seguir'; d._cmdQ = null; d._chase = null; d._thr = null; d._noThr = drawT + 6; d._trk = null; }); say('🐕 Assobio: ' + L.map(d => d.n).join(' e ') + ', aqui!', 1800); }
 function swatch(key, list, cur) { return `<div class="ch">${list.map(([c, n]) => `<button data-a="cust" data-v="${key}|${c}" class="sw ${c === cur ? 'on' : ''}" title="${n}" aria-label="${n}" style="background:${c}!important"></button>`).join('')}</div>`; }
 function custHTML(a) {
   const cu = a.cust || defCust(), st = S.tack || {}, op = (k, list, cur) => `<div class="ch">${list.map(([v, n, pr]) => `<button data-a="cust" data-v="${k}|${v}" class="${v === cur ? 'on' : ''}">${n}${pr && !st[v] ? ' · ' + fmt(pr) : ''}</button>`).join('')}</div>`;
@@ -6458,13 +6802,13 @@ A.sa = k => {
     case 'curral': return escort(a, 'curral');
     case 'transfer': SH.sub = SH.sub === 'transfer' ? null : 'transfer'; return renderSheet();
     case 'eggs': { const [ex, ey] = fpx('eggs'); return approach({ x: ex, y: ey }, 10, () => act('pickup', 0.8, { x: ex, y: ey - 1 }, () => collectEggs()), 'ovos'); }
-    case 'call': act('call', 0.6, null, () => { a._st = 'back'; a._cmd = 'seguir'; AU.whistle(); }, { zoom: false }); return;
-    case 'cmdjuntar': case 'cmdtocar': case 'cmdficar': case 'cmdseguir': { const c = k.slice(3); a._cmd = c; a._ph2 = null; a._st = null; AU.whistle(); act('call', 0.5, null, null, { zoom: false }); say({ juntar: a.n + ' vai rodear o gado e trazer até você.', tocar: a.n + ' vai guardar o flanco do rebanho enquanto você toca.', ficar: a.n + ' ficou de guarda aqui.', seguir: a.n + ' volta a seguir você.' }[c], 2600); if (c === 'juntar' || c === 'tocar') closeSheet(); renderSheet(); return; }
+    case 'call': act('call', 0.6, null, () => { a._st = 'back'; a._cmd = 'seguir'; a._cmdQ = null; a._chase = null; a._thr = null; a._noThr = drawT + 6; a._tired = 0; AU.whistle(); }, { zoom: false }); return;
+    case 'cmdjuntar': case 'cmdtocar': case 'cmdficar': case 'cmdseguir': case 'cmdguardar': case 'cmdfarejar': { const c = k.slice(3); dogCommand(a, c); act('call', 0.5, null, null, { zoom: false }); if (c === 'juntar' || c === 'tocar' || c === 'farejar') closeSheet(); else renderSheet(); return; }
     case 'cut': { a._cut = !a._cut; say(a._cut ? a.n + ' foi apartado: ele não acompanha mais o rebanho até você juntar de novo.' : a.n + ' voltou para o rebanho.', 2600); renderSheet(); return; }
     case 'follow': { if (a._st === 'follow') { a._st = null; say(a.n + ' ficou à vontade.', 1800); } else { a._st = 'follow'; a._t = 1e9; a.tie = null; AU.whistle(); say(a.n + ' vai seguir você.', 1800); } renderSheet(); return; }
     case 'stay': { if (a._st === 'stay') { a._st = null; } else { a._st = 'stay'; a._home = [a.x, a.y]; a._t = 1e9; say(a.n + ' vai ficar por aqui.', 1800); } renderSheet(); return; }
     case 'play': { const ang = { 0: [0, 1], 1: [0, -1], 2: [-1, 0], 3: [1, 0] }[P.dir]; return act('throw', 0.7, null, () => { }, { zoom: false, onThrow: () => { let tx = P.x + ang[0] * 70, ty = P.y + ang[1] * 60; for (let i = 0; i < 6 && hitAt(tx, ty, 4); i++) { tx = lerp(tx, P.x, 0.3); ty = lerp(ty, P.y, 0.3); } for (let i = 0; i < 8; i++) part(lerp(P.x, tx, i / 8), lerp(P.y - 20, ty, i / 8) - Math.sin(i / 8 * Math.PI) * 20, 'dust', { vx: 0, vy: 0, m: 0.25 + i * 0.04, c: '#8a5a2a', s: 2 }); a._st = 'fetch'; a._tg = [tx, ty]; a._t = 4; AU.bark(a.x, a.y); if (a.playD !== S.day) { a.playD = S.day; a.hap = cl(a.hap + 10, 0, 100); a.cond = cl(a.cond + 2, 0, 100); hist(a, 'Brincou de buscar o graveto'); } } }); }
-    case 'train': return doAnimal(a, 'train', 3, () => { P.en = Math.max(0, P.en - 4); if (a.trainD !== S.day) { a.trainD = S.day; a.cond = cl(a.cond + 6, 0, 100); a.care = cl(a.care + 3, 0, 100); const pool = ['Obediente', 'Boiadeiro', 'Guarda', 'Rastreador'].filter(s => !a.skills.includes(s)); if (pool.length && Math.random() < 0.25) { const s = pool[0]; a.skills.push(s); toast('🎓 ' + a.n + ' aprendeu: ' + s + '!'); hist(a, 'Aprendeu ' + s); AU.jingle(); } else { hist(a, 'Treinou obediência'); toast('🐕 Treino feito (+condicionamento)'); } } else toast('Já treinou hoje. Amanhã tem mais!'); a._st = 'sitc'; a._t = 2; });
+    case 'train': return doAnimal(a, 'train', 3, () => { P.en = Math.max(0, P.en - 4); if (a.trainD !== S.day) { a.trainD = S.day; a.cond = cl(a.cond + 6, 0, 100); a.care = cl(a.care + 3, 0, 100); bond(a, 3); a.xp = a.xp || { h: 0, g: 0, t: 0, o: 0 }; const fk = a.esp === 'boiadeiro' ? 'h' : a.esp === 'guarda' ? 'g' : a.esp === 'rastreador' ? 't' : 'o'; dogXP(a, 'o', 22); dogXP(a, fk, 10); for (const q of ['h', 'g', 't']) if (q !== fk) dogXP(a, q, 4); hist(a, 'Treinou: senta, fica, vem e busca'); toast('🐕 Treino feito! Obediência +, ' + DOG_SKN[fk] + ' +'); } else toast('Já treinou hoje. Amanhã tem mais!'); a._st = 'sitc'; a._t = 2; });
     case 'travel': return doAnimal(a, 'travel', 1.8, () => { if (!useInv('alforje')) return; a.travel = true; a._stam = 100; hist(a, 'Preparado para viagem'); toast('🎒 ' + a.n + ' pronto para viagem: fôlego rende mais.'); });
     case 'hitch': { if (S.veh) useVeh(S.veh.carroca); if (hyp(S.cart.x - a.x, S.cart.y - a.y) > 160) return say('Leve ' + a.n + ' pelo cabresto até a carroça (perto do galpão).', 3000); P.lead = a.id; a._st = 'led'; return approach(S.cart, 26, () => A.hitch(a.id)); }
     case 'hitchOx': { useVeh(S.veh.boi); if (hyp(S.cart.x - a.x, S.cart.y - a.y) > 160) return say('Leve ' + a.n + ' pelo cabresto até o carro de boi.', 3000); P.lead = a.id; a._st = 'led'; return approach(S.cart, 30, () => A.hitch(a.id)); }
@@ -6710,7 +7054,7 @@ function feiraTab() {
   return h;
 }
 A.feiraPick = v => { M.fsel = M.fsel === v ? null : v; renderModal(); };
-function feiraDeliver(a, price) { if (a.sp === 'cao' && myAnimals('cao').length >= 2) { say('Dois cães já bastam na fazenda!'); return false; } a.own = 'delivery'; a.x = a.y = -999; markBought(a, price); S.animals.push(a); S.delivery.push({ id: a.id, day: S.day + 1, to: a.sp === 'galinha' ? 'galin' : 'receb' }); if (a._calf) { const c = a._calf; delete a._calf; c.own = 'delivery'; c.x = c.y = -999; c.maeId = a.id; markBought(c, 0); S.animals.push(c); S.delivery.push({ id: c.id, day: S.day + 1, to: 'receb' }); } return true; }
+function feiraDeliver(a, price) { if (a.sp === 'cao' && myAnimals('cao').length >= 4) { say('Quatro cães já bastam na fazenda!'); return false; } a.own = 'delivery'; a.x = a.y = -999; markBought(a, price); S.animals.push(a); S.delivery.push({ id: a.id, day: S.day + 1, to: a.sp === 'galinha' ? 'galin' : 'receb' }); if (a._calf) { const c = a._calf; delete a._calf; c.own = 'delivery'; c.x = c.y = -999; c.maeId = a.id; markBought(c, 0); S.animals.push(c); S.delivery.push({ id: c.id, day: S.day + 1, to: 'receb' }); } return true; }
 A.feiraBuy = v => { const [i, j] = v.split('|').map(Number), lot = S.feira.lots[i], a = lot && lot.animals[j]; if (!a) return; const pr = feiraPrice(a); if (!pay(pr, 'Feira: ' + a.n + ' (' + breedOf(a).n + ')')) return; if (!feiraDeliver(a, pr - (a._calf ? 0 : 0))) return; lot.animals.splice(j, 1); M.fsel = null; toast('🔨 ' + a.n + ' comprado(a)! Chega amanhã cedo.'); renderModal(); };
 A.feiraLote = v => { const lot = S.feira.lots[+v]; if (!lot) return; const tot = lot.animals.reduce((s, a) => s + feiraPrice(a), 0) * 0.97; if (!pay(tot, 'Feira: lote de ' + lot.animals.length + ' ' + lot.kind.toLowerCase())) return; const n = lot.animals.length; lot.animals.forEach(a => feiraDeliver(a, feiraPrice(a) * 0.97)); lot.animals = []; M.fsel = null; toast('🔨 Lote de ' + n + ' arrematado! Chega amanhã cedo no Recebimento.'); renderModal(); };
 /* ============ SUPER MEGA ATUALIZAÇÃO DA AGRICULTURA: horta de consumo e roça para ração ============ */
@@ -6733,7 +7077,7 @@ Object.assign(IT, {
   foice: { i: '', n: 'Foice', kg: 1.5, p: 70, d: 'Corta milho, sorgo e capim mais rápido que o facão.', c: 'ferr' },
   pulverizador: { i: '', n: 'Pulverizador costal', kg: 4, p: 220, d: 'Bomba de costas para aplicar o defensivo contra praga.', c: 'ferr' }
 });
-const DEPKG = ['racao', 'milho', 'sal', 'silagem', 'palma', 'sorgo', 'capim', 'mandioca', 'esterco'];
+const DEPKG = ['racao', 'milho', 'sal', 'silagem', 'palma', 'sorgo', 'capim', 'mandioca', 'esterco', 'racaoCao'];
 const CROPS = {
   alface: { n: 'Alface', k: 'h', days: 2, item: 'alface', q: 6, seed: 8, c: '#7ac850', d: 'Rápida e fácil: em 2 dias.' },
   couve: { n: 'Couve', k: 'h', days: 3, item: 'couve', q: 5, seed: 10, regrow: 1.5, cuts: 3, c: '#3a8a3a', d: 'Colhe as folhas 3 vezes.' },
@@ -7198,7 +7542,7 @@ function buyItem(id, n, dest) {
   const it = IT[id], cost = it.p * n * priceMul();
   if (dest === 'cart' && cartKg() + it.kg * n > cartCap()) return say('A carroça não comporta tanto peso.');
   if (dest === 'inv' && invKg() + it.kg * n > INV_CAP) return say('Mochila pesada demais. Use a carroça ou a entrega.');
-  if (dest === 'frete') { const fee = 60; if (!pay(cost + fee, 'Compra de ' + n + 'x ' + it.n + ' + frete')) return; S.fretePend = S.fretePend || {}; const kg = ['racao', 'milho', 'sal'].includes(id) ? it.kg * n : n; S.fretePend[id] = (S.fretePend[id] || 0) + kg; S.frete = true; toast('🚚 Entrega no depósito amanhã às 6h'); return; }
+  if (dest === 'frete') { const fee = 60; if (!pay(cost + fee, 'Compra de ' + n + 'x ' + it.n + ' + frete')) return; S.fretePend = S.fretePend || {}; const kg = ['racao', 'milho', 'sal', 'racaoCao'].includes(id) ? it.kg * n : n; S.fretePend[id] = (S.fretePend[id] || 0) + kg; S.frete = true; toast('🚚 Entrega no depósito amanhã às 6h'); return; }
   if (!pay(cost, 'Compra de ' + n + 'x ' + it.n)) return;
   if (dest === 'cart') S.cart.cargo[id] = (S.cart.cargo[id] || 0) + n; else addInv(id, n, true);
   toast(`${it.i} +${n} ${it.n}`);
@@ -7248,7 +7592,7 @@ function genAgroStock() { const L = []; const sid = S.nid; const mk = (sp, br, o
   for (let i = 0; i < 2; i++) L.push(mk('cabra', pick(Object.keys(GOATS)), { age: rint(10, 24), sex: i ? 'F' : pick(['M', 'F']) }));
   L.push(mk('galinha', pick(Object.keys(CHICKENS)), { sex: 'F', age: 10 }), mk('cao', pick(Object.keys(DOGS).filter(k => !DOGS[k].old)), { age: 8 }), mk('jumento', pick(Object.keys(DONKEYS)), {}), mk(Math.random() < 0.5 ? 'burro' : 'cavalo', null, {}));
   S.agroStock = { day: S.day, list: L }; }
-A.agroBuy = v => { const a = S.agroStock.list[+v]; if (!a) return; if (a.sp === 'cao' && myAnimals('cao').length >= 2) return say('Dois cães já bastam na fazenda!'); if (!pay(animalValue(a) * 1.05 * priceMul(), 'Leilão: ' + a.n)) return; a.own = 'delivery'; a.x = a.y = -999; S.animals.push(a); S.delivery.push({ id: a.id, day: S.day + 1, to: a.sp === 'galinha' ? 'galin' : 'receb' }); S.agroStock.list.splice(+v, 1); toast('🔨 Arrematado! Chega amanhã cedo.'); renderModal(); };
+A.agroBuy = v => { const a = S.agroStock.list[+v]; if (!a) return; if (a.sp === 'cao' && myAnimals('cao').length >= 4) return say('Quatro cães já bastam na fazenda!'); if (!pay(animalValue(a) * 1.05 * priceMul(), 'Leilão: ' + a.n)) return; a.own = 'delivery'; a.x = a.y = -999; S.animals.push(a); S.delivery.push({ id: a.id, day: S.day + 1, to: a.sp === 'galinha' ? 'galin' : 'receb' }); S.agroStock.list.splice(+v, 1); toast('🔨 Arrematado! Chega amanhã cedo.'); renderModal(); };
 A.buySad = v => { const s = SADDLES.find(q => q.id === v); if (pay(s.p * priceMul(), s.n)) { S.saddles.push(v); toast('🐎 ' + s.n + ' guardada no galpão.'); } renderModal(); };
 A.vetCall = () => { const sick = myAnimals().filter(a => a.sick); if (!sick.length) return toast('Nenhum animal doente agora.'); if (pay(150, 'Consulta veterinária')) { sick.forEach(a => { a.sick = 0; a.hp = cl(a.hp + 20, 0, 100); }); addFr('joana', 15); toast('🩺 Joana tratou ' + sick.length + ' animal(is).'); } renderModal(); };
 function openMercadinho() { showModal('🧺 Mercadinho Itarantim', [['com', 'Comida'], ['var', 'Variedades'], ['ven', 'Vender']], 'com', t => {
@@ -7346,7 +7690,7 @@ A.useSad = v => { S.saddleSel = v; const h = mainHorse(); if (h && h.saddle) h.s
 function openDeposito() { showModal('🌽 Depósito de Alimentos', null, null, () => {
   const nearCart = hyp(S.cart.x - P.x, S.cart.y - P.y) < 90;
   let h = `<div class="row sp"><span>Capacidade</span>${bar(depKg() / depCap() * 100, 'y')}<span>${Math.round(depKg())}/${depCap()} kg</span></div><table class="t"><tr><th>Item</th><th>Depósito</th><th>Mochila</th><th></th></tr>`;
-  for (const k of ['racao', 'milho', 'sal', 'silagem', 'palma', 'sorgo', 'capim', 'mandioca', 'esterco', 'lenha', 'carvao']) { const kg = DEPKG.includes(k), unit = kg ? IT[k].kg : 1; const d = kg ? Math.floor((S.dep[k] || 0) / unit) : (S.dep[k] || 0); h += `<tr><td>${iic(k, 16)} ${IT[k].n.split(' (')[0]}</td><td>${kg ? Math.round(S.dep[k] || 0) + ' kg' : d}</td><td>${S.inv[k] || 0}</td><td>${btn('⬆ pegar', 'depGet', k, d < 1)}${btn('⬇ guardar', 'depPut', k, !S.inv[k])}</td></tr>`; }
+  for (const k of ['racao', 'milho', 'sal', 'racaoCao', 'silagem', 'palma', 'sorgo', 'capim', 'mandioca', 'esterco', 'lenha', 'carvao']) { const kg = DEPKG.includes(k), unit = kg ? IT[k].kg : 1; const d = kg ? Math.floor((S.dep[k] || 0) / unit) : (S.dep[k] || 0); h += `<tr><td>${iic(k, 16)} ${IT[k].n.split(' (')[0]}</td><td>${kg ? Math.round(S.dep[k] || 0) + ' kg' : d}</td><td>${S.inv[k] || 0}</td><td>${btn('⬆ pegar', 'depGet', k, d < 1)}${btn('⬇ guardar', 'depPut', k, !S.inv[k])}</td></tr>`; }
   h += '</table>';
   h += nearCart ? `<div class="card"><b>Carroça aqui</b> (${Math.round(cartKg())} kg)<div class="row">${btn('Descarregar tudo no depósito', 'cartUnload')}${btn('Carregar 4 sacos de ração', 'cartLoad', 'racao')}</div></div>` : '<p class="mut">Traga a carroça até a porta para carregar/descarregar em quantidade.</p>';
   return h; }); }
@@ -8935,7 +9279,7 @@ const RIGSP = { boi: 1, cavalo: 1, burro: 1, jumento: 1, cao: 1, cabra: 1, fauna
 const MATURE = { boi: 24, cavalo: 30, burro: 30, jumento: 30, cabra: 12, cao: 10, fauna: 8 };
 function rigBreed(a) { const k = rigBreedKey(a.sp, a.br, a.sex); return RIG.BR[k] ? k : a.sp === 'boi' ? 'mestico' : a.sp === 'cao' ? 'caramelo' : a.sp === 'cabra' ? 'moxoto' : 'mm'; }
 function rigCoat(a) { if (a.coat && RIG.COATS[a.coat]) return (a.sp === 'cavalo' || a.sp === 'burro') ? greyAge(a.coat, a.age) : a.coat; const cs = RIG.spec(rigBreed(a)).coats || ['castanho']; return cs[(a.id * 7 + 3) % cs.length]; }
-function rigK(a) { const k = 0.55 + 0.45 * Math.min(1, (a.age || 0) / (MATURE[a.sp] || 20)); return Math.round(k * 20) / 20; }
+function rigK(a) { const k = (0.55 + 0.45 * Math.min(1, (a.age || 0) / (MATURE[a.sp] || 20))) * (a.sz || 1); return Math.round(k * 20) / 20; }
 function rigView(a) {
   const hx = a._hx || 0, hy = a._hy || 0;
   if ((a._mv || 0) > 2) { const ax = Math.abs(hx), ay = Math.abs(hy); let v = a._vw || 'side';
@@ -8964,7 +9308,7 @@ function rigAnim(a, br, k) {
 }
 function rigOpts(a, k) {
   const sd = a.saddle ? SADDLES.find(s => s.id === a.saddle) : null, cu = a.cust || {};
-  return { noHorn: !!a.mocho, brand: a.marca || undefined, bflip: !!(a.marca && a.f < 0), tag: !!a.brinco, mane: cu.mane && cu.mane !== 'natural' ? cu.mane : undefined, tail: cu.tail && cu.tail !== 'natural' ? cu.tail : undefined, pad: sd ? cu.pad : undefined, rein: cu.rein && cu.rein !== '#3a2410' ? cu.rein : undefined, peit: !!(sd && cu.peit), orn: cu.orn && cu.orn !== 'none' ? cu.orn : undefined, k, seed: a.id % 97 + 1, marks: a.mk === undefined ? ((a.id * 2654435761) >>> 0) % 64 * (a.id % 3 === 0 ? 0 : 1) : a.mk, sex: a.sex, adult: (a.age || 0) >= (MATURE[a.sp] || 20) * 0.75, saddle: sd ? { id: sd.id, c: sd.c } : null, pack: !!a.travel && (a.sp === 'burro' || a.sp === 'jumento'), load: a.travel ? 1 : 0, harness: S && S.cart && S.cart.hitch === a.id && S.cart.kind !== 'boi' };
+  return { noHorn: !!a.mocho, brand: a.marca || undefined, bflip: !!(a.marca && a.f < 0), tag: !!a.brinco, mane: cu.mane && cu.mane !== 'natural' ? cu.mane : undefined, tail: cu.tail && cu.tail !== 'natural' ? cu.tail : undefined, pad: sd ? cu.pad : undefined, rein: cu.rein && cu.rein !== '#3a2410' ? cu.rein : undefined, peit: !!(sd && cu.peit), orn: cu.orn && cu.orn !== 'none' ? cu.orn : undefined, k, seed: a.id % 97 + 1, marks: a.mk === undefined ? ((a.id * 2654435761) >>> 0) % 64 * (a.id % 3 === 0 ? 0 : 1) : a.mk, sex: a.sex, adult: (a.age || 0) >= (MATURE[a.sp] || 20) * 0.75, saddle: sd ? { id: sd.id, c: sd.c } : null, pack: !!a.travel && (a.sp === 'burro' || a.sp === 'jumento'), load: a.travel ? 1 : 0, harness: S && S.cart && S.cart.hitch === a.id && S.cart.kind !== 'boi', col: a.dc && a.dc.colT !== 'nada' ? a.dc.col : undefined, colT: a.dc ? a.dc.colT : undefined, bnd: a.dc && a.dc.bnd ? a.dc.bnd : undefined };
 }
 function rigFrame(a, view, an, fr) { const br = rigBreed(a), k = rigK(a); return RIG.get(br, rigCoat(a), view, an, fr, rigOpts(a, k)); }
 function animalDraw(a) { // [canvas, ox, oy, escala, sombra, rig, vista]
@@ -9445,7 +9789,7 @@ function csIntro() {
     { fn: () => csTitle(null), spd: 1.6, z: 1.05, pitch: 42, dof: 0.3, txt: 'Itarantim, sudoeste da Bahia. Depois da ponte do riacho fica a terra que o avô deixou.', d: 6.2, upd: ride(r1, 1) },
     { spd: 1.6, pitch: 46, rays: 0.7, txt: `<b>${nm}</b> veio conhecer a Fazenda Boa Esperança, herança de seu avô <b>Tiãozinho</b>.`, d: 8, upd: ride(r2, 1) },
     { cam: [6, 50.6], z: 1.65, spd: 1.3, pitch: 34, dof: 0.6, focus: 0.42, txt: 'No pasto, os dois bois pé-duro que ficaram: <b>Malhado</b> e <b>Fumaça</b>.', d: 4.8, fn: () => { setTimeout(() => bois[0] && AU.moo(bois[0].x, bois[0].y, 0.95), 600); setTimeout(() => bois[1] && AU.moo(bois[1].x, bois[1].y, 1.08), 2200); } },
-    { cam: [10.5, 33], z: 1.7, spd: 1.7, pitch: 40, dof: 0.5, txt: 'Na varanda do rancho, Caramelo, o cão do avô, levanta a cabeça.', d: 3.4, fn: () => { if (dog) dog._pose = 'sit'; } },
+    { cam: [10.5, 33], z: 1.7, spd: 1.7, pitch: 40, dof: 0.5, txt: 'Na varanda do rancho, ' + (dog ? esc(dog.n) : 'o cão') + ', o cão da fazenda, levanta a cabeça.', d: 3.4, fn: () => { if (dog) dog._pose = 'sit'; } },
     { d: 2.2, clr: 1, fn: () => { if (dog) { dog._pose = 'run'; AU.bark(dog.x, dog.y); } }, upd: (dt, u) => { if (!dog) return; const k = easeIO(u); dog.x = lerp(7.6 * TS, ex + 8, k); dog.y = lerp(29.9 * TS, ey + 14, k); dog.f = 1; if (u >= 1) dog._pose = 'sit'; } },
     { d: 1.0, fn: () => { P.dir = 3; if (h) { h.f = 1; act('dismount', 0.85, h, () => { P.mnt = null; P.x = ex; P.y = ey; h._st = 'idle'; h._t = 30; }, { ex, ey, keep: 1, zoom: false }); AU.saddleCreak(); } }, upd: dt => { if (P._act) updAct(dt); } },
     { cam: [12.8, 36], z: 2.1, spd: 1.4, pitch: 48, dof: 0.45, d: 3.4, fn: () => { P._act = null; P.mnt = null; P.x = ex; P.y = ey; fel.pose = 'walk'; fel._dist = fel._dist || 0; }, upd: (dt, u) => { const k = Math.min(1, u * 1.15), nx = lerp(19.5 * TS, fx, k), ny = lerp(39.6 * TS, ey, Math.min(1, k * 1.6)); fel._dist += hyp(nx - fel.x, ny - fel.y); fel.dir = Math.abs(nx - fel.x) > Math.abs(ny - fel.y) ? 2 : 1; fel.x = nx; fel.y = ny; if (k >= 1) { fel.pose = 'idle'; fel.dir = 2; } } },
@@ -9747,7 +10091,7 @@ const SAVE = {
     v = o.v || v || 1; while (v < SAVE_V && MIGR[v]) v = MIGR[v](o); o.v = SAVE_V;
     const base = newState(); for (const k in base) if (o[k] === undefined) o[k] = base[k];
     for (const k in base.dep) if (o.dep[k] === undefined) o.dep[k] = 0;
-    S = o; P = S.p; initVeh(S); initAgro(S); if (!S.gadoV) { S.animals.forEach(a => { if (a.own === 'player' && a.sp === 'boi' && a.sex === 'M' && a.age >= 24) a.cast = 1; }); S.gadoV = 2; } lasso.t = null; parts = []; rings = []; if (S.cf && S.cf.ap) delete S.cf.ap.tool; if (!S.chest) S.chest = {}; if (!S.esc) S.esc = []; S.esc = []; S.animals.forEach(a => { if (!a.hist) a.hist = []; if (a._st === 'route') a._st = null; });
+    S = o; P = S.p; initVeh(S); initAgro(S); if (!S.caoV) { S.animals.forEach(a => { if (a.sp !== 'cao') return; if (!a.dc) a.dc = { col: '#8a4a1e', colT: 'couro', bnd: '' }; if (!a.xp) a.xp = { h: 0, g: 0, t: 0, o: 0 }; if (a.en === undefined) a.en = 100; const cs = (RIG.BR[a.br] || {}).coats; if (cs && !cs.includes(a.coat)) a.coat = cs[0]; }); S.caoV = 1; } if (!S.gadoV) { S.animals.forEach(a => { if (a.own === 'player' && a.sp === 'boi' && a.sex === 'M' && a.age >= 24) a.cast = 1; }); S.gadoV = 2; } lasso.t = null; parts = []; rings = []; if (S.cf && S.cf.ap) delete S.cf.ap.tool; if (!S.chest) S.chest = {}; if (!S.esc) S.esc = []; S.esc = []; S.animals.forEach(a => { if (!a.hist) a.hist = []; if (a._st === 'route') a._st = null; });
     genMap(); agroMap(); genCityDeco(); initGrass(); if (S.grass) { const u = new Uint8Array(MW * MH); decodeU8(S.grass, u); for (let i = 0; i < u.length; i++) if (ground[i] === G.PAST) grass[i] = u[i]; }
     GATES.forEach((g, i) => { g.open = !!S.gates[i]; g.anim = g.open ? 1 : 0; });
     while (S.tr.length < TROUGHS.length) S.tr.push(TROUGHS[S.tr.length].cap * 0.5);
@@ -9777,7 +10121,36 @@ const mtSp = mt => mt === 'muar' ? 'burro' : mt === 'jegue' ? 'jumento' : 'caval
 const mtTab = mt => mt === 'muar' ? MULES : mt === 'jegue' ? DONKEYS : HORSES;
 function defaultCF() {
   const st = 4; const pre = STATES[st][3];
-  return { name: 'Zé do Gado', st, sk: Object.assign({}, STATES[st][6]), mt: 'cavalo', hn: 'Trovão', hbr: 'mm', coat: RIG.BR.mm.coats[0], mk: 5, hsex: 'M', sd: 0, aj: 2, age: 2, cust: defCust(), allC: false, ap: { sex: 'M', skin: 2, hair: 0, hairC: 1, hat: pre.hat, shirt: pre.shirt, shirtC: pre.shirtC, pants: pre.pants, pantsC: pre.pantsC, boots: pre.boots, acc: pre.acc, scarfC: pre.scarfC, orn: STATES[st][4] } };
+  return { dogs: [defDog(0)], di: 0, dogO: 'BR', dAllC: false, name: 'Zé do Gado', st, sk: Object.assign({}, STATES[st][6]), mt: 'cavalo', hn: 'Trovão', hbr: 'mm', coat: RIG.BR.mm.coats[0], mk: 5, hsex: 'M', sd: 0, aj: 2, age: 2, cust: defCust(), allC: false, ap: { sex: 'M', skin: 2, hair: 0, hairC: 1, hat: pre.hat, shirt: pre.shirt, shirtC: pre.shirtC, pants: pre.pants, pantsC: pre.pantsC, boots: pre.boots, acc: pre.acc, scarfC: pre.scarfC, orn: STATES[st][4] } };
+}
+function defDog(i) { const br = i ? 'mantiqueira' : 'caramelo'; return { br, coat: RIG.BR[br].coats[0], sex: i ? 'F' : 'M', age: 2, pt: 1, n: i ? 'Baleia' : 'Caramelo', col: i ? '#b02020' : '#8a4a1e', colT: i ? 'sino' : 'couro', bnd: i ? '' : '#b02020', tr: [], esp: i ? 'guarda' : 'boiadeiro' }; }
+const DOG_COATS_ALL = (() => { const s = new Set(); for (const k in DOGS) { const b = RIG.BR[k]; if (b && b.coats) b.coats.forEach(c => s.add(c)); } return [...s]; })();
+function dogAgeTxt(i) { return ['Filhote de poucos meses: aprende tudo muito rápido, mas ainda cansa logo e não segura boi bravo.', 'Jovem: cheio de energia e bom de aprender. Ainda meio estabanado na lida.', 'Adulto no auge: força, velocidade e fôlego no ponto.', 'Maduro e experiente: um pouco mais lento, mas obedece de primeira e não se perde.', 'Veterano: lento e dorminhoco, mas sabe tudo da lida e é o mais obediente.'][i]; }
+function dogStatsHTML(B, ag, pt) { const am = [0.7, 0.92, 1, 0.95, 0.8][ag], so = [1.15, 1.05, 1, 1.05, 1.2][ag], sz = DOG_PORTE[pt][1]; return `<div class="stat">${statBar('Tocar gado', B.herd * am, 1.5)}${statBar('Guarda', B.guard * (0.9 + sz * 0.1) * (ag ? 1 : 0.6), 1.45)}${statBar('Faro', B.track, 1.5)}${statBar('Velocidade', (B.spd || 1) * am * (0.96 + sz * 0.04), 1.2)}${statBar('Fôlego', (B.sta || 1) * am, 1.4)}${statBar('Obediência', (B.obey || 1) * so, 1.5)}</div>`; }
+function dogSetupHTML() {
+  const ds = CF.dogs, d = ds[CF.di] || ds[0], B = DOGS[d.br], typ = RIG.BR[d.br].coats, coats = CF.dAllC ? [...typ, ...DOG_COATS_ALL.filter(c => !typ.includes(c))] : typ;
+  let h = `<label>Quantos cães vêm com você?</label><div class="ch"><button data-s="dN" data-v="1" class="${ds.length === 1 ? 'on' : ''}">Um cão</button><button data-s="dN" data-v="2" class="${ds.length === 2 ? 'on' : ''}">Dois cães (uma dupla)</button></div>`;
+  if (ds.length > 1) h += `<div class="ch">${ds.map((x, i) => `<button data-s="dI" data-v="${i}" class="${i === CF.di ? 'on' : ''}" style="font-weight:700">Cão ${i + 1}: ${esc(x.n)}</button>`).join('')}</div>`;
+  h += `<label>Origem da raça</label><div class="ch"><button data-s="dO" data-v="BR" class="${CF.dogO === 'BR' ? 'on' : ''}">Raças brasileiras (${DOG_BR.length})</button><button data-s="dO" data-v="EX" class="${CF.dogO === 'EX' ? 'on' : ''}">Raças do exterior (${DOG_EX.length})</button></div>`;
+  h += `<label>Raça</label><div class="ch">${(CF.dogO === 'EX' ? DOG_EX : DOG_BR).map(k => `<button data-s="dbr" data-v="${k}" class="${k === d.br ? 'on' : ''}">${DOGS[k].n}</button>`).join('')}</div>`;
+  h += `<div class="desc"><b>${B.n}</b> · porte ${DOG_SZ[B.sz].toLowerCase()} · ${B.o === 'BR' ? 'raça brasileira' : 'raça estrangeira'}<br>${B.d}</div>` + dogStatsHTML(B, d.age, d.pt);
+  h += `<label>Pelagem ${CF.dAllC ? '(todas)' : '(típicas da raça)'}</label><div class="ch">${coats.map(c => `<button data-s="dcoat" data-v="${c}" class="${c === d.coat ? 'on' : ''}" style="${typ.includes(c) ? '' : 'opacity:.85'}">${RIG.COATS[c].n}</button>`).join('')}<button data-s="dAllC" data-v="1" style="font-weight:700">${CF.dAllC ? '◀ Só as típicas' : '+ Todas as pelagens (' + DOG_COATS_ALL.length + ')'}</button></div>`;
+  h += `<label>Sexo</label><div class="ch"><button data-s="dsex" data-v="M" class="${d.sex === 'M' ? 'on' : ''}">Macho</button><button data-s="dsex" data-v="F" class="${d.sex === 'F' ? 'on' : ''}">Fêmea</button></div>`;
+  h += `<label>Idade</label><div class="ch">${DOG_AGES.map(([n, dd], i) => `<button data-s="dage" data-v="${i}" class="${i === d.age ? 'on' : ''}">${n} (${i === 0 ? 'meses' : yrsOf(dd) + ' anos'})</button>`).join('')}</div><div class="desc">${dogAgeTxt(d.age)}</div>`;
+  h += `<label>Porte</label><div class="ch">${DOG_PORTE.map(([n], i) => `<button data-s="dpt" data-v="${i}" class="${i === d.pt ? 'on' : ''}">${n}</button>`).join('')}</div>`;
+  h += `<label>Nome do cão</label><input id="dn" maxlength="14" value="${esc(d.n)}">`;
+  h += `<label>Coleira</label><div class="ch">${COLLAR_T.map(([v, n]) => `<button data-s="dcolT" data-v="${v}" class="${d.colT === v ? 'on' : ''}">${n}</button>`).join('')}</div>`;
+  if (d.colT !== 'nada') h += `<div class="ch">${COLLARS.map(([v, n]) => `<button data-s="dcol" data-v="${v}" class="sw ${d.col === v ? 'on' : ''}" title="${n}" aria-label="${n}" style="background:${v}!important"></button>`).join('')}</div>`;
+  h += `<label>Lenço no pescoço</label><div class="ch">${BANDANAS.map(([v, n]) => v === '' ? `<button data-s="dbnd" data-v="" class="${!d.bnd ? 'on' : ''}">${n}</button>` : v === 'chita' ? `<button data-s="dbnd" data-v="chita" class="${d.bnd === 'chita' ? 'on' : ''}">${n}</button>` : `<button data-s="dbnd" data-v="${v}" class="sw ${d.bnd === v ? 'on' : ''}" title="${n}" aria-label="${n}" style="background:${v}!important"></button>`).join('')}</div>`;
+  h += `<label>Personalidade (escolha até duas ou deixe sortear)</label><div class="ch"><button data-s="dtr" data-v="" class="${!d.tr.length ? 'on' : ''}">Sortear</button>${DOG_TRAITS.map(t => { const ban = d.tr.length && TRAIT_BAN.some(([x, y]) => (t === x && d.tr.includes(y)) || (t === y && d.tr.includes(x))); return `<button data-s="dtr" data-v="${t}" class="${d.tr.includes(t) ? 'on' : ''}" ${ban ? 'disabled style="opacity:.4"' : ''} title="${DOG_TRAIT_D[t]}">${TRAITS[t].n}</button>`; }).join('')}</div>${d.tr.length ? '<div class="desc">' + d.tr.map(t => '<b>' + TRAITS[t].n + ':</b> ' + DOG_TRAIT_D[t]).join(' · ') + '</div>' : ''}`;
+  h += `<label>Especialidade (o que ele já sabe fazer)</label><div class="ch">${Object.keys(DOG_ESP).map(k => `<button data-s="desp" data-v="${k}" class="${d.esp === k ? 'on' : ''}">${DOG_ESP[k][0]}</button>`).join('')}</div><div class="desc">${DOG_ESP[d.esp][1]}. Ele já começa com a habilidade <b>${DOG_ESP[d.esp][0] === 'Companheiro' ? 'Obediente' : DOG_ESP[d.esp][0]}</b>; as outras ele aprende na lida, treinando e trabalhando com você.</div>`;
+  return h;
+}
+function mkDogCF(d, i) {
+  const esp = DOG_ESP[d.esp] ? d.esp : 'boiadeiro', sk = [esp === 'companheiro' ? 'Obediente' : DOG_ESP[esp][0]];
+  const a = mkAnimal('cao', d.br, { n: d.n, sex: d.sex, age: DOG_AGES[d.age][1], coat: d.coat, skills: sk, gen: rnd(60, 80), hap: 90, aff: 70, cond: 65 });
+  a.sz = DOG_PORTE[d.pt][1]; a.dc = { col: d.col, colT: d.colT, bnd: d.bnd || '' }; a.esp = esp; a.xp = { h: 0, g: 0, t: 0, o: esp === 'companheiro' ? 40 : 0 }; if (d.tr && d.tr.length) a.traits = d.tr.slice(); a.en = 100;
+  a.x = (14 + i * 1.2) * TS; a.y = (32 + i * 0.5) * TS; return a;
 }
 function openSetup(edit) {
   setupEdit = !!edit; setStep = 0; CF = edit ? JSON.parse(JSON.stringify(S.cf)) : defaultCF(); if (edit) { CF.ap = Object.assign({}, S.cf.ap); delete CF.ap.tool; }
@@ -9789,7 +10162,7 @@ function mountData() { return mtTab(CF.mt)[CF.hbr]; }
 function statBar(n, v, mx) { return `<span>${n}</span><i><b style="width:${Math.round(cl(v / mx, 0.05, 1) * 100)}%"></b></i>`; }
 function renderSetup() {
   const a = CF.ap, st = STATES[CF.st];
-  const STEPS = setupEdit ? ['Aparência', 'Roupa'] : ['Vaqueiro', 'Origem e roupa', 'Montaria', 'Começar'];
+  const STEPS = setupEdit ? ['Aparência', 'Roupa'] : ['Vaqueiro', 'Origem e roupa', 'Montaria', 'Cães', 'Começar'];
   let h = `<div class="sw2"><div class="pvbox"><h2>${ic(setupEdit ? 'brush' : 'hat', 20)} ${setupEdit ? 'Guarda-roupa' : 'Novo vaqueiro'}</h2><canvas id="pv" width="360" height="170"></canvas>
     <div class="steps">${STEPS.map((n, i) => `<button data-s="step" data-v="${i}" class="${i === setStep ? 'on' : ''}">${i + 1}. ${n}</button>`).join('')}</div></div><div>`;
   if (setStep === 0) {
@@ -9832,9 +10205,10 @@ function renderSetup() {
     h += '<label>Manta da sela</label>' + cuSw('pad', PADS) + '<label>Rédeas e cabeçada</label>' + cuSw('rein', REINS);
     h += `<label>Peitoral e enfeites</label><div class="ch"><button data-s="cu" data-v="peit|1" class="${cu.peit ? 'on' : ''}">Peitoral de couro</button>${ORNS.map(([v, n]) => `<button data-s="cu" data-v="orn|${v}" class="${cu.orn === v ? 'on' : ''}">${n}</button>`).join('')}</div><div class="desc">No começo da lida, os arreios escolhidos aqui já vêm com você. Depois, mude tudo na ficha do animal (botão Personalizar).</div>`;
     h += '<label>Estímulo</label>' + chips('aj', STIM.map(s => s.n), CF.aj) + `<div class="desc">${STIM[CF.aj].d}</div>`;
+  } else if (setStep === 3 && !setupEdit) { h += dogSetupHTML();
   } else {
     const B = mountData();
-    h += `<div class="desc" style="font-size:13px"><b>${esc(CF.name)}</b>, vindo(a) de <b>${st[1]}</b>.<br>Montaria: <b>${esc(CF.hn)}</b> — ${B.n}, ${RIG.COATS[greyAge(CF.coat, ageDays(MOUNT_AGES[CF.age][1]))].n.toLowerCase()}${CF.mt === 'cavalo' ? (CF.hsex === 'F' ? ', égua' : ', garanhão') : CF.mt === 'muar' ? (CF.hsex === 'F' ? ', mula' : ', burro') : (CF.hsex === 'F' ? ', jumenta' : ', jumento')}, ${MOUNT_AGES[CF.age][1]} anos${CF.mt !== 'jegue' ? ', ' + markStr(CF.mk) : ''}.<br><br>Você começa pequeno em Itarantim: um rancho simples, poucos piquetes, <b>dois bois Pé-Duro</b> e pouco dinheiro. O resto, a lida constrói.</div>`;
+    h += `<div class="desc" style="font-size:13px"><b>${esc(CF.name)}</b>, vindo(a) de <b>${st[1]}</b>.<br>Montaria: <b>${esc(CF.hn)}</b> — ${B.n}, ${RIG.COATS[greyAge(CF.coat, ageDays(MOUNT_AGES[CF.age][1]))].n.toLowerCase()}${CF.mt === 'cavalo' ? (CF.hsex === 'F' ? ', égua' : ', garanhão') : CF.mt === 'muar' ? (CF.hsex === 'F' ? ', mula' : ', burro') : (CF.hsex === 'F' ? ', jumenta' : ', jumento')}, ${MOUNT_AGES[CF.age][1]} anos${CF.mt !== 'jegue' ? ', ' + markStr(CF.mk) : ''}.<br>${CF.dogs.length > 1 ? 'Cães' : 'Cão'}: ${CF.dogs.map(d => '<b>' + esc(d.n) + '</b> — ' + DOGS[d.br].n + ', ' + RIG.COATS[d.coat].n.toLowerCase() + ', ' + (d.sex === 'F' ? 'fêmea' : 'macho') + ', ' + DOG_AGES[d.age][0].toLowerCase() + ', ' + DOG_ESP[d.esp][0].toLowerCase()).join('; ')}.<br><br>Você começa pequeno em Itarantim: um rancho simples, poucos piquetes, <b>dois bois Pé-Duro</b> e pouco dinheiro. O resto, a lida constrói.</div>`;
   }
   h += `<div class="row" style="margin-top:14px">`;
   if (setStep > 0) h += `<button class="btn" data-s="prev" style="flex:1;padding:11px">◀ Voltar</button>`;
@@ -9845,7 +10219,7 @@ function renderSetup() {
   const sc = $('setup').scrollTop; $('setup').innerHTML = h; $('setup').scrollTop = sc;
   const pv = $('pv'); if (pv) { const r = pv.getBoundingClientRect(); pv.width = Math.max(240, Math.round(r.width / 2)); pv.height = Math.max(110, Math.round(r.height / 2)); }
 }
-$('setup').addEventListener('input', e => { if (e.target.id === 'pn') CF.name = e.target.value.trim() || 'Zé do Gado'; if (e.target.id === 'hn') CF.hn = e.target.value.trim() || 'Trovão'; });
+$('setup').addEventListener('input', e => { if (e.target.id === 'dn') CF.dogs[CF.di].n = e.target.value.trim() || 'Caramelo'; if (e.target.id === 'pn') CF.name = e.target.value.trim() || 'Zé do Gado'; if (e.target.id === 'hn') CF.hn = e.target.value.trim() || 'Trovão'; });
 $('setup').addEventListener('click', e => {
   const b = e.target.closest('[data-s]'); if (!b) return; const k = b.dataset.s, v = b.dataset.v; AU.init(); AU.click();
   if (k === 'go') return setupEdit ? finishWardrobe() : newGame(CF);
@@ -9853,6 +10227,14 @@ $('setup').addEventListener('click', e => {
   if (k === 'next') { setStep++; $('setup').scrollTop = 0; return renderSetup(); }
   if (k === 'prev') { setStep--; $('setup').scrollTop = 0; return renderSetup(); }
   if (k === 'step') { setStep = +v; $('setup').scrollTop = 0; return renderSetup(); }
+  if (k[0] === 'd' && ['dN', 'dI', 'dO', 'dbr', 'dcoat', 'dAllC', 'dsex', 'dage', 'dpt', 'dcolT', 'dcol', 'dbnd', 'dtr', 'desp'].includes(k)) { const d = CF.dogs[CF.di];
+    if (k === 'dN') { if (+v === 2 && CF.dogs.length < 2) CF.dogs.push(defDog(1)); if (+v === 1) { CF.dogs.length = 1; CF.di = 0; } }
+    else if (k === 'dI') CF.di = +v; else if (k === 'dO') CF.dogO = v; else if (k === 'dAllC') CF.dAllC = !CF.dAllC;
+    else if (k === 'dbr') { d.br = v; const cs = RIG.BR[v].coats; if (!cs.includes(d.coat) && !CF.dAllC) d.coat = cs[0]; }
+    else if (k === 'dcoat') d.coat = v; else if (k === 'dsex') d.sex = v; else if (k === 'dage') d.age = +v; else if (k === 'dpt') d.pt = +v;
+    else if (k === 'dcolT') d.colT = v; else if (k === 'dcol') d.col = v; else if (k === 'dbnd') d.bnd = v; else if (k === 'desp') d.esp = v;
+    else if (k === 'dtr') { if (!v) d.tr = []; else if (d.tr.includes(v)) d.tr = d.tr.filter(t => t !== v); else { d.tr.push(v); if (d.tr.length > 2) d.tr.shift(); } }
+    return renderSetup(); }
   if (k === 'st') { CF.st = +v; const p = STATES[CF.st][3]; Object.assign(CF.ap, { hat: p.hat, shirt: p.shirt, shirtC: p.shirtC, pants: p.pants, pantsC: p.pantsC, boots: p.boots, acc: p.acc, scarfC: p.scarfC, orn: STATES[CF.st][4] }); CF.sk = Object.assign({}, STATES[CF.st][6]); }
   else if (k === 'sex' || k === 'orn') CF.ap[k] = v;
   else if (k === 'mt') { CF.mt = v; CF.hbr = MOUNT_BREEDS[v][0]; CF.hsex = v === 'muar' ? 'F' : v === 'jegue' ? 'M' : CF.hsex; CF.coat = RIG.BR[rigBreedKey(mtSp(v), CF.hbr, CF.hsex)].coats[0]; if (v === 'jegue') CF.mk = 0; CF.allC = false; }
@@ -9886,6 +10268,15 @@ function drawPreview(dt) {
     sh(w * 0.78, 9 * sc / 2); put(charSpr(ap, 1, Math.floor(pvT * 9) % 8, 'walk'), w * 0.78 - 12 * sc, gy - 30 * sc, sc);
     return;
   }
+  if (setStep === 3 && CF.dogs) { // cães: corre, senta, late e olha de frente
+    const k2 = Math.max(1.5, Math.min(3, h / 52)), n = CF.dogs.length, cyc = pvT % 10;
+    sh(w * 0.12, 9 * sc / 2); put(charSpr(ap, 3, 0, 'idle'), w * 0.12 - 12 * sc, gy - 30 * sc, sc);
+    CF.dogs.forEach((d, i) => { const o = { k: DOG_PORTE[d.pt][1] * (0.55 + 0.45 * Math.min(1, DOG_AGES[d.age][1] / 10)), seed: 5 + i, sex: d.sex, adult: DOG_AGES[d.age][1] >= 8, col: d.colT !== 'nada' ? d.col : undefined, colT: d.colT, bnd: d.bnd || undefined }; o.k = Math.round(o.k * 20) / 20;
+      const ph = (cyc + i * 2.5) % 10, an = ph < 3.5 ? 'gallop' : ph < 5 ? 'trot' : ph < 7 ? 'sit' : ph < 8.5 ? 'bark' : 'idle', nf = RIG.frames(an) || 4, rate = an === 'gallop' ? 13 : an === 'trot' ? 10 : an === 'bark' ? 6 : 1.5;
+      const fr = Math.floor(pvT * rate) % nf, x0 = n > 1 ? w * (0.33 + i * 0.22) : w * 0.4; const r = RIG.get(d.br, d.coat, 'side', an, fr, o);
+      sh(x0, 10 * k2 * o.k); put(r.b, x0 - r.ox * k2, gy - r.oy * k2, k2); if (r.f) put(r.f, x0 - r.ox * k2, gy - r.oy * k2, k2); });
+    if (w > h * 1.6) { const d = CF.dogs[CF.di] || CF.dogs[0]; const o = { k: Math.round(DOG_PORTE[d.pt][1] * (0.55 + 0.45 * Math.min(1, DOG_AGES[d.age][1] / 10)) * 20) / 20, seed: 9, sex: d.sex, adult: 1, col: d.colT !== 'nada' ? d.col : undefined, colT: d.colT, bnd: d.bnd || undefined }; const r2 = RIG.get(d.br, d.coat, 'front', 'idle', Math.floor(pvT * 1.2) % 4, o); const fx = w * 0.86; sh(fx, 6 * k2); put(r2.b, fx - r2.ox * k2, gy - r2.oy * k2, k2); if (r2.f) put(r2.f, fx - r2.ox * k2, gy - r2.oy * k2, k2); }
+    return; }
   // montaria: alterna entre parado, passo, trote e galope; e o vaqueiro montado
   const sp = mtSp(CF.mt), br = rigBreedKey(sp, CF.hbr, CF.hsex), cyc = pvT % 12, ph = cyc < 2.5 ? 'idle' : cyc < 5.5 ? 'walk' : cyc < 8.5 ? 'trot' : 'gallop';
   const nf = RIG.frames(ph), rate = ph === 'idle' ? 1.2 : ph === 'walk' ? 9 : ph === 'trot' ? 11 : 13; let fr = Math.floor(pvT * rate) % nf; if (ph === 'idle') { const t = pvT % 4; fr = t < 3 ? 0 : t < 3.4 ? 1 : 3; }
@@ -9915,7 +10306,7 @@ function newGame(cf) {
   S.tack = {}; if (cf.cust) { if (cf.cust.peit) S.tack.peit = 1; if (cf.cust.orn && cf.cust.orn !== 'none') S.tack[cf.cust.orn] = 1; } h.x = 12.5 * TS + 10; h.y = 31 * TS; S.animals.push(h);
   // dois bois Pé-Duro
   const bois = [put(mkAnimal('boi', 'peduro', { sex: 'M', age: 34, n: 'Malhado', coat: 'peVermelho' }), 'p1'), put(mkAnimal('boi', 'peduro', { sex: 'M', age: 30, n: 'Fumaça', coat: 'amarelo' }), 'p1')]; bois.forEach(b => { b.cast = 1; b.marca = 'TS'; }); S.gadoV = 2;
-  const dog = mkAnimal('cao', 'caramelo', { n: 'Caramelo', sex: 'M', age: 30, skills: ['Boiadeiro'] }); dog.x = 14 * TS; dog.y = 32 * TS; S.animals.push(dog);
+  (cf.dogs && cf.dogs.length ? cf.dogs : [defDog(0)]).forEach((d, i) => S.animals.push(mkDogCF(d, i))); S.caoV = 1; S.dep.racaoCao = (S.dep.racaoCao || 0) + 10;
   for (let i = 0; i < 5; i++) put(mkAnimal('boi', pick(['nelore', 'nelore', 'guzera', 'gir', 'tabapua']), { own: 'felipe' }), 'campos');
   for (let i = 0; i < 3; i++) put(mkAnimal('cavalo', pick(['mm', 'qm', 'campolina', 'crioulo', 'arabe']), { own: 'ryan' }), 'duarte');
   put(mkAnimal('jumento', 'pega', { own: 'ryan' }), 'duarte'); put(mkAnimal('burro', 'burro', { own: 'ryan', sex: 'M' }), 'duarte');
@@ -10124,7 +10515,7 @@ const OP = {
 <div class="cbox"><h3>${ic('boot', 16)} Modo Joystick</h3><ul><li>Arraste o círculo dourado para andar. Quanto mais longe do centro, mais rápido.</li><li><b>Correr / Galope</b>: segure para correr a pé ou galopar montado.</li><li><b>Montar</b>: monta no animal mais próximo ou chama a sua montaria com um assobio.</li><li><b>Ação</b>: muda conforme o que estiver perto (porteira, cocho, pessoa, animal…).</li><li><b>Aboio</b> chama o gado; <b>Laço</b> laça o animal mais perto.</li></ul></div>
 <div class="cbox"><h3>${ic('eye', 16)} Modo Toque</h3><ul><li>Toque no chão para o vaqueiro ir até lá, desviando de cercas e paredes.</li><li>Toque duas vezes rápido para ir correndo (ou a galope).</li><li>Toque num animal, pessoa ou objeto para ir até ele e interagir.</li><li>Os botões de ação continuam na tela.</li></ul><p class="mut" style="color:#d8b888">Troque o modo em <b>Configurações › Controles</b>.</p></div>
 <div class="cbox"><h3>${ic('lasso', 16)} Gestos</h3><ul><li><b>Pinça</b> com dois dedos: aproxima ou afasta a câmera.</li><li>Arraste com dois dedos para olhar em volta; a câmera volta sozinha.</li><li>Toque num animal para abrir a ficha dele com as ações.</li><li>No celular, deitado (paisagem) você vê mais do sertão.</li></ul></div>
-<div class="cbox"><h3>${ic('book', 16)} Teclado e mouse</h3><ul><li>${k('W A S D')} ou setas: andar · ${k('Shift')}: correr/galope</li><li>${k('E')} ou ${k('Espaço')}: ação · ${k('R')}: montar/desmontar</li><li>${k('Q')}: aboio · ${k('F')}: laço · ${k('G')}: facão/espingarda</li><li>${k('I')}: mochila · ${k('M')}: menu · ${k('Esc')}: fechar</li><li>${k('+')} ${k('-')} ou roda do mouse: zoom · clique: andar até o ponto (modo toque)</li></ul></div>
+<div class="cbox"><h3>${ic('book', 16)} Teclado e mouse</h3><ul><li>${k('W A S D')} ou setas: andar · ${k('Shift')}: correr/galope</li><li>${k('E')} ou ${k('Espaço')}: ação · ${k('R')}: montar/desmontar</li><li>${k('Q')}: aboio · ${k('F')}: laço · ${k('G')}: facão/espingarda · ${k('C')}: assobiar para os cães</li><li>${k('I')}: mochila · ${k('M')}: menu · ${k('Esc')}: fechar</li><li>${k('+')} ${k('-')} ou roda do mouse: zoom · clique: andar até o ponto (modo toque)</li></ul></div>
 </div><div style="text-align:center"><button class="back">Voltar</button></div>`;
     $('ctrls').classList.add('on'); document.body.classList.add('ovl'); $('ctrls').scrollTop = 0; $('ctrls').querySelector('.back').onclick = () => { AU.click(); $('ctrls').classList.remove('on'); document.body.classList.remove('ovl'); };
   },
@@ -10157,7 +10548,7 @@ addEventListener('keydown', e => {
   if (e.code === 'Escape') { if (M.open) closeModal(); else if (SH.a) closeSheet(); else if (inst.on) stopInst(); else if (mode === 'play') openMenu(); return; }
   if (mode !== 'play' || M.open) return;
   if (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); doAction(); }
-  if (!IN.on) { if (e.code === 'KeyQ') doAboio(); if (e.code === 'KeyF') doLasso(); if (e.code === 'KeyR') mountToggle(); if (e.code === 'KeyG') attack(); if (e.code === 'KeyV' && !e.repeat) holdKey(); }
+  if (!IN.on) { if (e.code === 'KeyQ') doAboio(); if (e.code === 'KeyF') doLasso(); if (e.code === 'KeyR') mountToggle(); if (e.code === 'KeyG') attack(); if (e.code === 'KeyC' && mode === 'play' && !M.open) callDogs(); if (e.code === 'KeyV' && !e.repeat) holdKey(); }
   if (e.code === 'KeyI') openBag(); if (e.code === 'KeyM') openMenu();
   if (e.code === 'Equal' || e.code === 'NumpadAdd') zoomAt(cam.uz * 1.12, W / 2, H / 2); if (e.code === 'Minus' || e.code === 'NumpadSubtract') zoomAt(cam.uz / 1.12, W / 2, H / 2);
 });
