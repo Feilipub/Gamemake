@@ -399,7 +399,7 @@ const shownTips = {};
 function tip(k, t) { if (S && S.flags['tip_' + k]) return; if (S) S.flags['tip_' + k] = 1; say(t, 6500); }
 
 /* ============ CONFIGURAÇÕES, ÍCONES E MOLDURAS PIXEL ============ */
-const SET = { tspd: 'normal', q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on' };
+const SET = { fx: 'alta', tspd: 'normal', q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on' };
 try { Object.assign(SET, JSON.parse(localStorage.getItem('lida_set') || '{}')); } catch (e) { }
 setTimeout(() => applyTimeSpeed(), 0);
 function saveSet() { try { localStorage.setItem('lida_set', JSON.stringify(SET)); } catch (e) { } document.documentElement.style.setProperty('--ctl', SET.ctl); document.body && document.body.classList.toggle('tapmode', SET.mode === 'touch'); }
@@ -6466,6 +6466,7 @@ function cfgHTML(inGame) {
   const opt = (k, v, l) => `<button data-a="setOpt" data-v="${k}|${v}" class="${SET[k] === v ? 'on' : ''}">${l}</button>`;
   let h = volHTML();
   h += `<div class="card"><b>Velocidade do tempo</b><div class="ch">${opt('tspd', 'lento', 'Lento (dia de 36 min)')}${opt('tspd', 'normal', 'Normal (24 min)')}${opt('tspd', 'rapido', 'Rápido (16 min)')}</div></div>`;
+  h += `<div class="card"><b>Efeitos gráficos</b><div class="ch">${opt('fx', 'alta', 'Alta (luz, bloom, água, calor, raios de sol, neblina)')}${opt('fx', 'media', 'Média (luz, bloom, água, calor)')}${opt('fx', 'baixa', 'Baixa (sem shader)')}</div><p class="mut">Se o aparelho não acompanhar, o jogo desce a qualidade sozinho.</p></div>`;
   h += `<div class="card"><b>Gráficos</b><div class="ch">${opt('q', 'alta', 'Alta resolução')}${opt('q', 'media', 'Desempenho')}</div><b>Modo de controle</b><div class="ch">${opt('mode', 'joy', 'Joystick')}${opt('mode', 'touch', 'Toque na tela')}</div><p class="mut">${SET.mode === 'touch' ? 'Toque no chão para ir até lá; toque duas vezes para correr ou galopar. Os botões de ação continuam na tela.' : 'Joystick virtual (ou WASD/setas no teclado). Segure “Correr” para correr ou galopar.'}</p><b>Tamanho dos botões</b><div class="ch">${opt('ctl', 1, 'Normal')}${opt('ctl', 1.2, 'Grandes')}</div><b>Orientação da tela</b><div class="ch">${opt('ori', 'livre', 'Livre')}${opt('ori', 'retrato', 'Retrato')}${opt('ori', 'paisagem', 'Paisagem')}</div><p class="mut">Travar a orientação só funciona em tela cheia no celular.</p><div class="row">${btn('Tela cheia', 'fs')}</div><b>Cenas dos leilões</b><div class="ch">${opt('aucCs', 'on', 'Mostrar')}${opt('aucCs', 'off', 'Pular sempre')}</div><b>Vibração</b><div class="ch">${opt('vib', true, 'Ligada')}${opt('vib', false, 'Desligada')}</div><b>Zoom</b><p class="mut">Use dois dedos na tela (pinça) ou a rodinha do mouse.</p><div class="row">${btn('Zoom padrão', 'zoomReset')}</div></div>`;
   if (inGame) h += `<div class="card"><div class="row">${ibtn('disk', 'Salvar', 'saveNow')}${ibtn('play', 'Carregar', 'loadNow')}${ibtn('scroll', 'Ajuda', 'help')}${ibtn('book', 'Créditos', 'credits')}${ibtn('farm', 'Tela inicial', 'toTitle')}</div><p class="mut" id="saveInfo">Partida ${SAVE.slot}. Salvamento automático às 6h, ao dormir e a cada 60 s, com cópia de segurança.</p></div>`;
   { const ms = MUS.missingList(), tr = Object.keys(MUS.files).map(k => `<li>${k.toUpperCase()} — <code>${MUS.files[k]}</code> ${MUS.missing[k] ? '<b style="color:#b02020">faltando</b>' : MUS.el && MUS.el[k] ? 'ok' : 'carrega no primeiro toque'}</li>`).join('');
@@ -8458,7 +8459,7 @@ function render(dt) {
     if (RB) { for (const f of FURN) { if (f.r !== RB.id) continue; const [c, up] = furnSpr(f.t, f.w, f.h, RB.H.wall); const sx2 = f.tx * TS, sy2 = f.ty * TS - up; add(f.wall ? -1e9 + f.ty : f.t === 'tapete' ? -1e8 : f.y - (f.t === 'rede' ? 30 : 0), () => X.drawImage(c, sx2, sy2)); }
       const op = roomOwnerPos(RB); if (op) add(op.y, () => drawPerson(op.e.d.ap, op.x, op.y, op.dir, op.pose === 'feed' ? Math.floor(drawT * 2) % 2 : 0, op.pose)); } }
   add(iy(P) + 0.5, drawPlayer);
-  L.sort((a, b) => a.y - b.y); for (const o of L) o.f();
+  L.sort((a, b) => a.y - b.y); for (const o of L) o.f(); ambFx(dt);
   forestOverlay(tx0, ty0, tx1, ty1); drawEventDecor(true); drawMemGlints(); misMarkers(); questMarkers(); drawMoveFx(); drawDebugCol();
   for (const e of npcs) if (!e.hidden && e.bt > 0 && inV(e.x, e.y, 30)) drawBubble(e);
   const px = ix(P), py = iy(P);
@@ -8479,8 +8480,8 @@ function render(dt) {
   X.setTransform(1, 0, 0, 1, 0, 0);
   const B = BASE;
   if (!P.inside) { const ri = S.wx ? S.wx.ri : 0; if (ri > 0.03) { const n = Math.round(30 + ri * 130); while (rain.length < n) rain.push({ x: rnd(0, W), y: rnd(0, H), s: rnd(220, 300) }); const sl = 0.15 + (S.weather === 'tempestade' ? 0.25 : 0); X.strokeStyle = `rgba(200,218,245,${0.35 + ri * 0.45})`; X.lineWidth = Math.max(1, B * 0.5); X.beginPath(); for (let k = 0; k < n; k++) { const d = rain[k]; d.y += d.s * B * dt * (0.7 + ri * 0.5); d.x -= d.s * sl * B * dt; if (d.y > H) { d.y = -6 * B; d.x = rnd(0, W + 30 * B); } X.moveTo(d.x, d.y); X.lineTo(d.x - 2 * B * (1 + sl * 2), d.y + (3 + ri * 4) * B); } X.stroke(); X.lineWidth = 1; X.fillStyle = `rgba(40,50,70,${0.06 + ri * 0.16})`; X.fillRect(0, 0, W, H); }
-    if (S.wx && S.wx.flash > 0) { X.fillStyle = `rgba(235,240,255,${Math.min(0.7, S.wx.flash * 0.7)})`; X.fillRect(0, 0, W, H); } }
-  const fog = S.weather === 'neblina' && !P.inside ? cl(1 - (hour() - 6) / 4, 0, 1) : 0;
+    if (S.wx && S.wx.flash > 0 && !FX.on) { X.fillStyle = `rgba(235,240,255,${Math.min(0.7, S.wx.flash * 0.7)})`; X.fillRect(0, 0, W, H); } }
+  const fog = S.weather === 'neblina' && !P.inside && !(FX.on && SET.fx !== 'media') ? cl(1 - (hour() - 6) / 4, 0, 1) : 0;
   if (fog > 0) { if (!fogB.length) for (let i = 0; i < 7; i++) fogB.push({ x: rnd(0, W), y: rnd(0, H), r: rnd(50, 90) * B, v: rnd(3, 8) * B }); for (const f of fogB) { f.x += f.v * dt; if (f.x - f.r > W) f.x = -f.r; const g = X.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r); g.addColorStop(0, `rgba(230,235,240,${0.55 * fog})`); g.addColorStop(1, 'rgba(230,235,240,0)'); X.fillStyle = g; X.fillRect(f.x - f.r, f.y - f.r, f.r * 2, f.r * 2); } X.fillStyle = `rgba(220,225,230,${0.25 * fog})`; X.fillRect(0, 0, W, H); }
   lighting();
 }
@@ -8497,19 +8498,136 @@ function ambient() {
   if (S.wx) dark = Math.max(dark, S.wx.ci * 0.16 + S.wx.ri * 0.08);
   return { dark, tint, ta };
 }
-function lighting() {
-  let { dark, tint, ta } = ambient(); if (P && P.inside) { dark = Math.min(0.5, dark * 0.75 + 0.06); ta *= 0.5; } /* dentro de casa: penumbra; os lampiões acendem */
-  if (tint && ta > 0.01) { X.globalCompositeOperation = 'soft-light'; X.fillStyle = tint; X.globalAlpha = ta * 2; X.fillRect(0, 0, W, H); X.globalAlpha = 1; X.globalCompositeOperation = 'source-over'; }
-  if (dark < 0.02) return;
-  const lx = LX, lw = LC.width, lh = LC.height; lx.globalCompositeOperation = 'source-over'; lx.clearRect(0, 0, lw, lh); lx.fillStyle = `rgba(8,12,38,${dark})`; lx.fillRect(0, 0, lw, lh);
-  lx.globalCompositeOperation = 'destination-out';
-  const lights = [], vw = VW(), vh = VH(), z = SCL(), toS = (x, y) => [(x - cam.x) * z, (y - cam.y) * z];
+/* ============ FX: pós-processamento WebGL por cima do canvas do jogo ============
+   O jogo continua desenhando tudo no canvas 2D de sempre. Com Gráficos Média/Alta, cada quadro desse canvas vira
+   textura de um shader que faz luz e sombra da noite com cor (mapa de luz), brilho (bloom) das lamparinas,
+   fogueiras e janelas, ondulação e reflexo do céu na água (estrelas à noite), poças na chuva, calor tremendo o ar,
+   raios de sol, neblina com densidade, relâmpago e ajuste de cor por horário e clima. Todas as distorções andam
+   em passos de 1 pixel do jogo, para não borrar a pixel art. Sem WebGL (ou em Baixa) o caminho antigo continua.
+   Técnicas adaptadas (código próprio): AdjustmentFilter e GodrayFilter do pixi-filters (MIT, Mathew Groves e
+   Chad Engler), buffers de cor + luz aditiva do PixelFX (MIT, patch-gg) e o calor/água do Radiant (MIT). */
+const FX = {
+  on: false, gl: null, cv: null, prog: null, tex: {}, u: {}, fail: false, mk: null, mkg: null, ft: [], downT: 0,
+  VS: 'attribute vec2 a;varying vec2 v;void main(){v=a;gl_Position=vec4(a.x*2.0-1.0,1.0-a.y*2.0,0.0,1.0);}',
+  FS: `precision mediump float;
+uniform sampler2D uS,uL,uM;uniform vec2 uR,uC,uSD;uniform float uK,uT,uTa,uH,uF,uFl,uW,uRy,uV,uN,uSat,uCon,uIn,uWm;uniform vec4 uA,uMR;uniform vec3 uSky;varying vec2 v;
+float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(h(i),h(i+vec2(1.0,0.0)),f.x),mix(h(i+vec2(0.0,1.0)),h(i+vec2(1.0,1.0)),f.x),f.y);}
+void main(){
+ vec2 fr=v*uR,wp=uC+fr/uK;vec4 M=texture2D(uM,(wp/16.0-uMR.xy)/uMR.zw);vec2 o=vec2(0.0);
+ if(uH>0.0){float a=sin(wp.y*0.45+uT*4.0)*n(wp*0.05+vec2(0.0,uT*0.6));o.x+=floor(a*uH*1.7*(1.2-v.y*0.6)+0.5);}
+ float wa=M.r;if(wa>0.5){o+=floor(vec2(sin(wp.y*0.55+uT*2.2),0.6*cos(wp.x*0.45+uT*1.6))*0.95+0.5);}
+ vec3 c=texture2D(uS,v+o*uK/uR).rgb;
+ if(wa>0.05){vec2 cel=floor(wp*0.5);float sp=step(0.982,n(cel*0.7+vec2(uT*1.3,uT*0.6)))*(1.0-uN);c=mix(c,uSky,0.3*wa)+sp*0.4*wa;
+  if(uN>0.3){float st=step(0.994,h(cel))*(0.55+0.45*sin(uT*3.0+h(cel+3.1)*6.28));c+=st*0.7*wa*uN;}}
+ if(M.g>0.05){float r2=step(0.93,n(floor(wp*0.5)*0.9+vec2(uT*3.0,0.0)));c=mix(c,uSky*0.7,0.22*M.g)+r2*0.15*M.g;}
+ c*=1.0-uW*0.1;
+ vec3 tc=uA.yzw,sl=mix(2.0*c*tc+c*c*(1.0-2.0*tc),sqrt(c)*(2.0*tc-1.0)+2.0*c*(1.0-tc),step(0.5,tc));c=mix(c,sl,clamp(uTa*2.0,0.0,1.0));
+ c*=mix(vec3(1.0),vec3(1.16,0.96,0.76),uWm);
+ if(uRy>0.0){vec2 pd=vec2(-uSD.y,uSD.x);float b=dot(wp,pd)*0.011+uT*0.025;float r=n(vec2(b,0.5))*n(vec2(b*2.7+1.3,3.1));c+=vec3(1.0,0.86,0.58)*smoothstep(0.3,0.7,r)*uRy*0.22*(1.0-v.y*0.45);}
+ float dk=uA.x;vec3 L=texture2D(uL,v).rgb;vec3 nt=mix(vec3(1.0),vec3(0.52,0.63,1.0),clamp(dk*1.6,0.0,1.0));
+ c=c*nt*(1.0-dk)+c*L*1.3+L*L*0.3;
+ if(uF>0.0){float f=n(wp*0.011+vec2(uT*0.05,0.0))*0.6+n(wp*0.031-vec2(uT*0.09,0.0))*0.4;c=mix(c,vec3(0.86,0.88,0.9)*(1.0-dk*0.75),uF*smoothstep(0.28,0.85,f));}
+ c+=uFl*vec3(0.75,0.8,0.95);
+ float lu=dot(c,vec3(0.299,0.587,0.114));c=mix(vec3(lu),c,uSat);c=(c-0.5)*uCon+0.5;
+ vec2 q=v-0.5;c*=1.0-uV*dot(q,q)*1.4;gl_FragColor=vec4(c,1.0);}`,
+  init() {
+    if (this.gl || this.fail) return !!this.gl;
+    try {
+      const cv = document.createElement('canvas'); cv.id = 'fxc'; cv.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;image-rendering:pixelated;display:none';
+      C.parentNode.insertBefore(cv, C.nextSibling); const gl = cv.getContext('webgl', { alpha: false, antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: false, powerPreference: 'high-performance' });
+      if (!gl) throw new Error('sem WebGL');
+      const sh = (t, src) => { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+      const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, this.VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, this.FS)); gl.linkProgram(pr); if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr));
+      gl.useProgram(pr); const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]), gl.STATIC_DRAW); const al = gl.getAttribLocation(pr, 'a'); gl.enableVertexAttribArray(al); gl.vertexAttribPointer(al, 2, gl.FLOAT, false, 0, 0);
+      const mkT = (unit, nearest) => { const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t); const f = nearest ? gl.NEAREST : gl.LINEAR; gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, f); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, f); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); return t; };
+      this.tex = { s: mkT(0, true), l: mkT(1, false), m: mkT(2, false) };
+      for (const n of ['uS', 'uL', 'uM', 'uR', 'uC', 'uSD', 'uK', 'uT', 'uTa', 'uH', 'uF', 'uFl', 'uW', 'uRy', 'uV', 'uN', 'uSat', 'uCon', 'uIn', 'uWm', 'uA', 'uMR', 'uSky']) this.u[n] = gl.getUniformLocation(pr, n);
+      gl.uniform1i(this.u.uS, 0); gl.uniform1i(this.u.uL, 1); gl.uniform1i(this.u.uM, 2);
+      const [mc, mg] = mkC(8, 8); this.mk = mc; this.mkg = mg; this.gl = gl; this.cv = cv; this.prog = pr; return true;
+    } catch (e) { console.warn('FX desligado:', e.message); this.fail = true; return false; }
+  },
+  want() { return (SET.fx || 'alta') !== 'baixa' && !this.fail; },
+  // máscara de água e poças dos ladrilhos visíveis (1 pixel por ladrilho; o filtro linear arredonda as bordas)
+  mask() {
+    const vw = VW(), vh = VH(), tx0 = Math.floor(cam.x / TS) - 1, ty0 = Math.floor(cam.y / TS) - 1, w = Math.ceil(vw / TS) + 3, h = Math.ceil(vh / TS) + 3;
+    if (this.mk.width !== w || this.mk.height !== h) { this.mk.width = w; this.mk.height = h; }
+    const im = this.mkg.createImageData(w, h), D = im.data, rainy = isRain() || (S.mud || 0) > 0.35;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const t = gt(tx0 + x, ty0 + y), k = (y * w + x) * 4; D[k] = t === G.WATER ? 255 : 0; D[k + 1] = rainy && (t === G.MUD || ((t === G.DIRT || t === G.FLOOR) && H2(tx0 + x, ty0 + y, 77) < 0.22)) ? Math.round(150 + 100 * Math.min(1, S.mud || 0.5)) : 0; D[k + 3] = 255; }
+    this.mkg.putImageData(im, 0, 0); return [tx0, ty0, w, h];
+  },
+  frame(L) { // L = parâmetros de luz do quadro (montados em lighting())
+    const gl = this.gl, u = this.u; if (!gl) return;
+    if (this.cv.width !== W || this.cv.height !== H) { this.cv.width = W; this.cv.height = H; }
+    gl.viewport(0, 0, W, H);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.tex.s); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, C);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this.tex.l); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, LC);
+    const mr = this.mask(); gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, this.tex.m); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.mk);
+    const hi = SET.fx !== 'media', hr = hour(), out = !P.inside, z = SCL(), tc = L.tint ? [parseInt(L.tint.slice(1, 3), 16) / 255, parseInt(L.tint.slice(3, 5), 16) / 255, parseInt(L.tint.slice(5, 7), 16) / 255] : [0.5, 0.5, 0.5];
+    const night = cl((L.dark - 0.2) / 0.4, 0, 1), sky = night > 0.5 ? [0.1, 0.13, 0.3] : L.tint && L.ta > 0.15 ? tc.map(c0 => c0 * 0.9) : [0.6, 0.78, 0.92];
+    const heat = !out ? 0 : S.weather === 'calor' && hr > 9.5 && hr < 16.5 ? 1 : S.weather === 'sol' && season() && hr > 11 && hr < 15 ? 0.45 : 0;
+    const rays = !hi || !out || isRain() ? 0 : (hr > 6 && hr < 9.5 ? 1 - Math.abs(hr - 7.4) / 2.2 : hr > 15 && hr < 18 ? 1 - Math.abs(hr - 16.6) / 1.6 : 0) * (1 - (S.wx ? S.wx.ci : 0));
+    const fogW = !out ? 0 : (S.weather === 'neblina' ? cl(1 - (hr - 6) / 4, 0, 1) * 0.6 : 0) + (S.wx ? S.wx.ri * 0.18 : 0);
+    const s2 = typeof sunDX === 'function' ? sunDX() : 0, grade = L.dark > 0.4 ? [0.86, 1.02] : isRain() ? [0.88, 0.98] : L.ta > 0.18 ? [1.12, 1.05] : hr > 10 && hr < 14 ? [1.06, 1.05] : [1.04, 1.03];
+    gl.uniform2f(u.uR, W, H); gl.uniform2f(u.uC, cam.x, cam.y); gl.uniform1f(u.uK, z); gl.uniform1f(u.uT, drawT % 1000);
+    gl.uniform4f(u.uA, L.dark, tc[0], tc[1], tc[2]); gl.uniform1f(u.uTa, L.ta); gl.uniform1f(u.uH, hi || SET.fx === 'media' ? heat : 0); gl.uniform1f(u.uF, hi ? Math.min(0.75, fogW) : 0);
+    gl.uniform1f(u.uFl, S.wx && S.wx.flash > 0 ? Math.min(0.55, S.wx.flash * 0.55) : 0); gl.uniform1f(u.uW, S.wx ? S.wx.ri : 0); gl.uniform1f(u.uRy, rays > 0 ? rays : 0); gl.uniform2f(u.uSD, s2 || 0.6, -1);
+    gl.uniform1f(u.uV, mode === 'cs' ? 0.22 : night * 0.08); gl.uniform1f(u.uN, night); gl.uniform1f(u.uSat, grade[0]); gl.uniform1f(u.uCon, grade[1]); gl.uniform1f(u.uIn, out ? 0 : 1); { const wm = Math.max(0, 1 - Math.abs(hr - 6.6) / 1.3, 1 - Math.abs(hr - 17.6) / 1.5, hr > 14.5 && hr < 17 ? 0.35 : 0) * (out ? 1 : 0.3) * (isRain() ? 0.3 : 1); gl.uniform1f(u.uWm, wm * 0.85); } /* luz dourada no amanhecer, à tarde e no pôr do sol */
+    gl.uniform4f(u.uMR, mr[0], mr[1], mr[2], mr[3]); gl.uniform3f(u.uSky, sky[0], sky[1], sky[2]);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  },
+  // liga/desliga conforme a configuração e o modo; desce a qualidade sozinho se o aparelho não acompanhar
+  sync(dt) {
+    const want = this.want() && (mode === 'play' || mode === 'cs') && this.init(); if (want !== this.on) { this.on = want; if (this.cv) this.cv.style.display = want ? 'block' : 'none'; }
+    if (!this.on) return; this.ft.push(dt); if (this.ft.length > 240) this.ft.shift();
+    if ((this.downT += dt) > 6 && this.ft.length >= 200) { this.downT = 0; const avg = this.ft.reduce((a, b) => a + b, 0) / this.ft.length; if (avg > 1 / 30) { SET.fx = SET.fx === 'alta' ? 'media' : 'baixa'; saveSet(); this.ft = []; toast('Gráficos ajustados para ' + (SET.fx === 'media' ? 'Média' : 'Baixa') + ' para manter o jogo fluido.'); } }
+  }
+};
+/* ---------- vida do ar: vaga-lumes à noite, folhas levadas pelo vento e respingos de chuva ---------- */
+const AMBX = { ff: [], lf: [], sp: [], trees: [], tT: 0 };
+function ambFx(dt) {
+  if (P.inside || SET.fx === 'baixa') { AMBX.ff.length = 0; AMBX.lf.length = 0; return; }
+  const vw = VW(), vh = VH(), hr = hour(), night = hr >= 19 || hr < 4.8, rainy = isRain();
+  if ((AMBX.tT -= dt) <= 0) { AMBX.tT = 0.6; AMBX.trees = PROPS.filter(p => TREES.has(p.t) && p.x > cam.x - 20 && p.x < cam.x + vw + 20 && p.y > cam.y - 10 && p.y < cam.y + vh + 60); }
+  // vaga-lumes: piscam sobre o capim e a mata nas noites sem chuva
+  if (night && !rainy && AMBX.ff.length < 24 && Math.random() < dt * 5) { const x = cam.x + Math.random() * vw, y = cam.y + Math.random() * vh, t = gt(Math.floor(x / TS), Math.floor(y / TS)); if (t === G.GRASS || t === G.PAST) AMBX.ff.push({ x, y, ph: Math.random() * 6.28, l: 0, m: 5 + Math.random() * 7 }); }
+  for (const f of AMBX.ff) { f.l += dt; f.x += Math.sin(drawT * 0.9 + f.ph) * 7 * dt; f.y += Math.cos(drawT * 0.7 + f.ph * 1.3) * 5 * dt - 1.5 * dt; const fade = Math.min(1, f.l, f.m - f.l); f.a = Math.max(0, Math.sin(drawT * 2.3 + f.ph)) * fade;
+    if (f.a > 0.05) { X.fillStyle = `rgba(214,255,130,${f.a})`; X.fillRect(Math.round(f.x), Math.round(f.y), 1, 1); X.fillStyle = `rgba(214,255,130,${f.a * 0.35})`; X.fillRect(Math.round(f.x) - 1, Math.round(f.y), 3, 1); X.fillRect(Math.round(f.x), Math.round(f.y) - 1, 1, 3); } }
+  AMBX.ff = AMBX.ff.filter(f => f.l < f.m && (night || f.l < 1));
+  // folhas: saem das copas e voam com o vento (muitas na ventania, poucas no dia calmo)
+  const wind = S.weather === 'vento' ? 1 : rainy ? 0.55 : 0.12, se = season();
+  if (AMBX.trees.length && AMBX.lf.length < 6 + 34 * wind && Math.random() < dt * 10 * wind) { const t = AMBX.trees[Math.floor(Math.random() * AMBX.trees.length)]; AMBX.lf.push({ x: t.x + rnd(-14, 14), y: t.y - rnd(30, 52), vy: rnd(6, 14), l: 0, m: rnd(2.5, 5), c: se ? pick(['#c8a040', '#a8742a', '#d8b858']) : pick(['#5a8a3a', '#7aa848', '#c8b048']), ph: Math.random() * 6.28, gy: t.y + rnd(-4, 10) }); }
+  for (const f of AMBX.lf) { f.l += dt; const sw = Math.sin(drawT * 3 + f.ph); if (f.y < f.gy) { f.x += (14 + 46 * wind) * dt + sw * 10 * dt; f.y += f.vy * dt; } X.fillStyle = f.c; X.globalAlpha = Math.min(1, f.m - f.l); X.fillRect(Math.round(f.x), Math.round(f.y), sw > 0 ? 2 : 1, 1); X.globalAlpha = 1; }
+  AMBX.lf = AMBX.lf.filter(f => f.l < f.m);
+  // respingos onde a chuva bate no chão
+  const ri = S.wx ? S.wx.ri : 0; if (ri > 0.1) for (let k = 0; k < Math.round(ri * 6); k++) if (Math.random() < 0.5) { const x = cam.x + Math.random() * vw, y = cam.y + Math.random() * vh; if (gt(Math.floor(x / TS), Math.floor(y / TS)) !== G.WATER || Math.random() < 0.5) AMBX.sp.push({ x, y, l: 0 }); }
+  for (const s of AMBX.sp) { s.l += dt; const r = 1 + s.l * 9, a = 0.45 * (1 - s.l / 0.35); X.strokeStyle = `rgba(210,228,240,${a})`; X.lineWidth = 0.6; X.beginPath(); X.ellipse(s.x, s.y, r, r * 0.45, 0, 0, 7); X.stroke(); if (s.l < 0.08) { X.fillStyle = 'rgba(220,235,245,0.7)'; X.fillRect(Math.round(s.x), Math.round(s.y) - 2, 1, 1); } }
+  AMBX.sp = AMBX.sp.filter(s => s.l < 0.35); if (AMBX.sp.length > 140) AMBX.sp.splice(0, AMBX.sp.length - 140);
+}
+function lightList() { // fontes de luz visíveis: [x, y, raio, tipo]
+  const lights = [], vw = VW(), vh = VH();
   const L = (x, y, r, k) => { if (x < cam.x - r || x > cam.x + vw + r || y < cam.y - r || y > cam.y + vh + r) return; lights.push([x, y, r, k]); };
   if (P.inside) for (const f of FURN) { const R0 = ROOMS[f.r]; if (R0.b !== P.inside) continue; if (f.t === 'lamp') L(f.x, (f.ty + 1) * TS, 64, 'lamp'); else if (f.t === 'fogao' || f.t === 'forja') L(f.x, f.ty * TS + 6, 40, 'fire'); else if (f.t === 'janela' && hour() > 6 && hour() < 18) L(f.x, (f.ty + 2) * TS, 70, 'self'); }
   for (const p of PROPS) { if (p.t === 'poste') L(p.x + 6, p.y - 33, 58, 'lamp'); if (p.t === 'fogueira') { const lv = fireLevel(); if (lv > 0) L(p.x, p.y - 8, (34 + 46 * lv) + Math.sin(drawT * 9) * 3 + Math.sin(drawT * 23) * 1.5, 'fire'); } if (p.t === 'churrasqueira' && S.fires.churr > 0) L(p.x, p.y - 14, 50, 'fire'); }
   for (const b of BLD) { if (b.id === 'galpao' || b.id === 'deposito' || b.id === 'camposGalpao' || b.id === 'duarteEst') continue; L((b.r[0] + b.r[2] + 1) / 2 * TS, (b.r[3] + 1) * TS - 8, 46, 'win'); }
   const px = ix(P), py = iy(P);
   if (has('lampiao') || P.cart) L(px, py - 12, 62, 'lamp'); else L(px, py - 10, 26, 'self');
+  for (const f of AMBX.ff) if (f.a > 0.25) lights.push([f.x, f.y, 4.5, 'ff']);
+  return lights;
+}
+function lighting() {
+  let { dark, tint, ta } = ambient(); if (P && P.inside) { dark = Math.min(0.5, dark * 0.75 + 0.06); ta *= 0.5; } /* dentro de casa: penumbra; os lampiões acendem */
+  if (FX.on) { // mapa de luz colorido para o shader (aditivo, 1/4 da resolução)
+    const lx = LX, lw = LC.width, lh = LC.height, z = SCL(), k = Math.min(1, dark * 1.8 + (P.inside ? 0.35 : 0)); lx.globalCompositeOperation = 'source-over'; lx.fillStyle = '#000'; lx.fillRect(0, 0, lw, lh);
+    if (k > 0.02) { lx.globalCompositeOperation = 'lighter'; for (const [x, y, r, t] of lightList()) { const sx = (x - cam.x) * z / 4, sy = (y - cam.y) * z / 4, fl = t === 'fire' ? 0.85 + Math.sin(drawT * 11 + x) * 0.08 + Math.sin(drawT * 23) * 0.05 : 1, rr = r * z / 4 * fl, col = t === 'fire' ? '255,128,40' : t === 'ff' ? '170,255,90' : t === 'self' ? '150,150,150' : t === 'win' ? '255,196,110' : '255,206,130', a = (t === 'self' ? 0.75 : 1) * k;
+        const g = lx.createRadialGradient(sx, sy, 0, sx, sy, rr); g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(0.5, `rgba(${col},${a * 0.62})`); g.addColorStop(1, `rgba(${col},0)`); lx.fillStyle = g; lx.fillRect(sx - rr, sy - rr, rr * 2, rr * 2); } }
+    lx.globalCompositeOperation = 'source-over'; FX.frame({ dark, tint, ta }); return;
+  }
+  if (tint && ta > 0.01) { X.globalCompositeOperation = 'soft-light'; X.fillStyle = tint; X.globalAlpha = ta * 2; X.fillRect(0, 0, W, H); X.globalAlpha = 1; X.globalCompositeOperation = 'source-over'; }
+  if (dark < 0.02) return;
+  const lx = LX, lw = LC.width, lh = LC.height; lx.globalCompositeOperation = 'source-over'; lx.clearRect(0, 0, lw, lh); lx.fillStyle = `rgba(8,12,38,${dark})`; lx.fillRect(0, 0, lw, lh);
+  lx.globalCompositeOperation = 'destination-out';
+  const z = SCL(), toS = (x, y) => [(x - cam.x) * z, (y - cam.y) * z], lights = lightList();
   for (const [x, y, r] of lights) { const [sx0, sy0] = toS(x, y), sx = sx0 / 4, sy = sy0 / 4, rr = r * z / 4; const g = lx.createRadialGradient(sx, sy, 0, sx, sy, rr); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.5, 'rgba(0,0,0,0.6)'); g.addColorStop(1, 'rgba(0,0,0,0)'); lx.fillStyle = g; lx.fillRect(sx - rr, sy - rr, rr * 2, rr * 2); }
   X.imageSmoothingEnabled = true; X.drawImage(LC, 0, 0, lw * 4, lh * 4); X.imageSmoothingEnabled = false;
   X.globalCompositeOperation = 'lighter';
@@ -9637,6 +9755,7 @@ function loop(ts) {
     while (acc >= STEP && n < 6) { if (S && P) snapshot(); tick(STEP); acc -= STEP; n++; }
     if (n >= 6) acc = 0;
     ALPHA = cl(acc / STEP, 0, 1);
+    FX.sync(dt);
     if (mode === 'film') FILM.render(); else if (OPMODES[mode]) OP.render(); else { camUpdate(dt); render(dt); }
     if (mode === 'play' || mode === 'cs') { hud(dt); updSheet(dt); AU.ambient(dt); }
     if (S) hotbarUpdate();
