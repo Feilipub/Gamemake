@@ -1069,7 +1069,9 @@ function genRegion(R) {
   // serra entre a cidade e a região: pedra, mandacaru e mato fechado (não dá para atravessar a pé)
   for (let y = 0; y < MH; y++) for (let x = 112; x < MW; x++) ground[gi(x, y)] = x < 118 || (H2(x, y, 61) < 0.18 && y % 7 > 2) ? G.DRY : G.GRASS;
   for (let y = 0; y < MH; y++) for (let x = 112; x <= 116; x++) { obj[gi(x, y)] = 3; if ((x + y) % 2 === 0) PROPS.push({ t: H2(x, y, 5) < 0.4 ? 'pedra' : H2(x, y, 6) < 0.6 ? 'mandacaru' : 'jurema', x: (x + 0.5) * TS, y: (y + 0.85) * TS, v: (x * 7 + y) % 8 }); }
-  for (let x = 112; x <= 117; x++) for (const y of [43, 44]) { ground[gi(x, y)] = G.DIRT; }
+  for (let x = 112; x <= 117; x++) for (const y of [42, 43, 44, 45]) { ground[gi(x, y)] = y === 42 || y === 45 ? G.DRY : G.DIRT; obj[gi(x, y)] = 0; }
+  for (let i = PROPS.length - 1; i >= 0; i--) { const q = PROPS[i]; if (q.x > 111.6 * TS && q.x < 118 * TS && q.y > 41.2 * TS && q.y < 46.9 * TS) PROPS.splice(i, 1); } // sem mato em cima da estrada
+  for (const y of [42, 43, 44, 45]) obj[gi(113, y)] = 3; // a porteira do portal fecha a estrada (a viagem é pela pergunta, como antes)
   // estradas da região
   fillR(118, 43, 237, 44, G.DIRT); fillR(176, 2, 177, 107, G.DIRT); fillR(134, 15, 135, 42, G.DIRT); fillR(134, 45, 135, 56, G.DIRT); fillR(178, 20, 206, 21, G.DIRT);
   fillR(178, 59, 198, 61, G.WALK); fillR(178, 60, 198, 60, G.PAVE); fillR(198, 62, 207, 74, G.WALK); fillR(201, 70, 204, 75, G.PAVE); fillR(186, 74, 214, 75, G.WALK);
@@ -1083,7 +1085,7 @@ function genRegion(R) {
 }
 function genRegionPost(P) { // depois das áreas e porteiras: props, cochos e açudes
   P('portalRD', 134.5, 41.6, 0); P('portalSC', 134.5, 47.8, 0); P('portalPS', 179.5, 22.6, 0); P('portalMR', 181.5, 62.4, 0); P('guarita', 183.5, 58.4, 0); obj[gi(183, 57)] = 3;
-  P('placaEstrada', 110.6, 41.8, 0); P('porteiraEstrada', 112.6, 45.2, 0); P('placaEstrada', 119.4, 41.8, 0);
+  P('placaEstrada', 110.6, 41.8, 0); P('portalSerras', 113.5, 46.1, 0); P('placaEstrada', 119.4, 41.8, 0);
   P('piscina', 215.5, 68.2, 0); for (let y = 64; y <= 67; y++) for (let x = 212; x <= 218; x++) obj[gi(x, y)] = 3;
   P('chafariz', 202.5, 73.2, 0); obj[gi(202, 72)] = obj[gi(203, 72)] = 3;
   for (let x = 184; x <= 196; x += 2) { P('sebe', x + 0.5, 58.4, 0); P('canteiro', x + 0.5, 62.6, 0); }
@@ -1378,6 +1380,7 @@ function genMap() {
   fillR(87, 12, 89, 13, G.DIRT); fillR(87, 74, 89, 75, G.DIRT); fillR(92, 12, 97, 12, G.DIRT); fillR(92, 74, 97, 74, G.DIRT);
   fillR(79, 46, 88, 57, G.PLAZA);
   fillR(65, 30, 111, 33, G.WALK); fillR(65, 31, 111, 32, G.PAVE); // Rua Nova
+  fillR(89, 43, 92, 44, G.PAVE); fillR(89, 59, 92, 60, G.PAVE); fillR(89, 31, 92, 32, G.PAVE); fillR(90, 30, 91, 33, G.PAVE); // cruzamentos: asfalto contínuo (antes a calçada da avenida cortava a rua)
   // pátio da sede e áreas de chão batido
   fillR(2, 29, 26, 31, G.FLOOR); fillR(12, 33, 19, 38, G.FLOOR); fillR(11, 32, 11, 42, G.DIRT); fillR(20, 29, 20, 42, G.DIRT); fillR(23, 28, 23, 42, G.DIRT);
   fillR(39, 31, 57, 31, G.DIRT); fillR(26, 31, 26, 42, G.DIRT);
@@ -1488,7 +1491,8 @@ function genMap() {
   }
   // recinto de leilões da cidade: limpa o terreno, curral de exposição, arquibancadas e tribuna
   for (let i = PROPS.length - 1; i >= 0; i--) { const q = PROPS[i]; if (q.x > 96 * TS && q.x < 110 * TS && q.y > 45.9 * TS && q.y < 51 * TS && q.t !== 'placaLeilao' && q.t !== 'poste') PROPS.splice(i, 1); }
-  for (let y = 46; y <= 50; y++) for (let x = 96; x <= 109; x++) obj[gi(x, y)] = 0;
+  for (let y = 46; y <= 50; y++) for (let x = 96; x <= 109; x++) { obj[gi(x, y)] = 0; ground[gi(x, y)] = G.WALK; } // pátio calçado em volta
+  for (let y = 47; y <= 48; y++) for (let x = 101; x <= 104; x++) ground[gi(x, y)] = G.SAND; // pista de areia
   fenceRect([100, 46, 105, 49]);
   PROPS.push({ t: 'arquibancada', x: 97.6 * TS, y: 49.9 * TS, v: 0 }, { t: 'arquibancada', x: 107.9 * TS, y: 49.9 * TS, v: 1 }, { t: 'tribuna', x: 102.6 * TS, y: 50.95 * TS, v: 0 });
   computeDepth();
@@ -3131,6 +3135,11 @@ function rpropSpr(p) { const k = p.t + '|' + (p.v || 0) + '|' + (isNight() ? 1 :
     case 'portalRD': c = RART.portal('RIACHO DOCE', '#7a5230'); break; case 'portalSC': c = RART.portal('SANTA CLARA', '#2a5a8a'); break; case 'portalPS': c = RART.portal('PE DE SERRA', '#3a7a3a'); break; case 'portalMR': c = RART.portal('MONTE REAL', '#2a4a6a'); break;
     case 'guarita': c = RART.guarita(isNight()); break; case 'piscina': c = RART.piscina(); break; case 'chafariz': c = RART.chafariz(); break; case 'sebe': c = RART.sebe(p.v); break; case 'canteiro': c = RART.canteiro(p.v); break;
     case 'placaEstrada': c = mk(56, 40, q => { q(26, 12, 4, 28, '#5a3a20'); q(2, 4, 52, 14, '#2a6a3a'); q(2, 4, 52, 1, '#4a9a5a'); txt(q, 'SERRAS', 6, 6, '#f4f0e8'); q(42, 8, 8, 6, '#f4f0e8'); q(48, 6, 2, 10, '#f4f0e8'); }); break;
+    case 'portalSerras': c = mk(96, 80, q => { // portal de pedra com arco de madeira, placa e porteira fechada; mata-burro no chão
+      for (const px of [6, 78]) { q(px, 18, 12, 62, '#7a756c'); for (let y = 20; y < 78; y += 6) { q(px, y, 12, 1, '#5a564e'); q(px + ((y / 6) % 2 ? 6 : 0), y + 1, 1, 5, '#5a564e'); } q(px, 18, 12, 2, '#a8a296'); q(px + 10, 20, 2, 60, '#4e4a44'); q(px - 2, 14, 16, 4, '#5a3a20'); }
+      q(4, 8, 88, 8, '#6a4422'); q(4, 8, 88, 2, '#9a6a3a'); q(4, 15, 88, 1, '#3a2410'); q(22, 0, 52, 10, '#2a6a3a'); q(22, 0, 52, 1, '#4a9a5a'); q(23, 9, 50, 1, '#1a4a2a'); txt(q, 'SERRAS', 36, 2, '#f4f0e8');
+      for (let y = 40; y < 74; y += 7) { q(18, y, 60, 3, '#8a6a44'); q(18, y, 60, 1, '#a88a5a'); } for (let k = 0; k < 6; k++) q(20 + k * 10, 42 + k * 5, 3, 3, '#6a4a2a'); q(46, 40, 3, 36, '#6a4a2a');
+      q(16, 76, 64, 4, '#2a2420'); for (let x = 18; x < 78; x += 4) q(x, 76, 2, 4, '#9a9a9a'); }); break;
     case 'porteiraEstrada': c = mk(64, 36, q => { q(2, 6, 5, 30, '#5a3a20'); q(57, 6, 5, 30, '#5a3a20'); for (let y = 10; y < 32; y += 6) q(7, y, 50, 3, '#8a6a44'); q(7, 10, 50, 1, '#a88a5a'); for (let k = 0; k < 5; k++) q(9 + k * 10, 10 + k * 4, 3, 3, '#6a4a2a'); }); break;
     case 'placaSC': c = mk(20, 26, q => { q(9, 8, 2, 18, '#5a3a20'); q(1, 2, 18, 9, '#f4f0e8'); q(3, 4, 14, 1, '#2a5a8a'); q(3, 7, 10, 1, '#2a5a8a'); }); break;
     case 'tronco2': c = mk(44, 30, q => { for (const x of [2, 40]) q(x, 4, 3, 26, '#5a3a20'); for (let y = 8; y < 28; y += 5) q(5, y, 35, 2, '#8a6a44'); q(18, 2, 8, 4, '#8a8a92'); }); break;
@@ -3178,7 +3187,7 @@ function fenceSprOld(style, L, Rt, U, D, cond, pst) {
     }
   });
 }
-function fenceStyleAt(tx, ty) { const inR = r => tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]; if (inR(ROCA.r)) return 'v'; if (tx > 112) { for (const k of ['rd_curral', 'sc_manejo', 'mr_curral', 'rd_galin', 'ps_galin']) if (inR(AREAS[k].r)) return 'm'; for (const k of ['mr_pista', 'ps_chiq', 'ps_cabra', 'sc_bez']) if (inR(AREAS[k].r)) return 'v'; return 'a'; } for (const k of ['galin', 'haras']) if (inR(AREAS[k].r)) return 'v'; for (const k of ['curral', 'receb', 'conf', 'quar']) if (inR(AREAS[k].r)) return 'm'; return 'a'; }
+function fenceStyleAt(tx, ty) { const inR = r => tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]; if (inR(ROCA.r)) return 'v'; if (tx > 112) { for (const k of ['rd_curral', 'sc_manejo', 'mr_curral', 'rd_galin', 'ps_galin']) if (inR(AREAS[k].r)) return 'm'; for (const k of ['mr_pista', 'ps_chiq', 'ps_cabra', 'sc_bez']) if (inR(AREAS[k].r)) return 'v'; return 'a'; } for (const k of ['galin', 'haras']) if (inR(AREAS[k].r)) return 'v'; for (const k of ['curral', 'receb', 'conf', 'quar']) if (inR(AREAS[k].r)) return 'm'; if (tx >= 96 && tx <= 110 && ty >= 45 && ty <= 51) return 'm'; return 'a'; } // recinto do leilão: tábua de curral
 function drawGate(gt, X) { // porteira maior: pilares grossos com chapéu, folha de 5 travessas com mão-francesa, dobradiças e trava
   const a = gt.anim, th = a * Math.PI / 2 * 0.92, curral = gt.a && ['curral', 'receb', 'conf', 'quar', 'galin', 'haras'].includes(gt.a);
   const wood = curral ? '#d6c8aa' : '#a06a36', wd = shade(wood, -.45), wl = shade(wood, .22), post = '#5e3e22', pl = shade(post, .3), pd = shade(post, -.3), iron = '#3a3a42', ironL = '#7a7a84';
@@ -4992,6 +5001,7 @@ function hourTick(h) {
   if (rain) TROUGHS.forEach((t, i) => { if (t.k === 'agua' && AREAS[t.a].k === 'pasto') S.tr[i] = Math.min(trCap(i), S.tr[i] + 12); });
   if (built('bebedouro')) TROUGHS.forEach((t, i) => { if (t.k === 'agua' && (AREAS[t.a].k === 'pasto' || t.a === 'conf' || t.a === 'haras') && !(AREAS[t.a].exp && !S.exp[AREAS[t.a].exp])) { const need = trCap(i) - S.tr[i]; if (need > 0 && S.res > 1) { const take = Math.min(need, S.res * 30); S.tr[i] += take; S.res -= take / 30 * 0.5; } } });
   TROUGHS.forEach((t, i) => { if (AREAS[t.a].k === 'npc') S.tr[i] = trCap(i); });
+  TROUGHS.forEach((t, i) => { if (t.k !== 'agua' || AREAS[t.a].k === 'npc' || !owned(t.a) || (AREAS[t.a].exp && !S.exp[AREAS[t.a].exp])) return; const need = trCap(i) - S.tr[i]; if (need > 0 && (S.res > 3 || built('poco'))) { const take = Math.min(need, 16); S.tr[i] += take; if (!built('poco')) S.res = Math.max(0, S.res - take / 60); } }); // boia simples: enche um pouco por hora
   if (S.boia) TROUGHS.forEach((t, i) => { if (t.k !== 'agua' || !S.boia[t.a]) return; const need = trCap(i) - S.tr[i], take = Math.min(need, S.res * 30); if (take > 0) { S.tr[i] += take; S.res = Math.max(0, S.res - take / 30); } });
   // obras
   for (const k in S.lots) { const l = S.lots[k]; if (l && !l.done && h >= 7 && h < 17 && !isRain()) { l.prog = Math.min(1, l.prog + 1 / (BUILD[l.b].days * 10)); if (l.prog >= 1) { l.done = true; S.pend.push({ k: 'obraFim', lot: k }); } } }
@@ -5066,7 +5076,7 @@ function dayTick() { rocaGrowTick(); hxDay(); { const bd = bdayToday(); if (bd.l
       let gain = (B.gain || 1) * (0.25 + 0.55 * eat) * (a.ration ? 1.45 : 1) * (a.area === 'conf' && built('cocho') ? 1.25 : 1) * (0.8 + a.gen / 250) * (a.hp / 100) * (1 + skill('pec') * 0.05) * (a.skills.includes('Ganho de Peso') ? 1.15 : 1) * (se && !a.ration ? 0.7 : 1);
       if (a.age < 12) gain *= 1.6; if (a.stress > 40) gain *= 0.8;
       if (a.food < 15) gain = -2.5;
-      const cap = a.sex === 'M' ? 900 : 560; a.wt = Math.round(cl(a.wt + gain * 2.2, 30, cap) * 10) / 10;
+      const cap = a.sex === 'M' ? 900 : 560; a.wt = Math.round(cl(a.wt + gain * 3.3, 30, cap) * 10) / 10; a.lastGain = Math.round(gain * 33) / 10; // kg do dia
     }
     if (a.sp === 'porco') { const eat = cl(a.dayFood / 100, 0, 1.2), z = (PIGS[a.br] || {}).size || 1; let g = ((PIGS[a.br] || {}).gain || 1) * (0.3 + 0.7 * eat) * (a.ration ? 1.4 : 1) * (a.age < 14 ? 1 : 0.25) * (0.8 + a.gen / 250) * (a.hp / 100) * 7; if (a.stress > 40) g *= 0.8; if (a.food < 15) g = -1.5; a.wt = Math.round(cl(a.wt + g, 1.5, (a.sex === 'M' ? 170 : 155) * z) * 10) / 10; }
     a.cond = cl(a.cond + (a._ran || 0) / 400 - 0.4, 0, 100); a._ran = 0;
@@ -5192,6 +5202,8 @@ function findGrass(a, ox, oy) { // ox, oy: procura perto de outro ponto (ex.: ce
 }
 function findShade(a) { for (const p of PROPS) { if (!['umbu', 'juazeiro', 'manga', 'inga', 'caju', 'catingueira', 'angico', 'aroeira', 'mata1', 'mata2'].includes(p.t)) continue; if (hyp(p.x - a.x, p.y - a.y) > 140) continue; const x = p.x + rnd(-14, 14), y = p.y + rnd(4, 12); if (!a.area || areaAt(x, y) === a.area) if (!hitAt(x, y, 5)) return { x, y }; } return null; }
 function setGo(a, t, then, dur) { a._st = 'go'; a._tg = [t.x, t.y]; a._then = then; a._ti = t.ti; a._t = 25; a._dur = dur || rnd(6, 14); }
+// bocado por minuto de pastejo (capim do ladrilho, 0–255): o boi tira ~1,8, ovelha e cabra menos
+function grazeBite(a) { return a.sp === 'cabra' ? 0.9 : a.sp === 'ovelha' ? 1.0 : a.sp === 'boi' ? 1.8 * (a.age < 12 ? 0.6 : 1) : 1.2; }
 function decide(a) {
   const h = hour();
   if (a.sp === 'galinha') {
@@ -5212,6 +5224,7 @@ function decide(a) {
   if (a.water < (hot ? 55 : 40)) { const w = findWater(a); if (w) return setGo(a, w, 'drink', 3); }
   if (herd && a.water < 78) { const l = herdLeader(a); if (l && l !== a && l._st === 'go' && l._then === 'drink') { const w = findWater(a); if (w) return setGo(a, w, 'drink', 3); } }
   if (a.food < 75) { const f = findFeed(a); if (f) return setGo(a, f, 'eat', 4); }
+  if (herd && a.food < 62 && !(h > 11.5 && h < 14 && S.weather === 'sol' && a.food > 45)) { const g0 = far ? findGrass(a, hc.x, hc.y) : findGrass(a); if (g0) return setGo(a, { x: g0[0], y: g0[1] }, 'graze', rnd(14, 26)); } // com fome, pasta
   // filhote brinca: corrida curta perto da mãe ou dos irmãos
   if (a.age < 8 && a.sp !== 'galinha' && Math.random() < 0.18) { const m = motherOf(a) || a; const t = [m.x + rnd(-40, 40), m.y + rnd(-24, 24)]; if (!a.area || areaAt(t[0], t[1]) === a.area) { a._st = 'play'; a._tg = t; a._t = rnd(1.5, 3); return; } }
   // contato social: dois animais da mesma espécie se encontram e ficam um de frente para o outro
@@ -5220,7 +5233,7 @@ function decide(a) {
   if (a.age < 8) { const m = motherOf(a); if (m && !m._hid && hyp(m.x - a.x, m.y - a.y) > 30) return setGo(a, { x: m.x + rnd(-10, 10), y: m.y + rnd(4, 10) }, m._st === 'rest' ? 'rest' : 'graze', rnd(4, 8)); }
   // barriga cheia: deita para ruminar
   if (herd && a.food > 86 && Math.random() < 0.3) { a._st = 'rest'; a._t = rnd(14, 28); return; }
-  if (h > 11 && h < 14.5 && S.weather === 'sol' && Math.random() < 0.45) { const s = findShade(a); if (s) return setGo(a, s, 'rest', rnd(15, 30)); }
+  if (h > 11 && h < 14.5 && S.weather === 'sol' && a.food > 50 && Math.random() < 0.45) { const s = findShade(a); if (s) return setGo(a, s, 'rest', rnd(15, 30)); }
   if (Math.random() < 0.12) { a._st = 'idle'; a._t = rnd(3, 8); return; }
   // pastejo em grupo: quem se afastou procura capim do lado do rebanho
   const g = far ? findGrass(a, hc.x, hc.y) : findGrass(a); if (g) return setGo(a, { x: g[0], y: g[1] }, 'graze', rnd(8, 18));
@@ -5258,7 +5271,7 @@ function updAnimal(a, dt, gm, threats) {
     case 'come': { const d = hyp(P.x - a.x, P.y - a.y); if (d > 26) { const r = stepTo(a, P.x, P.y, 50, dt, 'a'); if (r === 'stuck') { a._gh = 1; } if (a._gh) moveEnt(a, (P.x - a.x) / d * 50 * dt, (P.y - a.y) / d * 50 * dt, 5, 'ghost'); a._pose = 'walk'; a._run = 1; } else { a._st = 'idle'; a._t = 6; a._gh = 0; a._run = 0; } if (a._t <= 0) { a._st = null; a._gh = 0; } return; }
     case 'route': { if (!a._route || !a._route.length) { a._st = null; return; } const [tx, ty] = a._route[0]; const r = stepTo(a, tx, ty, a._spd || 24, dt, a._gh ? 'ghost' : 'route'); a._pose = 'walk'; if (r === true) { a._route.shift(); a._gh = 0; } else if (r === 'stuck') { a._gh = 1; } if (a._t < -90) { a._route = null; } return; }
     case 'go': { const r = stepTo(a, a._tg[0], a._tg[1], animalSpeed(a), dt); a._pose = 'walk'; if (r === true || r === 'stuck' || a._t <= 0) { a._st = a._then; a._t = a._dur || 6; if (a._then === 'drink') { const ti = a._ti; if (ti >= 0 && S.tr[ti] > 0) { const take = Math.min(S.tr[ti], 25); S.tr[ti] -= take; a.water = cl(a.water + take * 4, 0, 100); } else if (ti === -1) a.water = 100; } if (a._then === 'eat') { const ti = a._ti; if (ti >= 0 && S.tr[ti] > 0) { const k = a.sp === 'galinha' ? 0.1 : 4; const take = Math.min(S.tr[ti], k); S.tr[ti] -= take; a.food = cl(a.food + take / k * 45, 0, 100); a.dayFood += take / k * 45; a.ration = 1; } } if (a._then === 'coop') { a._hid = true; a._t = 30; } } return; }
-    case 'graze': { a._pose = 'graze'; const i = gi(Math.floor(a.x / TS), Math.floor(a.y / TS)); if (a.sp !== 'galinha') { if (ground[i] === G.PAST) { if (grass[i] > 12) { const e = Math.min(grass[i], 0.6 * gm); grass[i] -= e; const f = e * 0.27 * Math.min(1, grass[i] / 120 + 0.3); a.food = cl(a.food + f, 0, 100); a.dayFood += f; } else a._t = Math.min(a._t, 0.5); } else if (ground[i] === G.GRASS || ground[i] === G.DRY) { const f = 0.08 * gm; a.food = cl(a.food + f, 0, 100); a.dayFood += f; } } if (a._t <= 0) a._st = null; return; }
+    case 'graze': { a._pose = 'graze'; const i = gi(Math.floor(a.x / TS), Math.floor(a.y / TS)); if (a.sp !== 'galinha') { if (ground[i] === G.PAST) { if (grass[i] > 12) { const e = Math.min(grass[i], grazeBite(a) * gm); grass[i] -= e; const f = e * 0.3 * Math.min(1, grass[i] / 110 + 0.25); a.food = cl(a.food + f, 0, 100); a.dayFood += f; } else a._t = Math.min(a._t, 0.5); } else if (ground[i] === G.GRASS || ground[i] === G.DRY) { const f = 0.08 * gm; a.food = cl(a.food + f, 0, 100); a.dayFood += f; } } if (a._t <= 0) a._st = null; return; }
     case 'rest': a._pose = a.sp === 'boi' ? 'lie' : 'idle'; if (a._t <= 0) a._st = null; if ((hour() >= 20.5 || hour() < 5) && a._t <= 0) { a._st = 'rest'; a._t = 20; } return;
     case 'coop': a._pose = 'idle'; if (a._t <= 0 && !isNight() && !isRain()) { a._hid = false; a._st = null; } else if (a._t <= 0) a._t = 10; return;
     case 'drink': case 'eat': a._pose = 'graze'; if (a._t <= 0) a._st = null; return;
@@ -5795,8 +5808,8 @@ function arriveAt(a) {
   if (a._then === 'coop') { a._hid = true; a._t = 30; }
 }
 function grazeTick(a, gm) {
-  const i = gi(Math.floor(a.x / TS), Math.floor(a.y / TS)), bite = a.sp === 'cabra' ? 0.35 : a.sp === 'ovelha' ? 0.42 : 0.6;
-  if (ground[i] === G.PAST) { if (grass[i] > 12) { const e = Math.min(grass[i], bite * gm); grass[i] -= e; const f = e * (a.sp === 'cabra' ? 0.42 : a.sp === 'ovelha' ? 0.4 : 0.27) * Math.min(1, grass[i] / 120 + 0.3); a.food = cl(a.food + f, 0, 100); a.dayFood += f; } else a._t = Math.min(a._t, 0.5); }
+  const i = gi(Math.floor(a.x / TS), Math.floor(a.y / TS)), bite = grazeBite(a);
+  if (ground[i] === G.PAST) { if (grass[i] > 12) { const e = Math.min(grass[i], bite * gm); grass[i] -= e; const f = e * (a.sp === 'cabra' ? 0.42 : a.sp === 'ovelha' ? 0.4 : 0.3) * Math.min(1, grass[i] / 110 + 0.25); a.food = cl(a.food + f, 0, 100); a.dayFood += f; } else a._t = Math.min(a._t, 0.5); }
   else if (ground[i] === G.GRASS || ground[i] === G.DRY) { const f = (a.sp === 'cabra' ? 0.12 : a.sp === 'ovelha' ? 0.09 : 0.08) * gm; a.food = cl(a.food + f, 0, 100); a.dayFood += f; }
 }
 /* ---------- cavalos, muares e jumentos soltos ---------- */
@@ -6972,8 +6985,17 @@ function mapHTML() {
   return `<img src="${c.toDataURL()}" style="width:100%;border:3px solid #2b1608;image-rendering:auto"><p class="mut">🔴 Você · 🔵 Moradores · ⬜ seu gado. A cidade fica a leste, depois da ponte do riacho.</p>`;
 }
 /* ---------- fazenda ---------- */
+// estado dos pastos: capim médio, lotação, dias de pasto, bebedouro e conselho de rodízio
+function pastureInfo(ak) { const r = AREAS[ak].r; let n = 0, sum = 0; for (let y = r[1]; y <= r[3]; y++) for (let x = r[0]; x <= r[2]; x++) { const i = gi(x, y); if (ground[i] === G.PAST) { n++; sum += grass[i]; } }
+  const L = S.animals.filter(a => a.own === 'player' && !a._hid && areaAt(a.x, a.y) === ak), ua = L.reduce((t, a) => t + (a.sp === 'boi' ? (a.age < 12 ? 0.5 : 1) : a.sp === 'cavalo' || a.sp === 'burro' ? 1.2 : RUM(a.sp) ? 0.2 : a.sp === 'jumento' ? 0.6 : 0), 0);
+  const avg = n ? sum / n : 0, eatDay = ua * 330, grow = n * (season() ? 0.35 : 1.25) * 24, stock = Math.max(0, sum - n * 40), net = eatDay - grow, days = net > 0 ? Math.floor(stock / net) : 99;
+  const ti = TROUGHS.findIndex(t => t.a === ak && t.k === 'agua'), cap = Math.round(n * (season() ? 0.35 : 1.25) * 24 / 330 * 10) / 10;
+  return { n, avg, pct: Math.round(avg / 255 * 100), heads: L.length, ua: Math.round(ua * 10) / 10, days, cap, water: ti >= 0 ? Math.round(S.tr[ti] / trCap(ti) * 100) : null, rest: S.rest[ak] || 0 }; }
+function pasturesHTML() { const ks = AKEYS.filter(k => AREAS[k].k === 'pasto' && owned(k) && !(AREAS[k].exp && !S.exp[AREAS[k].exp])); if (!ks.length) return '';
+  return '<h3>🌾 Pastos</h3><p class="mut">Capim baixa quando o gado pasta e rebrota com o tempo (bem mais nas águas que na seca). Rodízio: tire o lote quando o capim ficar baixo e deixe o piquete descansar; pasto descansado rebrota 50% mais rápido.</p>' + ks.map(k => { const q = pastureInfo(k), tip = q.heads && q.pct < 25 ? '⚠️ Capim rapado: troque o lote de piquete ou dê trato no cocho.' : q.heads && q.days < 4 ? '⏳ Dá para mais ' + q.days + ' dia(s). Prepare o próximo piquete.' : !q.heads && q.pct < 60 ? '😴 Descansando (' + q.rest + ' dia' + (q.rest === 1 ? '' : 's') + ').' : q.heads > 0 && q.ua > q.cap * 1.3 ? '🐄 Lotação acima do que o pasto aguenta nesta estação.' : '✅ Pasto bom.';
+    return `<div class="card"><div class="row sp"><b>${AREAS[k].n}</b><span class="mut">${q.heads} cabeça(s) · ${q.ua} UA</span></div><div class="row sp"><span>Capim</span>${bar(q.pct, q.pct < 25 ? 'r' : q.pct < 50 ? 'y' : '')}<span>${q.pct}%</span></div>${q.water !== null ? `<div class="row sp"><span>Bebedouro</span>${bar(q.water, 'w')}<span>${q.water}%</span></div>` : ''}<p class="mut" style="margin:2px 0">Aguenta ~${q.cap} UA nesta estação${q.heads ? ' · pasto para ' + (q.days >= 99 ? 'muitos dias' : q.days + ' dia(s)') : ''}. ${tip}</p></div>`; }).join(''); }
 function farmTab() {
-  let h = `<div class="card"><div class="row sp"><span>💧 Reservatório</span>${bar(S.res, 'w')}<span>${Math.round(S.res)}%</span></div><div class="row sp"><span>🌽 Depósito</span><span>${Math.round(depKg())} / ${depCap()} kg</span></div><p class="mut">Ração ${Math.round(S.dep.racao)} kg · Milho ${Math.round(S.dep.milho)} kg · Sal ${Math.round(S.dep.sal)} kg · Lenha ${S.dep.lenha} · Carvão ${S.dep.carvao}<br>Materiais: ${Object.keys(MATS).map(k => MATS[k][0] + ' ' + (S.dep[k] || 0)).join(' · ')}</p></div>`;
+  let h = pasturesHTML() + `<div class="card"><div class="row sp"><span>💧 Reservatório</span>${bar(S.res, 'w')}<span>${Math.round(S.res)}%</span></div><div class="row sp"><span>🌽 Depósito</span><span>${Math.round(depKg())} / ${depCap()} kg</span></div><p class="mut">Ração ${Math.round(S.dep.racao)} kg · Milho ${Math.round(S.dep.milho)} kg · Sal ${Math.round(S.dep.sal)} kg · Lenha ${S.dep.lenha} · Carvão ${S.dep.carvao}<br>Materiais: ${Object.keys(MATS).map(k => MATS[k][0] + ' ' + (S.dep[k] || 0)).join(' · ')}</p></div>`;
   if (S.land) {
     const pv = patrimonio(), ri = rankOf(pv), nx = RANKS[ri + 1];
     h += `<div class="card"><b>${RANKS[ri][1]}</b> · patrimônio ${fmt(pv)}${nx ? `<br><span class="mut">Próximo título: ${nx[1]} (${fmt(nx[0])})</span>` : ''}</div>`;
