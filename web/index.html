@@ -308,6 +308,8 @@ body.lan .steps .sS{display:inline}
 .mh h2{font-size:19px;color:#5a2408;text-shadow:0 1px 0 #fff4cc,0 0 1px rgba(90,36,8,.3);letter-spacing:.5px}
 #mic img{filter:drop-shadow(0 1px 0 #fff4cc)}
 #mc.swap{animation:swapIn .16s ease}
+#app::before,#app::after{content:'';position:absolute;left:0;right:0;height:0;background:#0a0604;z-index:7;pointer-events:none;transition:height .6s ease}#app::before{top:0}#app::after{bottom:0}
+body.cine #app::before,body.cine #app::after{height:11vh}body.cine .pad,body.cine #joy,body.cine #hotbar,body.cine #bar{opacity:0;pointer-events:none;transition:opacity .4s}
 @keyframes swapIn{from{opacity:.25;transform:translateY(4px)}to{opacity:1;transform:none}}
 .card{border:3px solid #5a3418;background:linear-gradient(#f8eac6,#efd9aa);box-shadow:inset 0 0 0 2px #fff6dc,inset 0 0 0 4px rgba(150,96,44,.18),0 3px 0 rgba(20,10,4,.3);border-radius:2px}
 .card.sel{outline:3px solid #c8862e;background:linear-gradient(#fff4d0,#f6e2b0)}
@@ -504,7 +506,7 @@ const shownTips = {};
 function tip(k, t) { if (S && S.flags['tip_' + k]) return; if (S) S.flags['tip_' + k] = 1; say(t, 6500); }
 
 /* ============ CONFIGURAÇÕES, ÍCONES E MOLDURAS PIXEL ============ */
-const SET = { fx: 'alta', tspd: 'normal', q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on' };
+const SET = { fx: 'alta', tspd: 'normal', q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on', cine: 'on', lean: 'on' };
 try { Object.assign(SET, JSON.parse(localStorage.getItem('lida_set') || '{}')); } catch (e) { }
 setTimeout(() => applyTimeSpeed(), 0);
 function saveSet() { try { localStorage.setItem('lida_set', JSON.stringify(SET)); } catch (e) { } document.documentElement.style.setProperty('--ctl', SET.ctl); document.body && document.body.classList.toggle('tapmode', SET.mode === 'touch'); }
@@ -2485,6 +2487,15 @@ const FLORA = (() => {
 })();
 /* FLORA:end */
 function blob(p, cx, cy, r, c) { for (let y = -r; y <= r; y++) { const w = Math.round(Math.sqrt(r * r - y * y)); p(cx - w, cy + y, w * 2 + 1, 1, c); } }
+/* apresentação de câmera na primeira chegada a um lugar: faixas de cinema, a câmera recua e passeia até o
+   prédio mais marcante do lugar, segura um instante e volta ao vaqueiro */
+const CINE = { on: false, t: 0,
+  landmark(name) { let best = null, bA = 0; for (const b of BLD) { const cx = (b.r[0] + b.r[2] + 1) / 2 * TS, cy = (b.r[1] + b.r[3] + 1) / 2 * TS; if (regionAt(cx, cy)[0] !== name) continue; const a = (b.r[2] - b.r[0] + 1) * (b.r[3] - b.r[1] + 1) + (b.art === 'igreja' ? 400 : b.art === 'mansao' ? 300 : 0); if (a > bA) { bA = a; best = [cx, cy]; } } return best; },
+  maybe(name) { if (SET.cine === 'off' || this.on || mode !== 'play' || P.inside || P.lead || lasso.t || P._auto || P.cart || M.open || AUC.on) return; S.story = S.story || { seen: {} }; S.story.seen = S.story.seen || {}; const k = 'cine:' + name; if (S.story.seen[k]) return;
+    const lm = this.landmark(name); S.story.seen[k] = 1; if (!lm || hyp(lm[0] - P.x, lm[1] - P.y) < 40) return; this.on = true; this.t = 0; this.lm = lm; document.body.classList.add('cine'); cam.fx = lm[0]; cam.fy = lm[1]; cam.spd = 1.1; cam.taz = 0.82; },
+  update(dt) { if (!this.on) return; this.t += dt; if (this.t > 3.6 || mode !== 'play') this.stop(); },
+  stop() { this.on = false; document.body.classList.remove('cine'); cam.fx = cam.fy = null; cam.spd = 1.6; cam.taz = 1; cam.ret = 1.4; }
+};
 /* bandos de asa-branca no céu: voam numa camada alta (parallax maior que o chão) e projetam sombra no pasto */
 const FLOCK = { L: [], t: 8,
   update(dt) { if (P.inside || mode !== 'play') return; this.t -= dt; const h = hour();
@@ -2503,8 +2514,8 @@ const FLOCK = { L: [], t: 8,
    como se a câmera estivesse acima deles) e o vento curva as copas. O sprite é desenhado em faixas de 8 px,
    cada uma deslocada conforme a altura — o tronco ganha degraus de 1 px, no espírito da pixel art. */
 const LEAN = { k: 0.035 };
-function drawLean(c, dx, dy, w, h, bx, by, sway, alpha) {
-  const k = SET.fx === 'baixa' ? 0 : LEAN.k, cx = cam.x + VW() / 2, cy = cam.y + VH() / 2, lx = (bx - cx) * k, ly = (by - cy) * k * 0.45;
+function drawLean(c, dx, dy, w, h, bx, by, sway, alpha, kmul) {
+  const k = SET.fx === 'baixa' || SET.lean === 'off' ? 0 : LEAN.k * (kmul || 1), cx = cam.x + VW() / 2, cy = cam.y + VH() / 2, lx = (bx - cx) * k, ly = (by - cy) * k * 0.45;
   if (!k && !sway) { if (alpha < 1) X.globalAlpha = alpha; X.drawImage(c, dx, dy); X.globalAlpha = 1; return; }
   const base = by - dy; // linha do chão dentro do sprite
   for (let y = 0; y < h; y += 8) { const hh2 = Math.min(8, h - y), up = Math.max(0, base - (y + hh2 / 2)) / 64; if (up <= 0) { X.globalAlpha = 1; X.drawImage(c, 0, y, w, hh2, dx, dy + y, w, hh2); continue; }
@@ -2738,7 +2749,56 @@ function bldSpr(b, night) {
   b.top = top;
   return cached(`b|${b.id}|${night ? 1 : 0}`, w + 8, h + top, g => drawBld(g, b, w, h, top, night));
 }
-function drawBld(g, b, w, h, top, night) { drawBldBase(g, b, w, h, top, night); bldWear(g, b, w, h, top); }
+function drawBld(g, b, w, h, top, night) { drawBldBase(g, b, w, h, top, night); bldWear(g, b, w, h, top); bldDetail(g, b, w, h, top, night); }
+/* acabamento arquitetônico (por cima do desenho base): volume, beiral, barra pintada, platibanda, telhado com
+   cumeeira, caixa d'água azul, antena, chaminé, vasos, arandela e degrau — cada prédio sorteia os seus pelo id */
+function bldDetail(g, b, w, h, top, night) {
+  const p = (x, y, ww, hh, c) => { g.fillStyle = c; g.fillRect(x + 4, y + top, ww, hh); };
+  const art = b.art, R = mulberry(b.id.length * 53 + w * 7 + h), WHt = art === 'igreja' ? 46 : art === 'galpao' || art === 'estabulo' ? 34 : art === 'loja' || art === 'banco' ? 34 : 30, wy = h - WHt;
+  const town = art === 'casa' || art === 'loja', wall = b.wall, trim = b.trim || '#f4f0e8', roof = b.roof;
+  // 1) telhado: luz no alto (noroeste), cumeeira clara, caimento mais escuro perto do beiral
+  if (art !== 'banco' && art !== 'igreja') { const r0 = art === 'loja' ? 4 : 0, rh = Math.max(4, wy - r0 - (art === 'loja' ? 10 : 4));
+    for (let y = 0; y < rh; y++) { const k = y / rh; if (k < 0.18) p(-3, r0 + y, w + 6, 1, `rgba(255,240,210,${0.16 - k * 0.6})`); else if (k > 0.62) p(-3, r0 + y, w + 6, 1, `rgba(30,12,4,${(k - 0.62) * 0.42})`); }
+    if (art === 'casa' || art === 'loja' || art === 'sede' || art === 'deposito') { // telhado de quatro águas: caimento oeste iluminado, leste na sombra, arestas marcadas
+      const sl = Math.min(0.95, (w * 0.42) / rh), eL = shade(roof, .32), eR = shade(roof, -.4);
+      for (let y = 0; y < rh; y++) { const d = Math.round((rh - y) * sl); if (d <= 0) continue; p(-3, r0 + y, d, 1, 'rgba(255,236,200,0.13)'); p(w + 3 - d, r0 + y, d, 1, 'rgba(24,10,4,0.30)'); p(-3 + d, r0 + y, 1, 1, eL); p(w + 2 - d, r0 + y, 1, 1, eR); }
+      const dt0 = Math.round(rh * sl); p(-3 + dt0, r0, Math.max(1, w + 6 - dt0 * 2), 1, shade(roof, .4)); } // cumeeira
+    else p(-3, r0, w + 6, 1, shade(roof, .35)); // cumeeira
+    if (art !== 'galpao' && art !== 'estabulo') for (let k = 0, n = 2 + Math.floor(w / 40); k < n; k++) { const x = Math.floor(R() * (w - 8)), y = r0 + 3 + Math.floor(R() * Math.max(2, rh - 8)); p(x, y, 3, 1, 'rgba(70,96,40,0.55)'); p(x + 1, y + 1, 2, 1, 'rgba(70,96,40,0.4)'); } } // limo nas telhas
+  if (art === 'igreja') { // torre sineira com volume: lado direito na sombra, cornijas, janela do sino em arco com o sino de bronze
+    const tx0 = Math.round(w / 2 - 14), ty0 = -top + 2, tw = 28, th = top + wy + 2;
+    p(-3, 6, tx0 + 3, wy - 4, 'rgba(255,236,200,0.10)'); p(tx0 + tw, 6, w + 3 - tx0 - tw, wy - 4, 'rgba(24,10,4,0.24)'); p(tx0 + tw, 6, 2, wy - 4, 'rgba(24,10,4,0.3)'); // duas águas: oeste ao sol, leste na sombra
+    p(tx0 + tw - 4, ty0 + 2, 4, th - 2, shade(wall, -.22)); p(tx0 + tw - 1, ty0, 1, th, shade(wall, -.4));
+    for (let y = ty0 + 22; y < ty0 + th - 6; y += 16) { p(tx0 - 1, y, tw + 2, 2, trim); p(tx0 - 1, y + 2, tw + 2, 1, 'rgba(40,24,10,0.35)'); }
+    const bx = tx0 + 9, by = ty0 + 26; p(bx, by + 3, 10, 11, '#2a1a12'); p(bx + 1, by + 1, 8, 2, '#2a1a12'); p(bx + 2, by, 6, 1, '#2a1a12');
+    p(bx + 3, by + 4, 4, 5, '#c89a3a'); p(bx + 2, by + 8, 6, 2, '#a87a2a'); p(bx + 3, by + 4, 1, 4, '#f0d070'); p(bx + 4, by + 10, 2, 1, '#6a4a1a');
+    p(bx - 1, by + 14, 12, 1, trim); }
+  // 2) sombra do beiral na parede e degradê de oclusão no pé da parede
+  for (let y = 0; y < 4; y++) p(0, wy + y, w, 1, `rgba(20,10,4,${0.34 - y * 0.08})`);
+  for (let y = 0; y < 6; y++) p(0, h - 6 - y, w, 1, `rgba(20,10,4,${0.03 * (6 - y)})`);
+  // 3) parede lateral na sombra (lado leste): dá volume ao prédio
+  const sideC = shade(wall, -.42); p(w, wy + 1, 3, WHt - 1, sideC); p(w, wy + 1, 3, 2, 'rgba(10,5,2,0.5)'); p(w + 3, wy + 2, 1, WHt - 2, 'rgba(10,5,2,0.35)');
+  if (art !== 'banco' && art !== 'igreja') p(w, Math.max(0, wy - 6), 3, 6, shade(roof, -.5));
+  if (town) {
+    // 4) barra pintada no rodapé (típica das casas do sertão)
+    const barra = ['#2f6f9f', '#b8502a', '#3a7a4a', '#c89a2a', '#7a3a6a', '#8a5a32'][Math.floor(R() * 6)];
+    if (art === 'casa') { p(0, h - 9, w, 4, barra); p(0, h - 9, w, 1, shade(barra, .25)); }
+    // 5) platibanda ornamentada em parte das casas (esconde o telhado, com frontão e friso)
+    if (art === 'casa' && R() < 0.6) { const ph = 9, py = wy - ph; p(-1, py, w + 2, ph, wall); p(-1, py, w + 2, 1, trim); p(-1, py + ph - 2, w + 2, 2, trim); p(-1, py + 3, w + 2, 1, shade(wall, -.15));
+      const fw = 18, fx = Math.round(w / 2 - fw / 2); for (let i = 0; i < 5; i++) p(fx + i * 2, py - 1 - i, fw - i * 4, 1, i ? wall : trim); p(fx + 4, py - 5, fw - 8, 1, trim); // frontão em degraus
+      p(fx + 6, py - 3, fw - 12, 2, barra); for (let x = 3; x < w - 3; x += 8) { p(x, py + 4, 2, 2, trim); } p(-2, py - 2, 3, ph + 2, trim); p(w - 1, py - 2, 3, ph + 2, trim); } // pilastras nas pontas
+    // 6) caixa d'água azul e antena no telhado
+    if (R() < 0.45 && wy > 14) { const cx = 6 + Math.floor(R() * (w - 22)), cy = 3; p(cx, cy + 6, 12, 2, 'rgba(20,10,4,0.35)'); p(cx, cy, 12, 7, '#2f6fb0'); p(cx, cy, 12, 2, '#5a9ad8'); p(cx + 1, cy + 2, 10, 1, '#1e4a80'); p(cx + 2, cy - 1, 8, 1, '#3a80c0'); }
+    if (R() < 0.4 && wy > 12) { const ax = 4 + Math.floor(R() * (w - 12)); p(ax, -6, 1, 10, '#6a6a70'); p(ax - 4, -5, 9, 1, '#8a8a90'); p(ax - 3, -3, 7, 1, '#8a8a90'); p(ax - 2, -1, 5, 1, '#8a8a90'); }
+    else if (R() < 0.3 && wy > 12) { const ax = 4 + Math.floor(R() * (w - 14)); p(ax, 1, 8, 6, '#d8d8d4'); p(ax + 1, 2, 6, 4, '#b8b8b4'); p(ax + 3, 4, 2, 4, '#7a7a78'); } // parabólica
+    // 7) degrau na porta, vasos de planta e arandela
+    const dx = art === 'casa' && b.door !== undefined ? (b.door - b.r[0]) * TS + 8 : w / 2; p(dx - 9, h - 2, 18, 2, '#b8b0a0'); p(dx - 9, h - 2, 18, 1, '#d8d0c0');
+    for (const vx of [dx - 14, dx + 10]) if (vx > 1 && vx < w - 6 && R() < 0.75) { p(vx, h - 7, 5, 5, '#a8502a'); p(vx, h - 7, 5, 1, '#c8703a'); const fc = ['#e03a4a', '#f0c030', '#e86aa8', '#f4f0e8'][Math.floor(R() * 4)]; p(vx - 1, h - 11, 7, 4, '#3a7a2a'); p(vx, h - 12, 2, 2, fc); p(vx + 3, h - 11, 2, 2, fc); }
+    p(dx + 9, h - 24, 2, 3, '#3a3a3a'); p(dx + 9, h - 25, 2, 1, night ? '#ffe8a0' : '#d8d0b0');
+  }
+  // 8) chaminé de fogão a lenha (casas e sedes)
+  if ((art === 'casa' || art === 'sede') && R() < 0.55 && wy > 10) { const cx = Math.floor(w * (0.2 + R() * 0.6)); p(cx, -4, 6, 10, '#b8a890'); p(cx, -4, 6, 1, '#d8c8b0'); p(cx - 1, -5, 8, 2, '#8a7a68'); p(cx + 5, -3, 1, 9, '#8a7a68'); b.chim = [cx + 4 - 4 + 3, -5 + top]; }
+}
 function bldWear(g, b, w, h, top) { // desgaste: respingo de barro no rodapé, rachaduras, telhas trocadas, ferrugem no zinco e sombra de contato
   const p = (x, y, ww, hh, c) => { g.fillStyle = c; g.fillRect(x + 4, y + top, ww, hh); };
   const R = mulberry(b.id.length * 97 + w * 3 + h), art = b.art;
@@ -5247,6 +5307,7 @@ function updPlayer(dt) {
   if (inst.on) { P._vx = P._vy = 0; P._st = 'play'; return; }
   if (MOVE.edit) { P._vx = P._vy = 0; P._st = 'idle'; P._mv = 0; return; }
   if (AUC.on) { P._vx = P._vy = 0; P._st = 'idle'; P._mv = 0; P.dir = 1; return; }
+  if (CINE.on) { P._vx *= 0.8; P._vy *= 0.8; P._st = 'idle'; P._mv = 0; return; }
   let ix = input.x, iy = input.y, mag = hyp(ix, iy); if (mag > 1) { ix /= mag; iy /= mag; mag = 1; }
   if (mag < 0.18) { ix = iy = 0; mag = 0; }
   if (P._sit) { if (mag > 0 || P.mnt || P.cart) { P._sit = null; P._st = 'idle'; } else { P._vx = P._vy = 0; P._st = 'idle'; P._mv = 0; P.en = Math.min(100, P.en + dt * 0.35); return; } }
@@ -6771,7 +6832,7 @@ function cfgHTML(inGame) {
   const opt = (k, v, l) => `<button data-a="setOpt" data-v="${k}|${v}" class="${SET[k] === v ? 'on' : ''}">${l}</button>`;
   let h = volHTML();
   h += `<div class="card"><b>Velocidade do tempo</b><div class="ch">${opt('tspd', 'lento', 'Lento (dia de 36 min)')}${opt('tspd', 'normal', 'Normal (24 min)')}${opt('tspd', 'rapido', 'Rápido (16 min)')}</div></div>`;
-  h += `<div class="card"><b>Efeitos gráficos</b><div class="ch">${opt('fx', 'alta', 'Alta (luz, bloom, água, calor, raios de sol, neblina)')}${opt('fx', 'media', 'Média (luz, bloom, água, calor)')}${opt('fx', 'baixa', 'Baixa (sem shader)')}</div><p class="mut">Se o aparelho não acompanhar, o jogo desce a qualidade sozinho.</p></div>`;
+  h += `<div class="card"><b>Efeitos gráficos</b><div class="ch">${opt('fx', 'alta', 'Alta (luz, bloom, água, calor, raios de sol, neblina)')}${opt('fx', 'media', 'Média (luz, bloom, água, calor)')}${opt('fx', 'baixa', 'Baixa (sem shader)')}</div><p class="mut">Se o aparelho não acompanhar, o jogo desce a qualidade sozinho.</p><b>Profundidade 2.5D (copas e telhados inclinam com a câmera)</b><div class="ch">${opt('lean', 'on', 'Ligada')}${opt('lean', 'off', 'Desligada')}</div><b>Apresentação ao chegar num lugar novo</b><div class="ch">${opt('cine', 'on', 'Mostrar')}${opt('cine', 'off', 'Pular')}</div></div>`;
   h += `<div class="card"><b>Gráficos</b><div class="ch">${opt('q', 'alta', 'Alta resolução')}${opt('q', 'media', 'Desempenho')}</div><b>Modo de controle</b><div class="ch">${opt('mode', 'joy', 'Joystick')}${opt('mode', 'touch', 'Toque na tela')}</div><p class="mut">${SET.mode === 'touch' ? 'Toque no chão para ir até lá; toque duas vezes para correr ou galopar. Os botões de ação continuam na tela.' : 'Joystick virtual (ou WASD/setas no teclado). Segure “Correr” para correr ou galopar.'}</p><b>Tamanho dos botões</b><div class="ch">${opt('ctl', 1, 'Normal')}${opt('ctl', 1.2, 'Grandes')}</div><b>Orientação da tela</b><div class="ch">${opt('ori', 'livre', 'Livre')}${opt('ori', 'retrato', 'Retrato')}${opt('ori', 'paisagem', 'Paisagem')}</div><p class="mut">Travar a orientação só funciona em tela cheia no celular.</p><div class="row">${btn('Tela cheia', 'fs')}</div><b>Cenas dos leilões</b><div class="ch">${opt('aucCs', 'on', 'Mostrar')}${opt('aucCs', 'off', 'Pular sempre')}</div><b>Vibração</b><div class="ch">${opt('vib', true, 'Ligada')}${opt('vib', false, 'Desligada')}</div><b>Zoom</b><p class="mut">Use dois dedos na tela (pinça) ou a rodinha do mouse.</p><div class="row">${btn('Zoom padrão', 'zoomReset')}</div></div>`;
   if (inGame) h += `<div class="card"><div class="row">${ibtn('disk', 'Salvar', 'saveNow')}${ibtn('play', 'Carregar', 'loadNow')}${ibtn('scroll', 'Ajuda', 'help')}${ibtn('book', 'Créditos', 'credits')}${ibtn('farm', 'Tela inicial', 'toTitle')}</div><p class="mut" id="saveInfo">Partida ${SAVE.slot}. Salvamento automático às 6h, ao dormir e a cada 60 s, com cópia de segurança.</p></div>`;
   { const ms = MUS.missingList(), tr = Object.keys(MUS.files).map(k => `<li>${k.toUpperCase()} — <code>${MUS.files[k]}</code> ${MUS.missing[k] ? '<b style="color:#b02020">faltando</b>' : MUS.el && MUS.el[k] ? 'ok' : 'carrega no primeiro toque'}</li>`).join('');
@@ -8746,7 +8807,11 @@ function render(dt) {
       if (p.t === 'forrageira' && S.mach && S.mach.busy) { if (Math.random() < 0.3) part(p.x + rnd(-6, 6), p.y - 20, 'dust', { vx: rnd(-10, 10), vy: -12, m: .5, c: '#e8d080', s: 1 }); }
     }); }
   for (const b of BLD) { const x0 = b.r[0] * TS, y1 = (b.r[3] + 1) * TS; if (x0 > cam.x + vw + 20 || (b.r[2] + 1) * TS < cam.x - 20 || y1 < cam.y - 10 || b.r[1] * TS - 40 > cam.y + vh) continue;
-    add(y1 - 2, () => { const hv = S.house === undefined ? 2 : S.house; const casa = b.id === 'casa', rb = RBLD[b.art], c = casa ? casaSpr(hv, isNight()) : rb ? rbSpr(b.art, isNight()) : bldSpr(b, isNight()); const s2 = sunDX(); X.fillStyle = isNight() ? 'rgba(5,5,15,0.2)' : 'rgba(20,12,4,0.25)'; X.fillRect(x0 + (s2 > 0 ? c.width - 8 : s2 * 2), y1 - 6, Math.abs(s2) * 2 + 4, 6); X.fillRect(x0 - 2, y1 - 2, c.width - 4, 4); X.drawImage(c, rb ? x0 : x0 - 4, casa || rb ? y1 - c.height + 8 : b.r[1] * TS - b.top); }); }
+    add(y1 - 2, () => { const hv = S.house === undefined ? 2 : S.house; const casa = b.id === 'casa', rb = RBLD[b.art], c = casa ? casaSpr(hv, isNight()) : rb ? rbSpr(b.art, isNight()) : bldSpr(b, isNight()); const s2 = sunDX(), dxI = rb ? x0 : x0 - 4, dyI = casa || rb ? y1 - c.height + 8 : b.r[1] * TS - b.top, x1 = dxI + c.width - (rb ? 0 : 4), hh2 = Math.min(40, c.height * 0.5);
+      X.fillStyle = isNight() ? 'rgba(5,5,15,0.2)' : 'rgba(20,12,4,0.25)'; X.fillRect(x0 - 2, y1 - 2, c.width - 4, 4); // contato com o chão
+      if (Math.abs(s2) > 0.3) { const ex = s2 > 0 ? x1 : dxI + (rb ? 0 : 4), L2 = s2 * 3.2; X.beginPath(); X.moveTo(ex, y1 - hh2); X.lineTo(ex + L2, y1 - hh2 + 7); X.lineTo(ex + L2, y1 + 3); X.lineTo(ex, y1); X.closePath(); X.fill(); } // sombra comprida de manhã e de tarde
+      drawLean(c, dxI, dyI, c.width, c.height, dxI + c.width / 2, y1, 0, 1, 0.55);
+      if (b.chim && !isNight() && (hour() < 8 || (hour() > 16 && hour() < 19)) && Math.random() < 0.08) part(dxI + b.chim[0], dyI + b.chim[1], 'smoke', { vx: rnd(2, 6), vy: -8, m: 2.2, c: 'rgba(220,214,200,0.55)', s: 2 }); }); }
   if (cam.y + vh > 88 * TS && cam.x < 34 * TS) POMAR_PLOTS.forEach((pl, i) => { if (!inV(pl.x, pl.y, 50)) return; const q = pomarS()[i];
     if (!q) { add(pl.y - 16, () => { X.fillStyle = 'rgba(70,46,26,0.55)'; X.beginPath(); X.ellipse(pl.x, pl.y - 2, 7, 3, 0, 0, 7); X.fill(); X.fillStyle = 'rgba(110,80,50,0.5)'; X.fillRect(pl.x - 4, pl.y - 4, 8, 1); }); return; }
     const F = FRUITS[q.k], st = fruitStage(q), fl = st === 2 && q.f > 0 && q.f < 0.35 ? 1 : 0, fr = st === 2 && q.f >= 0.35 ? (q.f >= 1 ? 1 : 0.5) : 0, dry = q.w <= 0 ? 1 : 0;
@@ -8954,7 +9019,7 @@ function regionAt(x, y) { if (P && P.inside) { const b = BLD.find(q => q.id === 
   if (tx >= 112) { if (tx < 118) return ['Serra do Leste', 'ESTRADA PARA A REGIÃO']; for (const k in RFARMS) { const r = RFARMS[k].rect; if (tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]) return [RFARMS[k].n, NPCDEF[RFARMS[k].own].n.toUpperCase()]; } return ['Região das Serras', 'ESTRADA DO LESTE']; }
   if (tx < 60) return ty < 21 && S.exp.norte ? ['Gleba do Mandacaru', 'FAZENDA BOA ESPERANÇA'] : ty > 67 && S.exp.sul ? ['Gleba do Açude', 'FAZENDA BOA ESPERANÇA'] : ['Fazenda Boa Esperança', 'SUA PROPRIEDADE']; if (tx > 66 && ty < 27) return ['Fazenda Campos', 'SR. FELIPE']; if (tx > 66 && ty > 62) return ['Fazenda Duarte', 'SR. RYAN']; if (tx >= 68 && ty >= 28 && ty <= 62) return ['Itarantim', 'CENTRO DA CIDADE']; return ['Estrada do Riacho', 'ITARANTIM · BAHIA']; }
 function hud(dt) {
-  if ((regT -= dt) < 0 && mode === 'play') { regT = 0.5; const r = regionAt(P.x, P.y); if (!curReg) curReg = r[0]; else if (r[0] !== curReg) { curReg = r[0]; const el = $('reg'); el.innerHTML = r[0] + '<small>' + r[1] + '</small>'; el.classList.add('on'); clearTimeout(regHide); regHide = setTimeout(() => el.classList.remove('on'), 2400); AU.jingle(); } }
+  if ((regT -= dt) < 0 && mode === 'play') { regT = 0.5; const r = regionAt(P.x, P.y); if (!curReg) curReg = r[0]; else if (r[0] !== curReg) { curReg = r[0]; CINE.maybe(r[0]); const el = $('reg'); el.innerHTML = r[0] + '<small>' + r[1] + '</small>'; el.classList.add('on'); clearTimeout(regHide); regHide = setTimeout(() => el.classList.remove('on'), 2400); AU.jingle(); } }
   if ((hudT -= dt) > 0) return; hudT = 0.25;
   const night = isNight();
   $('hDay').innerHTML = ic(SEAS4_IC[season4()], 14) + ` ${WEEK[wday()]} ${dateStr()} · ${SEAS4[season4()]}`; $('hTime').innerHTML = `<img class="dial" src="${dialURL()}" width="36" height="18" alt="">` + ' ' + clock(); $('hWx').innerHTML = ic((WXT[S.weather] || WXT.sol).ic, 14) + '<span class="wt"> ' + WX[S.weather][1] + '</span>';
@@ -10047,7 +10112,7 @@ const STEP = 1 / 60; let acc = 0, lastT = 0, saveT = 0;
 function tick(dt) {
   drawT += dt;
   if (mode === 'play' && !paused) {
-    holdTick(); placeTick(dt); bagSync(); insideTick(); houseGuard(); if ((tick.lendT = (tick.lendT || 0) - dt) < 0) { tick.lendT = 1; lendTick(); const lh = loanedHorse(); if (lh && P.mnt !== lh.id && lh._st !== 'tied' && !lh._act) lh._st = 'tied'; } const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
+    holdTick(); placeTick(dt); bagSync(); insideTick(); houseGuard(); if ((tick.lendT = (tick.lendT || 0) - dt) < 0) { tick.lendT = 1; lendTick(); const lh = loanedHorse(); if (lh && P.mnt !== lh.id && lh._st !== 'tied' && !lh._act) lh._st = 'tied'; } const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); CINE.update(dt); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
     { const h = P.mnt ? byId(P.mnt) : null; if (h && h._react && (h._react.t -= dt) <= 0) h._react = null; }
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);
