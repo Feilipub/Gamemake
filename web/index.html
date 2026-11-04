@@ -5018,7 +5018,13 @@ function grassStatus(v) { return v > 70 ? 'Ótimo' : v > 45 ? 'Bom' : v > 25 ? '
 function encodeU8(u) { let s = ''; for (let i = 0; i < u.length; i += 4096) s += String.fromCharCode.apply(null, u.subarray(i, i + 4096)); return btoa(s); }
 function decodeU8(b, u) { const s = atob(b); for (let i = 0; i < s.length && i < u.length; i++) u[i] = s.charCodeAt(i); }
 /* ---------- habilidades do vaqueiro ---------- */
-function skill(k) { return S.cf ? (S.cf.sk[k] || 0) : 0; }
+/* habilidades do vaqueiro: nível 0–10 = base da origem + experiência ganha fazendo a lida (cada nível pede 25 xp a mais) */
+const SKX = { lid: ['Lida', 'Aboio alcança mais longe e o gado conduzido obedece melhor.', 'tocar gado, aboiar, fazer a lida no curral'], pec: ['Pecuária', 'Engorda e ordenha rendem mais.', 'tratar, curar, vacinar, ordenhar e pesar'], lac: ['Laço', 'Laço alcança mais longe.', 'laçar animais'], mon: ['Montaria', 'Galope mais rápido; vaquejada paga mais.', 'cavalgar e galopar'], neg: ['Negócio', 'Contratos pagam mais (+2% por nível).', 'cumprir contratos e vender'] };
+const skNeed = L => 25 * L * (L + 1) / 2; // xp acumulada para chegar ao nível L
+function skLv(k) { const x = (S.cf && S.cf.skx && S.cf.skx[k]) || 0; let L = 0; while (L < 10 && x >= skNeed(L + 1)) L++; return L; }
+function skill(k) { return S.cf ? Math.min(10, (S.cf.sk[k] || 0) + skLv(k)) : 0; }
+function skXp(k, n) { if (!S || !S.cf || !n) return; S.cf.skx = S.cf.skx || {}; const a = skill(k); S.cf.skx[k] = (S.cf.skx[k] || 0) + n; const b = skill(k); if (b > a) { toast('⭐ ' + SKX[k][0] + ' subiu para o nível ' + b + '! ' + SKX[k][1]); AU.jingle && AU.jingle(); } }
+function skBar(k) { const L = skLv(k), x = (S.cf.skx && S.cf.skx[k]) || 0, lo = skNeed(L), hi = skNeed(L + 1); return L >= 10 ? 100 : Math.round((x - lo) / (hi - lo) * 100); }
 function perk() { return S.cf ? STATES[S.cf.st][5] : ''; }
 
 /* ============ NPCs: ROTINAS, MEMÓRIA, AMIZADE ============ */
@@ -5692,7 +5698,7 @@ function updPlayer(dt) {
   if (horse) { state = spd > B.v[0] * 1.25 ? 'gallop' : spd > 3 ? 'walk' : 'idle'; P._gal = state === 'gallop' ? 2 : state === 'walk' ? 1 : 0; }
   else { state = spd < 2.5 ? 'idle' : spd > 44 ? 'run' : 'walk'; P._gal = 0; }
   const stride = horse ? (state === 'gallop' ? 46 : 28) : (state === 'run' ? 34 : 22);
-  P._dist = (P._dist || 0) + moved; P._cyc = (P._dist / stride) % 1; P._st = state; if (horse) hxRide(horse, dt, state, moved);
+  P._dist = (P._dist || 0) + moved; P._cyc = (P._dist / stride) % 1; P._st = state; if (horse) { hxRide(horse, dt, state, moved); if (moved > 0.5) skXp('mon', dt * (state === 'gallop' || P._gal === 2 ? 0.12 : 0.04)); }
   const c2 = Math.floor(P._cyc * 2);
   if (state !== 'idle' && c2 !== P._lastC) { P._lastC = c2;
     const g = gt(Math.floor(P.x / TS), Math.floor(P.y / TS)), soft = g === G.DIRT || g === G.DRY || g === G.MUD || g === G.FLOOR || g === G.SAND;
@@ -5807,7 +5813,7 @@ function mountToggle() {
 function doAboio() {
   if (mode !== 'play' || abCd > 0 || P._act) return; abCd = 3.5;
   const R = 150 * (perk() === 'aboio' ? 1.4 : 1) * (1 + skill('lid') * 0.05);
-  rings.push({ x: P.x, y: P.y - 10, r: 6, l: 1, R }); AU.aboio(); P.en = Math.max(0, P.en - 1); buzz(15);
+  rings.push({ x: P.x, y: P.y - 10, r: 6, l: 1, R }); AU.aboio(); skXp('lid', 0.6); P.en = Math.max(0, P.en - 1); buzz(15);
   let n = 0; for (const a of S.animals) { if (a.own !== 'player' || a.id === P.mnt || a._st === 'tied' || a._st === 'route' || S.cart.hitch === a.id) continue; if ((a.sp === 'boi' || a.sp === 'cavalo' || a.sp === 'jumento' || a.sp === 'burro') && hyp(a.x - P.x, a.y - P.y) < R * (hasT(a, 'obediente') ? 1.25 : 1) * (0.8 + (a.aff || 0) / 250)) { if (hasT(a, 'teimoso') && Math.random() < 0.4 && (a.aff || 0) < 60) { emoteA(a, '?'); continue; } a._st = 'follow'; a._t = 10; n++; } }
   say(n ? 'Êêê boi, ôôô... ' + n + ' animal(is) atendendo ao aboio!' : 'Êêê boi... (nenhum animal por perto)', 2600);
   if (!P.mnt) { const m = mainHorse(); if (m && m.own === 'player' && m._st !== 'tied' && hyp(m.x - P.x, m.y - P.y) < 500) { m._st = 'come'; m._t = 25; } }
@@ -5819,7 +5825,8 @@ function doLasso() {
   const R = 72 * (h ? sd.lr : 0.8) * (1 + skill('lac') * 0.08) * (perk() === 'laco' ? 1.25 : 1);
   let t = null, bd = R; for (const a of S.animals) { if (a.id === P.mnt || a.sp === 'galinha' || a.sp === 'cao' || S.cart.hitch === a.id) continue; const d = hyp(a.x - P.x, a.y - P.y); if (d < bd && (a.own === 'player' || a.own.startsWith('quest'))) { bd = d; t = a; } }
   lasso.anim = 0.5; AU.lasso();
-  if (t) { if (P.mnt) hxGain(byId(P.mnt), 'lida', 4); lasso.t = t; t._st = 'lasso'; t.tie = null; bond(t, -2); if (P.lead === t.id) P.lead = null; say('Laçou ' + t.n + '! Leve até onde quiser.', 2500); P.en = Math.max(0, P.en - 1.5); buzz(20); }
+  if (!t) skXp('lac', 0.4);
+  if (t) { skXp('lac', 3); if (P.mnt) hxGain(byId(P.mnt), 'lida', 4); lasso.t = t; t._st = 'lasso'; t.tie = null; bond(t, -2); if (P.lead === t.id) P.lead = null; say('Laçou ' + t.n + '! Leve até onde quiser.', 2500); P.en = Math.max(0, P.en - 1.5); buzz(20); }
   else say('Nenhum animal ao alcance do laço (' + Math.round(R / TS) + ' m).', 1800);
 }
 /* ---------- porteiras ---------- */
@@ -7137,7 +7144,7 @@ function menuTab(t) {
     const st = STATES[S.cf.st];
     let h = `<div class="dlg"><div>${charImg(S.cf.ap, 4)}</div><div style="flex:1"><h2 style="margin:0">${esc(S.cf.name)}</h2><p>${S.cf.ap.sex === 'F' ? 'Vaqueira' : 'Vaqueiro'} de <b>${st[1]}</b> (${st[2]})</p><p class="mut">${st[7]}</p><p>Talento: <b>${PERKS[st[5]]}</b></p></div></div>`;
     h += `<div class="card"><div class="row sp">${ic('bolt', 16)} Energia ${bar(P.en)} <b>${Math.round(P.en)}</b></div><div class="row sp">${ic('meat', 16)} Fome (saciedade) ${bar(P.fo, 'y')} <b>${Math.round(P.fo)}</b></div></div>`;
-    h += '<div class="card"><b>Habilidades</b>' + [['lid', 'Lida (tocar gado)'], ['pec', 'Pecuária (engorda)'], ['lac', 'Laço'], ['mon', 'Montaria']].map(([k, n]) => `<div class="row sp"><span>${n}</span><span class="stars">${'●'.repeat(skill(k))}${'○'.repeat(3 - skill(k))}</span></div>`).join('') + '</div>';
+    h += '<div class="card"><b>Habilidades</b> <span class="mut">sobem fazendo a lida (nível 0–10)</span>' + Object.keys(SKX).map(k => `<div class="row sp"><span>${SKX[k][0]} <b>${skill(k)}</b></span>${bar(skBar(k), 'y')}</div><div class="mut" style="margin:-2px 0 4px">${SKX[k][1]} Sobe ao ${SKX[k][2]}.</div>`).join('') + '</div>';
     h += `<div class="card"><div class="row sp"><span>${ic('calendar', 14)} Dia ${S.day} · ${WEEK[wday()]}</span><span>${seasonName()} · ${clock()}</span></div><div class="row sp"><span>Animais vendidos</span><b>${S.stats.sold}</b></div><div class="row sp"><span>Nascimentos</span><b>${S.stats.born}</b></div><div class="row sp"><span>Ovos recolhidos</span><b>${S.stats.eggs}</b></div><div class="row sp"><span>Patrimônio em animais</span><b>${fmt(herdValue())}</b></div></div>`;
     { const ma = (S.missions || []).filter(m => m.st === 'active'); h += '<h3>Compromissos</h3>' + (ma.map(m => misHTML(m)).join('') || '<p class="mut">Nenhum. Veja os pedidos no quadro de avisos da praça.</p>'); }
     h += `<div class="card"><div class="row sp"><span>${ic('book', 16)} <b>Legado de Tiãozinho</b> · ${memCount()} de ${MEM_ORDER.length} lembranças</span>${btn('Abrir', 'legado')}</div></div>`;
@@ -7381,7 +7388,7 @@ $('ap').addEventListener('click', e => { const b = e.target.closest('[data-a]');
 A.shClose = () => closeSheet();
 A.saNo = () => { SH.conf = null; renderSheet(); };
 A.saTo = k => { const a = SH.a; SH.sub = null; renderSheet(); escort(a, k); };
-A.saSell = () => { const a = SH.a; questEvent('trade', 'venda'); const p = a.area === 'curral' ? frigPrice(a) : Math.round(frigPrice(a) - 80); if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; if (S.cart.hitch === a.id) S.cart.hitch = null; if (P.mnt === a.id) return; S.animals = S.animals.filter(x => x !== a); S.stats.sold++; receive(p, 'Venda de ' + a.n + (a.area === 'curral' ? '' : ' (com frete)')); toast('💰 ' + a.n + ' vendido(a) por ' + fmt(p)); closeSheet(); };
+A.saSell = () => { const a = SH.a; questEvent('trade', 'venda'); const p = a.area === 'curral' ? frigPrice(a) : Math.round(frigPrice(a) - 80); if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; if (S.cart.hitch === a.id) S.cart.hitch = null; if (P.mnt === a.id) return; S.animals = S.animals.filter(x => x !== a); S.stats.sold++; skXp('neg', 1); receive(p, 'Venda de ' + a.n + (a.area === 'curral' ? '' : ' (com frete)')); toast('💰 ' + a.n + ' vendido(a) por ' + fmt(p)); closeSheet(); };
 /* ============ LIDA DO GADO: cura de umbigo, bicheira, castração, desmama, ferra, pesagem, contagem e sal ============
    Baseado no manejo de cria do sertão (Embrapa, extensão rural): umbigo curado com iodo nos 3 primeiros dias; a mosca-varejeira
    bota nos ferimentos e no umbigo mal curado (bicheira), mais nas águas; castrar e ferrar no curral deixa ferida que pede
@@ -7415,6 +7422,7 @@ function lidaDay(a, se) {
   if (r && Math.random() < r) { a.bich = 1; a.bichD = 0; hist(a, 'Pegou bicheira'); toast('🪰 Bicheira em ' + a.n + '! Use mata-bicheira pela ficha.'); }
 }
 function lidaDo(a, k) {
+  skXp('lid', 2);
   const need = (it, msg) => { if (!has(it)) { say(msg); AU.err(); return false; } return true; };
   if (k === 'umbigo') { if (!need('iodo', 'Precisa de iodo 10% (Casa do Agro).')) return; return doAnimal(a, 'exam', 1.4, () => { if (!useInv('iodo', 0.25)) return; a.umb = 2; a.hp = cl(a.hp + 5, 0, 100); bond(a, 2); hist(a, 'Umbigo curado com iodo'); toast('🩹 Umbigo de ' + a.n + ' curado.'); }); }
   if (k === 'bicheira') { if (!need('mataBicheira', 'Precisa de mata-bicheira (Casa do Agro).')) return; return doAnimal(a, 'exam', 1.6, () => { if (!useInv('mataBicheira', 0.25)) return; a.bich = 0; a.bichD = 0; a.wound = 0; a.hp = cl(a.hp + 8, 0, 100); hist(a, 'Bicheira curada'); toast('✅ Bicheira de ' + a.n + ' curada.'); }); }
@@ -7459,7 +7467,7 @@ A.ctrTake = i => { const C = ctrS(), c = C.off[+i]; if (!c || C.act.length >= 2)
 A.ctrGive = i => { const C = ctrS(), c = C.act[+i]; if (!c) return; const K = CTR_KINDS[c.k]; let v = 0;
   if (c.k === 'boi') { const L = myAnimals('boi').filter(a => a.area === 'curral' && a.wt >= c.minKg && !a.main).sort((a, b) => b.wt - a.wt).slice(0, c.need - c.got); for (const a of L) { v += frigPrice(a) * (1 + c.prem); if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; S.animals = S.animals.filter(x => x !== a); S.stats.sold++; } c.got += L.length; }
   else { const n = Math.min(S.inv[K.item] || 0, c.need - c.got); if (n <= 0) return; useInv(K.item, n); c.got += n; v = n * c.pu; }
-  if (v) receive(v, 'Contrato: ' + K.who); if (K.npc) addFr(K.npc, 3);
+  if (v) { v *= 1 + skill('neg') * 0.02; receive(v, 'Contrato: ' + K.who); skXp('neg', c.k === 'boi' ? 4 : 1.5); } if (K.npc) addFr(K.npc, 3);
   if (c.got >= c.need) { C.act = C.act.filter(x => x !== c); C.done++; if (K.npc) addFr(K.npc, 12); AU.jingle && AU.jingle(); toast('✅ Contrato cumprido com ' + K.who + '!'); }
   renderModal(); };
 A.lidaCount = () => {
@@ -7486,7 +7494,7 @@ function doAnimal(a, k, dur, fn, opt) {
   if (P.cart) { say('Desça da carroça primeiro.'); return; }
   const r = a.sp === 'galinha' ? 13 : a.sp === 'cao' ? 15 : (a.sp === 'boi' && a.age < 12) ? 16 : 20;
   a._st = 'idle'; a._t = 4;
-  approach(a, r, () => act(k, dur, a, () => { fn(); if (SH.a === a) renderSheet(); }, opt), k);
+  approach(a, r, () => act(k, dur, a, () => { fn(); skXp('pec', 1); if (SH.a === a) renderSheet(); }, opt), k);
 }
 function feedItem(a) { if (a.sp === 'boi') return has('racao', 0.2) ? ['racao', 0.2] : null; if (a.sp === 'porco') return has('racaoPorco', 0.12) ? ['racaoPorco', 0.12] : has('milho', 0.12) ? ['milho', 0.12] : has('racao', 0.12) ? ['racao', 0.12] : null; if (a.sp === 'galinha') return has('milho', 0.05) ? ['milho', 0.05] : null; if (a.sp === 'cao') { if (has('racaoCao', 0.1)) return ['racaoCao', 0.1]; const c = CUTS.find(c => has(c, 0.25)); return c ? [c, 0.25] : null; } return has('milho', 0.15) ? ['milho', 0.15] : has('racao', 0.15) ? ['racao', 0.15] : null; }
 A.sa = k => {
