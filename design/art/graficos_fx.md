@@ -36,3 +36,16 @@ Nenhum arquivo desses projetos foi copiado para o jogo; o código é próprio, c
   sombra calculada por fonte de luz.
 - Crina e cauda dos cavalos seguem a animação de passo/trote/galope já existente (sem física de vento).
 - Antes/depois: `production/qa/evidence/fx-antes-depois-*.png` (esquerda Baixa, direita Alta).
+
+## Rodada de "visual de cinema" (pesquisa de repositórios)
+
+| Projeto | Licença | Técnica | O que entrou no jogo (código próprio) |
+|---|---|---|---|
+| [pixijs/filters](https://github.com/pixijs/filters) — TiltShiftFilter, AdjustmentFilter | MIT | Desfoque por faixa de tela; ajuste de cor | **Profundidade de campo**: desfoque leve só no alto e no pé da tela, que dá o ar de maquete |
+| [pmndrs/postprocessing](https://github.com/pmndrs/postprocessing) — LUT3DEffect e tone mapping | Zlib (partes MIT/BSD) | Gradação de cor por tabela (LUT) e curvas | **Gradação por hora e clima**: sombras e luzes com cor própria (madrugada roxa, tarde laranja com azul-petróleo, noite de luar azul; chuva neutra; seca desbotada), **curva em S** e **vibração** |
+| [jwagner/normalmap.js](https://github.com/jwagner/normalmap.js), [Everade/NormalMap32](https://github.com/Everade/NormalMap32), [malbernaz/bevy_lit](https://github.com/malbernaz/bevy_lit) | MIT | Luz por pixel, sombra suave por campo de distância | **Oclusão de ambiente**: sombra suave em volta de casas, cercas e árvores, calculada da máscara de ladrilhos (filtro linear) |
+| — | — | Partículas por emissor | **Ondas de vento no capim** (faixas claras passando pelos pastos) e **redemoinhos de poeira** na seca (coluna girando que assusta o gado) |
+| — | — | Ruído por quadro | **Grão de filme** leve (mais forte à noite) |
+
+Configurações › "Visual de cinema" liga e desliga a profundidade de campo e o grão. A oclusão e a gradação valem em Média e Alta.
+Antes e depois: `production/qa/evidence/graficos-cinema-antes-depois.png` (esquerda: antes; direita: agora; 7h, 12h, 17h, 21h).

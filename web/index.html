@@ -536,7 +536,7 @@ const shownTips = {};
 function tip(k, t) { if (S && S.flags['tip_' + k]) return; if (S) S.flags['tip_' + k] = 1; say(t, 6500); }
 
 /* ============ CONFIGURAÇÕES, ÍCONES E MOLDURAS PIXEL ============ */
-const SET = { fx: 'alta', tspd: 'normal', q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on', cine: 'on', lean: 'on', chr: 'rig', news: 'on', laco: 'on' };
+const SET = { fx: 'alta', tspd: 'normal', q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on', cine: 'on', lean: 'on', chr: 'rig', news: 'on', laco: 'on', cine2: 'on' };
 try { Object.assign(SET, JSON.parse(localStorage.getItem('lida_set') || '{}')); } catch (e) { }
 setTimeout(() => applyTimeSpeed(), 0);
 function saveSet() { try { localStorage.setItem('lida_set', JSON.stringify(SET)); } catch (e) { } document.documentElement.style.setProperty('--ctl', SET.ctl); document.body && document.body.classList.toggle('tapmode', SET.mode === 'touch'); }
@@ -7269,7 +7269,7 @@ function cfgHTML(inGame) {
   const opt = (k, v, l) => `<button data-a="setOpt" data-v="${k}|${v}" class="${SET[k] === v ? 'on' : ''}">${l}</button>`;
   let h = volHTML();
   h += `<div class="card"><b>Velocidade do tempo</b><div class="ch">${opt('tspd', 'lento', 'Lento (dia de 36 min)')}${opt('tspd', 'normal', 'Normal (24 min)')}${opt('tspd', 'rapido', 'Rápido (16 min)')}</div></div>`;
-  h += `<div class="card"><b>Efeitos gráficos</b><div class="ch">${opt('fx', 'alta', 'Alta (luz, bloom, água, calor, raios de sol, neblina)')}${opt('fx', 'media', 'Média (luz, bloom, água, calor)')}${opt('fx', 'baixa', 'Baixa (sem shader)')}</div><p class="mut">Se o aparelho não acompanhar, o jogo desce a qualidade sozinho.</p><b>Laço com mira (toque duas vezes)</b><div class="ch">${opt('laco', 'on', 'Ligado')}${opt('laco', 'off', 'Automático')}</div><b>Notícias da manhã ao acordar</b><div class="ch">${opt('news', 'on', 'Mostrar')}${opt('news', 'off', 'Não mostrar')}</div><b>Desenho das pessoas</b><div class="ch">${opt('chr', 'rig', 'Novo (mesmo estilo dos animais)')}${opt('chr', 'classico', 'Clássico')}</div><b>Profundidade 2.5D (copas e telhados inclinam com a câmera)</b><div class="ch">${opt('lean', 'on', 'Ligada')}${opt('lean', 'off', 'Desligada')}</div><b>Apresentação ao chegar num lugar novo</b><div class="ch">${opt('cine', 'on', 'Mostrar')}${opt('cine', 'off', 'Pular')}</div></div>`;
+  h += `<div class="card"><b>Efeitos gráficos</b><div class="ch">${opt('fx', 'alta', 'Alta (luz, bloom, água, calor, raios de sol, neblina)')}${opt('fx', 'media', 'Média (luz, bloom, água, calor)')}${opt('fx', 'baixa', 'Baixa (sem shader)')}</div><p class="mut">Se o aparelho não acompanhar, o jogo desce a qualidade sozinho.</p><b>Visual de cinema (profundidade de campo e grão de filme)</b><div class="ch">${opt('cine2', 'on', 'Ligado')}${opt('cine2', 'off', 'Desligado')}</div><b>Laço com mira (toque duas vezes)</b><div class="ch">${opt('laco', 'on', 'Ligado')}${opt('laco', 'off', 'Automático')}</div><b>Notícias da manhã ao acordar</b><div class="ch">${opt('news', 'on', 'Mostrar')}${opt('news', 'off', 'Não mostrar')}</div><b>Desenho das pessoas</b><div class="ch">${opt('chr', 'rig', 'Novo (mesmo estilo dos animais)')}${opt('chr', 'classico', 'Clássico')}</div><b>Profundidade 2.5D (copas e telhados inclinam com a câmera)</b><div class="ch">${opt('lean', 'on', 'Ligada')}${opt('lean', 'off', 'Desligada')}</div><b>Apresentação ao chegar num lugar novo</b><div class="ch">${opt('cine', 'on', 'Mostrar')}${opt('cine', 'off', 'Pular')}</div></div>`;
   h += `<div class="card"><b>Gráficos</b><div class="ch">${opt('q', 'alta', 'Alta resolução')}${opt('q', 'media', 'Desempenho')}</div><b>Modo de controle</b><div class="ch">${opt('mode', 'joy', 'Joystick')}${opt('mode', 'touch', 'Toque na tela')}</div><p class="mut">${SET.mode === 'touch' ? 'Toque no chão para ir até lá; toque duas vezes para correr ou galopar. Os botões de ação continuam na tela.' : 'Joystick virtual (ou WASD/setas no teclado). Segure “Correr” para correr ou galopar.'}</p><b>Tamanho dos botões</b><div class="ch">${opt('ctl', 1, 'Normal')}${opt('ctl', 1.2, 'Grandes')}</div><b>Orientação da tela</b><div class="ch">${opt('ori', 'livre', 'Livre')}${opt('ori', 'retrato', 'Retrato')}${opt('ori', 'paisagem', 'Paisagem')}</div><p class="mut">Travar a orientação só funciona em tela cheia no celular.</p><div class="row">${btn('Tela cheia', 'fs')}</div><b>Cenas dos leilões</b><div class="ch">${opt('aucCs', 'on', 'Mostrar')}${opt('aucCs', 'off', 'Pular sempre')}</div><b>Vibração</b><div class="ch">${opt('vib', true, 'Ligada')}${opt('vib', false, 'Desligada')}</div><b>Zoom</b><p class="mut">Use dois dedos na tela (pinça) ou a rodinha do mouse.</p><div class="row">${btn('Zoom padrão', 'zoomReset')}</div></div>`;
   if (inGame) h += `<div class="card"><div class="row">${ibtn('disk', 'Salvar', 'saveNow')}${ibtn('play', 'Carregar', 'loadNow')}${ibtn('scroll', 'Ajuda', 'help')}${ibtn('book', 'Créditos', 'credits')}${ibtn('farm', 'Tela inicial', 'toTitle')}</div><p class="mut" id="saveInfo">Partida ${SAVE.slot}. Salvamento automático às 6h, ao dormir e a cada 60 s, com cópia de segurança.</p></div>`;
   { const ms = MUS.missingList(), tr = Object.keys(MUS.files).map(k => `<li>${k.toUpperCase()} — <code>${MUS.files[k]}</code> ${MUS.missing[k] ? '<b style="color:#b02020">faltando</b>' : MUS.el && MUS.el[k] ? 'ok' : 'carrega no primeiro toque'}</li>`).join('');
@@ -9648,11 +9648,26 @@ function ambient() {
    em passos de 1 pixel do jogo, para não borrar a pixel art. Sem WebGL (ou em Baixa) o caminho antigo continua.
    Técnicas adaptadas (código próprio): AdjustmentFilter e GodrayFilter do pixi-filters (MIT, Mathew Groves e
    Chad Engler), buffers de cor + luz aditiva do PixelFX (MIT, patch-gg) e o calor/água do Radiant (MIT). */
+/* gradação de cor por hora e clima (sombras, luzes): madrugada roxa, dia neutro-quente, tarde laranja e azul-petróleo, noite azul.
+   Técnica de color grading por LUT/split-toning (pmndrs/postprocessing, Zlib), feita aqui só com cores e curva no shader. */
+function gradeAt(hr, L, out) { const K = [[0, [0.42, 0.46, 0.64], [0.46, 0.52, 0.62]], [5, [0.42, 0.46, 0.64], [0.48, 0.5, 0.6]], [6.3, [0.47, 0.42, 0.58], [0.64, 0.53, 0.46]], [8.5, [0.48, 0.5, 0.53], [0.56, 0.53, 0.47]], [14.5, [0.48, 0.5, 0.53], [0.57, 0.53, 0.46]], [17.2, [0.43, 0.5, 0.56], [0.59, 0.52, 0.44]], [18.6, [0.44, 0.44, 0.6], [0.6, 0.48, 0.5]], [20, [0.42, 0.46, 0.64], [0.47, 0.52, 0.62]], [24, [0.42, 0.46, 0.64], [0.46, 0.52, 0.62]]];
+  let i = 0; while (i < K.length - 2 && hr >= K[i + 1][0]) i++; const a = K[i], b = K[i + 1], t = cl((hr - a[0]) / (b[0] - a[0]), 0, 1), mx = (p, q) => p.map((v, j) => v + (q[j] - v) * t);
+  let gs = mx(a[1], b[1]), gh = mx(a[2], b[2]); const neu = v => v.map(x => 0.5 + (x - 0.5) * 0.35);
+  if (!out) { gs = neu(gs); gh = [0.58, 0.52, 0.44]; } else if (isRain()) { gs = [0.46, 0.5, 0.55]; gh = [0.5, 0.51, 0.53]; } else if (typeof droughtOn === 'function' && droughtOn() && hr > 9 && hr < 16) gh = [0.63, 0.53, 0.4];
+  return [gs, gh]; }
+/* redemoinhos de poeira na seca (dia quente, campo aberto): coluna girando que atravessa o pasto levantando poeira */
+const DUST = { L: [], t: 0 };
+function dustDevils(dt) { if (SET.fx === 'baixa' || P.inside || isRain() || !season() || isNight()) { DUST.L.length = 0; return; } const hr = hour(); if (hr < 10 || hr > 16) return;
+  if ((DUST.t -= dt) < 0 && DUST.L.length < 2) { DUST.t = rnd(14, 30); const ang = Math.random() * 6.28; DUST.L.push({ x: cam.x + VW() / 2 + Math.cos(ang) * VW() * 0.45, y: cam.y + VH() / 2 + Math.sin(ang) * VH() * 0.35, vx: rnd(-14, 14), vy: rnd(-8, 8), l: rnd(7, 11), a: 0 }); }
+  for (let i = DUST.L.length - 1; i >= 0; i--) { const d = DUST.L[i]; d.l -= dt; d.a += dt * 9; d.x += d.vx * dt + Math.sin(d.a * 0.3) * 6 * dt; d.y += d.vy * dt; if (d.l <= 0) { DUST.L.splice(i, 1); continue; }
+    const gt0 = gt(Math.floor(d.x / TS), Math.floor(d.y / TS)); if (gt0 === G.WATER || gt0 === G.PAVE) continue; const k = Math.min(1, d.l / 2, (10 - d.l) / 1.5 + 0.3);
+    for (let j = 0; j < 2; j++) { const hgt = Math.random() * 46, r = 3 + hgt * 0.22; part(d.x + Math.cos(d.a + hgt * 0.4) * r, d.y - hgt, 'dust', { vx: -Math.sin(d.a + hgt * 0.4) * 22, vy: -14 - hgt * 0.3, m: 0.9, c: Math.random() < 0.5 ? '#c8a878' : '#d8c098', s: 1 + (Math.random() < 0.3 ? 1 : 0) }); }
+    if (Math.random() < dt * 2 * k) for (const a of S.animals) if (hyp(a.x - d.x, a.y - d.y) < 40 && a.sp === 'boi' && a.own === 'player') { a._alert = 0.6; break; } } }
 const FX = {
   on: false, gl: null, cv: null, prog: null, tex: {}, u: {}, fail: false, mk: null, mkg: null, ft: [], downT: 0,
   VS: 'attribute vec2 a;varying vec2 v;void main(){v=a;gl_Position=vec4(a.x*2.0-1.0,1.0-a.y*2.0,0.0,1.0);}',
   FS: `precision mediump float;
-uniform sampler2D uS,uL,uM;uniform vec2 uR,uC,uSD;uniform float uK,uT,uTa,uH,uF,uFl,uW,uRy,uV,uN,uSat,uCon,uIn,uWm;uniform vec4 uA,uMR;uniform vec3 uSky;varying vec2 v;
+uniform sampler2D uS,uL,uM;uniform vec2 uR,uC,uSD,uWd;uniform float uK,uT,uTa,uH,uF,uFl,uW,uRy,uV,uN,uSat,uCon,uIn,uWm,uDof,uGr,uAo;uniform vec4 uA,uMR;uniform vec3 uSky,uGS,uGH;varying vec2 v;
 float h(vec2 p){vec3 q=fract(vec3(p.xyx)*0.1031);q+=dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);} /* hash sem seno (mais leve no celular) */
 float n1(float x){float i=floor(x),f=fract(x);f=f*f*(3.0-2.0*f);return mix(h(vec2(i,7.0)),h(vec2(i+1.0,7.0)),f);}
 float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(h(i),h(i+vec2(1.0,0.0)),f.x),mix(h(i+vec2(0.0,1.0)),h(i+vec2(1.0,1.0)),f.x),f.y);}
@@ -9660,7 +9675,12 @@ void main(){
  vec2 fr=v*uR,wp=uC+fr/uK;vec4 M=texture2D(uM,(wp/16.0-uMR.xy)/uMR.zw);vec2 o=vec2(0.0);
  if(uH>0.0){float a=sin(wp.y*0.45+uT*4.0)*n(wp*0.05+vec2(0.0,uT*0.6));o.x+=floor(a*uH*1.7*(1.2-v.y*0.6)+0.5);}
  float wa=M.r;if(wa>0.5){o+=floor(vec2(sin(wp.y*0.55+uT*2.2),0.6*cos(wp.x*0.45+uT*1.6))*0.95+0.5);}
- vec3 c=texture2D(uS,v+o*uK/uR).rgb;
+ vec2 sv=v+o*uK/uR;vec3 c=texture2D(uS,sv).rgb;
+ float tw=(smoothstep(0.17,0.0,v.y)+smoothstep(0.86,1.0,v.y))*uDof; /* profundidade de campo (tilt-shift): técnica do TiltShiftFilter (pixi-filters, MIT) */
+ if(tw>0.02){vec2 px=vec2(1.0)/uR*(1.0+1.5*tw);vec3 b=c*0.2;b+=texture2D(uS,sv+vec2(px.x,0.0)).rgb*0.1;b+=texture2D(uS,sv-vec2(px.x,0.0)).rgb*0.1;b+=texture2D(uS,sv+vec2(0.0,px.y)).rgb*0.1;b+=texture2D(uS,sv-vec2(0.0,px.y)).rgb*0.1;b+=texture2D(uS,sv+px*1.5).rgb*0.1;b+=texture2D(uS,sv-px*1.5).rgb*0.1;b+=texture2D(uS,sv+vec2(px.x,-px.y)*1.5).rgb*0.1;b+=texture2D(uS,sv+vec2(-px.x,px.y)*1.5).rgb*0.1;c=mix(c,b,clamp(tw,0.0,0.6));}
+ float gb=M.b; float gr=clamp(1.0-abs(gb-0.39)*5.0,0.0,1.0)*(1.0-uIn); /* capim (B ~0,39) e sólido (B ~1) */
+ if(gr>0.05&&uWd.y>0.0){float wv=sin(dot(wp,vec2(cos(uWd.x),sin(uWd.x)))*0.035-uT*1.7+n(wp*0.008)*4.0);c+=vec3(0.07,0.075,0.02)*smoothstep(0.55,1.0,wv)*gr*uWd.y*(1.0-uA.x);} /* ondas de vento passando no capim */
+ float oc=smoothstep(0.55,1.0,gb);c*=1.0-uAo*oc*(1.0-oc)*1.15; /* oclusão de ambiente: sombra suave em volta de casas, cercas e árvores */
  if(wa>0.05){vec2 cel=floor(wp*0.5);float sp=step(0.982,n(cel*0.7+vec2(uT*1.3,uT*0.6)))*(1.0-uN);c=mix(c,uSky,0.3*wa)+sp*0.4*wa;
   if(uN>0.3){float st=step(0.994,h(cel))*(0.55+0.45*sin(uT*3.0+h(cel+3.1)*6.28));c+=st*0.7*wa*uN;}}
  if(M.g>0.05){float r2=step(0.93,n(floor(wp*0.5)*0.9+vec2(uT*3.0,0.0)));c=mix(c,uSky*0.7,0.22*M.g)+r2*0.15*M.g;}
@@ -9673,6 +9693,10 @@ void main(){
  if(uF>0.0){float f=n(wp*0.011+vec2(uT*0.05,0.0))*0.75+n1(wp.x*0.03-uT*0.09+wp.y*0.02)*0.25;c=mix(c,vec3(0.86,0.88,0.9)*(1.0-dk*0.75),uF*smoothstep(0.28,0.85,f));}
  c+=uFl*vec3(0.75,0.8,0.95);
  float lu=dot(c,vec3(0.299,0.587,0.114));c=mix(vec3(lu),c,uSat);c=(c-0.5)*uCon+0.5;
+ lu=clamp(dot(c,vec3(0.299,0.587,0.114)),0.0,1.0);c+=(uGS-0.5)*(1.0-lu)*(1.0-lu)*0.3+(uGH-0.5)*lu*lu*0.26; /* gradação: sombras e luzes com cor por hora do dia (split-toning) */
+ vec3 cc=clamp(c,0.0,1.0);c=mix(c,cc*cc*(3.0-2.0*cc),0.32*(1.0-uIn*0.5)); /* curva em S de cinema: mais contraste nos meios-tons sem estourar */
+ float mx=max(c.r,max(c.g,c.b)),mn=min(c.r,min(c.g,c.b));c=mix(vec3(dot(c,vec3(0.299,0.587,0.114))),c,1.0+0.22*(1.0-(mx-mn))); /* vibração: realça cor apagada sem estourar a forte */
+ c+=(h(fr+vec2(fract(uT*7.0)*91.0,fract(uT*3.0)*57.0))-0.5)*0.035*uGr; /* grão de filme */
  vec2 q=v-0.5;c*=1.0-uV*dot(q,q)*1.4;gl_FragColor=vec4(c,1.0);}`,
   init() {
     if (this.gl || this.fail) return !!this.gl;
@@ -9685,7 +9709,7 @@ void main(){
       gl.useProgram(pr); const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]), gl.STATIC_DRAW); const al = gl.getAttribLocation(pr, 'a'); gl.enableVertexAttribArray(al); gl.vertexAttribPointer(al, 2, gl.FLOAT, false, 0, 0);
       const mkT = (unit, nearest) => { const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t); const f = nearest ? gl.NEAREST : gl.LINEAR; gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, f); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, f); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); return t; };
       this.tex = { s: mkT(0, true), l: mkT(1, false), m: mkT(2, false) };
-      for (const n of ['uS', 'uL', 'uM', 'uR', 'uC', 'uSD', 'uK', 'uT', 'uTa', 'uH', 'uF', 'uFl', 'uW', 'uRy', 'uV', 'uN', 'uSat', 'uCon', 'uIn', 'uWm', 'uA', 'uMR', 'uSky']) this.u[n] = gl.getUniformLocation(pr, n);
+      for (const n of ['uWd', 'uDof', 'uGr', 'uAo', 'uGS', 'uGH', 'uS', 'uL', 'uM', 'uR', 'uC', 'uSD', 'uK', 'uT', 'uTa', 'uH', 'uF', 'uFl', 'uW', 'uRy', 'uV', 'uN', 'uSat', 'uCon', 'uIn', 'uWm', 'uA', 'uMR', 'uSky']) this.u[n] = gl.getUniformLocation(pr, n);
       gl.uniform1i(this.u.uS, 0); gl.uniform1i(this.u.uL, 1); gl.uniform1i(this.u.uM, 2);
       const [mc, mg] = mkC(8, 8); this.mk = mc; this.mkg = mg; this.gl = gl; this.cv = cv; this.prog = pr; return true;
     } catch (e) { console.warn('FX desligado:', e.message); this.fail = true; return false; }
@@ -9696,7 +9720,7 @@ void main(){
     const vw = VW(), vh = VH(), tx0 = Math.floor(cam.x / TS) - 1, ty0 = Math.floor(cam.y / TS) - 1, w = Math.ceil(vw / TS) + 3, h = Math.ceil(vh / TS) + 3;
     if (this.mk.width !== w || this.mk.height !== h) { this.mk.width = w; this.mk.height = h; }
     const im = this.mkg.createImageData(w, h), D = im.data, rainy = isRain() || (S.mud || 0) > 0.35;
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const t = gt(tx0 + x, ty0 + y), k = (y * w + x) * 4; D[k] = t === G.WATER ? 255 : 0; D[k + 1] = rainy && (t === G.MUD || ((t === G.DIRT || t === G.FLOOR) && H2(tx0 + x, ty0 + y, 77) < 0.22)) ? Math.round(150 + 100 * Math.min(1, S.mud || 0.5)) : 0; D[k + 3] = 255; }
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const t = gt(tx0 + x, ty0 + y), k = (y * w + x) * 4; D[k] = t === G.WATER ? 255 : 0; D[k + 1] = rainy && (t === G.MUD || ((t === G.DIRT || t === G.FLOOR) && H2(tx0 + x, ty0 + y, 77) < 0.22)) ? Math.round(150 + 100 * Math.min(1, S.mud || 0.5)) : 0; const ob = obj[gi(Math.max(0, Math.min(MW - 1, tx0 + x)), Math.max(0, Math.min(MHT - 1, ty0 + y)))]; D[k + 2] = ob === 3 || ob === 1 ? 255 : (t === G.PAST || t === G.GRASS) ? 100 : 0; D[k + 3] = 255; }
     this.mkg.putImageData(im, 0, 0); return [tx0, ty0, w, h];
   },
   frame(L) { // L = parâmetros de luz do quadro (montados em lighting())
@@ -9717,6 +9741,9 @@ void main(){
     gl.uniform1f(u.uFl, S.wx && S.wx.flash > 0 ? Math.min(0.55, S.wx.flash * 0.55) : 0); gl.uniform1f(u.uW, S.wx ? S.wx.ri : 0); gl.uniform1f(u.uRy, rays > 0 ? rays : 0); gl.uniform2f(u.uSD, s2 || 0.6, -1);
     gl.uniform1f(u.uV, mode === 'cs' ? 0.22 : night * 0.08); gl.uniform1f(u.uN, night); gl.uniform1f(u.uSat, grade[0]); gl.uniform1f(u.uCon, grade[1]); gl.uniform1f(u.uIn, out ? 0 : 1); { const wm = Math.max(0, 1 - Math.abs(hr - 6.6) / 1.3, 1 - Math.abs(hr - 17.6) / 1.5, hr > 14.5 && hr < 17 ? 0.35 : 0) * (out ? 1 : 0.3) * (isRain() ? 0.3 : 1); gl.uniform1f(u.uWm, wm * 0.85); } /* luz dourada no amanhecer, à tarde e no pôr do sol */
     gl.uniform4f(u.uMR, mr[0], mr[1], mr[2], mr[3]); gl.uniform3f(u.uSky, sky[0], sky[1], sky[2]);
+    { const G0 = gradeAt(hr, L, out), cine = SET.cine2 !== 'off' && hi && (mode === 'play' || mode === 'cs'); gl.uniform3f(u.uGS, G0[0][0], G0[0][1], G0[0][2]); gl.uniform3f(u.uGH, G0[1][0], G0[1][1], G0[1][2]);
+      gl.uniform1f(u.uDof, cine && out ? 1 : 0); gl.uniform1f(u.uGr, cine ? (L.dark > 0.4 ? 1.4 : 0.8) : 0); gl.uniform1f(u.uAo, SET.fx === 'baixa' ? 0 : out ? 0.55 : 0.35);
+      const wsp = (S.weather === 'vento' ? 1 : S.wx ? 0.45 + (S.wx.ri || 0) * 0.3 : 0.5) * (out ? 1 : 0); gl.uniform2f(u.uWd, 0.35 + Math.sin(drawT * 0.03) * 0.25, wsp); }
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   },
   // liga/desliga conforme a configuração e o modo; desce a qualidade sozinho se o aparelho não acompanhar
@@ -9729,6 +9756,7 @@ void main(){
 /* ---------- vida do ar: vaga-lumes à noite, folhas levadas pelo vento e respingos de chuva ---------- */
 const AMBX = { ff: [], lf: [], sp: [], trees: [], tT: 0 };
 function ambFx(dt) {
+  dustDevils(dt);
   if (P.inside || SET.fx === 'baixa') { AMBX.ff.length = 0; AMBX.lf.length = 0; return; }
   const vw = VW(), vh = VH(), hr = hour(), night = hr >= 19 || hr < 4.8, rainy = isRain();
   if ((AMBX.tT -= dt) <= 0) { AMBX.tT = 0.6; AMBX.trees = PROPS.filter(p => TREES.has(p.t) && p.x > cam.x - 20 && p.x < cam.x + vw + 20 && p.y > cam.y - 10 && p.y < cam.y + vh + 60); }
