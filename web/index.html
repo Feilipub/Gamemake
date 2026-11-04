@@ -1243,11 +1243,12 @@ function buildRoom(R0) {
   for (let k = 3; k < w - 3; k += 6) put('janela', k, 0);
   if (H0.t === 'sede' || H0.t === 'mansao') {
     const L = H0.looks || {}, p1 = Math.floor(w * 0.36), qx = w - 7, kx = p1 + 1; part(p1, 4); part(qx, h - 5);
-    put('sofa', 2, 3); put('tapete', 2, 5); put('radio', p1 - 2, 2); put('quadro', 2, 1); put('oratorio', 4, 1); put('lamp', 3, 1); put('vaso', 1, h - 3); put('rede', 2, h - 3);
-    if (L.estante) put('estante', p1 - 2, h - 3); if (L.relogio) put('relogio', p1 - 1, 1); if (L.sela) put('sela', p1 - 1, 3); if (L.chapeu) put('chapeu', p1 - 2, 1);
+    const mine = H0.own === 'player', mv = t => !mine || movHas(t), putM = (t, dx, dy, ex) => { if (mv(t)) put(t, dx, dy, ex); };
+    putM('sofa', 2, 3); putM('tapete', 2, 5); put('radio', p1 - 2, 2); put('quadro', 2, 1); put('oratorio', 4, 1); put('lamp', 3, 1); putM('vaso', 1, h - 3); put('rede', 2, h - 3); if (mine && movHas('tv')) put('tv', 5, 3); if (mine && movHas('trofeu')) put('trofeu', 5, 5);
+    if (L.estante || (mine && movHas('estante'))) put('estante', p1 - 2, h - 3); if (L.relogio || (mine && movHas('relogio'))) put('relogio', p1 - 1, 1); if (L.sela) put('sela', p1 - 1, 3); if (L.chapeu) put('chapeu', p1 - 2, 1);
     if (H0.t === 'mansao') { put('tv', 5, 3); put('trofeu', 5, 5); }
     put('fogao', kx, 2); put('pia', kx + 2, 2); put('filtro', kx + 4, 2); put('mesa', kx + 1, 5); put('cadeira', kx, 5); put('cadeira', kx + 3, 5); put('cadeira', kx, 6); put('cadeira', kx + 3, 6); put('armario', kx, h - 3); put('lamp', kx + 3, 1);
-    put('camaC', qx + 2, 2); put('criado', qx + 4, 2); put('guardaRoupa', qx + 2, h - 3); put('bau', qx + 5, h - 3); put('quadro', qx + 3, 1, { look: 'Foto de casamento na parede, em moldura de madeira.' }); put('lamp', qx + 1, 1);
+    put(mv('camaC') ? 'camaC' : 'cama', qx + 2, 2); putM('criado', qx + 4, 2); put('guardaRoupa', qx + 2, h - 3); put('bau', qx + 5, h - 3); put('quadro', qx + 3, 1, { look: 'Foto de casamento na parede, em moldura de madeira.' }); put('lamp', qx + 1, 1);
   } else if (H0.t === 'casa') {
     const qx = w - 6; part(qx, h - 4);
     put('banco', 2, 3); put('mesa', 5, 4); put('cadeira', 4, 4); put('cadeira', 7, 4); put('fogao', 2, 2); put('filtro', 4, 2); put('armario', 6, 2); put('quadro', 3, 1); put('rede', 2, h - 3); put('vaso', 1, h - 3);
@@ -1332,7 +1333,9 @@ function furnCtx(C2) {
     else if (mine && f.t === 'fogao') C2(d, '🍳 Fogão a lenha (cozinhar)', openStove, fx, fy - 20);
     else if (mine && f.t === 'bau') C2(d, '📦 Baú da casa', openChest, fx, fy - 20);
     else if (mine && f.t === 'guardaRoupa') C2(d, '👕 Guarda-roupa', () => openSetup(true), fx, fy - 20);
-    else if (f.t === 'cadeira' || f.t === 'sofa' || f.t === 'banco' || f.t === 'rede') C2(d + 4, '🪑 Sentar', () => sitOn(f), fx, fy - 20);
+    else if (mine && f.t === 'tv') C2(d, '📺 Ver o jornal', () => say(tvText(), 6000), fx, fy - 20);
+    else if (mine && f.t === 'trofeu') C2(d, '🏆 Troféus', () => say(trophyText(), 6000), fx, fy - 20);
+    else if (f.t === 'cadeira' || f.t === 'sofa' || f.t === 'banco' || f.t === 'rede') C2(d + 4, '🪑 Sentar', () => { sitOn(f); if (mine && f.t === 'sofa' && S.sofaD !== hour() + S.day * 24) { S.sofaD = hour() + S.day * 24; P.en = cl(P.en + 8, 0, 100); } }, fx, fy - 20);
     else if (f.look) C2(d + 2, '👁️ Olhar', () => say(f.look, 5200), fx, fy - 20);
     else if (f.t === 'filtro') C2(d + 2, '💧 Beber água', () => { P.en = cl(P.en + 2, 0, 100); say('Água fresquinha do filtro de barro.'); }, fx, fy - 20); }
 }
@@ -1918,7 +1921,7 @@ function retiroHTML() { return '<h3>🏚️ Retiro (herança do avô)</h3><p cla
 function owned(areaKey) { if (RETIRO[areaKey]) return retOk(areaKey); if (!S || !S.land) return true; for (const k in PARCELS) if (PARCELS[k].areas.includes(areaKey)) return !!S.land[k]; return true; }
 function lotOwned(l) { if (!S || !S.land) return true; for (const k in PARCELS) if ((PARCELS[k].lots || []).includes(l)) return !!S.land[k]; return true; }
 function startSmall() { // novo jogo: começa com o rancho, o curral, dois piquetes e a mata dos fundos
-  S.land = { piquetes: false, leste: false, galinheiro: false }; S.house = 0; S.cash = 1500; S.acct = 2500; S.rankI = 0;
+  S.mov = {}; S.land = { piquetes: false, leste: false, galinheiro: false }; S.house = 0; S.cash = 1500; S.acct = 2500; S.rankI = 0;
   S.dep = { racao: 60, milho: 20, sal: 10, lenha: 4, carvao: 0, madeira: 0, tijolo: 0, cimento: 0, telha: 0, arame: 0 };
 }
 function patrimonio() { let v = 0; for (const a of S.animals) if (a.own === 'player') v += animalValue(a); for (const k in PARCELS) if (S.land && S.land[k]) v += PARCELS[k].p; if (S.exp.norte) v += EXP.norte.p; if (S.exp.sul) v += EXP.sul.p; v += [8000, 30000, 70000][S.house || 0]; v += Object.values(S.lots).filter(l => l && l.done).length * 9000; return Math.round(v + S.cash + S.acct - (typeof debt === 'function' ? debt() : 0)); }
@@ -5263,7 +5266,7 @@ function hourTick(h) {
   if (h === 6) { layEggs(); deliveries(); SAVE.save('auto', true); }
   if (S.event && S.event.day === S.day && h === 18) toast('🔥 Churrasco na fazenda começando!');
   // fome e energia do vaqueiro
-  P.fo = cl(P.fo - 3.2, 0, 100); P.en = cl(P.en - (P.fo < 10 ? 4 : 1.2), 0, 100);
+  P.fo = cl(P.fo - 3.2, 0, 100); P.en = cl(P.en - (P.fo < 10 ? 4 : 1.2) * tiredMul(), 0, 100);
   if (P.en < 12 && !S.flags.tiredTip) { S.flags.tiredTip = 1; say('Você está exausto. Coma algo ou durma na Casa Sede.'); }
   // exaustão gradual: depois da meia-noite o corpo cansa mais rápido; o jogador só apaga se a energia zerar
   if (h >= 0 && h < 5) { P.en = cl(P.en - 2.5, 0, 100); if (h === 1 && !S.flags.lateTip) { S.flags.lateTip = 1; say('Já passa da meia-noite: você cansa mais rápido. Durma na cama da Casa Sede quando quiser.', 4000); } }
@@ -5423,6 +5426,7 @@ function sleep(faint) {
   closeModal(); fadeTo(1, () => { sleeping = false;
     const was = S.min; const skip = was > 6 * 60 ? (1440 - was) / 60 + 6 : (6 * 60 - was) / 60; if (S.min > 6 * 60) { S.min = 1440 - 0.001; updTime(0.01 / GMPS); } /* vira o dia uma única vez, qualquer que seja a velocidade do tempo */ S.min = 6 * 60; regrow(Math.max(0, Math.floor(skip) - 1)); layEggs(); deliveries(); P._auto = null; P._act = null; P._vx = P._vy = 0;
     if (was < 6 * 60 && was >= 0) { /* madrugada: mesmo dia */ }
+    { const RB = P.inside ? roomById(P.inside) : null; if (!faint && RB && RB.H.own === 'player' && movHas('camaC')) S.rested = S.day + 1; }
     P.en = faint ? 55 : 100; P.fo = cl(P.fo - 20, 0, 100); if (faint) { const fee = Math.min(S.cash, 80); S.cash -= fee; if (fee) ledger('Remédio (desmaio)', -fee, 'cx'); }
     P.mnt = null; P.cart = false; P.dir = 0; { const RB = P.inside ? roomById(P.inside) : null, bed = RB && FURN.find(f => f.r === RB.id && (f.t === 'camaC' || f.t === 'cama')); if (bed) { P.x = bed.x; P.y = bed.y + 12; } else { P.inside = null; P.out = null; P.x = 7 * TS; P.y = 30.4 * TS; } } /* acorda ao lado da cama, dentro de casa */
     const h = mainHorse(); if (h && h._st !== 'tied') { h.x = 12 * TS; h.y = 31.6 * TS; h._st = 'tied'; h.tie = 0; }
@@ -7449,6 +7453,18 @@ function weighLot(ak) {
   showModal('⚖️ Balança — ' + AREAS[ak].n, null, null, () => L.length ? `<p class="mut">Lote passado no brete e pesado um a um. GMD = ganho médio diário desde a pesagem anterior (1 dia de jogo ≈ 1 mês do animal). Arroba = 15 kg de carcaça (~52% do peso vivo).</p><div class="card">${L.map(a => `<div class="row sp"><span>${esc(a.n)} <span class="mut">${catName(a)}</span></span><span>${Math.round(a.wt)} kg · ${arrobas(a).toFixed(1)} @${a.wH.length > 1 ? ' · <b>' + gmd(a).toFixed(2) + '</b> kg/d' : ''}</span></div>`).join('')}</div><p><b>${L.length}</b> cabeças · <b>${Math.round(tot)}</b> kg · média ${Math.round(tot / L.length)} kg · ${(L.reduce((t, a) => t + arrobas(a), 0)).toFixed(1)} @ (${fmt(L.reduce((t, a) => t + (a.sp === 'boi' ? animalValue(a) : 0), 0))} no preço de hoje)</p>` : '<p>Não há animais neste curral. Traga o lote para o curral e passe pelo brete.</p>');
 }
 A.retFix = k => retFix(k);
+/* ============ CASA E MÓVEIS ============
+   Móveis da marcenaria do Bira (comprados pela casa). Aparecem dentro da Casa Sede e somam conforto: cada ponto deixa o
+   cansaço do dia 2% mais lento (até 24%). Cama de casal: acorda bem descansado (−15% de cansaço no dia seguinte).
+   Sofá recupera energia ao sentar; TV mostra a previsão de 3 dias e a tendência da arroba; troféus mostram suas vitórias. */
+const MOVEIS = { vaso: { n: 'Vaso de planta', p: 120, c: 1 }, tapete: { n: 'Tapete de tear', p: 300, c: 1 }, relogio: { n: 'Relógio de parede', p: 450, c: 1 }, criado: { n: 'Criado-mudo', p: 260, c: 1 }, estante: { n: 'Estante de cedro', p: 700, c: 1, d: 'Guarda os livros e as relíquias do avô.' }, trofeu: { n: 'Prateleira de troféus', p: 600, c: 1, d: 'Mostra suas vitórias.' }, sofa: { n: 'Sofá de madeira e couro', p: 900, c: 2, d: 'Sentar nele recupera energia.' }, camaC: { n: 'Cama de casal com colchão', p: 1500, c: 3, d: 'Acorda bem descansado.' }, tv: { n: 'Televisão com antena', p: 1800, c: 2, d: 'Previsão de 3 dias e cotação da arroba.' } };
+function movHas(t) { return !!(S && S.mov && S.mov[t]); }
+function comfort() { let c = 0; for (const k in MOVEIS) if (movHas(k)) c += MOVEIS[k].c; return Math.min(12, c); }
+function tiredMul() { return (1 - comfort() * 0.02) * (S.rested === S.day ? 0.85 : 1); }
+function movHTML() { return '<h3>🪑 Móveis (marcenaria do Bira)</h3><p class="mut">Conforto: <b>' + comfort() + '</b>/12 — o cansaço do dia fica ' + Math.round(comfort() * 2) + '% mais lento.</p>' + Object.keys(MOVEIS).map(k => `<div class="card"><div class="row sp"><span><b>${MOVEIS[k].n}</b> <span class="mut">+${MOVEIS[k].c} conforto${MOVEIS[k].d ? ' · ' + MOVEIS[k].d : ''}</span></span>${movHas(k) ? '<span>✅ em casa</span>' : btn(fmt(MOVEIS[k].p), 'movBuy', k, !canPay(MOVEIS[k].p))}</div></div>`).join(''); }
+A.movBuy = k => { if (movHas(k) || !canPay(MOVEIS[k].p)) return; pay(MOVEIS[k].p, 'Móvel: ' + MOVEIS[k].n); S.mov = S.mov || {}; S.mov[k] = S.day; genInteriors(); poiSolid && 0; GR && GR.repaintTiles && GR.repaintTiles(0, WMH, MW - 1, MHT - 1); toast('🪑 ' + MOVEIS[k].n + ' entregue na Casa Sede pelo Bira.'); renderModal(); };
+function tvText() { const fc = (S.wx && S.wx.fc) || [], h = S.arrHist || [], tr = h.length > 4 ? h[h.length - 1] - h[h.length - 5] : 0; return 'Previsão: ' + fc.slice(0, 3).map((k, i) => ['Hoje', 'Amanhã', 'Depois'][i] + ' ' + ((WXT[k] || WXT.sol).n).toLowerCase()).join(' · ') + '. Arroba ' + fmt2(S.arroba) + (Math.abs(tr) < 1 ? ', estável.' : tr > 0 ? ', subindo.' : ', caindo.'); }
+function trophyText() { const st = S.stats || {}; return 'Troféus: ' + [(st.vaqWin || 0) + ' vaquejada(s)', (st.quadWin || 0) + ' quadrilha(s)', (st.pegas || 0) + ' pega(s) de boi', (S.ctr ? S.ctr.done : 0) + ' contrato(s) cumprido(s)'].join(' · ') + '.'; }
 /* ============ PEGA DE BOI NO MATO ============
    De tempos em tempos um boi barbatão (criado solto, arisco) do Seu Abílio se esconde na caatinga ao sul da cidade.
    Ele foge quando o vaqueiro chega perto e corre até cansar (fôlego ~9 s, recupera parado). Laçe e traga para qualquer
@@ -8124,8 +8140,9 @@ A.finExp = k => { if (S.exp[k]) return; const ent = EXP[k].p * 0.2; if (!canPay(
 /* ---------- casa, galpão, depósito, igreja ---------- */
 function openHouse() { showModal(['Rancho de taipa', 'Casa de alvenaria', 'Casa Sede'][S.house === undefined ? 2 : S.house], null, null, () => {
   const late = hour() >= 18 || hour() < 5;
-  return `<p>${S.house === 0 ? 'O rancho do avô Tiãozinho: paredes de barro, rede na sala e as coisas dele ainda pelos cantos.' : 'Sua casa, com varanda e rede pendurada.'}</p>${memOk('caderno') ? '<div class="card">' + btn('Procurar nas coisas do avô', 'memCaderno') + '</div>' : ''}<div class="row">${btn(late ? '🛏️ Dormir até amanhã' : '🛏️ Dormir (só após 18h)', 'sleep', '', !late)}${btn('👕 Guarda-roupa', 'wardrobe')}${btn('💾 Salvar', 'saveNow')}</div><h3>Cozinha</h3><p class="mut">Coma algo da mochila:</p><div class="row">${Object.keys(S.inv).filter(k => IT[k] && (IT[k].fo || IT[k].en) && S.inv[k] > 0.001).map(k => btn(iic(k, 16) + ' ' + IT[k].n.split(' (')[0] + ' (' + S.inv[k] + ')', 'eat', k)).join('') || '<span class="mut">Nada para comer.</span>'}</div><div class="card">${btn('☕ Passar um café (+12 energia)', 'coffee', '', S.flags.coffee === S.day)}</div>`; }); }
+  return `<div class="row">${btn('🪑 Móveis e conforto', 'movOpen')}</div><p>${S.house === 0 ? 'O rancho do avô Tiãozinho: paredes de barro, rede na sala e as coisas dele ainda pelos cantos.' : 'Sua casa, com varanda e rede pendurada.'}</p>${memOk('caderno') ? '<div class="card">' + btn('Procurar nas coisas do avô', 'memCaderno') + '</div>' : ''}<div class="row">${btn(late ? '🛏️ Dormir até amanhã' : '🛏️ Dormir (só após 18h)', 'sleep', '', !late)}${btn('👕 Guarda-roupa', 'wardrobe')}${btn('💾 Salvar', 'saveNow')}</div><h3>Cozinha</h3><p class="mut">Coma algo da mochila:</p><div class="row">${Object.keys(S.inv).filter(k => IT[k] && (IT[k].fo || IT[k].en) && S.inv[k] > 0.001).map(k => btn(iic(k, 16) + ' ' + IT[k].n.split(' (')[0] + ' (' + S.inv[k] + ')', 'eat', k)).join('') || '<span class="mut">Nada para comer.</span>'}</div><div class="card">${btn('☕ Passar um café (+12 energia)', 'coffee', '', S.flags.coffee === S.day)}</div>`; }); }
 A.sleep = () => sleep(false);
+A.movOpen = () => showModal('Móveis', null, null, movHTML);
 A.memCaderno = () => { closeModal(); act('pickup', 1.2, { x: P.x, y: P.y - 8 }, () => memFind('caderno'), { zoom: false }); };
 A.calendar = () => openCalendar();
 A.legado = () => showModal('Legado de Tiãozinho', null, null, legadoHTML, 'book');
@@ -9975,6 +9992,7 @@ const SAVE = {
     const base = newState(); for (const k in base) if (o[k] === undefined) o[k] = base[k];
     for (const k in base.dep) if (o.dep[k] === undefined) o.dep[k] = 0;
     S = o; P = S.p; lasso.t = null; parts = []; rings = []; if (S.cf && S.cf.ap) delete S.cf.ap.tool; if (!S.chest) S.chest = {}; if (!S.esc) S.esc = []; S.esc = []; S.animals.forEach(a => { if (!a.hist) a.hist = []; if (a._st === 'route') a._st = null; });
+    if (S.mov === undefined) S.mov = { sofa: 1, tapete: 1, vaso: 1, criado: 1, camaC: 1 }; // saves antigos: a casa já tinha esses móveis
     genMap(); poiSolid(); builtApply(); pomarApplyObj(); initGrass(); if (S.grass && (S.mapN || 0) === MW * MH) { const u = new Uint8Array(MW * MH); decodeU8(S.grass, u); for (let i = 0; i < u.length; i++) if (ground[i] === G.PAST) grass[i] = u[i]; }
     GATES.forEach((g, i) => { g.open = !!S.gates[i]; g.anim = g.open ? 1 : 0; });
     while (S.tr.length < TROUGHS.length) S.tr.push(TROUGHS[S.tr.length].cap * 0.5);
