@@ -1488,7 +1488,7 @@ function genMap() {
 /* ---------- Mata dos Fundos: árvores de vários portes, moitas, pedras, trilhas, clareiras e um riacho ---------- */
 const FOREST = { r: [1, 1, 28, 20], trail: [], clear: [[11, 11, 3.2], [24, 5, 2.6], [5, 5, 2.4]], ford: [] };
 function inForest(x, y) { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); return tx >= 0 && ty >= 0 && tx < MW && ty < MHT && forest[gi(tx, ty)] === 1; }
-const forestStreamX = y => 19.5 + Math.round(Math.sin(y * 0.42) * 2.2 + Math.sin(y * 0.17) * 1.2);
+const forestStreamX = y => 19 + Math.round( /* inteiro: antes 19,5 e o riacho nunca era gravado no mapa */ Math.sin(y * 0.42) * 2.2 + Math.sin(y * 0.17) * 1.2);
 function genForest(R) {
   forest.fill(0); const [x0, y0, x1, y1] = FOREST.r;
   for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { forest[gi(x, y)] = 1; ground[gi(x, y)] = G.GRASS; }
@@ -6821,9 +6821,10 @@ A.bagSel = v => { M.sel = v; renderModal(); AU.click(); };
 A.eat = v => { const it = IT[v]; if (!has(v)) return; closeModal(); act('eat', 0.9, null, () => { useInv(v); P.en = cl(P.en + (it.en || 0), 0, 100); P.fo = cl(P.fo + (it.fo || 0), 0, 100); AU.munch(); toast(`+${it.en || 0} energia · +${it.fo || 0} fome`); }, { zoom: 1.2 }); };
 A.drop = v => { useInv(v); renderModal(); };
 /* ---------- menu principal ---------- */
-const MTABS = [['vaq', 'Vaqueiro', 'hat'], ['inv', 'Mochila', 'bag'], ['ani', 'Animais', 'cow'], ['faz', 'Fazenda', 'farm'], ['pro', 'Produção', 'bank'], ['mis', 'Missões', 'book'], ['map', 'Mapa', 'map'], ['ban', 'Banco', 'bank'], ['obr', 'Obras', 'build'], ['peo', 'Peões', 'worker'], ['rel', 'Relações', 'heart'], ['cfg', 'Config.', 'gear']];
+const MTABS = [['vaq', 'Vaqueiro', 'hat'], ['inv', 'Mochila', 'bag'], ['ani', 'Animais', 'cow'], ['faz', 'Fazenda', 'farm'], ['pro', 'Produção', 'bank'], ['mis', 'Missões', 'book'], ['map', 'Mapa', 'map'], ['ban', 'Banco', 'bank'], ['obr', 'Obras', 'build'], ['peo', 'Peões', 'worker'], ['rel', 'Relações', 'heart'], ['col', 'Coleção', 'book'], ['cfg', 'Config.', 'gear']];
 function openMenu(tab) { showModal('', MTABS, tab || 'vaq', menuTab); }
 function menuTab(t) {
+  if (t === 'col') return `<p class="mut">Peixes pescados, relíquias e as cartas do avô.</p>` + fishCollectionHTML() + relicHTML();
   if (t === 'vaq') {
     const st = STATES[S.cf.st];
     let h = `<div class="dlg"><div>${charImg(S.cf.ap, 4)}</div><div style="flex:1"><h2 style="margin:0">${esc(S.cf.name)}</h2><p>${S.cf.ap.sex === 'F' ? 'Vaqueira' : 'Vaqueiro'} de <b>${st[1]}</b> (${st[2]})</p><p class="mut">${st[7]}</p><p>Talento: <b>${PERKS[st[5]]}</b></p></div></div>`;
@@ -8873,7 +8874,7 @@ function render(dt) {
   if (P.inside) { const RB = roomById(P.inside);
     if (RB) { for (const f of FURN) { if (f.r !== RB.id) continue; const [c, up] = furnSpr(f.t, f.w, f.h, RB.H.wall); const sx2 = f.tx * TS, sy2 = f.ty * TS - up; add(f.wall ? -1e9 + f.ty : f.t === 'tapete' ? -1e8 : f.y - (f.t === 'rede' ? 30 : 0), () => X.drawImage(c, sx2, sy2)); }
       const op = roomOwnerPos(RB); if (op) add(op.y, () => drawPerson(op.e.d.ap, op.x, op.y, op.dir, op.pose === 'feed' ? Math.floor(drawT * 2) % 2 : 0, op.pose)); } }
-  add(iy(P) + 0.5, drawPlayer); FISH.draw(add);
+  add(iy(P) + 0.5, drawPlayer); FISH.draw(add); if (!P.inside) drawPOIs(add, inV);
   L.sort((a, b) => a.y - b.y); for (const o of L) o.f(); ambFx(dt); FLOCK.draw();
   forestOverlay(tx0, ty0, tx1, ty1); drawEventDecor(true); drawMemGlints(); misMarkers(); questMarkers(); drawMoveFx(); drawDebugCol();
   for (const e of npcs) if (!e.hidden && e.bt > 0 && inV(e.x, e.y, 30)) drawBubble(e);
@@ -9475,7 +9476,7 @@ const SAVE = {
     const base = newState(); for (const k in base) if (o[k] === undefined) o[k] = base[k];
     for (const k in base.dep) if (o.dep[k] === undefined) o.dep[k] = 0;
     S = o; P = S.p; lasso.t = null; parts = []; rings = []; if (S.cf && S.cf.ap) delete S.cf.ap.tool; if (!S.chest) S.chest = {}; if (!S.esc) S.esc = []; S.esc = []; S.animals.forEach(a => { if (!a.hist) a.hist = []; if (a._st === 'route') a._st = null; });
-    genMap(); pomarApplyObj(); initGrass(); if (S.grass && (S.mapN || 0) === MW * MH) { const u = new Uint8Array(MW * MH); decodeU8(S.grass, u); for (let i = 0; i < u.length; i++) if (ground[i] === G.PAST) grass[i] = u[i]; }
+    genMap(); poiSolid(); pomarApplyObj(); initGrass(); if (S.grass && (S.mapN || 0) === MW * MH) { const u = new Uint8Array(MW * MH); decodeU8(S.grass, u); for (let i = 0; i < u.length; i++) if (ground[i] === G.PAST) grass[i] = u[i]; }
     GATES.forEach((g, i) => { g.open = !!S.gates[i]; g.anim = g.open ? 1 : 0; });
     while (S.tr.length < TROUGHS.length) S.tr.push(TROUGHS[S.tr.length].cap * 0.5);
     for (const k of ['norte', 'sul']) if (S.exp[k]) { const y = EXP[k].y; for (const x of [37, 38, 39]) obj[gi(x, y)] = 0; }
@@ -9644,7 +9645,7 @@ function newGame(cf) {
   S = newState(); P = S.p; lasso.t = null; parts = [];
   S.cf = { name: cf.name, st: cf.st, sk: cf.sk, ap: Object.assign({}, cf.ap), hn: cf.hn, aj: cf.aj, mt: cf.mt };
   S.saddles = [...new Set(['nord', SADDLES[cf.sd].id])]; S.saddleSel = SADDLES[cf.sd].id;
-  genMap(); initGrass(); S.tr = TROUGHS.map(t => t.cap * (t.k === 'agua' ? 0.7 : 0.5)); S.gates = GATES.map(g => g.open ? 1 : 0);
+  genMap(); poiSolid(); initGrass(); S.tr = TROUGHS.map(t => t.cap * (t.k === 'agua' ? 0.7 : 0.5)); S.gates = GATES.map(g => g.open ? 1 : 0);
   startSmall(); applyLand(); applyObjs();
   const put = (a, k) => { const p = randIn(k); a.x = p[0]; a.y = p[1]; S.animals.push(a); return a; };
   const sp = mtSp(cf.mt);
@@ -10122,7 +10123,7 @@ function interactables(forTap) {
   for (const k of ['norte', 'sul']) { const s = EXP[k].sign, x = (s[0] - 1.6) * TS, y = s[1] * TS + 6; add({ k: 'sign', label: '🪧 ' + (S.exp[k] ? EXP[k].n : 'Terreno à venda'), x, y, r: 26, prio: 2, hit: [x - 12, y - 30, x + 12, y], fn: () => openSign(k) }); }
   for (const k in LOTS) { if ((LOTS[k].exp && !S.exp[LOTS[k].exp]) || !lotOwned(k)) continue; const r = LOTS[k].r, x = (r[0] + r[2] + 1) / 2 * TS, y = (r[3] + 1.4) * TS; add({ k: 'lot', label: '🏗️ Lote ' + k + (S.lots[k] ? ': ' + BUILD[S.lots[k].b].n : ''), x, y, r: 28, prio: 1, hit: S.lots[k] ? [r[0] * TS, r[1] * TS - 20, (r[2] + 1) * TS, (r[3] + 1) * TS] : null, fn: () => openLot(k) }); }
   if (foot) add({ k: 'cart', label: '🛒 Carroça', x: S.cart.x, y: S.cart.y, r: 28, prio: 2, hit: [S.cart.x - 18, S.cart.y - 22, S.cart.x + 18, S.cart.y + 4], fn: openCart });
-  storyInteractables(add); misInteractables(add); aucInteractables(add); rocaInteractables(add, foot); fishInteractables(add, foot); pomarInteractables(add, foot); bicoInteractables(add, foot); jobInteractables(add, foot);
+  storyInteractables(add); misInteractables(add); aucInteractables(add); rocaInteractables(add, foot); fishInteractables(add, foot); exploreInteractables(add, foot); pomarInteractables(add, foot); bicoInteractables(add, foot); jobInteractables(add, foot);
   if (Math.abs(P.y - 44 * TS) < 60) { if (Math.abs(P.x - 110.6 * TS) < 50) add({ k: 'viagem', label: '🛤️ Viajar para a Região das Serras', x: 110.8 * TS, y: 44 * TS, r: 40, prio: 6, hit: [109.5 * TS, 41.5 * TS, 112 * TS, 46 * TS], fn: () => travelAsk('go') }); if (Math.abs(P.x - 118.8 * TS) < 50) add({ k: 'viagem', label: '🛤️ Voltar para Itarantim', x: 118.8 * TS, y: 44 * TS, r: 40, prio: 6, hit: [117.5 * TS, 41.5 * TS, 120 * TS, 46 * TS], fn: () => travelAsk('back') }); }
   if (foot) { const e = objPos('esterqueira') || { x: 52.6 * TS, y: 94.8 * TS }, n = Math.floor(S.esterco || 0); add({ k: 'esterco', label: n ? '💩 Recolher esterco (' + n + ' saco' + (n > 1 ? 's' : '') + ')' : 'Esterqueira (vazia)', x: e.x, y: e.y + 6, r: 24, prio: 2, hit: [e.x - 18, e.y - 20, e.x + 18, e.y + 6], fn: () => n ? act('pickup', 1.2, { x: e.x, y: e.y }, collectManure) : say('A esterqueira enche com o esterco do chiqueiro e do aprisco, dia a dia.') }); }
   if (foot) { const ak = areaAt(P.x, P.y); if (ak && S.dirt[ak] > 20) add({ k: 'clean', label: '🧹 Limpar ' + AREAS[ak].n, x: P.x, y: P.y, r: 999, prio: -3, fn: () => cleanCurral(ak) }); }
@@ -10194,6 +10195,108 @@ A.openHouseUI = () => { closeModal(); openHouse(); };
 A.cook = id => { const R = RECIPES.find(r => r.id === id); if (!R || !recHas(R) || !fuelId()) return; if (invRoom(R.id) < R.out) return say('Mochila sem espaço para ' + IT[R.id].n.toLowerCase() + '.'); closeModal();
   act('feed', 1.6, null, () => { useInv(fuelId()); for (const [k, n] of Object.entries(R.in)) { if (k === 'peixe') useInv(anyFish()); else useInv(k, n); } addInv(R.id, R.out, true); S.stats.cooked = (S.stats.cooked || 0) + 1; questEvent && questEvent('cook', R.id, R.out); AU.chime && AU.chime(); toast('🍲 ' + R.n + ' pronta (×' + R.out + ').'); P.en = Math.max(0, P.en - 2); }); };
 const ROCA_SELL = ['espiga', 'feijao', 'mandioca', 'abobora', 'cana', 'farinha', 'rapadura', 'doceAbobora', 'cuscuz', 'tropeiro', 'pamonha', 'canjica'];
+/* ===================== EXPLORAÇÃO E DESCOBERTAS =====================
+   Quatro lugares com arte própria e função: Cachoeira da Mata (banho que restaura energia, 1x/dia), Gruta do Lajedo
+   (pinturas rupestres; precisa de lampião), Tapera do Velho Juca (ruína de taipa para vasculhar) e Cruzeiro do Mirante
+   (vista do vale com a câmera). Doze relíquias escondidas pelo mapa brilham só de perto. As quatro cartas do avô
+   contam a história da fazenda e, juntas, levam ao baú que ele enterrou. */
+const POI = {
+  cachoeira: { n: 'Cachoeira da Mata', x: 23, y: 3.7, r: 34, act: [23, 4.8] },
+  gruta: { n: 'Gruta do Lajedo', x: 172.5, y: 32.9, r: 30, act: [172.5, 33.9], solid: [[172, 32], [171, 32], [173, 32]] },
+  tapera: { n: 'Tapera do Velho Juca', x: 171.5, y: 81.9, r: 32, act: [171.5, 82.9], solid: [[170, 81], [172, 81], [171, 80]] },
+  mirante: { n: 'Cruzeiro do Mirante', x: 173.5, y: 3.9, r: 30, act: [173.5, 4.9], solid: [[173, 3]] }
+};
+const RELICS = {
+  carta1: { n: 'Carta do avô — I', at: 'cachoeira', t: '"Neto, se você está lendo isso, achou meu lugar preferido. Foi aqui que eu tomei coragem, em 1961, de comprar a Boa Esperança com três vacas, um jumento e muita dívida. A água desta cachoeira nunca secou, nem na seca de 70. Guarde esse segredo e siga as outras cartas." — Tião' },
+  carta2: { n: 'Carta do avô — II', at: 'gruta', t: '"Na gruta tem desenho dos antigos, de antes de qualquer fazenda. Bicho, gente, sol. Meu pai dizia pra não mexer, e eu nunca mexi. Quem veio antes também cuidava desta terra. A gente só toma emprestado." — Tião' },
+  carta3: { n: 'Carta do avô — III', at: 'tapera', t: '"O Velho Juca morava nessa tapera. Foi ele que me ensinou a aboiar e a ler o céu antes da chuva. Quando ele se foi, ficou só a parede de taipa. Se um dia você tiver dinheiro sobrando, ajude quem está começando, como ele me ajudou." — Tião' },
+  carta4: { n: 'Carta do avô — IV', at: 'mirante', t: '"Daqui de cima dá pra ver tudo: a fazenda, a cidade, o rio. Enterrei uma coisa pra você ao pé do umbuzeiro grande, atrás de casa. Cave quando tiver lido as quatro cartas." — Tião' },
+  fossil: { n: 'Dente de preguiça-gigante', at: 'gruta', t: 'Fóssil da megafauna que viveu no sertão baiano há mais de 10 mil anos. A Bahia tem muitos desses achados em grutas e tanques de pedra.' },
+  moeda: { n: 'Moeda de 400 réis (1901)', xy: [58, 44.6], t: 'Moeda de níquel da República Velha, perdida na estrada antiga que ligava as fazendas à feira.' },
+  flecha: { n: 'Ponta de flecha de quartzo', xy: [204, 61], t: 'Lascada à mão por povos indígenas do sertão, muito antes dos vaqueiros.' },
+  chocalho: { n: 'Chocalho antigo de bronze', xy: [126, 50], t: 'Pendurado no pescoço da vaca madrinha, guiava a boiada pelo som.' },
+  espora: { n: 'Espora de prata', xy: [94.5, 52.5], t: 'De algum vaqueiro de vaquejada antiga. Tem um "J" gravado.' },
+  ceramica: { n: 'Caco de cerâmica indígena', xy: [166.5, 70], t: 'Pintado com linhas vermelhas. O rio trazia a argila.' },
+  terco: { n: 'Terço de contas-de-lágrima', xy: [5, 47], t: 'Contas da planta lágrima-de-nossa-senhora, feito à mão por alguma rezadeira.' },
+  ferradura: { n: 'Ferradura da sorte', xy: [44, 44.6], t: 'Pregada com a ponta para cima, segura a sorte dentro de casa, dizem.' }
+};
+const BAU_AVO = { x: 3.5, y: 26.6 }; // ao pé do umbuzeiro atrás da casa
+function relS() { if (!S.relics || typeof S.relics !== 'object') S.relics = {}; return S.relics; }
+function poiS() { if (!S.poi || typeof S.poi !== 'object') S.poi = {}; return S.poi; }
+// posição do relicário: encaixa no ladrilho andável mais próximo (o mapa pode ter mudado entre versões)
+function relicPos(k) { const R0 = RELICS[k]; if (!R0.xy) return null; if (R0._p) return R0._p; const [x0, y0] = R0.xy; let best = null, bd = 1e9;
+  for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) { const tx = Math.floor(x0) + dx, ty = Math.floor(y0) + dy; if (tx < 0 || ty < 0 || tx >= MW || ty >= MH) continue; const i = gi(tx, ty); if (obj[i] || ![G.GRASS, G.DRY, G.SAND, G.DIRT, G.PAST].includes(ground[i])) continue; const d = Math.hypot(dx, dy); if (d < bd) { bd = d; best = { x: (tx + 0.5) * TS, y: (ty + 0.7) * TS }; } }
+  R0._p = best; return best; }
+function findRelic(k, silent) { const L = relS(); if (L[k]) return false; L[k] = S.day; S.stats.relics = (S.stats.relics || 0) + 1; AU.chime && AU.chime(); questEvent && questEvent('relic', k, 1);
+  if (!silent) showModal('✨ ' + RELICS[k].n, null, null, () => `<div class="row" style="gap:12px;align-items:flex-start"><img src="${relicIconURL(k)}" width="64" height="64" style="image-rendering:pixelated;flex:none"><p>${esc(RELICS[k].t)}</p></div><p class="mut">Coleção: ${Object.keys(relS()).length}/${Object.keys(RELICS).length} relíquias${cartasAll() ? ' · As quatro cartas estão com você: cave ao pé do umbuzeiro atrás da casa.' : ''}</p>`);
+  toast('✨ Relíquia encontrada: ' + RELICS[k].n); return true; }
+const cartasAll = () => ['carta1', 'carta2', 'carta3', 'carta4'].every(k => relS()[k]);
+function relicIconURL(k) { const key = 'rel:' + k; let u = icCache.get(key); if (u) return u; const [c, g] = mkC(12, 12), p = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+  if (k.startsWith('carta')) { p(2, 2, 8, 9, '#e8dcb8'); p(2, 2, 8, 1, '#f8f0d8'); for (let y = 4; y < 10; y += 2) p(3, y, 6, 1, '#8a7a5a'); p(7, 8, 3, 3, '#a83a2a'); }
+  else ({ fossil: () => { p(3, 1, 6, 9, '#e8e0c8'); p(4, 1, 1, 9, '#c8c0a8'); p(3, 10, 2, 2, '#c8c0a8'); p(7, 10, 2, 2, '#c8c0a8'); },
+    moeda: () => { p(2, 2, 8, 8, '#a8a8a0'); p(3, 1, 6, 10, '#a8a8a0'); p(4, 4, 4, 4, '#d8d8d0'); p(5, 5, 2, 2, '#8a8a80'); },
+    flecha: () => { p(5, 1, 2, 2, '#e8e8f0'); p(4, 3, 4, 3, '#d0d0e0'); p(3, 6, 6, 2, '#b8b8d0'); p(5, 8, 2, 3, '#8a6a4a'); },
+    chocalho: () => { p(3, 3, 6, 7, '#b8823a'); p(4, 2, 4, 1, '#d8a24a'); p(5, 0, 2, 2, '#6a4a2a'); p(5, 9, 2, 2, '#4a3a2a'); },
+    espora: () => { p(1, 5, 7, 2, '#c8c8d0'); p(8, 3, 3, 3, '#e0e0e8'); p(9, 4, 1, 1, '#8a8a90'); p(1, 7, 2, 3, '#c8c8d0'); },
+    ceramica: () => { p(2, 3, 8, 6, '#c8784a'); p(3, 4, 6, 1, '#8a2a1a'); p(4, 6, 4, 1, '#8a2a1a'); p(2, 9, 6, 1, '#a85a3a'); },
+    terco: () => { for (let i = 0; i < 10; i++) p(2 + Math.round(Math.cos(i / 10 * 6.28) * 3.5) + 2, 2 + Math.round(Math.sin(i / 10 * 6.28) * 3.5) + 2, 2, 2, '#b8b0a0'); p(5, 9, 2, 3, '#6a4a2a'); },
+    ferradura: () => { p(2, 2, 2, 8, '#8a8a90'); p(8, 2, 2, 8, '#8a8a90'); p(3, 9, 6, 2, '#8a8a90'); p(2, 3, 1, 1, '#2a2a2a'); p(9, 3, 1, 1, '#2a2a2a'); } })[k]();
+  outline(g, 12, 12); u = c.toDataURL(); icCache.set(key, u); return u; }
+// ---- arte dos lugares (pixel art feita em código, cacheada) ----
+function poiArt(k, f) { return cached('poi|' + k + '|' + (f || 0), k === 'cachoeira' ? 112 : 88, k === 'cachoeira' ? 64 : 72, g => { const p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+  const rock = (x, y, w, h, s) => { const R = mulberry(s); for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) { const e = ((xx - w / 2) / (w / 2)) ** 2 + ((yy - h * 0.6) / (h * 0.65)) ** 2; if (e > 1 + R() * 0.08) continue; const lt = xx < w * 0.45 && yy < h * 0.5, dk = yy > h * 0.75 || xx > w * 0.7; p(x + xx, y + yy, 1, 1, lt ? '#bdb6a6' : dk ? '#6e6a62' : R() < 0.08 ? '#c8883a' : '#938d80'); } };
+  if (k === 'cachoeira') { // paredão de pedra com a queda em véu e o poço espumando
+    rock(0, 2, 48, 44, 11); rock(62, 0, 50, 46, 12); rock(30, 0, 52, 30, 13);
+    for (let y = 18; y < 58; y++) for (let x = 44; x < 66; x++) { const w = (x * 7 + y * 3 + f * 5) % 9; p(x, y, 1, 1, w < 2 ? '#f4fbff' : w < 5 ? '#9ad0ee' : '#5aa0d0'); }
+    p(42, 16, 26, 3, '#e8f6ff'); for (let i = 0; i < 26; i++) { const x = 38 + (i * 13 + f * 3) % 34, y = 54 + (i * 7) % 8; p(x, y, 2, 1, '#ffffff'); }
+    p(2, 40, 10, 4, '#5a8a3a'); p(96, 38, 12, 5, '#5a8a3a'); p(8, 36, 4, 6, '#3e7a2e'); p(100, 32, 3, 8, '#3e7a2e'); }
+  else if (k === 'gruta') { rock(0, 8, 88, 62, 21); // boca escura em arco com sombra interna
+    for (let y = 0; y < 26; y++) { const hw = Math.round(16 * Math.sqrt(Math.max(0, 1 - ((25 - y) / 26) ** 2))); p(44 - hw, 44 + y - 16, hw * 2, 1, y < 4 ? '#3a3228' : '#120c08'); }
+    p(30, 60, 28, 3, '#5e5a52'); p(12, 20, 6, 3, '#6a8a3a'); p(66, 26, 8, 3, '#6a8a3a'); p(40, 30, 2, 4, '#7a5a3a'); p(47, 31, 2, 3, '#7a5a3a'); }
+  else if (k === 'tapera') { // parede de taipa caída, varas aparentes, linha do telhado quebrada, mato
+    const taipa = (x, y, w, h) => { for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) { const top = yy < 2; p(x + xx, y + yy, 1, 1, top ? '#c8a070' : ((xx * 5 + yy * 3) % 11 === 0 ? '#8a5a32' : '#a87a4a')); } for (let xx = 2; xx < w; xx += 5) p(x + xx, y + 2, 1, h - 2, 'rgba(90,60,30,0.35)'); };
+    taipa(8, 34, 30, 30); taipa(50, 42, 26, 22); p(38, 50, 12, 14, '#a87a4a'); p(16, 46, 8, 18, '#2a1a10'); // porta sem folha
+    for (let x = 10; x < 36; x += 4) p(x, 30, 1, 6, '#6a4a2a'); p(6, 30, 40, 2, '#5a3a1a'); for (let i = 0; i < 9; i++) p(40 + i * 3, 28 + i * 2, 3, 2, '#5a3a1a');
+    p(54, 34, 1, 8, '#6a4a2a'); p(60, 36, 1, 6, '#6a4a2a'); for (let x = 2; x < 86; x += 3) p(x, 62 - (x * 7) % 5, 1, 4 + (x % 3), '#7a9a3a'); p(70, 30, 2, 12, '#5a7a2a'); p(68, 28, 6, 3, '#6a9a3a'); }
+  else if (k === 'mirante') { rock(10, 40, 70, 32, 31); // cruzeiro de madeira sobre a pedra, com fitas e pedras de promessa
+    p(42, 8, 5, 48, '#6a4422'); p(42, 8, 2, 48, '#8a5a32'); p(32, 18, 25, 5, '#6a4422'); p(32, 18, 25, 2, '#8a5a32'); p(46, 20, 2, 12, '#e03a3a'); p(48, 20, 2, 9, '#f0c030'); p(44, 20, 2, 10, '#3a7ac0');
+    for (const [x, y] of [[36, 54], [52, 55], [40, 57], [56, 52]]) { p(x, y, 4, 3, '#c8c0b0'); p(x, y, 4, 1, '#e0d8c8'); } p(20, 62, 18, 3, '#7a5a32'); p(22, 65, 2, 4, '#5a3a1a'); p(34, 65, 2, 4, '#5a3a1a'); }
+}, true); }
+function drawPOIs(add, inV) { for (const k in POI) { const o = POI[k], x = o.x * TS, y = o.y * TS; if (!inV(x, y, 90)) continue;
+    if (k === 'cachoeira') { const f = Math.floor(drawT * 8) % 4, c = poiArt(k, f); add(y, () => { X.drawImage(c, Math.round(x - 56), Math.round(y - 52)); if (Math.random() < 0.3) part(x + rnd(-12, 12), y + 6, 'spark', { vx: rnd(-8, 8), vy: rnd(-16, -4), m: 0.6, c: '#e8f6ff' }); }); }
+    else { const c = poiArt(k); add(y + 2, () => { X.fillStyle = 'rgba(20,12,4,0.25)'; X.beginPath(); X.ellipse(x, y + 1, 30, 5, 0, 0, 7); X.fill(); X.drawImage(c, Math.round(x - 44), Math.round(y - 68)); }); } }
+  // brilho discreto das relíquias soltas: só aparece de perto
+  for (const k in RELICS) { if (relS()[k]) continue; const q = relicPos(k); if (!q || hyp(q.x - P.x, q.y - P.y) > 90) continue; const a = 0.35 + Math.sin(drawT * 3 + q.x) * 0.3; add(q.y, () => { X.globalAlpha = a; X.fillStyle = '#fff4c0'; X.fillRect(Math.round(q.x), Math.round(q.y - 6), 1, 5); X.fillRect(Math.round(q.x - 2), Math.round(q.y - 4), 5, 1); X.globalAlpha = 1; }); }
+  if (cartasAll() && !poiS().bau) { const bx = BAU_AVO.x * TS, by = BAU_AVO.y * TS; if (inV(bx, by, 40)) add(by, () => { X.fillStyle = '#5a3a1a'; X.fillRect(bx - 5, by - 2, 10, 3); X.fillStyle = '#8a5a32'; X.fillRect(bx - 4, by - 3, 8, 1); X.globalAlpha = 0.5 + Math.sin(drawT * 4) * 0.4; X.fillStyle = '#fff4c0'; X.fillRect(bx, by - 9, 1, 5); X.globalAlpha = 1; }); }
+}
+function poiSolid() { // abre espaço para os lugares de exploração (tira plantas por cima) e marca a pedra como sólida
+  for (const k in POI) { const o = POI[k], w = k === 'cachoeira' ? 4 : 3; for (let i = PROPS.length - 1; i >= 0; i--) { const q = PROPS[i]; if (Math.abs(q.x / TS - o.x) < w && q.y / TS > o.y - 4.5 && q.y / TS < o.y + 1.8 && q.t !== 'catavento') { obj[gi(Math.floor(q.x / TS), Math.floor(q.y / TS - 0.1))] = 0; PROPS.splice(i, 1); } }
+    for (const [tx, ty] of o.solid || []) obj[gi(tx, ty)] = 3; } }
+function exploreInteractables(add, foot) { if (!foot || P.inside) return; const ps = poiS(), day = S.day;
+  const near = k => { const o = POI[k], [ax, ay] = o.act; return hyp(ax * TS - P.x, ay * TS - P.y) < o.r; };
+  if (near('cachoeira')) add({ k: 'poi', label: ps.banho === day ? '🌊 Cachoeira da Mata (já se banhou hoje)' : '💦 Banho de cachoeira', x: POI.cachoeira.act[0] * TS, y: POI.cachoeira.act[1] * TS, r: 40, prio: 4, fn: () => {
+    if (ps.banho === day) return say('A água é fria e boa. Amanhã de novo.'); act('pet', 1.6, null, () => { ps.banho = day; P.en = Math.min(100, P.en + 25); toast('💦 Banho de cachoeira: +25 energia.'); for (let i = 0; i < 14; i++) part(P.x + rnd(-8, 8), P.y - 14, 'drop', { vx: rnd(-14, 14), vy: rnd(-20, 4), m: .6, c: '#bfe6ff' }); if (!relS().carta1) setTimeout(() => findRelic('carta1'), 400); }); } });
+  if (near('gruta')) add({ k: 'poi', label: '🕳️ Entrar na Gruta do Lajedo', x: POI.gruta.act[0] * TS, y: POI.gruta.act[1] * TS, r: 40, prio: 4, fn: () => {
+    if (!has('lampiao')) return say('Lá dentro é breu. Volte com um lampião (Casa do Agro).', 3200); openGruta(); } });
+  if (near('tapera')) add({ k: 'poi', label: ps.tapera ? '🏚️ Tapera do Velho Juca' : '🏚️ Vasculhar a tapera', x: POI.tapera.act[0] * TS, y: POI.tapera.act[1] * TS, r: 40, prio: 4, fn: () => {
+    if (ps.tapera) return say('Só sobrou a parede de taipa e o silêncio.'); act('pickup', 2, null, () => { ps.tapera = day; addInv('lenha', 1, true); findRelic('carta3'); }); } });
+  if (near('mirante')) add({ k: 'poi', label: '🔭 Contemplar a vista do cruzeiro', x: POI.mirante.act[0] * TS, y: POI.mirante.act[1] * TS, r: 40, prio: 4, fn: () => miranteView() });
+  for (const k in RELICS) { if (relS()[k]) continue; const q = relicPos(k); if (!q) continue; const d = hyp(q.x - P.x, q.y - P.y); if (d < 20) add({ k: 'relic', label: '✨ Algo brilhando no chão', x: q.x, y: q.y, r: 22, prio: 5, fn: () => act('pickup', 1, q, () => findRelic(k)) }); }
+  if (cartasAll() && !poiS().bau && hyp(BAU_AVO.x * TS - P.x, BAU_AVO.y * TS - P.y) < 24) add({ k: 'bau', label: '⛏️ Cavar ao pé do umbuzeiro', x: BAU_AVO.x * TS, y: BAU_AVO.y * TS, r: 26, prio: 6, fn: () => act('hammer', 2.2, null, () => { poiS().bau = S.day; receive(3000, 'Baú enterrado pelo avô Tião', 'cash'); addInv('medalhaAvo', 1, true); showModal('📦 O baú do avô', null, null, () => '<p>Debaixo da terra, uma lata de querosene enrolada em couro. Dentro: maços de dinheiro antigo trocados por um amigo do banco (R$ 3.000 em valor de hoje) e a medalha da Vaquejada de 1974, com um bilhete:</p><p><i>"A fazenda não é a terra, é o cuidado. Agora é sua de verdade." — Tião</i></p>'); }) });
+}
+function openGruta() { act('reach', 1.2, null, () => { const first = !relS().carta2; showModal('🕳️ Gruta do Lajedo', null, null, () => `<canvas id="rupe" width="160" height="72" style="width:100%;image-rendering:pixelated;border:3px solid #3a2a1a;background:#8a6a4a"></canvas><p>Na luz do lampião aparecem pinturas em vermelho-ocre na parede: veados, gente de mãos dadas, um sol e marcas de mão. Ninguém sabe ao certo quantos milhares de anos têm.</p><p class="mut">Pinturas rupestres como estas existem em vários sítios do sertão da Bahia. Olhe, não toque.</p>`);
+  setTimeout(() => { const c = $('rupe'); if (!c) return; const g = c.getContext('2d'), p = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); }; for (let i = 0; i < 400; i++) p(Math.random() * 160, Math.random() * 72, 2, 1, Math.random() < 0.5 ? '#7a5a3e' : '#9a7a58');
+    const O = '#a83a1e'; const deer = (x, y) => { p(x, y, 10, 3, O); p(x + 9, y - 4, 2, 4, O); p(x + 10, y - 6, 1, 2, O); p(x + 12, y - 6, 1, 2, O); p(x + 1, y + 3, 1, 5, O); p(x + 8, y + 3, 1, 5, O); }; deer(14, 30); deer(40, 24);
+    const man = (x, y) => { p(x + 1, y, 2, 2, O); p(x + 1, y + 2, 2, 6, O); p(x - 1, y + 3, 6, 1, O); p(x, y + 8, 1, 4, O); p(x + 3, y + 8, 1, 4, O); }; for (let i = 0; i < 5; i++) man(80 + i * 7, 30);
+    for (let a = 0; a < 12; a++) p(132 + Math.round(Math.cos(a / 12 * 6.28) * 9), 20 + Math.round(Math.sin(a / 12 * 6.28) * 9), 2, 2, O); p(129, 17, 7, 7, O);
+    for (const [x, y] of [[20, 52], [36, 56], [120, 54]]) { p(x, y, 5, 6, O); for (let f = 0; f < 4; f++) p(x + f * 1.4, y - 4, 1, 4, O); } }, 60);
+  if (first) setTimeout(() => { findRelic('carta2', true); findRelic('fossil', true); toast('✨ Na gruta: Carta do avô — II e um dente de preguiça-gigante.'); }, 500); }); }
+// vista do mirante: a câmera percorre o vale (fazenda, cidade, rio, serra) com faixas de cinema
+function miranteView() { if (CINE.on) return; const pts = [[12 * TS, 30 * TS], [85 * TS, 40 * TS], [168 * TS, 44 * TS], [205 * TS, 25 * TS], [P.x, P.y]]; let i = 0; CINE.on = true; CINE.t = -99; document.body.classList.add('cine'); cam.taz = 0.75; cam.spd = 0.9;
+  const step = () => { if (i >= pts.length) { CINE.stop(); P.en = Math.min(100, P.en + 10); if (!relS().carta4) findRelic('carta4'); else toast('🔭 O vale inteiro lá embaixo.'); return; } cam.fx = pts[i][0]; cam.fy = pts[i][1]; i++; setTimeout(step, i === pts.length ? 1400 : 2300); }; step(); }
+function relicHTML() { const L = relS(); return `<h3>Relíquias e lembranças</h3><p class="mut">Algumas brilham só quando você está perto. Os lugares da exploração guardam as cartas do avô.</p><div class="cgrid">` + Object.keys(RELICS).map(k => L[k] ? `<div class="card" style="text-align:center"><img src="${relicIconURL(k)}" width="36" height="36" style="image-rendering:pixelated"><br><b>${RELICS[k].n}</b><br><span class="mut">Dia ${L[k]}</span></div>` : `<div class="card dim" style="text-align:center"><div style="font-size:24px;opacity:.4">?</div><span class="mut">${RELICS[k].at ? POI[RELICS[k].at].n : 'Em algum lugar do mapa'}</span></div>`).join('') + '</div>' + (Object.keys(L).filter(k => k.startsWith('carta')).length ? '<h3>Cartas do avô</h3>' + ['carta1', 'carta2', 'carta3', 'carta4'].filter(k => L[k]).map(k => `<div class="card"><b>${RELICS[k].n}</b><p>${esc(RELICS[k].t)}</p></div>`).join('') : '') + `<h3>Lugares descobertos</h3><p class="mut">${Object.keys(POI).map(k => POI[k].n).join(' · ')}</p>`; }
+IT.medalhaAvo = { i: '', n: 'Medalha da Vaquejada de 1974', kg: 0.1, p: 0, d: 'Do avô Tião. Lembrança de família — não se vende.', c: 'ferr' };
+ICON_EXTRA.medalhaAvo = p => { p(4, 0, 4, 4, '#2a6ab0'); p(5, 0, 2, 4, '#c03030'); p(2, 4, 8, 7, '#d8a830'); p(3, 5, 6, 5, '#f0c850'); p(5, 6, 2, 3, '#a87820'); };
 /* ===================== PESCA =====================
    Espécies do sertão baiano por lugar (açude, rio, riacho da mata), horário e tempo. Vara e isca de verdade (mochila),
    fisgada no tempo certo e briga com a linha (tensão). O peixe vai para a mochila, pode ser vendido no Mercadinho,
