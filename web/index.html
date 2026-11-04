@@ -308,6 +308,9 @@ body.lan .steps .sS{display:inline}
 .mh h2{font-size:19px;color:#5a2408;text-shadow:0 1px 0 #fff4cc,0 0 1px rgba(90,36,8,.3);letter-spacing:.5px}
 #mic img{filter:drop-shadow(0 1px 0 #fff4cc)}
 #mc.swap{animation:swapIn .16s ease}
+#buildUI{position:absolute;left:6px;right:6px;bottom:calc(64px + env(safe-area-inset-bottom));z-index:12;display:none;flex-direction:column;gap:5px;border:12px solid transparent;border-image:var(--pnD) 8 fill / 12px stretch;image-rendering:pixelated;padding:2px 4px;color:#ffe9a8;font-size:12px}
+#buildUI .bcat{display:flex;gap:4px;overflow-x:auto;padding-bottom:2px}#buildUI .bcat button{flex:none;font-size:11px!important;padding:2px 6px!important;min-height:30px}#buildUI .row{gap:4px}#buildUI .row button{flex:1;min-height:38px;font-size:12px!important}
+#buildUI .mut{color:#d8c8a0}body.building .pad #bx,body.building #hotbar{opacity:.3;pointer-events:none}
 #fishUI{position:absolute;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:12;display:none;flex-direction:column;align-items:center;gap:6px;border:12px solid transparent;border-image:var(--pnD) 8 fill / 12px stretch;image-rendering:pixelated;padding:4px 8px;color:#ffe9a8;min-width:230px}
 #fishUI .fm{font-size:13px;text-align:center;text-shadow:0 1px 0 #000}#fishUI.hot .fm{color:#ffd040;animation:pulse .5s infinite}
 #fishUI canvas{width:220px;height:48px;image-rendering:pixelated}#fishUI button{min-height:52px!important;font-size:16px!important;width:100%;touch-action:none}
@@ -2609,6 +2612,7 @@ const W3D = (() => {
 })();
 function propSpr(t, v, se) {
   if (t === 'catavento') return W3D.still();
+  if (t === 'b_abrigo' || t === 'b_espantalho') return bSpr(t, v);
   return cached(`pr|${t}|${v}|${se}`, 64, 72, g => {
     if (FLORA.draw(g, t, v, se)) return; // árvores e plantas novas (tools/asset-pipeline/flora.js)
     const p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); }; const R = mulberry(v * 97 + t.length * 13 + 1);
@@ -6930,7 +6934,7 @@ function bankRemote() {
   return h;
 }
 function obrasTab() {
-  let h = '<h3>Lotes da fazenda</h3>' + Object.keys(LOTS).map(k => { const l = S.lots[k], lk = (LOTS[k].exp && !S.exp[LOTS[k].exp]) || !lotOwned(k); return `<div class="card"><div class="row sp"><b>Lote ${k}</b><span>${lk ? '🔒 terreno à venda' : !l ? 'livre' : l.done ? '✅ ' + BUILD[l.b].n : '🚧 ' + BUILD[l.b].n}</span></div>${l && !l.done ? `<div class="row sp">${bar(l.prog * 100)}<span>${Math.round(l.prog * 100)}%</span></div>` : ''}${l && l.done ? `<span class="mut">${BUILD[l.b].f}</span>` : ''}</div>`; }).join('');
+  let h = `<div class="card"><b>🔨 Construir na fazenda</b><p class="mut">Cercas, cochos, bebedouros, abrigo de sombra, banco, poste de luz, canteiro e espantalho. Material na Oficina do Bira (Itarantim). Construções feitas: ${builtS().length}.</p>${btn('Entrar no modo construção', 'buildStart')}</div>` + '<h3>Lotes da fazenda</h3>' + Object.keys(LOTS).map(k => { const l = S.lots[k], lk = (LOTS[k].exp && !S.exp[LOTS[k].exp]) || !lotOwned(k); return `<div class="card"><div class="row sp"><b>Lote ${k}</b><span>${lk ? '🔒 terreno à venda' : !l ? 'livre' : l.done ? '✅ ' + BUILD[l.b].n : '🚧 ' + BUILD[l.b].n}</span></div>${l && !l.done ? `<div class="row sp">${bar(l.prog * 100)}<span>${Math.round(l.prog * 100)}%</span></div>` : ''}${l && l.done ? `<span class="mut">${BUILD[l.b].f}</span>` : ''}</div>`; }).join('');
   h += '<h3>Projetos disponíveis</h3><p class="mut">Encomende na Casa do Pedreiro, em Itarantim. Materiais vão direto para o depósito.</p>' + Object.keys(BUILD).map(k => { const b = BUILD[k]; return `<div class="card"><div class="row sp"><b>${b.n}</b><b>${fmt(b.p)}</b></div><span class="mut">${b.f} · ${b.days} dia(s)</span><br><span style="font-size:12px">${matList(b.mat)}</span>${b.req.length ? '<br><span class="mut">Requer: ' + b.req.map(r => BUILD[r].n).join(', ') + '</span>' : ''}</div>`; }).join('');
   return h;
 }
@@ -8908,7 +8912,7 @@ function render(dt) {
   if (P.inside) { const RB = roomById(P.inside);
     if (RB) { for (const f of FURN) { if (f.r !== RB.id) continue; const [c, up] = furnSpr(f.t, f.w, f.h, RB.H.wall); const sx2 = f.tx * TS, sy2 = f.ty * TS - up; add(f.wall ? -1e9 + f.ty : f.t === 'tapete' ? -1e8 : f.y - (f.t === 'rede' ? 30 : 0), () => X.drawImage(c, sx2, sy2)); }
       const op = roomOwnerPos(RB); if (op) add(op.y, () => drawPerson(op.e.d.ap, op.x, op.y, op.dir, op.pose === 'feed' ? Math.floor(drawT * 2) % 2 : 0, op.pose)); } }
-  add(iy(P) + 0.5, drawPlayer); FISH.draw(add); if (!P.inside) { drawPOIs(add, inV); LIFE.update(dt); LIFE.ground(add, inV); }
+  add(iy(P) + 0.5, drawPlayer); FISH.draw(add); if (!P.inside) { bDraw(); drawPOIs(add, inV); LIFE.update(dt); LIFE.ground(add, inV); }
   L.sort((a, b) => a.y - b.y); for (const o of L) o.f(); ambFx(dt); LIFE.air(); FLOCK.draw();
   forestOverlay(tx0, ty0, tx1, ty1); drawEventDecor(true); drawMemGlints(); misMarkers(); questMarkers(); drawMoveFx(); drawDebugCol();
   for (const e of npcs) if (!e.hidden && e.bt > 0 && inV(e.x, e.y, 30)) drawBubble(e);
@@ -9510,7 +9514,7 @@ const SAVE = {
     const base = newState(); for (const k in base) if (o[k] === undefined) o[k] = base[k];
     for (const k in base.dep) if (o.dep[k] === undefined) o.dep[k] = 0;
     S = o; P = S.p; lasso.t = null; parts = []; rings = []; if (S.cf && S.cf.ap) delete S.cf.ap.tool; if (!S.chest) S.chest = {}; if (!S.esc) S.esc = []; S.esc = []; S.animals.forEach(a => { if (!a.hist) a.hist = []; if (a._st === 'route') a._st = null; });
-    genMap(); poiSolid(); pomarApplyObj(); initGrass(); if (S.grass && (S.mapN || 0) === MW * MH) { const u = new Uint8Array(MW * MH); decodeU8(S.grass, u); for (let i = 0; i < u.length; i++) if (ground[i] === G.PAST) grass[i] = u[i]; }
+    genMap(); poiSolid(); builtApply(); pomarApplyObj(); initGrass(); if (S.grass && (S.mapN || 0) === MW * MH) { const u = new Uint8Array(MW * MH); decodeU8(S.grass, u); for (let i = 0; i < u.length; i++) if (ground[i] === G.PAST) grass[i] = u[i]; }
     GATES.forEach((g, i) => { g.open = !!S.gates[i]; g.anim = g.open ? 1 : 0; });
     while (S.tr.length < TROUGHS.length) S.tr.push(TROUGHS[S.tr.length].cap * 0.5);
     for (const k of ['norte', 'sul']) if (S.exp[k]) { const y = EXP[k].y; for (const x of [37, 38, 39]) obj[gi(x, y)] = 0; }
@@ -9679,7 +9683,7 @@ function newGame(cf) {
   S = newState(); P = S.p; lasso.t = null; parts = [];
   S.cf = { name: cf.name, st: cf.st, sk: cf.sk, ap: Object.assign({}, cf.ap), hn: cf.hn, aj: cf.aj, mt: cf.mt };
   S.saddles = [...new Set(['nord', SADDLES[cf.sd].id])]; S.saddleSel = SADDLES[cf.sd].id;
-  genMap(); poiSolid(); initGrass(); S.tr = TROUGHS.map(t => t.cap * (t.k === 'agua' ? 0.7 : 0.5)); S.gates = GATES.map(g => g.open ? 1 : 0);
+  genMap(); poiSolid(); S.built = []; builtApply(); initGrass(); S.tr = TROUGHS.map(t => t.cap * (t.k === 'agua' ? 0.7 : 0.5)); S.gates = GATES.map(g => g.open ? 1 : 0);
   startSmall(); applyLand(); applyObjs();
   const put = (a, k) => { const p = randIn(k); a.x = p[0]; a.y = p[1]; S.animals.push(a); return a; };
   const sp = mtSp(cf.mt);
@@ -10071,6 +10075,7 @@ const PTR = new Map(); let pinch = null, tap = null;
 function cxy(e) { const r = C.getBoundingClientRect(); return [(e.clientX - r.left) * (C.width / r.width), (e.clientY - r.top) * (C.height / r.height)]; }
 C.addEventListener('pointerdown', e => {
   AU.init(); try { C.setPointerCapture(e.pointerId); } catch (er) { }
+  if (BLD2.on) { const [x, y] = cxy(e), s = SCL(); BLD2.cur = [Math.floor((cam.x + x / s) / TS), Math.floor((cam.y + y / s) / TS)]; BLD2.tapT = 6; BLD2.chT = 0; PTR.set(e.pointerId, { x: e.clientX, y: e.clientY, place: 1 }); return; }
   if (MOVE.edit) { const [x, y] = cxy(e), s = SCL(); placeAt(cam.x + x / s, cam.y + y / s); PTR.set(e.pointerId, { x: e.clientX, y: e.clientY, place: 1 }); return; }
   PTR.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (PTR.size === 1) { const [x, y] = cxy(e), s = SCL(); holdStart(cam.x + x / s, cam.y + y / s, e.clientX, e.clientY, e.pointerId); } else MOVE.hold = null;
@@ -10506,6 +10511,90 @@ function ctxLine(id, gossip) { const d = NPCDEF[id]; if (!d) return null; const 
       const G = { casados: [on + ' tá me esperando pro almoço. Trinta anos e ainda me espera.'], rivais: ['Não me fale de ' + on + '. Gente difícil.', hs >= 5 ? 'Vi você de prosa com ' + on + '... cada um escolhe a companhia que quer.' : 'Se ' + on + ' vier com conversa, desconfia.'], namorados: [on + '? Ah... é gente muito boa, viu? Muito boa.'], compadres: ['Meu compadre ' + on + ' manda lembrança.', on + ' é padrinho do meu menino.'], tio: [on + ' é família. Sangue bom.'], negocio: ['Faço negócio com ' + on + ' faz anos. Palavra vale mais que papel.'], comadres: ['A comadre ' + on + ' sabe de tudo antes de todo mundo.'], amigos: [on + ' é amigo de verdade, desses de pedir em qualquer hora.'], irmaos: [on + ' é minha irmã mais nova. Teimosa que só.'], amigas: ['Eu e ' + on + ' vamos juntas na feira todo sábado.'], parceiros: ['Quando ' + on + ' pega a viola, ninguém segura o forró.'] };
       if (G[q[2]]) L.push(pick(G[q[2]])); } }
   return L.length ? pick(L) : null; }
+/* ===================== CONSTRUÇÃO NA FAZENDA =====================
+   Modo construção (Menu › Obras › Construir): cerca, cocho, bebedouro, abrigo de sombra, banco, poste de luz,
+   canteiro e espantalho. Usa material de verdade (mourão, arame, tábua e telha da Oficina do Bira) e dinheiro.
+   Regras: só dentro da sua terra, em chão livre (sem estrada, água, prédio, porteira, lote ou leira), sem
+   sobrepor nada e sem fechar o caminho entre a casa, as porteiras, o galinheiro e a saída da fazenda.
+   Girar troca a orientação (abrigo e banco). Remover devolve metade do material. Tudo fica salvo em S.built. */
+const BCAT = {
+  cerca: { n: 'Cerca de arame (1 lance)', w: 1, h: 1, mat: { mourao: 1 }, arame: 1, cash: 0, d: 'Mourão de aroeira e arame. Um rolo dá 10 lances. Animais e gente não passam.' },
+  cocho: { n: 'Cocho de trato', w: 2, h: 1, mat: { tabua: 4 }, cash: 0, area: 1, trough: 'racao', cap: 100, d: 'Dentro de um pasto ou curral seu. Encha com ração, palma ou milho como os outros cochos.' },
+  bebedouro: { n: 'Bebedouro', w: 2, h: 1, mat: { tabua: 2 }, cash: 120, area: 1, trough: 'agua', cap: 220, d: 'Com boia e cano. Dentro de um pasto ou curral seu; enche com galão ou chuva.' },
+  abrigo: { n: 'Abrigo de sombra (telheiro)', w: 3, h: 2, mat: { mourao: 4, tabua: 6, telha: 2 }, cash: 0, rot: 1, d: 'Telhado sobre quatro esteios. Nas horas de calor, os animais do pasto ficam mais felizes.' },
+  banco: { n: 'Banco de madeira', w: 2, h: 1, mat: { tabua: 3 }, cash: 0, rot: 1, prop: 'banco', d: 'Para sentar no fim da tarde.' },
+  poste: { n: 'Poste de luz', w: 1, h: 1, mat: {}, cash: 180, prop: 'poste', d: 'Ilumina o terreiro à noite.' },
+  canteiro: { n: 'Canteiro de flores', w: 1, h: 1, mat: {}, cash: 15, prop: 'canteiro', soft: 1, d: 'Flor atrai borboleta e abelha.' },
+  espantalho: { n: 'Espantalho', w: 1, h: 1, mat: { mourao: 1 }, cash: 10, d: 'Chapéu de palha e camisa velha. Enfeita a roça.' }
+};
+const BSOFT = new Set(['flor', 'capim', 'macambira', 'arbusto', 'coroa', 'xique', 'palma', 'samambaia', 'moita', 'taboa']); // mato rasteiro: sai ao construir
+function builtS() { if (!Array.isArray(S.built)) S.built = []; return S.built; }
+const BLD2 = { on: false, k: 'cerca', rot: 0, rm: false, cur: null, tapT: 0, msg: '' };
+function bFoot(k, rot) { const c = BCAT[k]; return rot && c.rot ? [c.h, c.w] : [c.w, c.h]; }
+const farmTile = (tx, ty) => { if (tx < 0 || ty < 0 || tx >= 60 || ty >= MH) return false; const r = regionAt((tx + 0.5) * TS, (ty + 0.5) * TS); return r[1] === 'SUA PROPRIEDADE' || r[1] === 'FAZENDA BOA ESPERANÇA'; };
+// passagem: casa, porteiras, galinheiro, roça e saída da fazenda continuam alcançáveis a pé
+function farmReach(extra) { const pass = (x, y) => { if (x < 0 || y < 0 || x >= 62 || y >= MH) return false; const i = gi(x, y), o = obj[i]; if (extra && extra.has(i)) return false; if (o === 1 || o === 3) return false; if (ground[i] === G.WATER) return false; if (BLD.some(b => x >= b.r[0] && x <= b.r[2] && y >= b.r[1] && y <= b.r[3])) return false; return true; };
+  const seen = new Uint8Array(MW * MH), q = [[7, 31]]; seen[gi(7, 31)] = 1; while (q.length) { const [x, y] = q.pop(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= 62 || ny >= MH) continue; const j = gi(nx, ny); if (seen[j] || !pass(nx, ny)) continue; seen[j] = 1; q.push([nx, ny]); } } return seen; }
+function keyTiles() { const K = [[7, 36, 'galinheiro'], [37, 44, 'saída da fazenda'], [ROCA.g[0][0] - 1, ROCA.g[0][1], 'roça']]; for (const g of GATES) { const [x, y] = g.t[0]; if (x < 60) K.push([x + (g.h ? 0 : -1), y + (g.h ? 1 : 0), 'porteira']); } return K; }
+function bCheck(k, tx, ty, rot) { const c = BCAT[k], [w, h] = bFoot(k, rot), cells = [];
+  for (let y = ty; y < ty + h; y++) for (let x = tx; x < tx + w; x++) cells.push([x, y]);
+  for (const [x, y] of cells) { if (!farmTile(x, y)) return { ok: false, why: 'Fora da sua terra.' }; const i = gi(x, y), g = ground[i];
+    if (builtS().some(o => { const [w2, h2] = bFoot(o.k, o.r); return x >= o.x && x < o.x + w2 && y >= o.y && y < o.y + h2; })) return { ok: false, why: 'Já tem uma construção sua aí.' };
+    if (obj[i]) return { ok: false, why: 'Já tem coisa aí.' }; if (g === G.WATER) return { ok: false, why: 'Não dá para construir na água.' };
+    if (g === G.DIRT || g === G.PAVE || g === G.WALK || g === G.BRIDGE) return { ok: false, why: 'Não bloqueie a estrada.' };
+    if (!c.trough && (g === G.MUD || g === G.FLOOR)) return { ok: false, why: 'Chão de curral: só cocho e bebedouro.' };
+    if (BLD.some(b => x >= b.r[0] - 1 && x <= b.r[2] + 1 && y >= b.r[1] && y <= b.r[3] + 2)) return { ok: false, why: 'Muito perto de um prédio.' };
+    if (GATES.some(gt => gt.t.some(([gx, gy]) => Math.abs(gx - x) <= 1 && Math.abs(gy - y) <= 1))) return { ok: false, why: 'Deixe a porteira livre.' };
+    if (Object.values(LOTS).some(L => x >= L.r[0] && x <= L.r[2] && y >= L.r[1] && y <= L.r[3])) return { ok: false, why: 'Isso é um lote de obra.' };
+    if (ROCA_PLOTS.some(p => Math.abs(p.x / TS - x - 0.5) < 1.2 && Math.abs(p.y / TS - y - 0.5) < 1) || (typeof POMAR_PLOTS !== 'undefined' && POMAR_PLOTS.some(p => Math.abs(p.x / TS - x - 0.5) < 1 && Math.abs(p.y / TS - y - 0.5) < 1))) return { ok: false, why: 'Aí é leira de plantio.' };
+    if ((S.chests || []).some(ch => Math.abs(ch.x / TS - x - 0.5) < 1 && Math.abs(ch.y / TS - y - 0.5) < 1)) return { ok: false, why: 'Tem um baú aí.' };
+    if (hyp((x + 0.5) * TS - P.x, (y + 0.5) * TS - P.y) < 9 && !c.soft) return { ok: false, why: 'Você está em cima. Dê um passo.' }; }
+  { const [w, h] = bFoot(k, rot), hit = PROPS.find(q => !q.built && !BSOFT.has(q.t) && q.x > (tx - 0.6) * TS && q.x < (tx + w + 0.6) * TS && q.y > (ty - 0.2) * TS && q.y < (ty + h + 2.2) * TS); if (hit) return { ok: false, why: 'Encostado em outro objeto. Escolha um lugar mais livre.' }; }
+  if (c.area) { const a = areaAt((tx + 0.5) * TS, (ty + 0.5) * TS); if (!a || !(AREAS[a].k === 'pasto' || a === 'curral' || a === 'conf' || a === 'aprisco' || a === 'chiq') || cells.some(([x, y]) => areaAt((x + 0.5) * TS, (y + 0.5) * TS) !== a)) return { ok: false, why: 'Cocho e bebedouro vão dentro de um pasto ou curral seu.' }; }
+  for (const [m, n] of Object.entries(c.mat)) if (!has(m, n)) return { ok: false, why: 'Falta ' + IT[m].n.toLowerCase() + ' (' + n + '). Compre na Oficina do Bira.' };
+  if (c.arame && (S.arameLeft || 0) < 1 && !has('arame')) return { ok: false, why: 'Falta arame (1 rolo = 10 lances). Oficina do Bira.' };
+  if (c.cash && !canPay(c.cash)) return { ok: false, why: 'Falta dinheiro (' + fmt(c.cash) + ').' };
+  if (!c.soft) { const blk = new Set(cells.map(([x, y]) => gi(x, y))), before = farmReach(), after = farmReach(blk); for (const [x, y, n] of keyTiles()) if (before[gi(x, y)] && !after[gi(x, y)]) return { ok: false, why: 'Fecharia o caminho até ' + n + '.' }; }
+  return { ok: true, why: 'Pode construir aqui.' }; }
+// coloca no mapa (no jogo e ao carregar o save)
+function bApply(o) { const c = BCAT[o.k]; if (!c) return; const [w, h] = bFoot(o.k, o.r);
+  if (o.k === 'cerca') { obj[gi(o.x, o.y)] = 1; return; }
+  if (c.trough) { TROUGHS.push({ a: areaAt((o.x + 0.5) * TS, (o.y + 0.5) * TS), k: c.trough, x: o.x, y: o.y, w: 2, cap: c.cap, built: o.id }); for (let i = 0; i < 2; i++) obj[gi(o.x + i, o.y)] = 3; return; }
+  for (let i = PROPS.length - 1; i >= 0; i--) { const q = PROPS[i]; if (!q.built && BSOFT.has(q.t) && q.x > o.x * TS - 4 && q.x < (o.x + w) * TS + 4 && q.y > o.y * TS && q.y < (o.y + h) * TS + 8) PROPS.splice(i, 1); } // limpa o mato
+  const cx = (o.x + w / 2) * TS, by = (o.y + h - 0.15) * TS;
+  PROPS.push({ t: c.prop || 'b_' + o.k, x: cx, y: by, v: o.r || 0, built: o.id });
+  if (o.k === 'abrigo') { for (const [dx, dy] of [[0, h - 1], [w - 1, h - 1]]) obj[gi(o.x + dx, o.y + dy)] = 3; } else if (!c.soft) for (let y = o.y; y < o.y + h; y++) for (let x = o.x; x < o.x + w; x++) obj[gi(x, y)] = 3; }
+function builtApply() { for (const o of builtS()) bApply(o); }
+function bPlace() { const cu = BLD2.cur; if (!cu) return; const k = BLD2.k, c = BCAT[k], ch = bCheck(k, cu[0], cu[1], BLD2.rot); if (!ch.ok) { AU.err && AU.err(); return say(ch.why, 2200); }
+  for (const [m, n] of Object.entries(c.mat)) useInv(m, n); if (c.arame) { if ((S.arameLeft || 0) < 1) { useInv('arame'); S.arameLeft = 10; } S.arameLeft--; } if (c.cash) pay(c.cash, 'Construção: ' + c.n);
+  const o = { id: 'b' + Date.now().toString(36) + Math.floor(Math.random() * 99), k, x: cu[0], y: cu[1], r: c.rot ? BLD2.rot : 0, d: S.day }; builtS().push(o); bApply(o); if (c.trough) S.tr.push(0);
+  S.stats.built = (S.stats.built || 0) + 1; questEvent && questEvent('build', k, 1); AU.hammer ? AU.hammer() : AU.click(); for (let i = 0; i < 6; i++) dust((cu[0] + 0.5) * TS, (cu[1] + 0.8) * TS, 1); bUI(); }
+function bRemoveAt(tx, ty) { const L = builtS(); const i = L.findIndex(o => { const [w, h] = bFoot(o.k, o.r); return tx >= o.x && tx < o.x + w && ty >= o.y && ty < o.y + h; }); if (i < 0) return say('Aqui não tem nada que você construiu.', 1800);
+  const o = L[i], c = BCAT[o.k], [w, h] = bFoot(o.k, o.r); L.splice(i, 1);
+  for (let y = o.y; y < o.y + h; y++) for (let x = o.x; x < o.x + w; x++) obj[gi(x, y)] = 0;
+  { const pi = PROPS.findIndex(p => p.built === o.id); if (pi >= 0) PROPS.splice(pi, 1); }
+  { const ti = TROUGHS.findIndex(t => t.built === o.id); if (ti >= 0) { TROUGHS.splice(ti, 1); S.tr.splice(ti, 1); S.animals.forEach(a => { if (a._st === 'eat' || a._st === 'drink' || a._st === 'go') a._st = null; }); } }
+  for (const [m, n] of Object.entries(c.mat)) { const back = Math.floor(n / 2); if (back) addInv(m, back, true); } if (c.cash) receive(Math.round(c.cash * 0.3), 'Desmonte: ' + c.n, 'cash');
+  AU.click(); toast('🔨 ' + c.n + ' desmontado (metade do material de volta).'); bUI(); }
+// cursor: ladrilho à frente do vaqueiro, ou onde você tocou na tela
+function bCursor() { if (BLD2.tapT > 0) return BLD2.cur; const dv = { 0: [0, 1], 1: [0, -1], 2: [-1, 0], 3: [1, 0] }[P.dir] || [0, 1], [w, h] = bFoot(BLD2.k, BLD2.rot); const tx = Math.floor(P.x / TS + dv[0] * (1.2 + (dv[0] > 0 ? 0 : w - 1))), ty = Math.floor(P.y / TS - 0.3 + dv[1] * (1.2 + (dv[1] > 0 ? 0 : h - 1))); return [tx - (dv[1] ? Math.floor((w - 1) / 2) : 0), ty]; }
+function bTick(dt) { if (!BLD2.on) return; if (BLD2.tapT > 0) BLD2.tapT -= dt; const prev = BLD2.cur; BLD2.cur = bCursor(); if (!prev || prev[0] !== BLD2.cur[0] || prev[1] !== BLD2.cur[1] || (BLD2.chT = (BLD2.chT || 0) - dt) <= 0) { BLD2.chT = 0.4; BLD2.ch = BLD2.rm ? { ok: true, why: 'Toque em Remover para desmontar o que estiver no quadrado.' } : bCheck(BLD2.k, BLD2.cur[0], BLD2.cur[1], BLD2.rot); bStatus(); } }
+function bDraw() { if (!BLD2.on || !BLD2.cur) return; const [tx, ty] = BLD2.cur, [w, h] = BLD2.rm ? [1, 1] : bFoot(BLD2.k, BLD2.rot), ok = BLD2.rm || (BLD2.ch && BLD2.ch.ok), a = 0.35 + Math.sin(drawT * 6) * 0.1;
+  X.fillStyle = BLD2.rm ? `rgba(240,120,60,${a})` : ok ? `rgba(120,230,120,${a})` : `rgba(240,70,60,${a})`; X.fillRect(tx * TS, ty * TS, w * TS, h * TS); X.strokeStyle = ok ? '#fff4c0' : '#ffb0a0'; X.lineWidth = 1; X.setLineDash([3, 2]); X.strokeRect(tx * TS + 0.5, ty * TS + 0.5, w * TS - 1, h * TS - 1); X.setLineDash([]);
+  if (!BLD2.rm) { const c = BCAT[BLD2.k]; X.globalAlpha = 0.6; if (c.prop || !c.trough && BLD2.k !== 'cerca') { const s = propSpr(c.prop || 'b_' + BLD2.k, c.rot ? BLD2.rot : 0, season()); X.drawImage(s, Math.round((tx + w / 2) * TS - 32), Math.round((ty + h - 0.15) * TS - 70)); } X.globalAlpha = 1; } }
+function bUI() { let el = $('buildUI'); if (!el) { el = document.createElement('div'); el.id = 'buildUI'; $('app').appendChild(el); el.addEventListener('click', e => { const b = e.target.closest('[data-b]'); if (!b) return; e.stopPropagation(); const v = b.dataset.b; AU.click();
+      if (v === 'go') { if (BLD2.rm) bRemoveAt(BLD2.cur[0], BLD2.cur[1]); else bPlace(); } else if (v === 'rot') { BLD2.rot = BLD2.rot ? 0 : 1; } else if (v === 'rm') { BLD2.rm = !BLD2.rm; } else if (v === 'x') bStop(); else { BLD2.k = v; BLD2.rm = false; BLD2.rot = 0; } BLD2.chT = 0; bUI(); }); }
+  if (!BLD2.on) { el.style.display = 'none'; return; } el.style.display = 'flex'; const c = BCAT[BLD2.k];
+  const cost = k => { const C = BCAT[k], L = Object.entries(C.mat).map(([m, n]) => n + '× ' + IT[m].n.split(' ')[0].toLowerCase()); if (C.arame) L.push('1/10 rolo de arame'); if (C.cash) L.push(fmt(C.cash)); return L.join(', ') || 'grátis'; };
+  el.innerHTML = `<div class="bcat">${Object.keys(BCAT).map(k => `<button class="btn${k === BLD2.k && !BLD2.rm ? ' on' : ''}" data-b="${k}">${esc(BCAT[k].n.split(' (')[0])}</button>`).join('')}</div><div class="binf"><b>${BLD2.rm ? 'Remover' : esc(c.n)}</b> <span class="mut">${BLD2.rm ? 'devolve metade do material' : esc(cost(BLD2.k))}</span><br><span class="bst">${esc(BLD2.ch ? BLD2.ch.why : '')}</span></div><div class="row"><button class="btn pri" data-b="go">${BLD2.rm ? '🗑️ Remover aqui' : '🔨 Construir aqui'}</button>${c.rot && !BLD2.rm ? '<button class="btn" data-b="rot">↻ Girar</button>' : ''}<button class="btn${BLD2.rm ? ' on' : ''}" data-b="rm">Remover</button><button class="btn" data-b="x">Sair</button></div>`; }
+function bStatus() { const el = $('buildUI'); if (!el) return; const s = el.querySelector('.bst'); if (s) { s.textContent = BLD2.ch ? BLD2.ch.why : ''; s.style.color = BLD2.ch && BLD2.ch.ok ? '#a8f070' : '#ffb0a0'; } }
+A.buildStart = () => bStart();
+function bStart() { if (P.inside || P.cart) return say('Saia de casa e da carroça para construir.'); if (!farmTile(Math.floor(P.x / TS), Math.floor(P.y / TS))) return say('Construir só dentro da sua fazenda. Vá até ela primeiro.', 2600); closeModal(); BLD2.on = true; BLD2.rm = false; BLD2.tapT = 0; document.body.classList.add('building'); bUI(); toast('🔨 Modo construção: ande ou toque no chão para escolher o lugar.'); }
+function bStop() { BLD2.on = false; document.body.classList.remove('building'); bUI(); }
+// arte das construções sem sprite próprio no jogo
+function bSpr(t, v) { return cached('bs|' + t + '|' + v, 64, 72, g => { const p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+  if (t === 'b_abrigo') { const W = v ? 32 : 48, x0 = 32 - W / 2; for (const x of [x0 + 1, x0 + W - 4]) { p(x, 34, 3, 36, '#6a4422'); p(x, 34, 1, 36, '#8a5a32'); } p(x0 - 3, 22, W + 6, 14, '#b8502a'); for (let y = 24; y < 36; y += 3) p(x0 - 3, y, W + 6, 1, '#8a3a1a'); for (let x = x0 - 3; x < x0 + W + 3; x += 4) p(x, 22, 1, 14, '#d0703a'); p(x0 - 3, 22, W + 6, 1, '#e08a4a'); p(x0 - 3, 35, W + 6, 1, '#5a2410'); }
+  else if (t === 'b_espantalho') { p(31, 30, 2, 40, '#6a4422'); p(22, 38, 20, 2, '#6a4422'); p(25, 36, 14, 14, '#3a6ab0'); for (let y = 37; y < 50; y += 3) p(25, y, 14, 1, '#c03030'); p(28, 26, 8, 9, '#e8d8a8'); p(30, 29, 1, 1, '#2a1a10'); p(33, 29, 1, 1, '#2a1a10'); p(23, 23, 18, 3, '#d8b860'); p(26, 19, 12, 5, '#d8b860'); p(21, 49, 4, 3, '#d8b860'); p(39, 49, 4, 3, '#d8b860'); } }, true); }
 /* ===================== PESCA =====================
    Espécies do sertão baiano por lugar (açude, rio, riacho da mata), horário e tempo. Vara e isca de verdade (mochila),
    fisgada no tempo certo e briga com a linha (tensão). O peixe vai para a mochila, pode ser vendido no Mercadinho,
@@ -10621,7 +10710,7 @@ const STEP = 1 / 60; let acc = 0, lastT = 0, saveT = 0;
 function tick(dt) {
   drawT += dt;
   if (mode === 'play' && !paused) {
-    holdTick(); placeTick(dt); bagSync(); insideTick(); houseGuard(); if ((tick.lendT = (tick.lendT || 0) - dt) < 0) { tick.lendT = 1; lendTick(); const lh = loanedHorse(); if (lh && P.mnt !== lh.id && lh._st !== 'tied' && !lh._act) lh._st = 'tied'; } const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); CINE.update(dt); FISH.update(dt); rocaRainMark(); cartCapSync(); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
+    holdTick(); placeTick(dt); bagSync(); insideTick(); houseGuard(); if ((tick.lendT = (tick.lendT || 0) - dt) < 0) { tick.lendT = 1; lendTick(); const lh = loanedHorse(); if (lh && P.mnt !== lh.id && lh._st !== 'tied' && !lh._act) lh._st = 'tied'; } const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); CINE.update(dt); FISH.update(dt); rocaRainMark(); cartCapSync(); bTick(dt); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
     { const h = P.mnt ? byId(P.mnt) : null; if (h && h._react && (h._react.t -= dt) <= 0) h._react = null; }
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);
