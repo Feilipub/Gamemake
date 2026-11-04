@@ -2881,7 +2881,7 @@ function drawBldBase(g, b, w, h, top, night) {
     p(-1, wy - 10, w + 2, 12, wall); p(-1, wy - 10, w + 2, 2, trim); p(-1, wy - 1, w + 2, 2, trim);
     for (let x = 4; x < w - 4; x += 12) p(x, wy - 12, 4, 2, trim);
     const sw = Math.min(w - 10, 60); p(w / 2 - sw / 2, wy - 8, sw, 8, '#f4ecd8'); p(w / 2 - sw / 2, wy - 8, sw, 1, '#fffaf0');
-    const label = { banco: 'BANCO', martelo: 'PEDREIRO', cesta: 'MERCADO', copo: 'BAR', boi: 'AÇOUGUE', folha: 'AGRO', livro: 'ESCOLA', ferradura: 'FERRARIA', cruz: 'FARMACIA' }[b.sign] || '';
+    const label = { pao: 'PADARIA', prato: 'RESTAURANTE', chave: 'OFICINA', banco: 'BANCO', martelo: 'PEDREIRO', cesta: 'MERCADO', copo: 'BAR', boi: 'AÇOUGUE', folha: 'AGRO', livro: 'ESCOLA', ferradura: 'FERRARIA', cruz: 'FARMACIA' }[b.sign] || '';
     txt(p, label, Math.round(w / 2 - label.length * 2), wy - 6, b.trim === '#f4f0e8' ? '#2a5a2a' : shade(trim, -.2));
     door(w / 2, 14, 20, b.sign === 'banco' ? '#3a4a5a' : '#7a4a22');
     if (b.sign === 'banco') { p(w / 2 - 7, h - 20, 14, 20, '#9ac0d8'); p(w / 2 - 7, h - 20, 14, 2, '#d0e8f0'); p(w / 2, h - 20, 1, 20, '#3a4a5a'); }
@@ -4742,7 +4742,7 @@ function depCap() { return 2000 + Object.values(S.lots).filter(l => l && l.done 
 const KG_ITEMS = ['racao', 'milho', 'sal', 'fPalma', 'fMandacaru', 'fManicoba', 'racaoPorco', 'esterco']; // guardados no depósito por peso
 function depKg() { return KG_ITEMS.reduce((t, k) => t + (S.dep[k] || 0), 0); }
 function cartKg() { let k = 0; for (const i in S.cart.cargo) k += (IT[i] ? IT[i].kg : 1) * S.cart.cargo[i]; return k; }
-const CART_CAP = 400;
+let CART_CAP = 400; // aumenta com a reforma da carroça na Oficina do Bira (cartCapSync)
 function built(t) { return Object.values(S.lots).some(l => l && l.done && l.b === t); }
 function workerSlots() { return 2 + Object.values(S.lots).filter(l => l && l.done && l.b === 'casapeao').length * 2; }
 function trIdx(area, k) { return TROUGHS.findIndex(t => t.a === area && t.k === k); }
@@ -4911,6 +4911,7 @@ function talk(id) {
   s.talked = S.day; addFr(id, 20 * (perk() === 'negocio' ? 1.1 : 1));
   const sl = storyTalk(id); if (sl) { remember(id, 'falou de Tiãozinho'); return sl; }
   { const rx = regionTalkExtra(id); if (rx && Math.random() < 0.65) return rx; }
+  const cx = Math.random() < 0.45 ? ctxLine(id) : null; if (cx) { remember(id, 'conversa: "' + cx.slice(0, 40) + '…"'); return cx; }
   const line = npcLine(id); remember(id, 'conversa: "' + line.slice(0, 40) + '…"'); return line;
 }
 // aniversários dos moradores: dia fixo por pessoa, sorteado a partir do nome (não muda entre partidas)
@@ -6886,7 +6887,7 @@ function menuTab(t) {
   if (t === 'mis') return qJournalHTML();
   if (t === 'rel') {
     return '<p class="mut">A amizade cresce com conversas diárias, presentes, favores, música e churrascos.</p>' + Object.keys(NPCDEF).map(id => { const d = NPCDEF[id], s = npcState(id), e = npcs.find(n => n.id === id); const loc = e ? (e.hidden ? (e.act === 'missa' ? 'na missa' : 'em casa') : (SPOTS[e.spot] ? e.spot.replace('_', ' ') : '')) : '';
-      return `<div class="card"><div class="dlg"><div>${charImg(d.ap, 2)}</div><div style="flex:1"><b>${d.n}</b> <span class="mut">${d.role}${d.farm ? ' · ' + d.farm : ''}</span><br>${hrt(hearts(id))}<br><span class="mut">Agora: ${loc}${s.quest ? ' · 📜 favor pendente' : ''}</span>${NPC_LORE[id] ? `<br><span class="mut">${esc(NPC_LORE[id].split('. ')[0])}.</span>` : ''}${s.mem.slice(0, 2).map(m => `<br><span class="mut">• Dia ${m.d}: ${esc(m.t)}</span>`).join('')}</div></div></div>`; }).join('') + `<div class="card"><b>${ic('heart', 14)} Confraternização</b><p>Convide os amigos (1+ coração) para um churrasco na sua fazenda às 18h.</p>${S.event ? `<p>Churrasco marcado para o dia ${S.event.day} com ${S.event.guests.map(g => NPCDEF[g].n).join(', ')}.</p>` : btn('Marcar churrasco', 'invite')}</div>`;
+      return `<div class="card"><div class="dlg"><div>${charImg(d.ap, 2)}</div><div style="flex:1"><b>${d.n}</b> <span class="mut">${d.role}${d.farm ? ' · ' + d.farm : ''}</span><br>${hrt(hearts(id))}${relList(id).length ? '<br><span class="mut">🤝 ' + esc(relList(id).join(' · ')) + '</span>' : ''}<br><span class="mut">Agora: ${loc}${s.quest ? ' · 📜 favor pendente' : ''}</span>${NPC_LORE[id] ? `<br><span class="mut">${esc(NPC_LORE[id].split('. ')[0])}.</span>` : ''}${s.mem.slice(0, 2).map(m => `<br><span class="mut">• Dia ${m.d}: ${esc(m.t)}</span>`).join('')}</div></div></div>`; }).join('') + `<div class="card"><b>${ic('heart', 14)} Confraternização</b><p>Convide os amigos (1+ coração) para um churrasco na sua fazenda às 18h.</p>${S.event ? `<p>Churrasco marcado para o dia ${S.event.day} com ${S.event.guests.map(g => NPCDEF[g].n).join(', ')}.</p>` : btn('Marcar churrasco', 'invite')}</div>`;
   }
   if (t === 'cfg') return cfgHTML(true);
   return '';
@@ -7254,9 +7255,9 @@ function openBuilding(b) { questEvent('door', b.id);
   const k = b.act; if (k === 'none') return say(b.n + ': fechado.');
   if ((k === 'casa' || k.startsWith('npcHome:')) && HOUSE[b.id] && enterHouse(b)) return;
   if (k.startsWith('npcHome:')) { const id = k.split(':')[1], e = npcs.find(n => n.id === id); if (e && e.hidden && e.act === 'home' && hyp(e.x - P.x, e.y - P.y) < 80) { return openNpc(id, isNight() ? 'Toc toc... Ah, é você! Entra, mas fala baixo que já é tarde.' : 'Ô de casa! Pode entrar!'); } return say('Ninguém em ' + b.n + ' agora.'); }
-  const shops = { agro: 'agro', mercadinho: 'mercadinho', bar: 'bar', acougue: 'acougue', pedreiro: 'pedreiro', banco: 'banco' };
+  const shops = { padaria: 'padaria', restaurante: 'restaurante', oficina: 'oficina', agro: 'agro', mercadinho: 'mercadinho', bar: 'bar', acougue: 'acougue', pedreiro: 'pedreiro', banco: 'banco' };
   if (shops[k] && !shopOpen(k)) { if (k === 'banco') return openBank(true); const kp = shopKeeper(k); return say(b.n + ' está fechado agora. ' + (kp ? kp.d.n + ' atende das ' + kp.d.sched[1][0] + 'h.' : '')); }
-  ({ casa: openHouse, galpao: openGalpao, deposito: openDeposito, agro: openAgro, mercadinho: openMercadinho, bar: openBar, acougue: openAcougue, pedreiro: openPedreiro, banco: () => openBank(false), igreja: openIgreja })[k]();
+  ({ padaria: openPadaria, restaurante: openRestaurante, oficina: openOficina, casa: openHouse, galpao: openGalpao, deposito: openDeposito, agro: openAgro, mercadinho: openMercadinho, bar: openBar, acougue: openAcougue, pedreiro: openPedreiro, banco: () => openBank(false), igreja: openIgreja })[k]();
 }
 function keeperBanner(shop) { const e = shopKeeper(shop); if (!e) return ''; return `<div class="dlg">${charImg(e.d.ap, 2)}<div class="txt" style="min-height:0">${esc(e.d.n)}: “${esc(pick(NPC_LINES[e.id].t0))}” ${hrt(hearts(e.id))} ${btn('Conversar', 'kTalk', e.id)}</div></div>`; }
 A.kTalk = v => openNpc(v);
@@ -7918,7 +7919,7 @@ function npcLife(e, dt) {
   if (vis && e.path.length && !P.cart) { const dx = P.x - e.x, dy = P.y - e.y, d = hyp(dx, dy); const [tx, ty] = e.path[0], fx = tx - e.x, fy = ty - e.y, fd = hyp(fx, fy) || 1; if (d < 13 && (dx * fx + dy * fy) / fd > 0) { e._wait = (e._wait || 0) + dt; if (e._wait > 0.6) { e.path.unshift([e.x - fy / fd * 14, e.y + fx / fd * 14]); e._wait = 0; } } else e._wait = 0; }
   // conversas entre moradores
   if (vis && !e.path.length && (e.act === 'chat' || e.act === 'idle' || e.act === 'festa' || e.act === 'visit')) {
-    if (e.talk) { e.talk.t -= dt; e.pose = 'talk'; const o = npcs.find(n => n.id === e.talk.w); if (!o || o.hidden || o.path.length || e.talk.t <= 0) { e.talk = null; e.pose = 'idle'; } else { e.dir = Math.abs(o.x - e.x) > Math.abs(o.y - e.y) ? (o.x > e.x ? 3 : 2) : (o.y > e.y ? 0 : 1); if (e.talk.lead && (e.talk.s -= dt) <= 0) { e.talk.s = 3.2; const who = Math.random() < 0.5 ? e : o; who.bubble = townTalk(); who.bt = 3; } } }
+    if (e.talk) { e.talk.t -= dt; e.pose = 'talk'; const o = npcs.find(n => n.id === e.talk.w); if (!o || o.hidden || o.path.length || e.talk.t <= 0) { e.talk = null; e.pose = 'idle'; } else { e.dir = Math.abs(o.x - e.x) > Math.abs(o.y - e.y) ? (o.x > e.x ? 3 : 2) : (o.y > e.y ? 0 : 1); if (e.talk.lead && (e.talk.s -= dt) <= 0) { e.talk.s = 3.2; const who = Math.random() < 0.5 ? e : o, oth = who === e ? o : e; who.bubble = pairLine(who, oth); who.bt = 3; } } }
     else if (Math.random() < dt * 0.15) { const o = npcs.find(n => n !== e && !n.hidden && !n.path.length && !n.talk && hyp(n.x - e.x, n.y - e.y) < 34); if (o) { e.talk = { w: o.id, t: rnd(7, 12), lead: 1, s: 0.5 }; o.talk = { w: e.id, t: e.talk.t, lead: 0 }; } }
   }
   if (e.bt > 0) e.bt -= dt;
@@ -9089,7 +9090,7 @@ let hudT = 0, regT = 0, curReg = null, regHide = null;
 const WXIC = { sol: 'sun', nublado: 'cloud', chuva: 'rain', neblina: 'fog', vento: 'wind' };
 function regionAt(x, y) { if (P && P.inside) { const b = BLD.find(q => q.id === P.inside), R0 = roomById(P.inside); if (b) return [b.n, R0 && R0.H.own !== 'player' && NPCDEF[R0.H.own] ? 'Casa de ' + NPCDEF[R0.H.own].n : 'Dentro de casa']; } const tx = x / TS, ty = y / TS;
   if (tx >= 112) { if (tx < 118) return ['Serra do Leste', 'ESTRADA PARA A REGIÃO']; for (const k in RFARMS) { const r = RFARMS[k].rect; if (tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]) return [RFARMS[k].n, NPCDEF[RFARMS[k].own].n.toUpperCase()]; } return ['Região das Serras', 'ESTRADA DO LESTE']; }
-  if (tx < 60) return ty < 21 && S.exp.norte ? ['Gleba do Mandacaru', 'FAZENDA BOA ESPERANÇA'] : ty > 67 && S.exp.sul ? ['Gleba do Açude', 'FAZENDA BOA ESPERANÇA'] : ['Fazenda Boa Esperança', 'SUA PROPRIEDADE']; if (tx > 66 && ty < 27) return ['Fazenda Campos', 'SR. FELIPE']; if (tx > 66 && ty > 62) return ['Fazenda Duarte', 'SR. RYAN']; if (tx >= 68 && ty >= 28 && ty <= 62) return ['Itarantim', 'CENTRO DA CIDADE']; return ['Estrada do Riacho', 'ITARANTIM · BAHIA']; }
+  if (tx < 60) return ty < 21 && S.exp.norte ? ['Gleba do Mandacaru', 'FAZENDA BOA ESPERANÇA'] : ty > 67 && S.exp.sul ? ['Gleba do Açude', 'FAZENDA BOA ESPERANÇA'] : ['Fazenda Boa Esperança', 'SUA PROPRIEDADE']; if (tx > 66 && ty < 27) return ['Fazenda Campos', 'SR. FELIPE']; if (tx > 66 && ty > 62) return ['Fazenda Duarte', 'SR. RYAN']; if (tx >= 63 && ty >= 28 && ty <= 67) return ['Itarantim', 'CENTRO DA CIDADE']; return ['Estrada do Riacho', 'ITARANTIM · BAHIA']; }
 function hud(dt) {
   if ((regT -= dt) < 0 && mode === 'play') { regT = 0.5; const r = regionAt(P.x, P.y); if (!curReg) curReg = r[0]; else if (r[0] !== curReg) { curReg = r[0]; CINE.maybe(r[0]); const el = $('reg'); el.innerHTML = r[0] + '<small>' + r[1] + '</small>'; el.classList.add('on'); clearTimeout(regHide); regHide = setTimeout(() => el.classList.remove('on'), 2400); AU.jingle(); } }
   if ((hudT -= dt) > 0) return; hudT = 0.25;
@@ -10391,6 +10392,120 @@ function lifeInteractables(add, foot) { if (!foot || P.inside) return; for (cons
     add({ k: 'cat', label: fish && c.fed !== S.day ? '🐟 Dar peixe ao ' + c.n : '🐈 Carinho no ' + c.n + ' (' + '♥'.repeat(Math.min(10, Math.floor(c.aff))) + ')', x: c.x, y: c.y, r: 26, prio: 3, fn: () => {
       if (fish && c.fed !== S.day) { act('pet', 1, c, () => { useInv(fish); c.fed = S.day; c.aff = Math.min(10, c.aff + 2); c.st = 'sit'; c.t = 6; AU.meow(c.x, c.y); toast('🐈 ' + c.n + ' comeu o ' + IT[fish].n.toLowerCase() + ' e ronronou.' + (c.aff >= 6 ? ' Agora ele te segue pela casa.' : '')); }); return; }
       act('pet', 1.2, c, () => { if (c.pet !== S.day) { c.pet = S.day; c.aff = Math.min(10, c.aff + 0.5); P.en = Math.min(100, P.en + 2); } c.st = 'sleep'; c.t = 12; AU.purr(); toast('🐈 ' + c.n + ' ronrona.'); }); } }); } }
+/* ===================== VILA: PADARIA, RESTAURANTE E OFICINA =====================
+   Três estabelecimentos novos em Itarantim, com dono, horário, estoque que repõe todo dia, preços que mudam com o
+   dia e compras da produção da fazenda. O restaurante faz encomendas diárias (contrato); a oficina vende material de
+   construção e reforma a carroça. */
+Object.assign(IT, {
+  paoFrances: { i: '', n: 'Pão francês', kg: 0.05, p: 0.8, en: 3, fo: 10, d: 'Quentinho às cinco da manhã.', c: 'comida' },
+  paoQueijo: { i: '', n: 'Pão de queijo', kg: 0.05, p: 1.5, en: 4, fo: 12, d: 'Feito com o queijo coalho da região.', c: 'comida' },
+  boloMilho: { i: '', n: 'Bolo de milho', kg: 0.3, p: 5, en: 8, fo: 20, d: 'Fatia grossa de bolo de milho verde.', c: 'comida' },
+  rosca: { i: '', n: 'Rosca de coco', kg: 0.2, p: 3, en: 6, fo: 12, d: 'Rosca doce trançada, com coco ralado.', c: 'comida' },
+  mourao: { i: '', n: 'Mourão de aroeira', kg: 6, p: 14, d: 'Estaca de cerca que dura décadas. Usado no modo construção (Menu › Obras › Construir).', c: 'mat' },
+  arame: { i: '', n: 'Rolo de arame (10 lances)', kg: 5, p: 42, d: 'Arame farpado para 10 lances de cerca.', c: 'mat' },
+  tabua: { i: '', n: 'Tábua', kg: 3, p: 9, d: 'Tábua de madeira para cochos, porteiras e galpões.', c: 'mat' },
+  telha: { i: '', n: 'Telha (dúzia)', kg: 12, p: 28, d: 'Telha de barro para cobrir galpão e abrigo.', c: 'mat' }
+});
+if (typeof ICAT !== 'undefined') ICAT.mat = ICAT.mat || 'Materiais';
+ICON_EXTRA.paoFrances = p => { p(1, 4, 10, 5, '#d8984a'); p(2, 3, 8, 1, '#e8b060'); p(3, 5, 1, 2, '#f0d090'); p(6, 4, 1, 2, '#f0d090'); p(9, 5, 1, 2, '#f0d090'); };
+ICON_EXTRA.paoQueijo = p => { for (const [x, y] of [[2, 5], [6, 3], [6, 7]]) { p(x, y, 4, 4, '#e8b860'); p(x + 1, y, 2, 1, '#f8d890'); } };
+ICON_EXTRA.boloMilho = p => { p(2, 4, 8, 6, '#f0c840'); p(2, 4, 8, 2, '#c8902a'); p(1, 10, 10, 1, '#d8d0c0'); };
+ICON_EXTRA.rosca = p => { p(2, 3, 8, 7, '#d8a050'); p(4, 5, 4, 3, 'rgba(0,0,0,0)'); g => 0; p(3, 4, 6, 1, '#f4f0e8'); p(3, 8, 6, 1, '#f4f0e8'); };
+ICON_EXTRA.mourao = p => { p(5, 0, 3, 11, '#8a5a32'); p(5, 0, 1, 11, '#aa7a4a'); p(5, 0, 3, 1, '#c8a070'); };
+ICON_EXTRA.arame = p => { for (let i = 0; i < 4; i++) p(2 + i, 2 + i, 8 - i * 2, 8 - i * 2, i % 2 ? '#5a5a60' : '#9a9aa0'); p(5, 5, 2, 2, '#4a4a50'); };
+ICON_EXTRA.tabua = p => { p(1, 3, 10, 3, '#b88a52'); p(1, 7, 10, 3, '#a87a44'); p(1, 3, 10, 1, '#d8aa72'); p(1, 7, 10, 1, '#c89a62'); };
+ICON_EXTRA.telha = p => { for (let x = 1; x < 11; x += 3) { p(x, 2, 3, 8, '#b8502a'); p(x, 2, 1, 8, '#d8703a'); } };
+BDEF.push(
+  { id: 'padaria', n: 'Padaria do Sol', art: 'loja', r: [64, 36, 70, 41], door: 67.5, act: 'padaria', wall: '#f4d8a0', trim: '#8a3a1a', roof: '#b0502a', sign: 'pao' },
+  { id: 'restaurante', n: 'Restaurante Sabor do Sertão', art: 'loja', r: [63, 51, 69, 57], door: 66.5, act: 'restaurante', wall: '#e8b860', trim: '#2a6a3a', roof: '#9a4a2a', sign: 'prato' },
+  { id: 'oficina', n: 'Oficina do Bira', art: 'loja', r: [94, 62, 101, 66], door: 97.5, act: 'oficina', wall: '#9aa4aa', trim: '#e8c040', roof: '#7a7e82', sign: 'chave' }
+);
+Object.assign(SPOTS, { padaria: { p: [67.5, 42.6], via: [[67.5, 43.5]] }, restaurante: { p: [66.5, 58.6], via: [[66.5, 59.5]] }, rest_mesa: { p: [64.6, 58.8], via: [[64.6, 59.5]] }, oficina: { p: [97.5, 67.4], via: [[97.5, 61.5], [102, 61.5], [102, 67.4]] } });
+Object.assign(NPCDEF, {
+  neide: { n: 'Dona Neide', role: 'Padeira', ap: { sex: 'F', skin: 2, hair: 9, hairC: 6, hat: 0, shirt: 5, shirtC: 7, pants: 4, pantsC: 3, boots: 0, acc: 0, scarfC: 4, orn: 'none' }, pers: 'Acorda às três da manhã, cantarola enquanto sova a massa e chama todo mundo de "meu bem".', likes: ['ovo', 'ovoPata', 'leite', 'espiga'], loves: ['doceAbobora', 'canjica'], dislikes: ['pe_cari'], shop: 'padaria',
+    sched: [[0, 'padaria', 'home'], [4.5, 'padaria', 'shop'], [13, 'igreja', 'chat'], [14.5, 'padaria', 'shop'], [19, 'praca2', 'chat'], [20.5, 'padaria', 'home']] },
+  damiao: { n: 'Seu Damião', role: 'Cozinheiro do restaurante', ap: { sex: 'M', skin: 4, hair: 2, hairC: 2, hat: 0, shirt: 0, shirtC: 7, pants: 0, pantsC: 0, boots: 1, acc: 0, scarfC: 1, orn: 'none' }, pers: 'Cozinheiro de mão cheia, exigente com ingrediente e orgulhoso da carne de sol.', likes: ['feijao', 'mandioca', 'abobora', 'pe_tilapia'], loves: ['pe_tucunare', 'queijo'], dislikes: ['paoFrances'], shop: 'restaurante',
+    sched: [[0, 'restaurante', 'home'], [6, 'acougue', 'chat'], [7.5, 'restaurante', 'shop'], [15.5, 'bar_mesa', 'chat'], [17.5, 'restaurante', 'shop'], [22, 'restaurante', 'home']] },
+  bira: { n: 'Bira', role: 'Mecânico e carpinteiro', ap: { sex: 'M', skin: 1, hair: 3, hairC: 0, hat: 2, shirt: 1, shirtC: 4, pants: 1, pantsC: 2, boots: 1, acc: 0, scarfC: 0, orn: 'none' }, pers: 'Sobrinho do Seu Raimundo. Conserta de carroça a moto, fala pouco e assovia muito.', likes: ['cafe', 'rapadura'], loves: ['tropeiro'], dislikes: ['flor'], shop: 'oficina',
+    sched: [[0, 'oficina', 'home'], [7, 'oficina', 'shop'], [12, 'restaurante', 'eat'], [13, 'oficina', 'shop'], [17.5, 'praca3', 'chat'], [19.5, 'oficina', 'home']] }
+});
+Object.assign(NPC_LINES, {
+  neide: { intro: 'Ô meu bem, seja bem-vindo! Sou a Neide, da Padaria do Sol. Pão sai às cinco, e quem chega cedo pega o mais quente.', t0: ['O segredo do pão é paciência, meu bem.', 'Se tiver ovo sobrando na fazenda, eu compro. Bolo sem ovo bom não presta.'], t1: ['A Zefa vem buscar pão todo dia e ainda leva a fofoca de brinde.', 'Meu bolo de milho ganhou a quermesse três anos seguidos.'], t2: ['Separei um pão de queijo pra você, tá aqui no balcão.'], t3: ['Você é como filho pra mim. Passa aqui quando quiser.'], rain: 'Dia de chuva vende mais bolo. O povo quer coisa quentinha.', dry: 'No calor a massa cresce rápido demais. Tem que vigiar.', night: 'Daqui a pouco é hora de dormir. Três da manhã eu tô de pé!' },
+  damiao: { intro: 'Damião, do Sabor do Sertão. Aqui a carne de sol é minha, o feijão é da roça e o tempero é segredo de família.', t0: ['Comida boa começa no ingrediente bom.', 'Se plantar feijão ou mandioca, me traz. Pago melhor que o Mercadinho.'], t1: ['O Tonho me vende a carne, mas a de sol quem faz sou eu.', 'Tem encomenda nova no quadro todo dia.'], t2: ['Sua abóbora deu um doce de primeira. O povo pediu bis.'], t3: ['Seu prato aqui é por conta da casa quando quiser, viu?'], rain: 'Chuva traz caldo de feijão na cabeça do povo.', dry: 'Na seca o preço do feijão sobe que nem foguete.', night: 'Cozinha fechando. Amanhã tem baião.' },
+  bira: { intro: 'Bira. Oficina. Se quebrou, eu conserto; se não quebrou, eu reforço.', t0: ['Carroça com eixo torto cansa o animal.', 'Mourão de aroeira dura mais que gente.'], t1: ['Meu tio Raimundo ferra os cavalos, eu cuido da carroça.', 'Quer cercar mais um pasto? Tenho arame e mourão.'], t2: ['Vi a cerca que você levantou. Ficou no prumo.'], t3: ['Pra você eu faço preço de família.'], rain: 'Chuva enferruja tudo. Passa óleo nas ferragens.', dry: 'Poeira entra no rolamento. Limpa depois de rodar.', night: '(assovia uma moda de viola)' }
+});
+if (typeof NPC_FACE !== 'undefined') Object.assign(NPC_FACE, { neide: { face: 1, eyes: 2, eyeC: 0, brows: 2, nose: 2, mouth: 1, expr: 1, hair: 9, hairC: 6, age: 2 }, damiao: { face: 2, eyes: 1, eyeC: 0, brows: 3, nose: 3, mouth: 2, expr: 0, hair: 2, beard: 2, age: 1 }, bira: { face: 3, eyes: 0, eyeC: 1, brows: 1, nose: 1, mouth: 0, expr: 0, hair: 3, age: 0 } });
+// ---- preços e estoque diário ----
+const dayMul = (id, amp) => 1 + (((S.day * 13 + id.length * 7 + id.charCodeAt(0)) % 21) - 10) / 100 * (amp || 1);
+function vilaS() { S.vila = S.vila || {}; const V = S.vila; if (V.day !== S.day) { V.day = S.day; V.stock = { paoFrances: 60, paoQueijo: 30, boloMilho: 8, rosca: 12, mourao: 30, arame: 6, tabua: 40, telha: 10 }; V.ord = restOrder(); V.ordDone = 0; V.ate = 0; } return V; }
+function sellRow(id, pr, shop) { const st = vilaS().stock[id] || 0; return `<div class="card"><div class="row sp">${iic(id, 28)}<span style="flex:1"><b>${IT[id].n}</b><br><span class="mut">${IT[id].d}<br>Hoje: ${st} na prateleira</span></span><b>${fmt2(pr)}</b></div><div class="row">${btn('Comprar 1', 'vBuy', id + '|1|' + pr, !st || !canPay(pr))}${btn('Comprar 5', 'vBuy', id + '|5|' + pr, st < 5 || !canPay(pr * 5))}</div></div>`; }
+A.vBuy = v => { const [id, n0, pr0] = v.split('|'), n = +n0, pr = +pr0, V = vilaS(); if ((V.stock[id] || 0) < n) return say('Acabou por hoje.'); if (invRoom(id) < n) return say('Mochila sem espaço.'); if (!pay(pr * n, n + 'x ' + IT[id].n)) return; V.stock[id] -= n; addInv(id, n, true); AU.coin && AU.coin(); renderModal(); };
+function buyRow(id, pr, who) { const n = S.inv[id] || 0; return `<div class="card"><div class="row sp">${iic(id, 22)}<span style="flex:1">${IT[id].n}<br><span class="mut">Mochila: ${n} · paga ${fmt2(pr)} cada</span></span>${btn('Vender todos', 'vSell', id + '|' + pr + '|' + who, !n)}</div></div>`; }
+A.vSell = v => { const [id, pr0, who] = v.split('|'), n = S.inv[id] || 0; if (!n) return; useInv(id, n); receive(Math.round(n * +pr0 * 100) / 100, 'Venda de ' + n + 'x ' + IT[id].n + ' (' + NPCDEF[who].n + ')', 'cash'); addFr(who, 4); questEvent && questEvent('sell', id, n); renderModal(); };
+function openPadaria() { showModal('🥖 Padaria do Sol', [['ven', 'Balcão'], ['com', 'Compramos']], 'ven', t => { let h = keeperBanner('padaria');
+  if (t === 'ven') h += [['paoFrances', 0.8], ['paoQueijo', 1.5], ['boloMilho', 5], ['rosca', 3]].map(([id, b]) => sellRow(id, Math.round(b * dayMul(id, 0.6) * 100) / 100, 'neide')).join('') + '<p class="mut">Pão novo todo dia às 5h. O que sobra vira farinha de rosca.</p>';
+  else h += '<p class="mut">A Dona Neide compra ingrediente fresco da roça — paga mais que o Mercadinho, mas só o que serve para a padaria.</p>' + [['ovo', 1.5], ['ovoPata', 2.7], ['leite', 3.4], ['espiga', 1.7]].map(([id, b]) => buyRow(id, Math.round(b * dayMul(id) * 100) / 100, 'neide')).join('');
+  return h; }); }
+// encomenda do dia do restaurante: contrato com prêmio sobre o preço de base
+function restOrder() { const L = [['feijao', 4, 1.6], ['mandioca', 6, 1.7], ['abobora', 2, 1.6], ['espiga', 8, 1.5], ['pe_tilapia', 2, 1.5], ['pe_traira', 2, 1.6], ['ovo', 12, 1.4], ['queijo', 2, 1.4], ['leite', 4, 1.5], ['farinha', 3, 1.5]], q = L[(S.day * 7 + 3) % L.length]; return { id: q[0], n: q[1], mul: q[2] }; }
+const RMEALS = [['baiao', 'Baião de dois com queijo', 18, 45, 14], ['carneSol', 'Carne de sol com macaxeira', 26, 55, 22], ['galinha', 'Galinha caipira ao molho', 22, 50, 18], ['peixada', 'Peixada com pirão', 24, 50, 16], ['sopa', 'Caldo de mocotó', 12, 30, 20]];
+function openRestaurante() { showModal('🍲 Restaurante Sabor do Sertão', [['pra', 'Cardápio'], ['enc', 'Encomenda do dia']], 'pra', t => { let h = keeperBanner('restaurante'); const V = vilaS();
+  if (t === 'pra') h += '<p class="mut">Comida de panela, servida na mesa. Mata a fome, dá força e passa um tempinho (30 min).</p>' + RMEALS.map(([k, n, p, fo, en]) => { const pr = Math.round(p * dayMul(k, 0.5)); return `<div class="card"><div class="row sp"><span style="flex:1"><b>${n}</b><br><span class="mut">+${fo} fome · +${en} energia</span></span><b>${fmt(pr)}</b></div>${btn('Pedir', 'meal', k + '|' + pr, !canPay(pr) || V.ate >= 2)}</div>`; }).join('') + (V.ate >= 2 ? '<p class="mut">Já comeu duas vezes hoje aqui. O Damião não deixa repetir a terceira!</p>' : '');
+  else { const o = V.ord, it = IT[o.id], pr = Math.round(it.p * o.mul * o.n * 100) / 100; h += `<div class="card"><b>📋 Encomenda de hoje</b><p>${o.n}× ${it.n}</p><p class="mut">Pagamento: ${fmt2(pr)} (${Math.round((o.mul - 1) * 100)}% acima do preço comum) · confiança do comprador +1</p>${V.ordDone ? '<b>✅ Entregue hoje. Volte amanhã.</b>' : btn('Entregar', 'restDeliver', '', !has(o.id, o.n))} <span class="mut">Você tem: ${S.inv[o.id] || 0}</span></div><p class="mut">A encomenda muda todo dia. Planeje a roça, a pesca e o galinheiro para atender.</p><p class="mut">Encomendas entregues: ${S.stats.orders || 0}</p>`; }
+  return h; }); }
+A.meal = v => { const [k, p0] = v.split('|'), m = RMEALS.find(q => q[0] === k), V = vilaS(); if (!m || V.ate >= 2 || !pay(+p0, m[1])) return; V.ate++; closeModal(); act('eat', 1.6, null, () => { P.fo = cl(P.fo + m[3], 0, 100); P.en = cl(P.en + m[4], 0, 100); S.min = Math.min(1439, S.min + 30); addFr('damiao', 3); toast('🍲 ' + m[1] + ': +' + m[3] + ' fome, +' + m[4] + ' energia.'); }); };
+A.restDeliver = () => { const V = vilaS(), o = V.ord; if (V.ordDone || !has(o.id, o.n)) return; useInv(o.id, o.n); const pr = Math.round(IT[o.id].p * o.mul * o.n * 100) / 100; receive(pr, 'Encomenda do restaurante: ' + o.n + 'x ' + IT[o.id].n, 'cash'); V.ordDone = 1; S.stats.orders = (S.stats.orders || 0) + 1; addFr('damiao', 8); S.trustRest = (S.trustRest || 0) + 1; questEvent && questEvent('sell', o.id, o.n); AU.coin && AU.coin(); toast('📋 Encomenda entregue: ' + fmt2(pr)); renderModal(); };
+// oficina: material de construção e reforma da carroça (capacidade +150 kg por nível, até 2)
+function cartCapSync() { CART_CAP = 400 + Math.min(2, S.cartUp || 0) * 150; }
+function openOficina() { showModal('🔧 Oficina do Bira', [['mat', 'Material'], ['ser', 'Serviços']], 'mat', t => { let h = keeperBanner('oficina');
+  if (t === 'mat') h += '<p class="mut">Material para o modo construção (Menu › Obras › Construir na fazenda).</p>' + [['mourao', 14], ['arame', 42], ['tabua', 9], ['telha', 28]].map(([id, b]) => sellRow(id, Math.round(b * dayMul(id, 0.5) * 100) / 100, 'bira')).join('');
+  else { const lv = Math.min(2, S.cartUp || 0), pr = [900, 2200][lv]; h += `<div class="card"><b>🛒 Reforma da carroça</b><p class="mut">Eixo de ferro, rodas raiadas e caixa maior: +150 kg de carga por reforma. Agora: ${CART_CAP} kg.</p>${lv < 2 ? btn('Reformar (' + fmt(pr) + ')', 'cartUp', '', !canPay(pr)) : '<b>Carroça no máximo (700 kg).</b>'}</div>`; }
+  return h; }); }
+A.cartUp = () => { const lv = Math.min(2, S.cartUp || 0); if (lv >= 2) return; const pr = [900, 2200][lv]; if (!pay(pr, 'Reforma da carroça')) return; S.cartUp = lv + 1; cartCapSync(); addFr('bira', 10); toast('🛒 Carroça reformada: agora leva ' + CART_CAP + ' kg.'); AU.coin && AU.coin(); renderModal(); };
+/* ===================== LAÇOS ENTRE MORADORES E CONVERSAS COM CONTEXTO ===================== */
+const REL = [['zefa', 'ze', 'casados'], ['nena', 'bene', 'compadres'], ['tonho', 'dito', 'rivais'], ['rita', 'elias', 'namorados'], ['raimundo', 'bira', 'tio'], ['neide', 'zefa', 'comadres'], ['damiao', 'tonho', 'negocio'], ['felipe', 'ryan', 'rivais'], ['padre', 'nena', 'amigos'], ['chico', 'raimundo', 'amigos'], ['lucia', 'dito', 'irmaos'], ['joana', 'cida', 'amigas'], ['lourival', 'ze', 'parceiros'], ['damiao', 'neide', 'negocio'], ['cida', 'neide', 'amigas']];
+const REL_N = { casados: ['casado com', 'casada com'], compadres: ['compadre de', 'comadre de'], rivais: ['rival de', 'rival de'], namorados: ['namora', 'namora'], tio: ['tio de', 'sobrinho de'], comadres: ['comadre de', 'comadre de'], negocio: ['negocia com', 'negocia com'], amigos: ['amigo de', 'amigo de'], irmaos: ['irmão de', 'irmã de'], amigas: ['amiga de', 'amiga de'], parceiros: ['parceiro de viola de', 'parceiro de viola de'] };
+const relOf = (a, b) => { const r = REL.find(q => (q[0] === a && q[1] === b) || (q[0] === b && q[1] === a)); return r ? r[2] : null; };
+function relList(id) { return REL.filter(q => q[0] === id || q[1] === id).map(q => { const o = q[0] === id ? q[1] : q[0], fem = NPCDEF[id] && NPCDEF[id].ap && NPCDEF[id].ap.sex === 'F'; return (REL_N[q[2]] || ['ligado a', 'ligada a'])[q[2] === 'tio' ? (q[0] === id ? 0 : 1) : fem ? 1 : 0] + ' ' + ((NPCDEF[o] || {}).n || o); }); }
+const PAIR_TALK = {
+  casados: [['Já tomou o remédio, meu bem?', 'Tomei, mulher. Duas vezes, pra garantir.'], ['Hoje tem forró?', 'Se você dançar comigo, tem.']],
+  compadres: [['Compadre, a chuva vem?', 'Se o João-de-barro fez a casa virada pro nascente, vem.'], ['E o afilhado?', 'Grande que só, comadre!']],
+  rivais: [['Teu preço tá alto.', 'O teu é que tá baixo demais pra ser coisa boa.'], ['Bom dia...', '...dia.']],
+  namorados: [['Vamos na quermesse sábado?', 'Só se você ganhar um prenda pra mim.'], ['Você tá bonita hoje.', 'Só hoje?']],
+  tio: [['Menino, afiou a serra?', 'Afiei, tio. E troquei o óleo da prensa.'], ['Tá assoviando torto.', 'É moda nova, tio.']],
+  comadres: [['Soube da novidade?', 'Conta tudo, comadre!'], ['Seu bolo tá vendendo?', 'Acabou antes das nove!']],
+  negocio: [['Amanhã preciso de mais.', 'Separo o melhor pra você.'], ['Fiado de novo?', 'Pago no sábado, palavra de homem.']],
+  amigos: [['Rezou por mim?', 'Todo dia, e você precisa!'], ['Viu o jogo?', 'Vi. Melhor não falar.']],
+  irmaos: [['Mamãe mandou lembrança.', 'Diz que domingo eu passo lá.']], amigas: [['Vamos na feira sábado?', 'Vamos! Mas cedo, antes do sol.']], parceiros: [['Afina essa viola!', 'Afinada tá, você é que canta alto!']]
+};
+// fala de um morador quando está conversando com outro: usa o laço entre os dois, senão a conversa geral da cidade
+function pairLine(e, o) { const r = relOf(e.id, o.id); if (r && PAIR_TALK[r] && Math.random() < 0.7) { const pr = pick(PAIR_TALK[r]); const first = e.talk && e.talk.lead; return pr[first ? 0 : 1] || pr[0]; } return ctxLine(e.id, true) || townTalk(); }
+// falas com contexto: clima de amanhã, estação, horário, estado do vaqueiro, o que ele anda fazendo, laços e festas
+// assuntos de prosa do sertão, escolhidos pela estação, pelo tempo e pelo jeito de cada um
+const PROSA = {
+  geral: ['Feira de sábado tá cada vez mais cara. O quilo do feijão subiu de novo.', 'Viu a novela ontem? Ninguém fala de outra coisa no bar.', 'O Bahia jogou ontem. Melhor nem comentar...', 'Diz que vão asfaltar a estrada da serra. Acredito quando ver.', 'Meu neto mandou foto de São Paulo. Lá não tem céu estrelado assim.', 'Rádio de Itapetinga tocou Luiz Gonzaga a tarde inteira. Que coisa boa.', 'Cachorro do vizinho latiu a noite toda. Deve ter raposa rondando.', 'Água de pote é mais fresca que de geladeira, pode escrever.', 'O padre falou bonito domingo. Sobre cuidar da terra.', 'A escola vai fazer quadrilha esse ano. A Rita tá ensaiando os meninos.'],
+  seca: ['O açude baixou um palmo essa semana.', 'Na seca a palma é que segura o gado. Plantou palma?', 'Céu limpo de novo. A gente reza e espera.', 'Quem tem cisterna cheia agora é rico.'],
+  chuva: ['Choveu! O sertão vira outro, tudo verde.', 'Com essa chuva o capim brota em três dias.', 'A estrada tá um lamaçal. Carroça atola.', 'Tempo bom pra plantar feijão e milho.'],
+  calor: ['Sol de rachar hoje. Bicho procura sombra.', 'Nesse calor nem o cachorro sai de debaixo do pé de umbu.'],
+  noite: ['Lua cheia é boa pra pescar traíra.', 'Ouviu a rasga-mortalha cantando? Coisa de assombração, diz minha mãe.'],
+  bicho: ['Gado bem tratado dá gosto de ver na estrada.', 'Bezerro nascido na lua nova vem forte, dizia meu avô.', 'Galinha caipira bota menos, mas o ovo é outro sabor.', 'Ovelha Santa Inês não precisa tosquiar. Bicho feito pro sertão.']
+};
+function ctxLine(id, gossip) { const d = NPCDEF[id]; if (!d) return null; const L = [], h = hour(), nm = S.cf.name.split(' ')[0];
+  L.push(pick(PROSA.geral), pick(PROSA.bicho)); if (isRain()) L.push(pick(PROSA.chuva)); else if (S.weather === 'calor') L.push(pick(PROSA.calor)); else if (season && season()) L.push(pick(PROSA.seca)); if (h >= 19 || h < 5) L.push(pick(PROSA.noite));
+  const fc = S.wx && S.wx.fc && S.wx.fc[1]; if (fc && WXT[fc] && WXT[fc].rain > 0.5) L.push('O céu tá dizendo que amanhã chove. Recolhe o que tiver no tempo.'); else if (fc === 'calor') L.push('Amanhã vai ser calor de rachar. Água fresca pros bichos!');
+  if (h < 8) L.push(pick(['Bom dia! Madrugou, hein?', 'Café já passou? Aqui o dia começa cedo.'])); else if (h >= 18) L.push(pick(['Boa noite! O sereno tá caindo.', 'Já tá na hora de recolher, não?']));
+  if (P.en < 25) L.push('Tá com cara de cansado, ' + nm + '. Vai descansar um pouco.'); if (P.fo < 25) L.push('Comeu hoje? Tá com cara de fome. O Damião tem baião no restaurante.');
+  if (P.mnt) { const hr = byId(P.mnt); if (hr) L.push('Bonito o ' + hr.n + '. Cavalo bem cuidado mostra o dono que tem.'); }
+  const fs = fishS(), best = Object.keys(fs).sort((a, b) => fs[b].best - fs[a].best)[0]; if (best && fs[best].best > 1) L.push('Me contaram que você tirou um ' + FISHD[best].n.toLowerCase() + ' de ' + fs[best].best.toFixed(1).replace('.', ',') + ' kg. É verdade ou é história de pescador?');
+  if (cartasAll && cartasAll()) L.push('Dizem que você achou as cartas do Seu Tião. Ele ia ficar orgulhoso.'); else if (Object.keys(relS()).length) L.push('Andam dizendo que você vive fuçando a gruta e a tapera. Achou alguma coisa?');
+  const ov = S.animals.filter(a => a.own === 'player' && a.sp === 'ovelha').length; if (ov) L.push(ov > 6 ? 'Já tem ' + ov + ' ovelhas? Vai virar criador de verdade!' : 'Ovelha Santa Inês aguenta bem a seca. Boa escolha.');
+  const cats = catsS(); if (cats.some(c => c.aff >= 6)) L.push('O seu gato vive atrás de você, é? Bicho sabe quem é gente boa.');
+  if (S.stats && S.stats.orders >= 3) L.push('O Damião vive elogiando as suas entregas no restaurante.');
+  const up = typeof upcomingEvents === 'function' ? upcomingEvents(4) : []; if (up.length) { const [dd, k] = up[0]; const EVN = (typeof EVENTS !== 'undefined' && EVENTS[k]) ? EVENTS[k].n : k; L.push((dd === S.day ? 'Hoje tem ' : dd === S.day + 1 ? 'Amanhã tem ' : 'Daqui a ' + (dd - S.day) + ' dias tem ') + EVN + '. Vai?'); }
+  if (gossip || Math.random() < 0.5) { const rs = REL.filter(q => q[0] === id || q[1] === id); if (rs.length) { const q = pick(rs), o = q[0] === id ? q[1] : q[0], on = (NPCDEF[o] || {}).n || o, hs = hearts(o);
+      const G = { casados: [on + ' tá me esperando pro almoço. Trinta anos e ainda me espera.'], rivais: ['Não me fale de ' + on + '. Gente difícil.', hs >= 5 ? 'Vi você de prosa com ' + on + '... cada um escolhe a companhia que quer.' : 'Se ' + on + ' vier com conversa, desconfia.'], namorados: [on + '? Ah... é gente muito boa, viu? Muito boa.'], compadres: ['Meu compadre ' + on + ' manda lembrança.', on + ' é padrinho do meu menino.'], tio: [on + ' é família. Sangue bom.'], negocio: ['Faço negócio com ' + on + ' faz anos. Palavra vale mais que papel.'], comadres: ['A comadre ' + on + ' sabe de tudo antes de todo mundo.'], amigos: [on + ' é amigo de verdade, desses de pedir em qualquer hora.'], irmaos: [on + ' é minha irmã mais nova. Teimosa que só.'], amigas: ['Eu e ' + on + ' vamos juntas na feira todo sábado.'], parceiros: ['Quando ' + on + ' pega a viola, ninguém segura o forró.'] };
+      if (G[q[2]]) L.push(pick(G[q[2]])); } }
+  return L.length ? pick(L) : null; }
 /* ===================== PESCA =====================
    Espécies do sertão baiano por lugar (açude, rio, riacho da mata), horário e tempo. Vara e isca de verdade (mochila),
    fisgada no tempo certo e briga com a linha (tensão). O peixe vai para a mochila, pode ser vendido no Mercadinho,
@@ -10506,7 +10621,7 @@ const STEP = 1 / 60; let acc = 0, lastT = 0, saveT = 0;
 function tick(dt) {
   drawT += dt;
   if (mode === 'play' && !paused) {
-    holdTick(); placeTick(dt); bagSync(); insideTick(); houseGuard(); if ((tick.lendT = (tick.lendT || 0) - dt) < 0) { tick.lendT = 1; lendTick(); const lh = loanedHorse(); if (lh && P.mnt !== lh.id && lh._st !== 'tied' && !lh._act) lh._st = 'tied'; } const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); CINE.update(dt); FISH.update(dt); rocaRainMark(); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
+    holdTick(); placeTick(dt); bagSync(); insideTick(); houseGuard(); if ((tick.lendT = (tick.lendT || 0) - dt) < 0) { tick.lendT = 1; lendTick(); const lh = loanedHorse(); if (lh && P.mnt !== lh.id && lh._st !== 'tied' && !lh._act) lh._st = 'tied'; } const gm = updTime(dt); updWeather(dt, gm); updMissions(dt); questTick(dt); travelTick(); if (!(S.reg && S.reg.pop)) rfarmInit(); updAuction(dt); CINE.update(dt); FISH.update(dt); rocaRainMark(); cartCapSync(); if (VQ.on) updVaquejada(dt); else updPlayer(dt); updAnimals(dt, gm); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
     { const h = P.mnt ? byId(P.mnt) : null; if (h && h._react && (h._react.t -= dt) <= 0) h._react = null; }
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);
