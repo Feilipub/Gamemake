@@ -7005,7 +7005,7 @@ function cfgHTML(inGame) {
   h += saveFileCard(inGame);
   if (inGame) h += `<div class="card"><div class="row">${ibtn('disk', 'Salvar', 'saveNow')}${ibtn('play', 'Carregar', 'loadNow')}${ibtn('scroll', 'Ajuda', 'help')}${ibtn('hat', 'Refazer tutorial', 'tutAgain')}${ibtn('book', 'Créditos', 'credits')}${ibtn('farm', 'Tela inicial', 'toTitle')}</div><p class="mut" id="saveInfo">Partida ${SAVE.slot}. Salvamento automático às 6h, ao dormir e a cada 60 s, com cópia de segurança.</p></div>`;
   h += `<div class="card"><b>🎵 Vitrola do sertão</b><p class="mut">Trilha original em 8-bit, tocada pelo próprio jogo: sanfona e pífano de videogame, viola, baixo e percussão nordestina (zabumba, bacalhau, triângulo e ganzá). A música muda sozinha conforme o lugar, a hora, a seca e as festas. Toque para ouvir cada tema.</p>${Object.keys(THEMES).map(k => `<div class="row sp" style="margin:3px 0"><span>${MUS.cur === k ? '▶ ' : ''}<b>${THEMES[k].n}</b> <span class="mut">${THEMES[k].bpm} bpm</span></span>${btn('Ouvir', 'musPrev', k)}</div>`).join('')}${btn('Voltar à música automática', 'musAuto')}</div>`;
-  h += `<p class="mut">Versão ${GAME_V} · save v${SAVE_V}</p>`; return h;
+  h += devHTML(inGame) + `<p class="mut" data-a="devTap" style="cursor:default;user-select:none">Versão ${GAME_V} · save v${SAVE_V}</p>`; return h;
 }
 A.setOpt = v => { const [k, x] = v.split('|'); if (k === 'view') { SET.viewLock = x === 'hd2d'; setTimeout(() => hdSet(x !== '2d' && mode !== 'title'), 0); } SET[k] = x === 'true' ? true : x === 'false' ? false : isNaN(+x) ? x : +x; saveSet(); if (k === 'font' || k === 'fs') { if (typeof SPR !== 'undefined') { } setTimeout(() => { try { renderModal(); } catch (e) { } }, 30); } if (k === 'q') { resize(); if (x === 'leve') { SET.view = '2d'; SET.viewLock = false; SET.aves = 'poucas'; SET.dof = false; saveSet(); setTimeout(() => hdSet(false), 0); toast('Modo leve ligado: visual 2D, 30 quadros por segundo e menos aves.'); } } if (k === 'mode' && P) { P._auto = null; input.x = input.y = 0; } if (k === 'ori') OP.applyOri(); if (k === 'cb' || k === 'hc') cbApply(); renderModal(); };
 A.musPrev = k => { AU.init(); MUS.unlocked = true; MUS.preview(k); renderModal(); };
@@ -9047,6 +9047,23 @@ function mataHTML() {
 A.planSet = v => { const [k, p] = v.split('|'); S.plan = S.plan || {}; if (!PLANS[p] || !planOk(k, p)) return; S.plan[k] = p; toast(PLANS[p].ic + ' ' + AREAS[k].n + ': ' + PLANS[p].n + '. O tratador começa hoje à noite.'); renderModal(); };
 A.prontosCurral = k => { const L = myAnimals('boi').filter(a => a.area === k && prontoAbate(a)); L.forEach(a => escort(a, 'curral')); toast('🐂 ' + L.length + ' boi(s) a caminho do curral. Venda no curral ou no embarcadouro.'); renderModal(); };
 A.trProt = v => { if (!useInv('salProt')) return; const t = TROUGHS[+v]; S.prot = S.prot || {}; S.prot[t.a] = S.day + 3; toast('🟦 Sal proteinado no cocho: o capim seco rende mais por 3 dias.'); renderModal(); };
+/* ---------- MODO DESENVOLVEDOR (escondido): toque 7 vezes na linha da versão, em Menu › Config ---------- */
+let devTaps = 0, devTapT = 0;
+A.devTap = () => { const now = Date.now(); if (now - devTapT > 1500) devTaps = 0; devTapT = now; devTaps++;
+  if (SET.dev) { if (devTaps >= 7) { devTaps = 0; toast('🛠️ O modo desenvolvedor já está ligado.'); } return; }
+  if (devTaps >= 4 && devTaps < 7) toast('Faltam ' + (7 - devTaps) + ' toque(s)...');
+  if (devTaps >= 7) { devTaps = 0; SET.dev = true; saveSet(); toast('🛠️ Modo desenvolvedor ligado!'); AU.chime && AU.chime(); renderModal(); } };
+function devHTML(inGame) {
+  if (!SET.dev) return ''; let h = '<div class="card" style="border-color:#3a6ab0"><b>🛠️ Modo desenvolvedor</b>';
+  if (inGame && S) h += `<p class="mut">Adicione dinheiro ao jogo. Não conta para as conquistas de dinheiro ganho.</p><div style="margin:4px 0"><b>No bolso (caixa)</b></div><div class="row">${btn('+ R$ 1.000', 'devCash', 'cash|1000')}${btn('+ R$ 10.000', 'devCash', 'cash|10000')}${btn('+ R$ 100.000', 'devCash', 'cash|100000')}</div><div style="margin:4px 0"><b>No banco (conta)</b></div><div class="row">${btn('+ R$ 1.000', 'devCash', 'acct|1000')}${btn('+ R$ 10.000', 'devCash', 'acct|10000')}${btn('+ R$ 100.000', 'devCash', 'acct|100000')}</div><div class="row" style="margin-top:4px"><input id="devV" type="number" min="0" step="100" placeholder="Outro valor" style="flex:1;min-width:0">${btn('Pôr no bolso', 'devCustom', 'cash')}${btn('Pôr no banco', 'devCustom', 'acct')}</div><div class="row" style="margin-top:4px">${btn('⚡ Energia e fome cheias', 'devFull')}</div>`;
+  else h += '<p class="mut">Entre num jogo para usar as opções.</p>';
+  return h + `<div class="row" style="margin-top:6px">${btn('Desligar o modo desenvolvedor', 'devOff')}</div></div>`;
+}
+function devAdd(to, v) { v = Math.round(+v || 0); if (!S || v <= 0) return; if (to === 'acct') { S.acct += v; ledger('Modo desenvolvedor', v, 'cc'); } else { S.cash += v; ledger('Modo desenvolvedor', v, 'cx'); } S.flags.devUsed = 1; AU.coin && AU.coin(); toast('🛠️ +' + fmt(v) + (to === 'acct' ? ' no banco' : ' no bolso')); renderModal(); }
+A.devCash = v => { const [to, n] = v.split('|'); devAdd(to, n); };
+A.devCustom = to => { const el = $('devV'); devAdd(to, el && el.value); };
+A.devFull = () => { if (!S) return; P.en = 100; P.fo = 100; P.hp = 100; toast('⚡ Energia, fome e vida cheias.'); renderModal(); };
+A.devOff = () => { SET.dev = false; saveSet(); toast('Modo desenvolvedor desligado. Para ligar de novo: toque 7 vezes na versão.'); renderModal(); };
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
