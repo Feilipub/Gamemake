@@ -7044,10 +7044,10 @@ function renderSheet() {
   <div class="card"><b>Histórico</b>${(a.hist || []).length ? (a.hist || []).map(h => `<br><span class="mut">Dia ${h.d}:</span> ${esc(h.t)}`).join('') : '<br><span class="mut">Sem registros ainda.</span>'}${a.exam ? `<br><span class="mut">Último exame: dia ${a.exam}</span>` : ''}</div>`);
 }
 function updSheet(dt) { if (!SH.a) return; if ((SH.t -= dt) > 0) return; SH.t = 0.4; if (!S.animals.includes(SH.a)) return closeSheet(); const el = $('shStats'); if (el) el.innerHTML = emoHTML(sheetStats(SH.a)); }
-$('ap').addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (b && A[b.dataset.a] && !b.disabled) { AU.click(); A[b.dataset.a](b.dataset.v, b); } });
+$('ap').addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (b && !SH.a && b.dataset.a !== 'shClose') return; /* ficha já fechada (toque duplo) */ if (b && A[b.dataset.a] && !b.disabled) { AU.click(); A[b.dataset.a](b.dataset.v, b); } });
 A.shClose = () => closeSheet();
 A.saNo = () => { SH.conf = null; renderSheet(); };
-A.saTo = k => { const a = SH.a; SH.sub = null; renderSheet(); escort(a, k); };
+A.saTo = k => { const a = SH.a; if (!a || a.dead || !S.animals.includes(a)) return; SH.sub = null; renderSheet(); escort(a, k); };
 A.saSell = () => { const a = SH.a; const p = a.area === 'curral' ? frigPrice(a) : Math.round(frigPrice(a) - 80); soldRecord(a, p, 'frigorífico'); const CC = cenasOn() && a.id !== P.mnt ? Object.assign({}, a, { own: 'player', _cs: 1, _sx: a.x, _sy: a.y, _px: undefined, _py: undefined, _hid: false }) : null; if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; unhitchId(a.id); if (P.mnt === a.id) return; S.animals = S.animals.filter(x => x !== a); S.stats.sold++; receive(p, 'Venda de ' + a.n + (a.area === 'curral' ? '' : ' (com frete)')); toast('💰 ' + a.n + ' vendido(a) por ' + fmt(p)); closeSheet(); if (CC) csTruckOut([CC], p, esc(a.n) + ' vendido(a).'); };
 function nearPost(a) { const t = a || P; let b = -1, bd = 46; POSTS.forEach((p, i) => { const d = hyp(p.x - t.x, p.y - t.y); if (d < bd) { bd = d; b = i; } }); return b; }
 // executa a ação: caminha até o animal e toca a animação correspondente
