@@ -373,7 +373,7 @@ body:has(#mn.on) #toast,body:has(#quad[style*=flex]) #toast{top:auto;bottom:calc
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '7.6.0', SAVE_V = 9;
+const GAME_V = '7.7.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -558,6 +558,8 @@ function itemIconURL(id) {
     case 'pulverizador': p(3, 2, 6, 8, '#d0d0c8'); p(3, 2, 6, 2, '#3a6aa0'); p(9, 6, 2, 1, '#4a4a52'); break;
     case 'defensivo': p(4, 1, 4, 2, '#2a2a2a'); p(3, 3, 6, 8, '#e0b030'); p(4, 5, 4, 3, '#2a2a2a'); break;
     case 'salProt': sack('#3a6ab0', '#e8e0c0'); break;
+    case 'caixaAbelha': p(2, 3, 8, 7, '#e8d8a8'); p(1, 2, 10, 2, '#9a6a3a'); p(4, 8, 4, 1, '#2a1a0a'); p(3, 5, 2, 1, '#d8a030'); break;
+    case 'fumigador': p(4, 3, 4, 7, '#8a8e94'); p(5, 1, 2, 2, '#5a5e62'); p(8, 5, 3, 3, '#9a6a3a'); p(3, 0, 1, 1, '#c8c8c8'); p(6, 0, 1, 1, '#d8d8d8'); break;
     case 'caja': p(3, 4, 6, 6, '#f0c030'); p(4, 4, 2, 2, '#f8e080'); p(5, 2, 1, 2, '#4a7a2e'); break;
     case 'umbu': p(3, 4, 6, 6, '#9ab848'); p(4, 4, 2, 2, '#c8e070'); p(5, 2, 2, 2, '#4a7a2e'); break;
     case 'jatoba': p(2, 3, 8, 6, '#6a3a1a'); p(3, 4, 6, 1, '#8a5a2a'); p(3, 7, 6, 1, '#4a2a10'); break;
@@ -926,6 +928,10 @@ Object.assign(IT, { // frutos e achados da mata (v7.2)
   mel: { i: '', n: 'Mel da mata (pote)', kg: 0.5, p: 28, en: 20, fo: 8, d: 'Mel silvestre das colmeias da Mata Grande. Vale bem no Mercadinho.', c: 'prod' },
   erva: { i: '', n: 'Ervas do mato (maço)', kg: 0.1, p: 6, d: 'Boldo, erva-cidreira e alecrim do campo. O povo compra para chá e remédio caseiro.', c: 'prod' }
 });
+Object.assign(IT, { // apicultura (v7.7)
+  caixaAbelha: { i: '', n: 'Caixa de abelha (enxame)', kg: 6, p: 180, d: 'Uma caixa com enxame de abelha. Instale a pé num capim livre da fazenda (Mochila › Instalar): dá mel a cada 3 dias.', c: 'ferr' },
+  fumigador: { i: '', n: 'Fumigador', kg: 1, p: 60, d: 'A fumaça acalma as abelhas: colha o mel sem levar ferroada.', c: 'ferr' }
+});
 const MATS = { madeira: ['🪵', 'Dúzia de tábuas', 280], tijolo: ['🧱', 'Milheiro de tijolos', 950], cimento: ['🪨', 'Saco de cimento', 38], telha: ['🏠', 'Cento de telhas', 260], arame: ['➰', 'Rolo de arame', 210] };
 const MEALS = [
   { n: 'Cuscuz com Café', p: 12, fo: 30, en: 12 }, { n: 'Baião de Dois', p: 22, fo: 48, en: 6 },
@@ -939,6 +945,7 @@ const BUILD = {
   estrebaria: { n: 'Estrebaria', p: 16000, mat: { madeira: 3, telha: 3, tijolo: 1, cimento: 10 }, days: 3, req: [], f: '+6 vagas de equinos, cavalos mais felizes e reprodução de equinos.' },
   galinheiro: { n: 'Galinheiro Grande', p: 4800, mat: { madeira: 2, telha: 1, arame: 3 }, days: 2, req: [], f: '+12 vagas de aves e +30% de ovos.' },
   ordenha: { n: 'Sala de Ordenha', p: 18000, mat: { tijolo: 3, telha: 2, cimento: 25 }, days: 3, req: ['poco'], f: 'Vacas com bezerro produzem leite todos os dias.' },
+  catavento: { n: 'Cata-vento', p: 7500, mat: { madeira: 2, arame: 1 }, days: 2, req: [], f: 'Bombeia água do subsolo para o reservatório: +12% por dia, até na seca. As pás giram mais com vento de chuva.' },
   cocho: { n: 'Cocho Coberto', p: 7000, mat: { madeira: 2, telha: 2, cimento: 8 }, days: 2, req: [], f: 'Confinamento: cocho 3x maior e +25% de ganho de peso.' }
 };
 const CUTS = ['picanha', 'maminha', 'fraldinha', 'costela', 'cupim', 'linguica', 'carnesol'];
@@ -1257,6 +1264,7 @@ function genMap() {
   PROPS.push({ t: 'arquibancada', x: 97.6 * TS, y: 49.9 * TS, v: 0 }, { t: 'arquibancada', x: 107.9 * TS, y: 49.9 * TS, v: 1 }, { t: 'tribuna', x: 102.6 * TS, y: 50.95 * TS, v: 0 });
   genMataGrande(R);
   { const [bx, by] = bretSpot(); PROPS.push({ t: 'bauBrete', x: bx * TS, y: by * TS, v: 1 }); obj[gi(Math.floor(bx), Math.floor(by - 0.1))] = 3; }
+  { const [vx, vy] = varalSpot(); PROPS.push({ t: 'varalCarne', x: vx * TS, y: vy * TS, v: 0 }); obj[gi(Math.floor(vx), Math.floor(vy - 0.1))] = 3; }
   computeDepth();
   // taboas e capim-d'água nas margens dos açudes
   for (let y = 1; y < MH - 1; y++) for (let x = 1; x < MW - 1; x++) { const i = gi(x, y); if (ground[i] !== G.SAND || obj[i]) continue; let w = 0; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (ground[gi(x + dx, y + dy)] === G.WATER) w++; if (w && R() < (pondT[gi(x, y)] || x < 60 ? 0.42 : 0.3)) PROPS.push({ t: 'taboa', x: (x + 0.5) * TS, y: (y + 0.9) * TS, v: Math.floor(R() * 4) }); }
@@ -2146,6 +2154,11 @@ function propSpr(t, v, se) {
     };
     if (pardoPropSpr(t, v, p, BX, BY, R)) return;
     switch (t) {
+      // ---- apicultura e varal (v7.7) ----
+      case 'caixaAbelha': { p(BX - 8, BY - 4, 2, 4, '#5a3a1e'); p(BX + 6, BY - 4, 2, 4, '#5a3a1e'); p(BX - 10, BY - 16, 20, 12, v % 2 ? '#f0e0b0' : '#e8d8a8'); p(BX - 10, BY - 16, 20, 1, '#f8ecc8'); p(BX - 10, BY - 10, 20, 1, '#c8b480'); p(BX + 9, BY - 16, 1, 12, '#c8b480');
+        p(BX - 11, BY - 19, 22, 3, '#9a6a3a'); p(BX - 11, BY - 19, 22, 1, '#b8844a'); p(BX - 3, BY - 6, 6, 1, '#2a1a0a'); p(BX - 8, BY - 14, 3, 1, '#d8a030'); p(BX + 3, BY - 8, 2, 1, '#d8a030'); break; }
+      case 'varalCarne': { const n = v >> 1; p(BX - 18, BY - 22, 2, 22, '#6a4a2a'); p(BX + 16, BY - 22, 2, 22, '#6a4a2a'); p(BX - 18, BY - 21, 36, 1, '#8a8a8a'); p(BX - 19, BY - 23, 4, 2, '#7a5a34'); p(BX + 15, BY - 23, 4, 2, '#7a5a34');
+        for (let k = 0; k < n; k++) { const x = BX - 14 + k * 5; p(x, BY - 20, 3, 8 + (k % 2) * 2, (v & 1) ? '#7a3a1e' : '#b83a3a'); p(x, BY - 20, 3, 1, '#5a5a5a'); p(x + 1, BY - 13 + (k % 2) * 2, 1, 1, (v & 1) ? '#5a2a14' : '#8a2a2a'); } break; }
       // ---- Mata Grande (v7.2) ----
       case 'jatoba': bigTree({ tw: 9, th: 24, cy: BY - 46, rx: 23, ry: 14, n: 9, bark: '#5a4030', cols: ['#1a3a16', '#2e5a26', '#4e8a3a'], br: [[-11, -10], [11, -12], [0, -14]], fruit: [['#6a3a1a', '#7a4a22', '#5a3014'], 6] }); break;
       case 'cajazeira': bigTree({ tw: 6, th: 18, cy: BY - 38, rx: 19, ry: 13, n: 8, bark: '#7a6a52', cols: ['#2a5222', '#44782e', '#6aa046'], fruit: [['#f0c030', '#e8a020', '#f8d850'], 10] }); break;
@@ -2509,6 +2522,7 @@ function drawCons(g, type, stage) {
     case 'estrebaria': { const b = { id: 'es', art: 'estabulo', r: [0, 0, 6, 4], door: 3.5, wall: '#9a6a3a', roof: '#b0502a' }; const [c2, g2] = mkC(120, 110); drawBld(g2, b, 112, 80, 6, false); g.drawImage(c2, 0, 26); break; }
     case 'galinheiro': { p(6, 40, 60, 44, '#9a6a3a'); for (let x = 6; x < 66; x += 4) p(x, 40, 1, 44, '#7a4a22'); p(2, 30, 68, 12, '#b0502a'); for (let y = 32; y < 42; y += 3) p(2, y, 68, 1, '#8a3a1a'); p(30, 64, 10, 20, '#3a2210'); p(68, 44, 40, 40, 'rgba(200,200,200,0.35)'); for (let x = 68; x < 108; x += 4) p(x, 44, 1, 40, '#c8c8c8'); for (let y = 44; y < 84; y += 4) p(68, y, 40, 1, '#c8c8c8'); p(106, 44, 2, 40, '#7a4a22'); p(68, 44, 40, 2, '#7a4a22'); break; }
     case 'ordenha': { const b = { id: 'or', art: 'casa', r: [0, 0, 5, 4], door: 3, wall: '#f4f4f0', trim: '#2a5aa0', roof: '#8e9498' }; const [c2, g2] = mkC(120, 110); drawBld(g2, b, 96, 80, 6, false); g.drawImage(c2, 0, 26); p(4, 76, 92, 4, '#2a5aa0'); p(88, 40, 20, 40, '#d8dce0'); p(88, 40, 4, 40, '#f4f8fc'); blob(p, 98, 40, 10, '#e8ecf0'); break; }
+    case 'catavento': { p(50, 30, 4, 56, '#7a7e84'); p(62, 30, 4, 56, '#7a7e84'); for (let y = 34; y < 86; y += 8) { p(50, y, 16, 1, '#9a9ea4'); p(51 + ((y / 8) % 2) * 6, y + 2, 9, 1, '#8a8e94'); } p(46, 84, 24, 4, '#8a8680'); p(70, 70, 28, 16, '#a8a49c'); p(70, 70, 28, 2, '#c8c4bc'); p(73, 74, 22, 8, '#3a7aaa'); p(73, 74, 22, 1, '#7ab8e0'); p(57, 20, 2, 12, '#5a5e62'); break; }
     case 'cocho': { for (const x of [8, 52, 98]) p(x, 34, 4, 48, '#7a5030'); p(2, 24, 108, 14, '#a8482a'); for (let y = 26; y < 38; y += 3) p(2, y, 108, 1, '#8a3a1a'); p(8, 66, 96, 14, '#a8a49c'); p(10, 68, 92, 6, '#c8a050'); p(10, 68, 92, 1, '#e0c070'); break; }
   }
 }
@@ -3971,6 +3985,7 @@ const RIG = (() => {
     let r = CACHE.get(key); if (r) return r;
     if (CACHE.size > 2200) { let n = 0; for (const k of CACHE.keys()) { CACHE.delete(k); if (++n > 600) break; } }
     r = view === 'side' ? sideView(s, co, a, f, o) : fbView(s, co, a, f, o, view === 'back');
+    if (typeof animLook === 'function') { animLook(r.b); animLook(r.f); } // luz e sombra
     CACHE.set(key, r); return r;
   }
   /* ============ CARROÇA (2 rodas, varais, mesa de tábuas) ============ */
@@ -5069,7 +5084,7 @@ function dogDay() { for (const d of myAnimals('cao')) { d.water = Math.max(d.wat
     else if (d.food < 40) { d.hap = cl(d.hap - 6, 0, 100); if (Math.random() < 0.4 * dogStat(d, 'track')) { d.food = cl(d.food + 45, 0, 100); toast('🐕 ' + d.n + ' caçou um preá no mato. Compre ração de cão e guarde no depósito: o cão come sozinho de manhã.'); } } } if (myAnimals('cao').length && (S.dep.racaoCao || 0) < 2 && !(S.inv.racaoCao > 0.1)) toast('🦴 A ração dos cães está acabando no depósito.'); }
 function dayTick() { storyCheck(); try { histDaily(); custosDay(); } catch (e) { console.error(e); } regionDay(); missionDay(); socialDay(); dogDay(); aguasDay(); climaDay();
   wildDayTick(); rollOffer(); setTimeout(() => S && eventAnnounce(), 2500); if (S.offer && S.offer.day < S.day - 1) S.offer = null;
-  try { tratoDay(); } catch (e) { console.error(e); } try { wDay(); } catch (e) { console.error(e); }
+  try { tratoDay(); } catch (e) { console.error(e); } try { wDay(); } catch (e) { console.error(e); } if (built('catavento')) S.res = Math.min(100, S.res + 12);
   S.day++;
   const se = season();
   // clima
@@ -6589,7 +6604,7 @@ function applyLotSolid() { // prédio pronto num lote tem parede: ninguém atrav
   for (const k in LOTS) { const r = LOTS[k].r, l = S.lots && S.lots[k], solid = l && l.done && l.b !== 'roca';
     for (let y = r[1] + 1; y <= r[3]; y++) for (let x = r[0]; x <= r[2]; x++) { const i = gi(x, y); if (solid) { if (!obj[i]) obj[i] = 3; } else if (obj[i] === 3 && !PROPS.some(q => Math.floor(q.x / TS) === x && Math.floor(q.y / TS) === y)) obj[i] = 0; } }
 }
-function applyObjs() { applyLotSolid();
+function applyObjs() { applyLotSolid(); colmeiasLoad(); for (const c of (S.colm || [])) obj[gi(Math.floor(c.x / TS), Math.floor((c.y - 2) / TS))] = 3;
   for (const k in MOV) delete MOV[k];
   for (const id in MOVDEF) { const d = MOVDEF[id]; const p = PROPS.find(q => q.t === d.t && Math.abs(q.x - d.home[0] * TS) < 2 && Math.abs(q.y - d.home[1] * TS) < 2); if (p) { p.mid = id; MOV[id] = { prop: p }; } }
   TROUGHS.forEach((t, i) => { if (AREAS[t.a] && AREAS[t.a].k !== 'npc') { const id = 'cocho' + i; MOV[id] = { trough: i }; if (!t.home) t.home = [t.x, t.y]; } });
@@ -6975,6 +6990,7 @@ function bagHTML() {
     if (it.en || it.fo) h += btn('Comer / Beber', 'eat', M.sel);
     if (M.sel === 'violao' || M.sel === 'viola') h += '<span class="mut">Toque perto de uma fogueira acesa.</span>';
     if (M.sel === 'facao' || M.sel === 'espingarda') h += weaponOf() === M.sel ? '<span class="mut">Equipado (botão Arma ou tecla G).</span>' : btn('Equipar', 'equip', M.sel);
+    if (M.sel === 'caixaAbelha') h += btn('🐝 Instalar aqui', 'instColm');
     if (atFarm() && isVet(M.sel)) h += btn('Guardar no baú do brete', 'bagStore', M.sel); else if (atFarm() && DEPKG.includes(M.sel)) h += btn('Guardar no depósito', 'bagStore', M.sel);
     h += btn('Descartar 1', 'drop', M.sel) + '</div></div>'; }
   h += `<h3>Equipamentos</h3><p>Selas: ${S.saddles.map(s => SADDLES.find(q => q.id === s).n).join(', ')}</p><p class="mut">Ovos no ninho: ${S.eggs} · Leite no tanque: ${S.milk} L · Carroça: ${Math.round(cartKg())} / ${cartCap()} kg · Baú: ${Object.keys(S.chest).filter(k => S.chest[k] > 0).length} tipo(s)</p>`;
@@ -9219,6 +9235,72 @@ function drawGlints(tx0, tx1, ty0, ty1) {
   for (let y = ty0; y <= ty1; y++) for (let x = tx0; x <= tx1; x++) { if (ground[gi(x, y)] !== G.WATER) continue; const r = H2(x * 3 + t, y * 5 - t, 41); if (r > 0.04) continue;
     const px = x * TS + Math.floor(H2(x, y, 42) * 12) + 2, py = y * TS + Math.floor(H2(y, x, 43) * 10) + 3; X.fillRect(px, py, 3, 1); X.fillRect(px + 1, py - 1, 1, 3); }
 }
+/* ============ SUPER ATUALIZAÇÃO DE SPRITES E MECÂNICAS (v7.7) ============
+   Volume nos animais, apicultura com caixas de abelha, cata-vento que bombeia água, varal de carne de sol,
+   borboletas de dia e vaga-lumes à noite. */
+// ---- volume nos animais (mesma luz de cima à esquerda dos personagens; sem mexer no contorno do rig)
+function animLook(c) {
+  if (!c || SET.look === false || c._lk) return; c._lk = 1; const W = c.width, H = c.height; if (W * H > 40000) return;
+  const g = c.getContext('2d'), im = g.getImageData(0, 0, W, H), d = im.data, o = new Uint8ClampedArray(d);
+  const lum = i => d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11;
+  const edge = (x, y) => { if (x < 0 || y < 0 || x >= W || y >= H) return true; const i = (y * W + x) * 4; return d[i + 3] < 128 || lum(i) < 34; };
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 4; if (d[i + 3] < 128 || lum(i) < 34) continue;
+    let k = 1; if (edge(x + 1, y) || edge(x, y + 1)) k = 0.84; else if (edge(x - 1, y) || edge(x, y - 1)) k = 1.12;
+    if (k !== 1) { o[i] = Math.min(255, d[i] * k + (k > 1 ? 6 : 0)); o[i + 1] = Math.min(255, d[i + 1] * k + (k > 1 ? 5 : 0)); o[i + 2] = Math.min(255, d[i + 2] * k * (k < 1 ? 1.06 : 1)); } }
+  im.data.set(o); g.putImageData(im, 0, 0);
+}
+// ---- apicultura: caixas de abelha instaladas pelo jogador na fazenda
+const MEL_DIAS = 3;
+function colmeiasLoad() { for (let i = PROPS.length - 1; i >= 0; i--) if (PROPS[i].t === 'caixaAbelha') PROPS.splice(i, 1); for (const [k, c] of (S.colm || []).entries()) PROPS.push({ t: 'caixaAbelha', x: c.x, y: c.y, v: k % 4, cx: k }); }
+function instalarColmeia() {
+  if (!has('caixaAbelha')) return say('Compre uma caixa de abelha na Casa do Agro.', 2200);
+  const tx = Math.floor(P.x / TS), ty = Math.floor((P.y + 10) / TS), i = gi(tx, ty), A0 = areaAt(P.x, P.y);
+  if (!atFarm() || P.mnt || obj[i] || ![G.GRASS, G.DRY, G.PAST].includes(ground[i]) || (A0 && ['curral', 'receb', 'conf', 'quar', 'galin'].includes(A0))) return say('Instale a caixa de abelha a pé, num lugar de capim livre da fazenda (fora dos currais).', 3000);
+  if ((S.colm || []).some(c => hyp(c.x - (tx + 0.5) * TS, c.y - (ty + 0.85) * TS) < 20)) return say('Já tem uma caixa aqui do lado.', 1800);
+  useInv('caixaAbelha'); S.colm = S.colm || []; S.colm.push({ x: (tx + 0.5) * TS, y: (ty + 0.85) * TS, d0: S.day, last: S.day }); obj[i] = 3; colmeiasLoad();
+  toast('🐝 Caixa de abelha instalada! Em ' + MEL_DIAS + ' dias tem mel. As abelhas gostam de flor: perto da horta e do mato produzem mais.'); AU.click && AU.click();
+}
+A.instColm = () => { closeModal(); instalarColmeia(); };
+function colmeiaMel(c) { const dd = S.day - c.last; if (dd < MEL_DIAS) return 0; const flor = PROPS.some(q => (q.mata || ['umbu', 'ipe', 'manga', 'caju', 'juazeiro'].includes(q.t)) && hyp(q.x - c.x, q.y - c.y) < 7 * TS); return Math.min(4, Math.floor(dd / MEL_DIAS) * (season() ? 1 : 2) + (flor ? 1 : 0)); }
+function colherColmeia(k) {
+  const c = S.colm[k], n = colmeiaMel(c); if (!n) return say('Ainda não tem mel. Volta em ' + (MEL_DIAS - (S.day - c.last)) + ' dia(s).', 2000);
+  act('reach', 1.4, { x: c.x, y: c.y - 6 }, () => { if (!addInv('mel', n)) return; c.last = S.day; const fum = has('fumigador');
+    if (!fum && Math.random() < 0.4) playerHurt(5, { x: c.x, y: c.y }, 'Levou umas ferroadas! Com o fumigador as abelhas ficam calmas.'); else toast('🍯 ' + n + ' pote(s) de mel' + (fum ? ' — o fumigador acalmou as abelhas.' : '.'));
+    for (let j = 0; j < 8; j++) part(c.x + rnd(-8, 8), c.y - rnd(6, 18), 'spark', { vx: rnd(-16, 16), vy: rnd(-18, -4), m: 1.2, c: '#f0c020' }); }, { zoom: false });
+}
+function colmeiaInteractables(add) { (S.colm || []).forEach((c, k) => { if (Math.abs(c.x - P.x) > 40 || Math.abs(c.y - P.y) > 40) return; const n = colmeiaMel(c); add({ k: 'colm', label: n ? '🍯 Colher mel (' + n + ')' : '🐝 Caixa de abelha (mel em ' + Math.max(1, MEL_DIAS - (S.day - c.last)) + ' dia[s])', x: c.x, y: c.y - 4, r: 22, prio: n ? 2 : -1, hit: [c.x - 10, c.y - 18, c.x + 10, c.y + 2], fn: () => colherColmeia(k) }); }); }
+// ---- varal de carne de sol (ao lado da churrasqueira)
+const VARAL_MAX = 6;
+function varalSpot() { for (const [x, y] of [[19.4, 35.2], [12.4, 38.6], [10.6, 39.4], [11.2, 36.9]]) { const i = gi(Math.floor(x), Math.floor(y)); if (!obj[i] && ground[i] !== G.WATER) return [x, y]; } return [11.2, 36.9]; }
+const freshCuts = () => ['picanha', 'maminha', 'fraldinha', 'costela', 'cupim'].filter(k => (S.inv[k] || 0) > 0);
+function openVaral() { showModal('🥩 Varal de carne de sol', null, null, () => {
+  S.varal = S.varal || []; const ready = S.varal.filter(v => S.day - v.d >= 2).length;
+  let h = `<p class="mut">Pendure a carne fresca no sol e no vento do sertão: em 2 dias vira <b>carne de sol</b>, que vale mais e não estraga. Cabem ${VARAL_MAX} peças.</p><p>No varal: <b>${S.varal.length}/${VARAL_MAX}</b> peça(s) · prontas: <b>${ready}</b></p>`;
+  h += S.varal.map(v => `<div class="mut">• ${IT[v.k].n.split(' (')[0]} — ${S.day - v.d >= 2 ? '✅ pronta' : 'falta ' + (2 - (S.day - v.d)) + ' dia(s)'}</div>`).join('');
+  const fc = freshCuts(); h += `<div class="row" style="margin-top:6px">${fc.map(k => btn('Pendurar ' + IT[k].n.split(' (')[0].toLowerCase() + ' (' + S.inv[k] + ')', 'varPut', k, S.varal.length >= VARAL_MAX)).join('') || '<span class="mut">Compre carne no Açougue do Seu Tonho para pendurar.</span>'}</div>`;
+  h += `<div class="row">${btn('Recolher carne de sol (' + ready + ')', 'varGet', '', !ready)}</div>`; return h; }, 'farm'); }
+A.varPut = k => { S.varal = S.varal || []; if (S.varal.length >= VARAL_MAX || !useInv(k)) return; S.varal.push({ k, d: S.day }); toast('🥩 Carne no varal. Em 2 dias vira carne de sol.'); renderModal(); };
+A.varGet = () => { const R0 = (S.varal || []).filter(v => S.day - v.d >= 2); if (!R0.length) return; if (!addInv('carnesol', R0.length)) return; S.varal = S.varal.filter(v => S.day - v.d < 2); toast('🥩 ' + R0.length + ' kg de carne de sol!'); renderModal(); };
+// ---- cata-vento: pás girando (desenhadas a cada quadro por cima do sprite da obra)
+function drawCataBlades(cx, cy) { const a = drawT * (isRain() ? 3.5 : 2.2); X.save(); X.translate(cx, cy); X.fillStyle = '#c03a2a'; X.fillRect(2, -2, 12, 4); X.rotate(a); for (let k = 0; k < 8; k++) { X.rotate(Math.PI / 4); X.fillStyle = k % 2 ? '#c8ccd0' : '#eef2f6'; X.fillRect(2, -1, 12, 3); X.fillStyle = '#7a7e84'; X.fillRect(13, -1, 1, 3); } X.restore(); X.fillStyle = '#4a4e52'; X.fillRect(Math.round(cx - 2), Math.round(cy - 2), 4, 4); }
+// ---- borboletas de dia e vaga-lumes à noite, sempre perto de onde a câmera está
+const CRIT = []; let critT = 0;
+function critTick(dt) {
+  if (!S || mode !== 'play' || IN.on) { CRIT.length = 0; return; } const h = hour(), night = h >= 19 || h < 4.5, day = h >= 7 && h < 17 && !isRain();
+  for (const c of CRIT) { c.t += dt; c.ph += dt * (c.k === 'v' ? 3 : 9); c.x += c.vx * dt + Math.sin(c.ph * 0.7) * dt * 8; c.y += c.vy * dt + Math.cos(c.ph * 0.5) * dt * 6; if (Math.random() < dt * 0.6) { c.vx = rnd(-14, 14); c.vy = rnd(-8, 8); } }
+  for (let i = CRIT.length - 1; i >= 0; i--) if (CRIT[i].t > CRIT[i].life || hyp(CRIT[i].x - P.x, CRIT[i].y - P.y) > 360 || (CRIT[i].k === 'v' && !night) || (CRIT[i].k === 'b' && !day)) CRIT.splice(i, 1);
+  if (h >= 7 && h < 18 && !isRain()) for (const c of (S.colm || [])) if (hyp(c.x - P.x, c.y - P.y) < 220 && Math.random() < dt * 2.5) part(c.x + rnd(-12, 12), c.y - rnd(8, 20), 'spark', { vx: rnd(-14, 14), vy: rnd(-10, 6), m: 0.9, c: pick(['#f0c020', '#2a1a0a']) }); // abelhas
+  if ((critT -= dt) > 0) return; critT = 0.6; const want = night ? 18 : day ? 7 : 0; if (CRIT.length >= want) return;
+  for (let tries = 0; tries < 6; tries++) { const x = P.x + rnd(-260, 260), y = P.y + rnd(-200, 200), tx = Math.floor(x / TS), ty = Math.floor(y / TS); if (tx < 0 || ty < 0 || tx >= MW || ty >= MH) continue; const g = ground[gi(tx, ty)];
+    const nearGreen = forest[gi(tx, ty)] || g === G.PAST || g === G.GRASS || g === G.MUD; if (!nearGreen) continue;
+    CRIT.push({ k: night ? 'v' : 'b', x, y, vx: rnd(-10, 10), vy: rnd(-6, 6), t: 0, life: rnd(8, 18), ph: Math.random() * 6, c: pick(['#f4e040', '#f0f0f0', '#e88a30', '#8ac8f0', '#e86aa0']) }); break; }
+}
+function critDraw(toScreen, g) {
+  const G0 = g || X;
+  for (const c of CRIT) { let x = c.x, y = c.y - 10 - Math.sin(c.ph * 0.4) * 4, s = 1; if (toScreen) { const p = w2s(x, y); x = p[0]; y = p[1]; s = Math.max(2, Math.round(W / 320)); }
+    if (c.k === 'v') { const on = Math.sin(c.ph) > 0.2; if (!on) continue; G0.fillStyle = 'rgba(200,255,120,0.28)'; G0.fillRect(Math.round(x - 2 * s), Math.round(y - 2 * s), 5 * s, 5 * s); G0.fillStyle = '#e8ff90'; G0.fillRect(Math.round(x), Math.round(y), s, s); }
+    else { const up = Math.sin(c.ph) > 0; G0.fillStyle = c.c; if (up) { G0.fillRect(Math.round(x - s), Math.round(y - s), s, s); G0.fillRect(Math.round(x + s), Math.round(y - s), s, s); } else { G0.fillRect(Math.round(x - 2 * s), Math.round(y), 2 * s, s); G0.fillRect(Math.round(x + s), Math.round(y), 2 * s, s); } G0.fillStyle = '#2a1a0a'; G0.fillRect(Math.round(x), Math.round(y), s, s); } }
+}
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
@@ -9626,7 +9708,7 @@ function espinhosTick() {
   P.en = Math.max(0, P.en - (rapido ? 0.25 : 0.1)); // por segundo
   if (S.flags.espDia !== S.day) { S.flags.espDia = S.day; toast('🌵 Os espinhos da caatinga arranham e cansam. Um traje de couro completo protege (guarda-roupa).'); }
 }
-function lidaTick(dt) { if (!S) return; if ((lidaV -= dt) <= 0) { lidaV = 0.15; const el = $('jorn'); if (el) el.style.visibility = M.open || SH.a ? 'hidden' : 'visible'; } if ((lidaT -= dt) <= 0) { lidaT = 1; jornCheck(); pipaTick(); tutTick(); fogTick(); firstSaleTick(); mataTick(); planToast(); moodTick(); conqTick(); amorTick(); espinhosTick(); wardTick(); gaitTick(); if (jornState().cap >= JORNADA.length && !S.flags.modelo && mode === 'play' && !M.open && !P._act) csModelo(); } }
+function lidaTick(dt) { if (!S) return; if ((lidaV -= dt) <= 0) { lidaV = 0.15; const el = $('jorn'); if (el) el.style.visibility = M.open || SH.a ? 'hidden' : 'visible'; } if ((lidaT -= dt) <= 0) { lidaT = 1; jornCheck(); pipaTick(); tutTick(); fogTick(); firstSaleTick(); mataTick(); planToast(); moodTick(); { const q = PROPS.find(p => p.t === 'varalCarne'); if (q) { const V = S.varal || []; q.v = V.length * 2 + (V.some(x => S.day - x.d >= 2) ? 1 : 0); } } conqTick(); amorTick(); espinhosTick(); wardTick(); gaitTick(); if (jornState().cap >= JORNADA.length && !S.flags.modelo && mode === 'play' && !M.open && !P._act) csModelo(); } }
 
 /* ---------- lojas ---------- */
 function shopCart() { return hyp(S.cart.x - P.x, S.cart.y - P.y) < 110 || P.cart; }
@@ -9776,10 +9858,10 @@ A.buyOxCart = () => { if (S.veh.boi.own) return; if (!pay(OXCART_P * priceMul(),
 A.buyOxPair = v => { const pr = S.oxStock.list[+v]; if (!pr) return; const cost = (animalValue(pr[0]) + animalValue(pr[1])) * 1.05 * priceMul(); if (!pay(cost, 'Junta de bois ' + pr[0].n + ' e ' + pr[1].n)) return; for (const a of pr) { a.own = 'delivery'; a.x = a.y = -999; markBought(a, cost / 2); S.animals.push(a); S.delivery.push({ id: a.id, day: S.day + 1, to: 'receb' }); } S.oxStock.list.splice(+v, 1); toast('🐂 Junta comprada! Chega amanhã cedo no Recebimento.'); renderModal(); };
 function openAgro() { showModal('🌿 Casa do Agro', [['ins', 'Insumos'], ['sel', 'Selaria'], ['ani', 'Feira de animais'], ['boi', 'Carro de boi'], ['vet', 'Veterinária'], ['gen', 'Genética'], ['sem', 'Sementes']], 'ins', t => {
   let h = keeperBanner('agro'); if (!shopCart()) h += '<p class="mut">💡 Estacione a carroça aqui perto para levar sacos pesados, ou peça entrega.</p>';
-  if (t === 'ins') h += (season() && clima().seca !== 'normal' ? `<p class="mut">☀ ${SECA_N[clima().seca]}: ração, milho, palma, silagem e sal estão mais caros.</p>` : '') + pipaCard() + ['racao', 'milho', 'sal', 'salProt', 'palma', 'silagem', 'galaoV', 'galao', 'lenha', 'carvao'].map(id => shopRow(id, { frete: 1 })).join('');
+  if (t === 'ins') h += (season() && clima().seca !== 'normal' ? `<p class="mut">☀ ${SECA_N[clima().seca]}: ração, milho, palma, silagem e sal estão mais caros.</p>` : '') + pipaCard() + ['racao', 'milho', 'sal', 'salProt', 'palma', 'silagem', 'caixaAbelha', 'galaoV', 'galao', 'lenha', 'carvao'].map(id => shopRow(id, { frete: 1 })).join('');
   if (t === 'gen') h += geneticaTab();
   if (t === 'sem') h += sementesTab();
-  if (t === 'sel') { h += ['escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho', 'vara', 'minhoca', 'binoculo', 'cangalha'].map(id => shopRow(id)).join(''); h += wShopHTML(); h += SADDLES.filter(s => s.p).map(s => `<div class="card"><b>${s.n}</b> — ${fmt(s.p)}<p class="mut">${s.d}</p>${S.saddles.includes(s.id) ? '✅ Você já tem' : btn('Comprar', 'buySad', s.id)}</div>`).join(''); }
+  if (t === 'sel') { h += ['escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho', 'vara', 'minhoca', 'binoculo', 'cangalha', 'fumigador'].map(id => shopRow(id)).join(''); h += wShopHTML(); h += SADDLES.filter(s => s.p).map(s => `<div class="card"><b>${s.n}</b> — ${fmt(s.p)}<p class="mut">${s.d}</p>${S.saddles.includes(s.id) ? '✅ Você já tem' : btn('Comprar', 'buySad', s.id)}</div>`).join(''); }
   if (t === 'ani') h += feiraTab();
   if (t === 'boi') h += oxTab();
   if (t === 'vet') h += ['vacina', 'vacRaiva', 'pouron', 'vermifugo', 'remedio', 'mataBicheira', 'iodo', 'soro', 'brinco', 'mamadeira', 'balde', 'ferroMarca'].map(id => shopRow(id)).join('') + '<p class="mut">Brucelose: a vacina das bezerras (3 a 8 meses) é aplicada pela veterinária Joana, pelo Manejo da ficha ou no brete.</p>' + '' + `<div class="card"><b>Consulta veterinária</b> — ${fmt(150)}<p class="mut">Joana visita a fazenda e trata todos os animais doentes hoje.</p>${btn('Chamar veterinária', 'vetCall')}</div>`;
@@ -11761,7 +11843,7 @@ function collectItems(tx0, tx1, ty0, ty1, vw, vh, se, vx0, vy0) {
     if (!lotOwned(k)) continue;
     if (!l) add(y0 + 4, () => { X.fillStyle = '#8a5a2a'; [[x0 + 2, y0 + 2], [x0 + 108, y0 + 2], [x0 + 2, y1 - 4], [x0 + 108, y1 - 4]].forEach(([x, y]) => { X.fillRect(x, y - 6, 2, 7); X.fillStyle = '#e04a2a'; X.fillRect(x - 1, y - 7, 4, 2); X.fillStyle = '#8a5a2a'; }); X.fillStyle = 'rgba(240,220,160,0.5)'; X.fillRect(x0 + 3, y0 + 1, 106, 1); X.fillRect(x0 + 3, y1 - 5, 106, 1); X.fillStyle = '#e8dcc0'; X.fillRect(x0 + 48, y1 - 14, 16, 9); X.fillStyle = '#6a4422'; X.fillRect(x0 + 55, y1 - 6, 2, 6); txt((x, y, w, h, c) => { X.fillStyle = c; X.fillRect(x, y, w, h); }, k, x0 + 54, y1 - 12, '#7a3a1a'); }, x0 + 56, { flat: 1 });
     else if (l.b === 'roca') { if (!l.done) add(y0 + 4, () => drawRocaPrep(x0, y0, r, l.prog), x0 + 56, { flat: 1 }); }
-    else { const stg = l.done ? 3 : l.prog < 0.3 ? 0 : l.prog < 0.65 ? 1 : 2; add(y1 - 4, () => X.drawImage(consSpr(l.b, stg), x0 - 4, y0 - 20), x0 + 56, { w: 150, h: 150, b: y1, fade: 1 });
+    else { const stg = l.done ? 3 : l.prog < 0.3 ? 0 : l.prog < 0.65 ? 1 : 2; add(y1 - 4, () => { X.drawImage(consSpr(l.b, stg), x0 - 4, y0 - 20); if (l.b === 'catavento' && l.done) drawCataBlades(x0 + 59, y0 + 26); }, x0 + 56, { w: 150, h: 150, b: y1, fade: 1 });
       if (!l.done && hour() >= 7 && hour() < 17 && !isRain()) BUILDER_AP.forEach((ap, i) => { const bx = x0 + 20 + i * 70, by = y1 + 4; add(by, () => drawPerson(ap, bx, by, i ? 2 : 3, Math.floor(drawT * 3 + i) % 2, 'hammer'), bx); if (Math.random() < 0.02) { AU.hammer(bx, by); dust(bx + (i ? -10 : 10), by - 6, 1, '#b8a888'); } }); } }
   TROUGHS.forEach((t, i) => { const x = t.x * TS, y = t.y * TS; if (!inV(x, y, 40)) return; add(y + 15, () => X.drawImage(troughSpr(t, S.tr[i] / trCap(i)), x - 2, y - 2), x + t.w * 8, { w: t.w * 16 + 16, h: 40, b: y + 16 }); });
   for (const a of S.animals) { if (a.id === P.mnt || a._wr || !inV(a.x, a.y, 40)) continue; add(iy(a), () => drawAnimal(a), ix(a), { w: 110, h: 100 }); }
@@ -11823,7 +11905,7 @@ function render(dt) {
   const L = collectItems(tx0, tx1, ty0, ty1, vw, vh, se, cam.x, cam.y);
   const inV = (x, y, m) => x > cam.x - m && x < cam.x + vw + m && y > cam.y - 20 && y < cam.y + vh + m * 1.5;
   L.sort((a, b) => a.y - b.y); for (const o of L) o.f();
-  forestOverlay(tx0, ty0, tx1, ty1); drawEventDecor(true); drawMemGlints(); misMarkers(); drawMoveFx(); drawDebugCol();
+  critDraw(false); forestOverlay(tx0, ty0, tx1, ty1); drawEventDecor(true); drawMemGlints(); misMarkers(); drawMoveFx(); drawDebugCol();
   for (const e of npcs) if (!e.hidden && e.bt > 0 && inV(e.x, e.y, 30)) drawBubble(e);
   worldFx(dt);
   X.setTransform(1, 0, 0, 1, 0, 0);
@@ -12050,7 +12132,7 @@ function hdWeather(dt) {
   const g = HD.og; g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, W, H); const ri = S.wx ? S.wx.ri : 0;
   if (ri > 0.03) { const n = Math.round(30 + ri * 130); while (rain.length < n) rain.push({ x: rnd(0, W), y: rnd(0, H), s: rnd(220, 300) }); g.strokeStyle = `rgba(200,218,245,${0.35 + ri * 0.45})`; g.lineWidth = Math.max(1, BASE * 0.5); g.beginPath(); for (const r of rain) { r.y += r.s * BASE * 0.5 * dt; r.x -= r.s * 0.15 * BASE * 0.5 * dt; if (r.y > H) { r.y = -10; r.x = rnd(0, W + 40); } g.moveTo(r.x, r.y); g.lineTo(r.x - 3 * BASE * 0.5, r.y + 9 * BASE * 0.5); } g.stroke(); }
   if (S.wx && S.wx.flash > 0) { g.fillStyle = `rgba(235,240,255,${Math.min(0.7, S.wx.flash * 0.7)})`; g.fillRect(0, 0, W, H); }
-  CINE.drawAtmo(g, W, H);
+  CINE.drawAtmo(g, W, H); critDraw(true, g);
   const fog = S.weather === 'neblina' ? cl(1 - (hour() - 6) / 4, 0, 1) : 0; if (fog > 0) { const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, `rgba(230,235,240,${0.65 * fog})`); gr.addColorStop(0.6, `rgba(230,235,240,${0.2 * fog})`); gr.addColorStop(1, 'rgba(230,235,240,0)'); g.fillStyle = gr; g.fillRect(0, 0, W, H); }
 }
 /* mundo → pixel do canvas (inverso de s2w), usado por marcadores e testes */
@@ -13166,6 +13248,7 @@ function interactables(forTap) {
   if (has('galaoV') || forTap) { const R0 = FARM.reservoir, [cx, cy] = fpx('cistern'); add({ k: 'res', label: '💧 Encher galões', x: R0.lbl[0] * TS, y: R0.lbl[1] * TS, r: 30, prio: 1, hit: R0.hit.map(v => v * TS), fn: () => has('galaoV') ? act('pickup', 0.9, { x: R0.stand[0] * TS, y: R0.stand[1] * TS }, fillGallons) : say('Você não tem galões vazios.') }); add({ k: 'cist', label: '💧 Cisterna: encher galões', x: cx, y: cy + 6, r: 22, prio: 2, hit: [cx - 14, cy - 26, cx + 14, cy + 4], fn: () => has('galaoV') ? act('pickup', 0.9, { x: cx + 12, y: cy + 4 }, fillGallons) : say('Você não tem galões vazios.') }); }
   if (foot) { const f = objPos('fogueira'), c = objPos('churrasqueira'); add({ k: 'fire', label: 'Fogueira', x: f.x, y: f.y, r: 24, prio: 2, hit: [f.x - 16, f.y - 22, f.x + 16, f.y + 10], fn: openFire }); add({ k: 'bbq', label: 'Churrasqueira', x: c.x + 0.5 * TS, y: c.y + 0.8 * TS, r: 22, prio: 2, hit: [c.x - TS, c.y - 2.2 * TS, c.x + 2 * TS, c.y + 0.4 * TS], fn: openChurras }); }
   farmInteractables(add); mataInteractables(add, foot);
+  colmeiaInteractables(add); { const q = PROPS.find(p => p.t === 'varalCarne'); if (q && foot) add({ k: 'varal', label: '🥩 Varal de carne de sol', x: q.x, y: q.y + 6, r: 24, prio: 2, hit: [q.x - 20, q.y - 26, q.x + 20, q.y + 4], fn: openVaral }); }
   { const q = PROPS.find(p => p.t === 'bauBrete'); if (q) add({ k: 'bret', label: '🧰 Baú do brete', x: q.x, y: q.y + 8, r: 22, prio: 2, hit: [q.x - 10, q.y - 16, q.x + 10, q.y + 2], fn: () => act('reach', 0.3, { x: q.x, y: q.y }, openBret, { zoom: false }) }); }
   { const b = objPos('bau'); add({ k: 'chest', label: 'Baú', x: b.x, y: b.y + 0.5 * TS, r: 20, prio: 2, hit: [b.x - 9, b.y - 15, b.x + 9, b.y + 1], fn: () => act('reach', 0.3, { x: b.x, y: b.y }, openChest, { zoom: false }) }); }
   { const ev = eventNow(); if (ev === 'vaquejada') add({ k: 'vaq', label: 'Correr na vaquejada', x: 87.5 * TS, y: 74.5 * TS, r: 40, prio: 5, hit: [85 * TS, 72 * TS, 90 * TS, 77 * TS], fn: startVaquejada }); else if (ev && EVENTS[ev].place === 'praca') add({ k: 'evento', label: EVENTS[ev].n, x: 84 * TS, y: 50 * TS, r: 44, prio: 4, hit: [80 * TS, 46 * TS, 88 * TS, 57 * TS], fn: () => openEventDesk(ev) }); else if (ev === 'criadores') add({ k: 'evento', label: EVENTS[ev].n, x: 95 * TS, y: 59 * TS, r: 30, prio: 6, hit: [92 * TS, 57 * TS, 98 * TS, 60 * TS], fn: () => openEventDesk(ev) }); }
@@ -13223,7 +13306,7 @@ function loop(ts) {
     if (n >= 6) acc = 0;
     ALPHA = cl(acc / STEP, 0, 1);
     if (OPMODES[mode]) { if (HD.on) hdSuspend(); OP.render(); } else { camUpdate(dt); render(dt); } CINE.update(dt); if (!HD.on && !OPMODES[mode]) CINE.post2D(X, W, H); PERF.frame(dt, t1 - t0, performance.now() - t1);
-    if (mode === 'play' || mode === 'cs') { hud(dt); updSheet(dt); AU.ambient(dt); tutFrame(); introTick(dt); mataFrame(dt); guizFrame(dt); }
+    if (mode === 'play' || mode === 'cs') { hud(dt); updSheet(dt); AU.ambient(dt); tutFrame(); introTick(dt); mataFrame(dt); critTick(dt); guizFrame(dt); }
     MUS.update(dt);
     if ($('setup').style.display !== 'none') drawPreview(dt);
   } catch (err) { console.error(err); }
