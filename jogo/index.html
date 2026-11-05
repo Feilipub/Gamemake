@@ -373,7 +373,7 @@ body:has(#mn.on) #toast,body:has(#quad[style*=flex]) #toast{top:auto;bottom:calc
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '7.4.0', SAVE_V = 9;
+const GAME_V = '7.5.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -1256,6 +1256,7 @@ function genMap() {
   fenceRect([100, 46, 105, 49]);
   PROPS.push({ t: 'arquibancada', x: 97.6 * TS, y: 49.9 * TS, v: 0 }, { t: 'arquibancada', x: 107.9 * TS, y: 49.9 * TS, v: 1 }, { t: 'tribuna', x: 102.6 * TS, y: 50.95 * TS, v: 0 });
   genMataGrande(R);
+  { const [bx, by] = bretSpot(); PROPS.push({ t: 'bauBrete', x: bx * TS, y: by * TS, v: 1 }); obj[gi(Math.floor(bx), Math.floor(by - 0.1))] = 3; }
   computeDepth();
   // taboas e capim-d'água nas margens dos açudes
   for (let y = 1; y < MH - 1; y++) for (let x = 1; x < MW - 1; x++) { const i = gi(x, y); if (ground[i] !== G.SAND || obj[i]) continue; let w = 0; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (ground[gi(x + dx, y + dy)] === G.WATER) w++; if (w && R() < (pondT[gi(x, y)] || x < 60 ? 0.42 : 0.3)) PROPS.push({ t: 'taboa', x: (x + 0.5) * TS, y: (y + 0.9) * TS, v: Math.floor(R() * 4) }); }
@@ -2358,7 +2359,7 @@ function propSpr(t, v, se) {
       case 'placaHist': { p(BX - 7, BY - 6, 14, 6, '#8e887c'); p(BX - 7, BY - 6, 14, 1, '#b4aea2'); p(BX - 6, BY - 2, 12, 2, '#6e685e'); p(BX - 2, BY - 16, 4, 10, '#7a7468'); p(BX - 2, BY - 16, 1, 10, '#a29c90'); p(BX - 11, BY - 29, 22, 14, '#5a3a1e'); p(BX - 10, BY - 28, 20, 12, '#8a6a2a'); p(BX - 9, BY - 27, 18, 10, '#b08a3a'); p(BX - 9, BY - 27, 18, 1, '#d8b860'); for (let i = 0; i < 4; i++) p(BX - 7, BY - 25 + i * 2, i === 0 ? 14 : 10 + (i % 2) * 3, 1, '#6a4a1a'); p(BX - 1, BY - 31, 2, 2, '#d8b860'); break; }
       case 'poste': { p(BX - 3, BY - 3, 6, 3, '#4a4a52'); p(BX - 3, BY - 3, 6, 1, '#7a7a82'); p(BX - 1, BY - 34, 1, 34, '#6a6a72'); p(BX - 1, BY - 36, 8, 2, '#3a3a40'); p(BX + 4, BY - 35, 4, 4, '#f4e8a0'); p(BX - 3, BY - 2, 6, 2, '#3a3a40'); break; }
       case 'mesabar': { p(BX - 1, BY - 26, 2, 22, '#e0e0e0'); for (let i = 0; i < 6; i++) p(BX - 14 + i * 5, BY - 30 + Math.abs(i - 2.5), 5, 4, i % 2 ? '#e03a2a' : '#f4f0e8'); p(BX - 8, BY - 10, 16, 3, '#f0f0f0'); p(BX - 6, BY - 7, 2, 7, '#d0d0d0'); p(BX + 4, BY - 7, 2, 7, '#d0d0d0'); p(BX - 4, BY - 13, 2, 3, '#e8c040'); break; }
-      case 'bau': { // baú de madeira com cantoneiras e fechadura
+      case 'bauBrete': case 'bau': { // baú de madeira com cantoneiras e fechadura
         p(BX - 10, BY - 1, 20, 2, 'rgba(20,12,6,0.3)');
         p(BX - 8, BY - 10, 16, 9, '#9a6030'); for (let y = BY - 9; y < BY - 1; y += 3) p(BX - 8, y, 16, 1, '#7a4a22'); p(BX - 8, BY - 10, 16, 1, '#c88a48');
         p(BX - 8, BY - 15, 16, 5, '#b07038'); p(BX - 7, BY - 16, 14, 1, '#b07038'); p(BX - 8, BY - 15, 16, 1, '#d89a58'); p(BX - 8, BY - 11, 16, 1, '#6a4020');
@@ -4689,8 +4690,8 @@ function invCapNow() { const h = P && P.mnt && S ? byId(P.mnt) : null; return IN
 function itKgE(i) { return IT[i] ? IT[i].kg * (IT[i].c === 'peixe' && S.inv.sambura ? 0.2 : 1) : 0; }
 function invKg() { let k = 0; for (const i in S.inv) if (IT[i]) k += itKgE(i) * S.inv[i]; return Math.round(k * 10) / 10; }
 function addInv(id, n, force) { n = n || 1; if (!force && IT[id] && invKg() + itKgE(id) * n > INV_CAP + 0.01) { say('Mochila pesada demais (' + INV_CAP + ' kg). Use a carroça ou o depósito.'); return false; } S.inv[id] = (S.inv[id] || 0) + n; return true; }
-function useInv(id, n) { n = n || 1; if ((S.inv[id] || 0) < n) return false; S.inv[id] -= n; if (!S.inv[id]) delete S.inv[id]; return true; }
-const has = (id, n) => (S.inv[id] || 0) >= (n || 1);
+function useInv(id, n) { n = n || 1; if ((S.inv[id] || 0) < n) return typeof storeUse === 'function' && storeUse(id, n); S.inv[id] -= n; if (!S.inv[id]) delete S.inv[id]; return true; } // falta na mochila: pega no baú do brete ou no depósito
+const has = (id, n) => (S.inv[id] || 0) >= (n || 1) || (typeof storeHas === 'function' && storeHas(id, n || 1));
 function depCap() { return 2000 + Object.values(S.lots).filter(l => l && l.done && l.b === 'silo').length * 3000; }
 function depKg() { let s = 0; for (const k of DEPKG) s += S.dep[k] || 0; return s; }
 function cartKgOf(v) { let k = 0; for (const i in v.cargo) k += (IT[i] ? IT[i].kg : 1) * v.cargo[i]; return k; }
@@ -6961,12 +6962,17 @@ function bagHTML() {
   const ids = Object.keys(S.inv).filter(k => S.inv[k] > 0.001 && IT[k]);
   let h = `<div class="row sp"><span>Peso: <b>${invKg()}</b> / ${INV_CAP} kg</span>${bar(invKg() / INV_CAP * 100, 'y')}</div>`;
   h += `<div class="row sp mut"><span>${ic('coin', 14)} Carteira: ${fmt2(S.cash)}</span><span>${ic('bank', 14)} Conta: ${fmt(S.acct)}</span></div>`;
-  h += '<div class="grid">' + ids.map(k => `<div class="sl ${M.sel === k ? 'card sel' : ''}" data-a="bagSel" data-v="${k}">${iic(k, 28)}<small>${IT[k].n.split(' (')[0]}</small><b>${fmtQ(S.inv[k])}</b></div>`).join('') + '</div>';
+  const cell = k => `<div class="sl ${M.sel === k ? 'card sel' : ''}" data-a="bagSel" data-v="${k}">${iic(k, 28)}<small>${IT[k].n.split(' (')[0]}</small><b>${fmtQ(S.inv[k])}</b></div>`, known = BAG_CAT.map(c => c[0]);
+  for (const [c, n] of BAG_CAT) { const L = ids.filter(k => IT[k].c === c); if (L.length) h += `<div class="mut" style="margin:6px 0 2px"><b>${n}</b></div><div class="grid">${L.map(cell).join('')}</div>`; }
+  { const L = ids.filter(k => !known.includes(IT[k].c)); if (L.length) h += `<div class="mut" style="margin:6px 0 2px"><b>🎒 Outros</b></div><div class="grid">${L.map(cell).join('')}</div>`; }
+  if (atFarm() && ids.some(k => isVet(k) || DEPKG.includes(k))) h += `<div class="row" style="margin:6px 0">${btn('📦 Guardar o que é da fazenda (depósito e baú do brete)', 'guardarFaz')}</div>`;
+  h += `<div class="card" style="margin:6px 0"><div class="row sp"><span>🌽 Depósito</span>${bar(depKg() / depCap() * 100, 'y')}<span>${Math.round(depKg())}/${depCap()} kg</span></div><div class="row sp"><span>🧰 Baú do brete</span><span>${Object.values(S.bret || {}).reduce((a, b) => a + b, 0)} item(ns) de veterinária</span></div>${atFarm() ? `<div class="row">${btn('Abrir o depósito', 'openDepB')}${btn('Abrir o baú do brete', 'openBretB')}</div>` : '<span class="mut">Abra o depósito e o baú quando estiver na fazenda.</span>'}</div>`;
   if (!ids.length) h += '<p class="mut">Mochila vazia.</p>';
   if (M.sel && S.inv[M.sel]) { const it = IT[M.sel]; h += `<div class="card"><div class="row">${iic(M.sel, 32)}<b>${it.n}</b></div><p>${it.d}</p><p class="mut">${it.kg} kg cada · valor ref. ${fmt2(it.p)}</p><div class="row">`;
     if (it.en || it.fo) h += btn('Comer / Beber', 'eat', M.sel);
     if (M.sel === 'violao' || M.sel === 'viola') h += '<span class="mut">Toque perto de uma fogueira acesa.</span>';
     if (M.sel === 'facao' || M.sel === 'espingarda') h += weaponOf() === M.sel ? '<span class="mut">Equipado (botão Arma ou tecla G).</span>' : btn('Equipar', 'equip', M.sel);
+    if (atFarm() && isVet(M.sel)) h += btn('Guardar no baú do brete', 'bagStore', M.sel); else if (atFarm() && DEPKG.includes(M.sel)) h += btn('Guardar no depósito', 'bagStore', M.sel);
     h += btn('Descartar 1', 'drop', M.sel) + '</div></div>'; }
   h += `<h3>Equipamentos</h3><p>Selas: ${S.saddles.map(s => SADDLES.find(q => q.id === s).n).join(', ')}</p><p class="mut">Ovos no ninho: ${S.eggs} · Leite no tanque: ${S.milk} L · Carroça: ${Math.round(cartKg())} / ${cartCap()} kg · Baú: ${Object.keys(S.chest).filter(k => S.chest[k] > 0).length} tipo(s)</p>`;
   return h;
@@ -6974,7 +6980,10 @@ function bagHTML() {
 function openBag() { showModal('Mochila', null, null, bagHTML, 'bag'); }
 A.bagSel = v => { M.sel = v; renderModal(); AU.click(); };
 A.eat = v => { const it = IT[v]; if (!has(v)) return; closeModal(); act('eat', 0.9, null, () => { useInv(v); P.en = cl(P.en + (it.en || 0), 0, 100); P.fo = cl(P.fo + (it.fo || 0), 0, 100); AU.munch(); toast(`+${it.en || 0} energia · +${it.fo || 0} fome`); }, { zoom: 1.2 }); };
-A.drop = v => { useInv(v); renderModal(); };
+A.drop = v => { if ((S.inv[v] || 0) < 1) return; S.inv[v]--; if (!S.inv[v]) delete S.inv[v]; renderModal(); };
+A.bagStore = v => { const q = S.inv[v] || 0; if (!q) return; if (isVet(v)) { bretPut(v, q); delete S.inv[v]; toast('🧰 Guardado no baú do brete.'); } else { A.depPut(v); return; } renderModal(); };
+A.openDepB = () => { closeModal(); openDeposito(); };
+A.openBretB = () => { closeModal(); openBret(); };
 /* ---------- menu principal ---------- */
 const MTABS = [['jor', 'Jornada', 'scroll'], ['nat', 'Natureza', 'eye'], ['vaq', 'Vaqueiro', 'hat'], ['inv', 'Mochila', 'bag'], ['ani', 'Animais', 'cow'], ['gad', 'Gado', 'cow'], ['faz', 'Fazenda', 'farm'], ['map', 'Mapa', 'map'], ['ban', 'Banco', 'bank'], ['obr', 'Obras', 'build'], ['peo', 'Peões', 'worker'], ['rel', 'Relações', 'heart'], ['cq', 'Conquistas', 'ball'], ['cfg', 'Config.', 'gear']];
 function openMenu(tab) { showModal('', MTABS, tab || 'vaq', menuTab); }
@@ -9128,6 +9137,38 @@ function wCardExtra(w) { wInit(w); const tr = w.tr.map(k => `<span class="chip" 
 A.wFolga = v => { const w = S.workers.find(x => x.id === +v); if (!w) return; w.off = S.day + 1; toast('🏖️ ' + w.n + ' folga amanhã. Volta descansado(a).'); renderModal(); };
 A.wGift = v => { const w = S.workers.find(x => x.id === +v); if (!w || w.giftD === S.day || !pay(50, 'Agrado para ' + w.n)) return; wInit(w); w.giftD = S.day; w.mor = cl(w.mor + 12, 0, 100); toast('🎁 ' + w.n + ': "Deus lhe pague, patrão!"'); renderModal(); };
 A.wRaise = v => { const w = S.workers.find(x => x.id === +v); if (!w) return; wInit(w); w.sal = Math.round(w.sal * 1.1); w.raiseD = S.day; w.mor = cl(w.mor + 22, 0, 100); toast('💰 ' + w.n + ' agora ganha ' + fmt(w.sal) + '/semana.'); renderModal(); };
+/* ============ MOCHILA, DEPÓSITO E BAÚ DO BRETE (v7.5) ============
+   O que é da fazenda não precisa ir na mochila: remédios e vacinas compradas na Veterinária vão direto para o
+   Baú do brete; ração, sal, silagem e o resto do trato vão direto para o Depósito. Brete, ficha e peões usam de lá. */
+let VETS = null; const isVet = id => (VETS || (VETS = new Set(Object.keys(IT).filter(k => IT[k].c === 'vet')))).has(id);
+const atFarm = () => !!P && P.x < 60 * TS && P.y < 90 * TS;
+const depUnits = id => DEPKG.includes(id) && IT[id] && IT[id].kg ? Math.floor(((S.dep[id] || 0) + 0.001) / IT[id].kg) : 0;
+function storeHas(id, n) { if (isVet(id) && ((S.bret || {})[id] || 0) >= n) return true; return atFarm() && depUnits(id) >= n; }
+function storeUse(id, n) {
+  if (isVet(id) && ((S.bret || {})[id] || 0) >= n) { S.bret[id] -= n; if (!S.bret[id]) delete S.bret[id]; return true; }
+  if (atFarm() && depUnits(id) >= n) { S.dep[id] = +((S.dep[id] || 0) - IT[id].kg * n).toFixed(2); return true; }
+  return false;
+}
+const stockN = id => (S.inv[id] || 0) + (isVet(id) ? (S.bret || {})[id] || 0 : 0) + (atFarm() ? depUnits(id) : 0);
+function bretPut(id, n) { S.bret = S.bret || {}; S.bret[id] = (S.bret[id] || 0) + n; }
+function bretSpot() { for (const [x, y] of [[52.6, 43.15], [48.4, 43.15], [53.6, 43.15], [47.4, 43.15]]) { const i = gi(Math.floor(x), Math.floor(y)); if (!obj[i] && ground[i] !== G.WATER) return [x, y]; } return [52.6, 43.15]; }
+function guardarFazenda() { // tira da mochila o que é da fazenda: veterinária para o baú, trato para o depósito
+  if (!atFarm()) return say('Isso só dá para fazer aqui na fazenda.', 2000); let nv = 0, nd = 0, cheio = 0;
+  for (const k of Object.keys(S.inv)) { const q = S.inv[k] || 0; if (!q || !IT[k]) continue;
+    if (isVet(k)) { bretPut(k, q); delete S.inv[k]; nv += q; }
+    else if (DEPKG.includes(k)) { for (let i = 0; i < q; i++) { if (depKg() + IT[k].kg > depCap()) { cheio = 1; break; } S.dep[k] = (S.dep[k] || 0) + IT[k].kg; S.inv[k]--; nd++; } if (!S.inv[k]) delete S.inv[k]; } }
+  toast(nv || nd ? '📦 Guardado: ' + (nv ? nv + ' item(ns) de veterinária no Baú do brete' : '') + (nv && nd ? ' e ' : '') + (nd ? nd + ' saco(s) no Depósito' : '') + '.' : 'Nada da fazenda na mochila.'); if (cheio) setTimeout(() => toast('Depósito cheio! Construa um Silo.'), 1200); AU.click && AU.click(); renderModal();
+}
+A.guardarFaz = () => guardarFazenda();
+function openBret() { showModal('🧰 Baú do brete', null, null, () => {
+  S.bret = S.bret || {}; const ks = Object.keys(S.bret).filter(k => S.bret[k] > 0 && IT[k]);
+  let h = '<p class="mut">Tudo o que você compra na Veterinária da Casa do Agro chega direto aqui. O brete, a ficha dos animais e os peões usam daqui sem você precisar carregar.</p>';
+  h += ks.length ? '<table class="t"><tr><th>Item</th><th>No baú</th><th>Mochila</th><th></th></tr>' + ks.map(k => `<tr><td>${iic(k, 16)} ${IT[k].n.split(' (')[0]}</td><td><b>${S.bret[k]}</b></td><td>${S.inv[k] || 0}</td><td>${btn('⬆ 1', 'bretGet', k + '|1')}${btn('⬆ tudo', 'bretGet', k + '|all')}</td></tr>`).join('') + '</table>' : '<p>O baú está vazio. Compre vacinas e remédios na Casa do Agro (aba Veterinária).</p>';
+  const mv = Object.keys(S.inv).filter(k => S.inv[k] > 0 && isVet(k));
+  h += `<div class="row" style="margin-top:6px">${btn('⬇ Guardar remédios e vacinas da mochila' + (mv.length ? ' (' + mv.length + ')' : ''), 'guardarFaz', '', !mv.length)}</div>`;
+  return h; }, 'bag'); }
+A.bretGet = v => { const [k, q] = v.split('|'), have = (S.bret || {})[k] || 0, n = q === 'all' ? have : Math.min(1, have); if (!n) return; S.bret[k] -= n; if (!S.bret[k]) delete S.bret[k]; addInv(k, n, true); renderModal(); };
+const BAG_CAT = [['comida', '🍽️ Comida'], ['prod', '🧺 Produtos da roça e da mata'], ['trato', '🌽 Trato e insumos'], ['vet', '💉 Veterinária'], ['ferr', '🔧 Ferramentas'], ['carne', '🥩 Carnes'], ['peixe', '🐟 Peixes']];
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
@@ -9543,6 +9584,7 @@ function buyItem(id, n, dest) {
   const it = IT[id], cost = it.p * n * priceMul() * feedK(id);
   if (dest === 'cart' && cartKg() + it.kg * n > cartCap()) return say('A carroça não comporta tanto peso.');
   if (dest === 'inv' && invKg() + it.kg * n > INV_CAP) return say('Mochila pesada demais. Use a carroça ou a entrega.');
+  if (dest === 'dep' || dest === 'bret') { const kgT = IT[id].kg * n; if (dest === 'dep' && depKg() + kgT > depCap()) return say('Depósito cheio (' + depCap() + ' kg). Construa um Silo.'); if (!pay(cost, 'Compra de ' + n + 'x ' + it.n)) return; if (dest === 'dep') S.dep[id] = +((S.dep[id] || 0) + (DEPKG.includes(id) ? kgT : n)).toFixed(2); else bretPut(id, n); toast(`📦 ${n}x ${it.n} → ${dest === 'dep' ? 'Depósito' : 'Baú do brete'}`); return; }
   if (dest === 'frete') { const fee = 60; if (!pay(cost + fee, 'Compra de ' + n + 'x ' + it.n + ' + frete')) return; S.fretePend = S.fretePend || {}; const kg = ['racao', 'milho', 'sal', 'racaoCao'].includes(id) ? it.kg * n : n; S.fretePend[id] = (S.fretePend[id] || 0) + kg; S.frete = true; toast('🚚 Entrega no depósito amanhã às 6h'); return; }
   if (!pay(cost, 'Compra de ' + n + 'x ' + it.n)) return;
   if (dest === 'cart') S.cart.cargo[id] = (S.cart.cargo[id] || 0) + n; else addInv(id, n, true);
@@ -9550,8 +9592,12 @@ function buyItem(id, n, dest) {
 }
 A.buy = v => { const [id, n, dest] = v.split('|'); const before = (S.inv[id] || 0) + ((S.cart.cargo || {})[id] || 0); buyItem(id, +n, dest); const got = (S.inv[id] || 0) + ((S.cart.cargo || {})[id] || 0) - before; if (got > 0 && S.discount && (IT[id].c === 'ferr' || id === 'escova' || id === 'alforje' || id === 'lampiao')) { receive(Math.round(IT[id].p * got * (1 - S.discount) * 100) / 100, 'Desconto combinado na Casa do Agro', 'cash'); S.discount = 0; toast('Desconto de 20% aplicado.'); } renderModal(); };
 function shopRow(id, opt) {
-  const it = IT[id], heavy = it.kg >= 8; opt = opt || {};
-  return `<div class="card"><div class="row sp"><span>${iic(id, 28)}</span><span style="flex:1"><b>${it.n}</b><br><span class="mut">${it.d}</span></span><b>${fmt2(it.p * priceMul() * feedK(id))}</b></div><div class="row">${btn('+1 mochila', 'buy', id + '|1|inv')}${heavy ? '' : btn('+5', 'buy', id + '|5|inv')}${it.c === 'vet' && it.kg <= 0.1 ? btn('+20', 'buy', id + '|20|inv') : ''}${heavy && shopCart() ? btn('+1 carroça', 'buy', id + '|1|cart') + btn('+5 carroça', 'buy', id + '|5|cart') : ''}${heavy && opt.frete ? btn('+5 entrega (R$60)', 'buy', id + '|5|frete') : ''}<span class="mut">tem ${S.inv[id] || 0}</span></div></div>`;
+  const it = IT[id], heavy = it.kg >= 8; opt = opt || {}; const vet = isVet(id), dep = DEPKG.includes(id), bt = [];
+  if (vet) bt.push(btn('+1 baú do brete', 'buy', id + '|1|bret'), btn('+5', 'buy', id + '|5|bret'), btn('+20', 'buy', id + '|20|bret'), btn('+1 mochila', 'buy', id + '|1|inv'));
+  else if (dep) bt.push(btn('+1 depósito', 'buy', id + '|1|dep'), btn('+5', 'buy', id + '|5|dep'), btn('+10', 'buy', id + '|10|dep'), btn('+1 mochila', 'buy', id + '|1|inv'));
+  else { bt.push(btn('+1 mochila', 'buy', id + '|1|inv')); if (!heavy) bt.push(btn('+5', 'buy', id + '|5|inv')); if (heavy && shopCart()) bt.push(btn('+1 carroça', 'buy', id + '|1|cart'), btn('+5 carroça', 'buy', id + '|5|cart')); }
+  const tem = (S.inv[id] || 0) + (vet ? ' · baú ' + ((S.bret || {})[id] || 0) : dep ? ' · depósito ' + depUnits(id) : '');
+  return `<div class="card"><div class="row sp"><span>${iic(id, 28)}</span><span style="flex:1"><b>${it.n}</b><br><span class="mut">${it.d}</span></span><b>${fmt2(it.p * priceMul() * feedK(id))}</b></div><div class="row">${bt.join('')}<span class="mut">mochila ${tem}${vet ? ' · vai direto para o Baú do brete' : dep ? ' · vai direto para o Depósito' : ''}</span></div></div>`;
 }
 /* ============ INTERIORES DA CIDADE: todo prédio de Itarantim tem porta, sala, gente e coisas para fazer ============ */
 // móveis novos (pixel art desenhada por código, como os da casa da fazenda); entram em FART na primeira montagem
@@ -9794,12 +9840,13 @@ A.useSad = v => { S.saddleSel = v; const h = mainHorse(); if (h && h.saddle) h.s
 function openDeposito() { showModal('🌽 Depósito de Alimentos', null, null, () => {
   const nearCart = hyp(S.cart.x - P.x, S.cart.y - P.y) < 90;
   let h = `<div class="row sp"><span>Capacidade</span>${bar(depKg() / depCap() * 100, 'y')}<span>${Math.round(depKg())}/${depCap()} kg</span></div><table class="t"><tr><th>Item</th><th>Depósito</th><th>Mochila</th><th></th></tr>`;
-  for (const k of ['racao', 'milho', 'sal', 'racaoCao', 'silagem', 'palma', 'sorgo', 'capim', 'mandioca', 'esterco', 'lenha', 'carvao']) { const kg = DEPKG.includes(k), unit = kg ? IT[k].kg : 1; const d = kg ? Math.floor((S.dep[k] || 0) / unit) : (S.dep[k] || 0); h += `<tr><td>${iic(k, 16)} ${IT[k].n.split(' (')[0]}</td><td>${kg ? Math.round(S.dep[k] || 0) + ' kg' : d}</td><td>${S.inv[k] || 0}</td><td>${btn('⬆ pegar', 'depGet', k, d < 1)}${btn('⬇ guardar', 'depPut', k, !S.inv[k])}</td></tr>`; }
+  for (const k of ['racao', 'milho', 'sal', 'salProt', 'racaoCao', 'silagem', 'palma', 'sorgo', 'capim', 'mandioca', 'esterco', 'lenha', 'carvao']) { const kg = DEPKG.includes(k), unit = kg ? IT[k].kg : 1; const d = kg ? Math.floor((S.dep[k] || 0) / unit) : (S.dep[k] || 0); h += `<tr><td>${iic(k, 16)} ${IT[k].n.split(' (')[0]}</td><td>${kg ? Math.round(S.dep[k] || 0) + ' kg' : d}</td><td>${S.inv[k] || 0}</td><td>${btn('⬆ pegar', 'depGet', k, d < 1)}${btn('⬇ guardar', 'depPut', k, !S.inv[k])}</td></tr>`; }
   h += '</table>';
+  h += `<div class="row" style="margin:6px 0">${btn('⬇ Guardar todo o trato da mochila', 'guardarFaz', '', !Object.keys(S.inv).some(k => DEPKG.includes(k) && S.inv[k] > 0))}</div><p class="mut">Compras de trato na Casa do Agro já chegam aqui direto. Cochos, peões e o plano de trato tiram daqui.</p>`;
   h += nearCart ? `<div class="card"><b>Carroça aqui</b> (${Math.round(cartKg())} kg)<div class="row">${btn('Descarregar tudo no depósito', 'cartUnload')}${btn('Carregar 4 sacos de ração', 'cartLoad', 'racao')}</div></div>` : '<p class="mut">Traga a carroça até a porta para carregar/descarregar em quantidade.</p>';
   return h; }); }
 A.depGet = k => { const kg = DEPKG.includes(k); if (kg) { if (S.dep[k] < IT[k].kg) return; if (!addInv(k, 1)) return; S.dep[k] -= IT[k].kg; } else { if (!S.dep[k]) return; if (!addInv(k, 1)) return; S.dep[k]--; } renderModal(); };
-A.depPut = k => { if (!useInv(k)) return; const kg = DEPKG.includes(k); if (kg && depKg() + IT[k].kg > depCap()) { addInv(k, 1, true); return say('Depósito cheio! Construa um Silo.'); } S.dep[k] = (S.dep[k] || 0) + (kg ? IT[k].kg : 1); renderModal(); };
+A.depPut = k => { if ((S.inv[k] || 0) < 1) return; S.inv[k]--; if (!S.inv[k]) delete S.inv[k]; const kg = DEPKG.includes(k); if (kg && depKg() + IT[k].kg > depCap()) { addInv(k, 1, true); return say('Depósito cheio! Construa um Silo.'); } S.dep[k] = (S.dep[k] || 0) + (kg ? IT[k].kg : 1); renderModal(); };
 A.cartUnload = () => { const c = S.cart.cargo; let n = 0; for (const k in c) { const kg = DEPKG.includes(k); if (kg && depKg() + IT[k].kg * c[k] > depCap()) { say('Depósito cheio!'); continue; } if ([...DEPKG, 'lenha', 'carvao'].includes(k)) { S.dep[k] = (S.dep[k] || 0) + (kg ? IT[k].kg * c[k] : c[k]); n += c[k]; delete c[k]; } else { addInv(k, c[k], true); delete c[k]; } } toast('📦 ' + n + ' volume(s) descarregados.'); renderModal(); };
 A.cartLoad = k => { let n = 0; while (n < 4 && S.dep[k] >= IT[k].kg && cartKg() + IT[k].kg <= cartCap()) { S.dep[k] -= IT[k].kg; S.cart.cargo[k] = (S.cart.cargo[k] || 0) + 1; n++; } toast('📦 ' + n + ' saco(s) na carroça.'); renderModal(); };
 function openIgreja() { showModal('⛪ Igreja Matriz', null, null, () => {
@@ -13069,6 +13116,7 @@ function interactables(forTap) {
   if (has('galaoV') || forTap) { const R0 = FARM.reservoir, [cx, cy] = fpx('cistern'); add({ k: 'res', label: '💧 Encher galões', x: R0.lbl[0] * TS, y: R0.lbl[1] * TS, r: 30, prio: 1, hit: R0.hit.map(v => v * TS), fn: () => has('galaoV') ? act('pickup', 0.9, { x: R0.stand[0] * TS, y: R0.stand[1] * TS }, fillGallons) : say('Você não tem galões vazios.') }); add({ k: 'cist', label: '💧 Cisterna: encher galões', x: cx, y: cy + 6, r: 22, prio: 2, hit: [cx - 14, cy - 26, cx + 14, cy + 4], fn: () => has('galaoV') ? act('pickup', 0.9, { x: cx + 12, y: cy + 4 }, fillGallons) : say('Você não tem galões vazios.') }); }
   if (foot) { const f = objPos('fogueira'), c = objPos('churrasqueira'); add({ k: 'fire', label: 'Fogueira', x: f.x, y: f.y, r: 24, prio: 2, hit: [f.x - 16, f.y - 22, f.x + 16, f.y + 10], fn: openFire }); add({ k: 'bbq', label: 'Churrasqueira', x: c.x + 0.5 * TS, y: c.y + 0.8 * TS, r: 22, prio: 2, hit: [c.x - TS, c.y - 2.2 * TS, c.x + 2 * TS, c.y + 0.4 * TS], fn: openChurras }); }
   farmInteractables(add); mataInteractables(add, foot);
+  { const q = PROPS.find(p => p.t === 'bauBrete'); if (q) add({ k: 'bret', label: '🧰 Baú do brete', x: q.x, y: q.y + 8, r: 22, prio: 2, hit: [q.x - 10, q.y - 16, q.x + 10, q.y + 2], fn: () => act('reach', 0.3, { x: q.x, y: q.y }, openBret, { zoom: false }) }); }
   { const b = objPos('bau'); add({ k: 'chest', label: 'Baú', x: b.x, y: b.y + 0.5 * TS, r: 20, prio: 2, hit: [b.x - 9, b.y - 15, b.x + 9, b.y + 1], fn: () => act('reach', 0.3, { x: b.x, y: b.y }, openChest, { zoom: false }) }); }
   { const ev = eventNow(); if (ev === 'vaquejada') add({ k: 'vaq', label: 'Correr na vaquejada', x: 87.5 * TS, y: 74.5 * TS, r: 40, prio: 5, hit: [85 * TS, 72 * TS, 90 * TS, 77 * TS], fn: startVaquejada }); else if (ev && EVENTS[ev].place === 'praca') add({ k: 'evento', label: EVENTS[ev].n, x: 84 * TS, y: 50 * TS, r: 44, prio: 4, hit: [80 * TS, 46 * TS, 88 * TS, 57 * TS], fn: () => openEventDesk(ev) }); else if (ev === 'criadores') add({ k: 'evento', label: EVENTS[ev].n, x: 95 * TS, y: 59 * TS, r: 30, prio: 6, hit: [92 * TS, 57 * TS, 98 * TS, 60 * TS], fn: () => openEventDesk(ev) }); }
   add({ k: 'placa_ita', label: 'Placa: história de Itarantim', x: 79.6 * TS, y: 48 * TS, r: 24, prio: 3, hit: [78.8 * TS, 45.2 * TS, 80.4 * TS, 47.4 * TS], fn: () => showModal('Itarantim', null, null, () => ITA_FACTS.map(f => `<p>${esc(f)}</p>`).join('') + '<p class="mut">Fontes: IBGE Cidades e registros públicos do município.</p>', 'book') });
