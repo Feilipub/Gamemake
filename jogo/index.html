@@ -373,7 +373,7 @@ body:has(#mn.on) #toast,body:has(#quad[style*=flex]) #toast{top:auto;bottom:calc
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '7.3.0', SAVE_V = 9;
+const GAME_V = '7.4.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -1069,7 +1069,7 @@ const AREAS = {
   retiro: { n: 'Pasto do Retiro (Duarte)', k: 'npc', r: [66, 94, 86, 118], g: [[86, 105], [86, 106]], own: 'ryan', late: 1 }
 };
 const AKEYS = Object.keys(AREAS);
-const LOTS = { A: { r: [41, 24, 47, 29] }, B: { r: [50, 24, 56, 29] }, C: { r: [28, 33, 34, 38] }, D: { r: [30, 3, 36, 8], exp: 'norte' }, E: { r: [30, 80, 36, 85], exp: 'sul' } };
+const LOTS = { A: { r: [41, 24, 47, 29] }, B: { r: [50, 24, 56, 29] }, C: { r: [29, 33, 35, 38] }, D: { r: [30, 3, 36, 8], exp: 'norte' }, E: { r: [30, 80, 36, 85], exp: 'sul' } };
 const EXP = {
   norte: { n: 'Gleba do Mandacaru', p: 30000, y: 21, d: 'Caatinga ao norte: 2 piquetes grandes e o Lote D para obras.', sign: [38.5, 22.6] },
   sul: { n: 'Gleba do Açude', p: 45000, y: 67, d: 'Terras ao sul com açude grande: 2 piquetes (um com água natural) e o Lote E.', sign: [38.5, 66.6] }
@@ -4468,7 +4468,7 @@ function cattleDayAfter() {
   // ladrão de gado: leva gado sem marca dos pastos
   const loose = alive.filter(a => !a.marca && a.age >= 12 && !a.main && a.area && AREAS[a.area].k === 'pasto');
   const guard = myAnimals('cao').some(d => d.skills.includes('Guarda') || d._cmd === 'guardar') ? 0.4 * (myAnimals('cao').length > 1 ? 0.75 : 1) : 1;
-  if (S.day > 15 && loose.length >= 6 && Math.random() < 0.025 * guard) { const n = Math.min(loose.length, rint(1, 2)); const took = [], tc = []; for (let i = 0; i < n; i++) { const a = loose.splice(rint(0, loose.length - 1), 1)[0]; took.push(a.n); tc.push({ id: a.id, sp: a.sp, br: a.br, coat: a.coat, sex: a.sex, age: a.age, wt: a.wt, n: a.n, x: a.x, y: a.y, f: a.f, gen: a.gen, mk: a.mk, skills: [], traits: a.traits }); S.animals = S.animals.filter(x => x !== a); } if (cenasOn()) S.pend.push({ k: 'theft', names: took, c: tc }); S.obito = S.obito || []; took.forEach(n2 => S.obito.unshift({ d: S.day, n: n2, c: 'roubado', cause: 'ladrão de gado' })); toast('🚨 Ladrões de gado levaram ' + took.join(' e ') + ' à noite! Gado marcado a ferro o ladrão não leva.'); ledger('Abigeato: ' + took.join(', '), 0); }
+  if (S.day > 15 && loose.length >= 6 && Math.random() < 0.025 * guard * (S.ronda >= S.day - 1 ? 0.25 : 1)) { const n = Math.min(loose.length, rint(1, 2)); const took = [], tc = []; for (let i = 0; i < n; i++) { const a = loose.splice(rint(0, loose.length - 1), 1)[0]; took.push(a.n); tc.push({ id: a.id, sp: a.sp, br: a.br, coat: a.coat, sex: a.sex, age: a.age, wt: a.wt, n: a.n, x: a.x, y: a.y, f: a.f, gen: a.gen, mk: a.mk, skills: [], traits: a.traits }); S.animals = S.animals.filter(x => x !== a); } if (cenasOn()) S.pend.push({ k: 'theft', names: took, c: tc }); S.obito = S.obito || []; took.forEach(n2 => S.obito.unshift({ d: S.day, n: n2, c: 'roubado', cause: 'ladrão de gado' })); toast('🚨 Ladrões de gado levaram ' + took.join(' e ') + ' à noite! Gado marcado a ferro o ladrão não leva.'); ledger('Abigeato: ' + took.join(', '), 0); }
   // gado fugido para a Mata dos Fundos
   const esc = alive.filter(a => !a.main && !a._fug && a.age >= 8 && a.area && AREAS[a.area].k === 'pasto');
   if (S.day > 4 && esc.length && Math.random() < 0.02) {
@@ -5029,7 +5029,7 @@ function hourTick(h) {
   if (built('bebedouro')) TROUGHS.forEach((t, i) => { if (t.k === 'agua' && (AREAS[t.a].k === 'pasto' || t.a === 'conf' || t.a === 'haras') && !(AREAS[t.a].exp && !S.exp[AREAS[t.a].exp])) { const need = trCap(i) - S.tr[i]; if (need > 0 && S.res > 1) { const take = Math.min(need, S.res * 30); S.tr[i] += take; S.res -= take / 30 * 0.5; } } });
   TROUGHS.forEach((t, i) => { if (AREAS[t.a].k === 'npc') S.tr[i] = trCap(i); });
   // obras
-  for (const k in S.lots) { const l = S.lots[k]; if (l && !l.done && h >= 7 && h < 17 && !isRain()) { l.prog = Math.min(1, l.prog + 1 / (BUILD[l.b].days * 10)); if (l.prog >= 1) { l.done = true; S.pend.push({ k: 'obraFim', lot: k }); } } }
+  for (const k in S.lots) { const l = S.lots[k]; if (l && !l.done && h >= 7 && h < 17 && !isRain()) { l.prog = Math.min(1, l.prog + 1 / (BUILD[l.b].days * 10)); if (l.prog >= 1) { l.done = true; applyLotSolid(); S.pend.push({ k: 'obraFim', lot: k }); } } }
   // peões descansam
   for (const w of S.workers) if (!w.task) w.fat = Math.max(0, w.fat - (built('casapeao') ? 6 : 3));
   // fogo
@@ -5065,7 +5065,7 @@ function dogDay() { for (const d of myAnimals('cao')) { d.water = Math.max(d.wat
     else if (d.food < 40) { d.hap = cl(d.hap - 6, 0, 100); if (Math.random() < 0.4 * dogStat(d, 'track')) { d.food = cl(d.food + 45, 0, 100); toast('🐕 ' + d.n + ' caçou um preá no mato. Compre ração de cão e guarde no depósito: o cão come sozinho de manhã.'); } } } if (myAnimals('cao').length && (S.dep.racaoCao || 0) < 2 && !(S.inv.racaoCao > 0.1)) toast('🦴 A ração dos cães está acabando no depósito.'); }
 function dayTick() { storyCheck(); try { histDaily(); custosDay(); } catch (e) { console.error(e); } regionDay(); missionDay(); socialDay(); dogDay(); aguasDay(); climaDay();
   wildDayTick(); rollOffer(); setTimeout(() => S && eventAnnounce(), 2500); if (S.offer && S.offer.day < S.day - 1) S.offer = null;
-  try { tratoDay(); } catch (e) { console.error(e); }
+  try { tratoDay(); } catch (e) { console.error(e); } try { wDay(); } catch (e) { console.error(e); }
   S.day++;
   const se = season();
   // clima
@@ -5268,16 +5268,16 @@ function cartOff() { P.cart = false; P.x = S.cart.x + 14; P.y = S.cart.y + 8; sa
 const WNAMES = ['Zé Pequeno', 'Tião', 'Raimundo', 'Josefa', 'Damião', 'Neném', 'Chiquinho', 'Maria Bonita', 'Valdir', 'Socorro', 'Biu', 'Toinho', 'Lourdes', 'Cícero', 'Edinalva', 'Galego'];
 const WSPEC = { vaqueiro: ['Vaqueiro', 'Conduz gado 30% mais rápido.'], tratador: ['Tratador', 'Alimenta e abastece 30% mais rápido.'], ajudante: ['Ajudante Geral', 'Limpa currais 30% mais rápido e cansa menos.'] };
 function genCandidates() {
-  S.cand = []; for (let i = 0; i < 3; i++) { const sex = Math.random() < .35 ? 'F' : 'M'; const spec = pick(Object.keys(WSPEC)); const lvl = rint(1, 3);
-    S.cand.push({ id: S.nid++, n: pick(WNAMES), spec, lvl, xp: 0, sal: 380 + lvl * 140 + rint(0, 60), fat: 0, ap: { sex, skin: rint(0, 6), hair: sex === 'F' ? pick([4, 5, 6, 7, 2]) : pick([0, 1, 2, 3]), hairC: rint(0, 3), hat: pick([0, 1, 1, 2, 5, 7]), shirt: pick([0, 1, 3]), shirtC: rint(0, 7), pants: pick([0, 1, 3]), pantsC: rint(0, 3), boots: pick([0, 1, 2]), acc: pick([0, 1, 0]), scarfC: rint(0, 6), orn: 'none' } }); }
+  S.cand = []; for (let i = 0; i < 4; i++) { const sex = Math.random() < .35 ? 'F' : 'M'; const spec = pick(Object.keys(WSPEC)); const lvl = rint(1, 3);
+    const tr = rollWTraits(); S.cand.push({ id: S.nid++, n: pick(WNAMES), spec, lvl, xp: 0, tr, mor: 70, sal: Math.round((380 + lvl * 140 + rint(0, 60)) * (tr.includes('preguicoso') ? 0.85 : 1) * (tr.includes('caprichoso') ? 1.1 : 1)), fat: 0, ap: { sex, skin: rint(0, 6), hair: sex === 'F' ? pick([4, 5, 6, 7, 2]) : pick([0, 1, 2, 3]), hairC: rint(0, 3), hat: pick([0, 1, 1, 2, 5, 7]), shirt: pick([0, 1, 3]), shirtC: rint(0, 7), pants: pick([0, 1, 3]), pantsC: rint(0, 3), boots: pick([0, 1, 2]), acc: pick([0, 1, 0]), scarfC: rint(0, 6), orn: 'none' } }); }
 }
 function payWorkers() {
-  for (const w of S.workers) { if (canPay(w.sal)) { pay(w.sal, 'Salário de ' + w.n); w.miss = 0; } else { w.miss = (w.miss || 0) + 1; toast('⚠️ Sem saldo para pagar ' + w.n + '!'); } }
+  for (const w of S.workers) { if (canPay(w.sal)) { pay(w.sal, 'Salário de ' + w.n); w.miss = 0; wInit(w); w.mor = cl(w.mor + 4, 0, 100); } else { w.miss = (w.miss || 0) + 1; toast('⚠️ Sem saldo para pagar ' + w.n + '!'); } }
   const quit = S.workers.filter(w => w.miss >= 2); quit.forEach(w => toast('😠 ' + w.n + ' pediu as contas por falta de pagamento.')); S.workers = S.workers.filter(w => w.miss < 2);
 }
-const ORDERS = { recolher: 'Recolher o gado ao curral', conduzir: 'Conduzir entre pastagens', transportar: 'Transportar animais', alimentar: 'Alimentar os animais', abastecer: 'Abastecer cochos d’água', limpar: 'Limpar curral' };
-function weff(w) { return (0.65 + w.lvl * 0.1) * (1 - w.fat / 220); }
-function orderLabel(t) { if (!t) return ''; const a = k => AREAS[k] ? AREAS[k].n : k; return t.type === 'recolher' ? 'Recolher gado: ' + a(t.from) + ' → Curral' : t.type === 'conduzir' ? 'Conduzir: ' + a(t.from) + ' → ' + a(t.to) : t.type === 'transportar' ? 'Transportar ' + t.ids.length + ' animal(is) → ' + a(t.to) : t.type === 'alimentar' ? 'Alimentar animais' : t.type === 'abastecer' ? 'Abastecer cochos d’água' : 'Limpar ' + a(t.area); }
+const ORDERS = { recolher: 'Recolher o gado ao curral', conduzir: 'Conduzir entre pastagens', transportar: 'Transportar animais', alimentar: 'Alimentar os animais', abastecer: 'Abastecer cochos d’água', limpar: 'Limpar curral', vacinar: 'Vacinar o gado de um pasto', curar: 'Tratar os doentes', rondar: 'Ronda da noite' };
+function weff(w) { wInit(w); return (0.65 + w.lvl * 0.1) * (1 - w.fat / 220) * wMul(w, 'eff') * (0.8 + w.mor / 500); }
+function orderLabel(t) { if (!t) return ''; const a = k => AREAS[k] ? AREAS[k].n : k; return t.type === 'recolher' ? 'Recolher gado: ' + a(t.from) + ' → Curral' : t.type === 'conduzir' ? 'Conduzir: ' + a(t.from) + ' → ' + a(t.to) : t.type === 'transportar' ? 'Transportar ' + t.ids.length + ' animal(is) → ' + a(t.to) : t.type === 'vacinar' ? 'Vacinar: ' + a(t.area) : t.type === 'curar' ? 'Tratar os doentes' : t.type === 'rondar' ? 'Ronda da noite' : t.type === 'alimentar' ? 'Alimentar animais' : t.type === 'abastecer' ? 'Abastecer cochos d’água' : 'Limpar ' + a(t.area); }
 function giveOrder(w, t) { t.prog = 0; t.si = 0; t.steps = null; if (w.task) { w.queue = w.queue || []; w.queue.push(t); toast('📋 Ordem na fila de ' + w.n); } else { w.task = t; toast('📋 ' + w.n + ': "Pode deixar, patrão!"'); } }
 function buildSteps(w, t) {
   const st = [], fk = w._at || 'sede';
@@ -5295,6 +5295,15 @@ function buildSteps(w, t) {
     const list = TROUGHS.map((tr, i) => ({ tr, i })).filter(o => o.tr.k === 'agua' && AREAS[o.tr.a].k !== 'npc' && !(AREAS[o.tr.a].exp && !S.exp[AREAS[o.tr.a].exp]) && S.tr[o.i] < trCap(o.i) * 0.7);
     go('reserv'); st.push({ k: 'act', pose: 'feed', dur: 2.5, fn: () => {} });
     list.forEach(o => { go(o.tr.a); st.push({ k: 'act', pose: 'feed', dur: 2.5, fn: () => { const need = trCap(o.i) - S.tr[o.i]; const avail = S.res * 30; if (avail < 5) { toast('⚠️ Reservatório vazio!'); return; } const take = Math.min(need, avail); S.tr[o.i] += take; S.res -= take / 30; AU.splash(); } }); });
+  } else if (t.type === 'vacinar' || t.type === 'curar') {
+    const cure = t.type === 'curar', item = cure ? 'remedio' : 'vacina', areas = cure ? [...new Set(myAnimals().filter(a => a.sick && a.area && AREAS[a.area] && AREAS[a.area].k !== 'npc').map(a => a.area))] : [t.area];
+    go('deposito'); st.push({ k: 'act', pose: 'carry', dur: 1.5, fn: () => {} });
+    for (const ar of areas) { if (!AREAS[ar]) continue; go(ar); st.push({ k: 'gate', a: ar, open: true }); st.push({ k: 'enter', a: ar });
+      st.push({ k: 'act', pose: 'feed', dur: 6, fn: () => { const L = myAnimals().filter(a => a.area === ar && (cure ? a.sick : (a.sp === 'boi' && !(a.vacc >= S.day)))); let n = 0; for (const a of L) { if (!useInv(item)) break; n++; if (cure) { a.sick = 0; a.hp = cl(a.hp + 25 + wMul(w, 'care') * 0 + (wHas(w, 'cuidadoso') ? 10 : 0), 0, 100); } else { a.vacc = S.day + 28; if (wHas(w, 'cuidadoso')) a.hp = cl(a.hp + 5, 0, 100); } hist(a, (cure ? 'Tratado' : 'Vacinado') + ' pelo peão ' + w.n); }
+        if (n < L.length) toast('⚠️ ' + w.n + ': faltou ' + (cure ? 'remédio' : 'vacina') + ' para ' + (L.length - n) + ' animal(is). Compre na Casa do Agro (Veterinária).'); else if (n) toast((cure ? '💊 ' : '💉 ') + w.n + (cure ? ' tratou ' : ' vacinou ') + n + ' animal(is) no ' + AREAS[ar].n + '.'); } });
+      st.push({ k: 'exit', a: ar }); st.push({ k: 'gate', a: ar, open: false }); }
+  } else if (t.type === 'rondar') {
+    go('sede'); st.push({ k: 'act', pose: 'idle', dur: 1, fn: () => { S.ronda = S.day; w.fat = Math.min(100, w.fat + 15); toast('🔦 ' + w.n + ' vai fazer a ronda esta noite: ladrão e onça ficam longe.'); } });
   } else if (t.type === 'limpar') {
     go(t.area); st.push({ k: 'gate', a: t.area, open: true }); st.push({ k: 'enter', a: t.area }); st.push({ k: 'act', pose: 'sweep', dur: 9, fn: () => { S.dirt[t.area] = 0; } }); st.push({ k: 'exit', a: t.area }); st.push({ k: 'gate', a: t.area, open: false });
   }
@@ -5303,7 +5312,7 @@ function buildSteps(w, t) {
 function updWorker(w, dt) {
   if (w.x === undefined) { const p = FSP.sede.p; w.x = (p[0] + rnd(-1, 1)) * TS; w.y = (p[1] + rnd(0, 1)) * TS; w._at = 'sede'; }
   w._pose = 'idle'; w._herd = false; w._mv = 0;
-  const h = hour(), work = h >= 6 && h < 18.5;
+  wInit(w); const h = hour(), work = h >= wStart(w) && h < 18.5 && w.off !== S.day;
   if (!w.task && w.queue && w.queue.length && work) { w.task = w.queue.shift(); }
   const t = w.task; if (!t) { workerIdle(w, dt); return; }
   if (!work) { w._wait = 1; workerIdle(w, dt); return; } w._wait = 0; if (w._fire) { releaseSeat(w.id); w._fire = null; } w._sleep = false;
@@ -5320,7 +5329,7 @@ function updWorker(w, dt) {
     case 'gate': { const g = GATES[AREAS[s.a].gate]; // antes de fechar, confere se não tem bicho no vão; se tiver, espera e toca ele para dentro
       if (!s.open && g.open && gateBlocked(g)) { s._w = (s._w || 0) + dt; w._pose = 'wave'; if (s._w > 5) { for (const a of S.animals) for (const [gx, gy] of g.t) if (Math.abs(a.x - (gx + 0.5) * TS) < 14 && Math.abs(a.y - (gy + 0.5) * TS) < 14 && !a._hid) { const q = randIn(s.a, 2); a.x = q[0]; a.y = q[1]; } s._w = 0; } break; }
       if (g.open !== s.open) { g.open = s.open; AU.creak(); } t.si++; break; }
-    case 'act': s._t = (s._t || 0) + dt * eff * ((spec === 'tratador' && (s.pose === 'feed' || s.pose === 'carry')) || (spec === 'ajudante' && s.pose === 'sweep') ? 1.3 : 1); s._p = s._t / s.dur; w._pose = s.pose; w._ph = (w._ph || 0) + dt * 6; if (s.pose === 'sweep' && Math.random() < dt * 4) dust(w.x + 8, w.y, 1); if (s._t >= s.dur) { s.fn(); w.fat = Math.min(100, w.fat + (spec === 'ajudante' ? 3 : 5)); t.si++; } break;
+    case 'act': s._t = (s._t || 0) + dt * eff * ((spec === 'tratador' && (s.pose === 'feed' || s.pose === 'carry')) || (spec === 'ajudante' && s.pose === 'sweep') ? 1.3 : 1); s._p = s._t / s.dur; w._pose = s.pose; w._ph = (w._ph || 0) + dt * 6; if (s.pose === 'sweep' && Math.random() < dt * 4) dust(w.x + 8, w.y, 1); if (s._t >= s.dur) { s.fn(); w.fat = Math.min(100, w.fat + (spec === 'ajudante' ? 3 : 5) * wMul(w, 'fat')); t.si++; } break;
     case 'herd': {
       if (!s.init) { s.init = 1; s.t = 0;
         const list = S.animals.filter(a => a.own === 'player' && (s.ids ? s.ids.includes(a.id) : (a.area === s.from && (a.sp === 'boi' || a.sp === 'cavalo' || a.sp === 'jumento' || a.sp === 'burro'))) && a.id !== P.mnt && !isHitched(a.id));
@@ -5334,7 +5343,7 @@ function updWorker(w, dt) {
       s._p = ls.length ? done / ls.length : 1;
       if (s.t > s.delay && s.wpts.length) { const back = ls.filter(a => a._route && a._route.length).length; walk(s.wpts, back ? 28 * eff : 40); }
       if (Math.random() < dt * 0.08) AU.osc('sawtooth', 240, 200, 0.8, 0.05, { filt: 'bandpass', ff: 600, q: 5 });
-      if (done >= ls.length || s.t > 150) { ls.forEach(a => { if (!inArea(s.to, a.x, a.y)) { const p = randIn(s.to); a.x = p[0]; a.y = p[1]; } a._route = null; a._st = null; }); w._at = s.to; w.x = AREAS[s.to].out[0] * TS; w.y = AREAS[s.to].out[1] * TS; w.fat = Math.min(100, w.fat + 10); t.si++; }
+      if (done >= ls.length || s.t > 150) { ls.forEach(a => { if (!inArea(s.to, a.x, a.y)) { const p = randIn(s.to); a.x = p[0]; a.y = p[1]; } a._route = null; a._st = null; if (wHas(w, 'cantador')) a.hap = cl((a.hap || 60) + 6, 0, 100); }); w._at = s.to; w.x = AREAS[s.to].out[0] * TS; w.y = AREAS[s.to].out[1] * TS; w.fat = Math.min(100, w.fat + 10); t.si++; }
       break; }
   }
 }
@@ -6185,7 +6194,7 @@ function oncaSchedule() {
   if (!S.wild) S.wild = { cd: 3, seen: 0 };
   const night = hour() >= 20 || hour() < 4, has = wildCount('onca');
   if (has && !night) { const w = WILD.find(o => o.k === 'onca'); if (w && w.st !== 'flee') { w.st = 'flee'; w.t = 8; } }
-  if (!has && night && S.wild.cd <= 0 && S.day > 4 && Math.random() < 0.02) { const w = spawnWild('onca', [rnd(3, 27) * TS, FARM.oncaY * TS]); if (w) { w.st = 'roam'; S.wild.cd = rint(4, 7); S.wild.seen++; } }
+  if (!has && night && S.wild.cd <= 0 && S.day > 4 && Math.random() < 0.02 * (S.ronda === S.day ? 0.3 : 1)) { const w = spawnWild('onca', [rnd(3, 27) * TS, FARM.oncaY * TS]); if (w) { w.st = 'roam'; S.wild.cd = rint(4, 7); S.wild.seen++; } }
 }
 function wildDayTick() { if (S.wild && S.wild.cd > 0) S.wild.cd--; }
 function updWild(w, dt) {
@@ -6572,7 +6581,11 @@ const MOVDEF = {
 };
 const MOV = {}; // id -> { prop } ou { trough: i }
 const anchorOf = (x, y) => [Math.floor(x), Math.floor(y - 0.1)]; // casa do pé do objeto (coordenadas em casas)
-function applyObjs() {
+function applyLotSolid() { // prédio pronto num lote tem parede: ninguém atravessa (a frente fica livre para a porta)
+  for (const k in LOTS) { const r = LOTS[k].r, l = S.lots && S.lots[k], solid = l && l.done && l.b !== 'roca';
+    for (let y = r[1] + 1; y <= r[3]; y++) for (let x = r[0]; x <= r[2]; x++) { const i = gi(x, y); if (solid) { if (!obj[i]) obj[i] = 3; } else if (obj[i] === 3 && !PROPS.some(q => Math.floor(q.x / TS) === x && Math.floor(q.y / TS) === y)) obj[i] = 0; } }
+}
+function applyObjs() { applyLotSolid();
   for (const k in MOV) delete MOV[k];
   for (const id in MOVDEF) { const d = MOVDEF[id]; const p = PROPS.find(q => q.t === d.t && Math.abs(q.x - d.home[0] * TS) < 2 && Math.abs(q.y - d.home[1] * TS) < 2); if (p) { p.mid = id; MOV[id] = { prop: p }; } }
   TROUGHS.forEach((t, i) => { if (AREAS[t.a] && AREAS[t.a].k !== 'npc') { const id = 'cocho' + i; MOV[id] = { trough: i }; if (!t.home) t.home = [t.x, t.y]; } });
@@ -7120,7 +7133,7 @@ function farmTab() {
 function workersTab() {
   let h = `<p>Vagas: <b>${S.workers.length}/${workerSlots()}</b> · Contrate no mural do Bar da Zefa. Salários pagos toda segunda.</p>`;
   if (M.sub && M.sub.w) return orderForm();
-  h += S.workers.map(w => `<div class="card"><div class="dlg"><div>${charImg(w.ap, 2)}</div><div style="flex:1"><b>${esc(w.n)}</b> · ${WSPEC[w.spec][0]} nv.${w.lvl}<br><span class="mut">Montaria: <select data-wh="${w.id}" onchange="">${['<option value="">a pé</option>', ...myAnimals().filter(a => (a.sp === 'cavalo' || a.sp === 'burro' || a.sp === 'jumento') && !a.main && a.age >= 12).map(a => `<option value="${a.id}" ${w.horse === a.id ? 'selected' : ''}>${esc(a.n)} (${breedOf(a).n})</option>`)].join('')}</select>${(w.routine || []).length ? ' · rotina: ' + w.routine.map(r => ORDERS[r.type].split(' ')[0]).join(', ') + ' ' + btn('Limpar rotina', 'wRoutClr', w.id) : ''}</span><br><span class="mut">${WSPEC[w.spec][1]}</span><div class="row sp"><span>Cansaço</span>${bar(w.fat, 'r')}</div><div class="row sp"><span>Eficiência</span><b>${Math.round(weff(w) * 100)}%</b><span>Exp.</span>${bar(w.xp / (w.lvl * 100) * 100, 'y')}</div><span class="mut">Salário: ${fmt(w.sal)}/semana</span><br>${w.task ? `📋 ${orderLabel(w.task)} ${bar((w.task.prog || 0) * 100)} ${w._wait ? '(aguardando expediente)' : ''}` : '💤 Sem ordem — aguardando'}${w.queue && w.queue.length ? `<br><span class="mut">Fila: ${w.queue.map(orderLabel).join('; ')}</span>` : ''}<div class="row">${btn('Dar ordem', 'ordNew', w.id)}${w.task ? btn('Cancelar', 'ordCancel', w.id) : ''}${btn('Demitir', 'fire', w.id)}</div></div></div></div>`).join('');
+  h += S.workers.map(w => `<div class="card"><div class="dlg"><div>${charImg(w.ap, 2)}</div><div style="flex:1"><b>${esc(w.n)}</b> · ${WSPEC[w.spec][0]} nv.${w.lvl}<br><span class="mut">Montaria: <select data-wh="${w.id}" onchange="">${['<option value="">a pé</option>', ...myAnimals().filter(a => (a.sp === 'cavalo' || a.sp === 'burro' || a.sp === 'jumento') && !a.main && a.age >= 12).map(a => `<option value="${a.id}" ${w.horse === a.id ? 'selected' : ''}>${esc(a.n)} (${breedOf(a).n})</option>`)].join('')}</select>${(w.routine || []).length ? ' · rotina: ' + w.routine.map(r => ORDERS[r.type].split(' ')[0]).join(', ') + ' ' + btn('Limpar rotina', 'wRoutClr', w.id) : ''}</span><br><span class="mut">${WSPEC[w.spec][1]}</span><div class="row sp"><span>Cansaço</span>${bar(w.fat, 'r')}</div><div class="row sp"><span>Eficiência</span><b>${Math.round(weff(w) * 100)}%</b><span>Exp.</span>${bar(w.xp / (w.lvl * 100) * 100, 'y')}</div>${wCardExtra(w)}<span class="mut">Salário: ${fmt(w.sal)}/semana</span><br>${w.task ? `📋 ${orderLabel(w.task)} ${bar((w.task.prog || 0) * 100)} ${w._wait ? '(aguardando expediente)' : ''}` : '💤 Sem ordem — aguardando'}${w.queue && w.queue.length ? `<br><span class="mut">Fila: ${w.queue.map(orderLabel).join('; ')}</span>` : ''}<div class="row">${btn('Dar ordem', 'ordNew', w.id)}${w.task ? btn('Cancelar', 'ordCancel', w.id) : ''}${btn('Demitir', 'fire', w.id)}</div></div></div></div>`).join('');
   if (!S.workers.length) h += '<p class="mut">Nenhum funcionário. Os peões não fazem nada sem as suas ordens.</p>';
   return h;
 }
@@ -7133,10 +7146,13 @@ function orderForm() {
   if (o.type === 'recolher') h += `<p>De: ${sel('o_from', herdAreas.filter(k => k !== 'curral'), o.from)}</p><p class="mut">O peão abre as porteiras e toca o gado até o Curral.</p>`;
   if (o.type === 'conduzir') h += `<p>De: ${sel('o_from', herdAreas, o.from)}</p><p>Para: ${sel('o_to', herdAreas, o.to || 'p2')}</p><p class="mut">Use para o manejo rotacionado dos piquetes.</p>`;
   if (o.type === 'transportar') { const L = myAnimals().filter(a => a.sp !== 'galinha' && a.sp !== 'cao' && !a.main); h += `<p>Animais:</p><div style="max-height:160px;overflow:auto">${L.map(a => `<label style="display:block"><input type="checkbox" class="o_id" value="${a.id}"> ${esc(a.n)} — ${catName(a)} (${a.area ? AREAS[a.area].n : 'solto'})</label>`).join('')}</div><p>Destino: ${sel('o_to', herdAreas, 'quar')}</p>`; }
+  if (o.type === 'vacinar') h += `<p>Pasto: ${sel('o_area', herdAreas, o.area || 'p1')}</p><p class="mut">Pega as vacinas na mochila (compre na Casa do Agro › Veterinária) e vacina o gado que ainda não está protegido.</p>`;
+  if (o.type === 'curar') h += '<p class="mut">Procura os animais doentes em todos os pastos e trata com remédio da mochila.</p>';
+  if (o.type === 'rondar') h += '<p class="mut">De noite o peão ronda a fazenda: ladrão de gado quase não aparece e a onça fica longe. Ele acorda mais cansado.</p>';
   if (o.type === 'alimentar') h += '<p class="mut">Busca ração (gado) e milho (aves e cavalos) no depósito e enche todos os cochos de trato abaixo de 70%.</p>';
   if (o.type === 'abastecer') h += '<p class="mut">Busca água no reservatório e enche os cochos d’água abaixo de 70%.</p>';
   if (o.type === 'ajudar') h += '<p class="mut">O peão monta no cavalo dele (se tiver um atribuído) e guarda o flanco do rebanho enquanto você toca o gado. Fica até o fim do expediente.</p>';
-  if (['alimentar', 'abastecer', 'limpar'].includes(o.type)) h += '<label><input type="checkbox" id="o_rep"> Repetir todo dia às 6h (rotina)</label>';
+  if (['alimentar', 'abastecer', 'limpar', 'rondar', 'curar'].includes(o.type)) h += '<label><input type="checkbox" id="o_rep"> Repetir todo dia às 6h (rotina)</label>';
     if (o.type === 'limpar') h += `<p>Área: <select id="o_area">${['curral', 'receb', 'quar', 'conf'].map(k => `<option value="${k}">${AREAS[k].n} (sujeira ${Math.round(S.dirt[k])}%)</option>`).join('')}</select></p>`;
   h += `<div class="row">${o.type ? btn('✅ Confirmar ordem', 'ordOk') : ''}${btn('Voltar', 'ordBack')}</div>`;
   return h;
@@ -7155,7 +7171,7 @@ A.ordOk = () => {
   if (o.type === 'recolher') t.from = g('o_from');
   if (o.type === 'conduzir') { t.from = g('o_from'); t.to = g('o_to'); if (t.from === t.to) return toast('Escolha áreas diferentes.'); }
   if (o.type === 'transportar') { t.ids = [...document.querySelectorAll('.o_id:checked')].map(e => +e.value); t.to = g('o_to'); if (!t.ids.length) return toast('Selecione ao menos um animal.'); }
-  if (o.type === 'limpar') t.area = g('o_area');
+  if (o.type === 'limpar' || o.type === 'vacinar') t.area = g('o_area');
   const rep = $('o_rep'); if (rep && rep.checked) { w.routine = (w.routine || []).filter(r => r.type !== t.type); w.routine.push(JSON.parse(JSON.stringify(t))); toast('Rotina diária de ' + w.n + ' atualizada.'); }
   giveOrder(w, t); M.sub = null; renderModal();
 };
@@ -9079,6 +9095,39 @@ A.devCash = v => { const [to, n] = v.split('|'); devAdd(to, n); };
 A.devCustom = to => { const el = $('devV'); devAdd(to, el && el.value); };
 A.devFull = () => { if (!S) return; P.en = 100; P.fo = 100; P.hp = 100; toast('⚡ Energia, fome e vida cheias.'); renderModal(); };
 A.devOff = () => { SET.dev = false; saveSet(); toast('Modo desenvolvedor desligado. Para ligar de novo: toque 7 vezes na versão.'); renderModal(); };
+/* ============ PEÕES 2.0 (v7.4): jeito de cada um, ânimo, folga, agrado, aumento e ordens novas ============ */
+const WTRAITS = {
+  caprichoso: ['Caprichoso', 'Trabalha 15% mais rápido.', { eff: 1.15 }],
+  preguicoso: ['Preguiçoso', '15% mais devagar, mas cobra menos.', { eff: 0.85, sal: 0.85 }],
+  madrugador: ['Madrugador', 'Começa a lida às 5h, uma hora antes.', { start: 5 }],
+  cantador: ['Cantador de aboio', 'O gado que ele toca chega mais calmo e feliz.', { hap: 6 }],
+  cuidadoso: ['Cuidadoso', 'Vacina e trata com capricho: os bichos ganham mais saúde.', { care: 10 }],
+  forte: ['Forte', 'Cansa 30% menos.', { fat: 0.7 }],
+  festeiro: ['Festeiro', 'Animado, mas às vezes falta no dia depois do pagamento.', { miss: 0.3 }],
+  leal: ['Leal', 'Nunca pede as contas por ânimo baixo; só se ficar sem salário.', { leal: 1 }]
+};
+const WT_BAN = [['caprichoso', 'preguicoso']];
+function wInit(w) { if (!w.tr) w.tr = []; if (w.mor === undefined) w.mor = 70; return w; }
+const wMul = (w, k) => (w.tr || []).reduce((v, t) => v * ((WTRAITS[t] && WTRAITS[t][2][k]) || 1), 1);
+const wStart = w => (w.tr || []).includes('madrugador') ? 5 : 6;
+const wHas = (w, t) => (w.tr || []).includes(t);
+function rollWTraits() { const ks = Object.keys(WTRAITS), n = Math.random() < 0.45 ? 2 : 1, out = []; while (out.length < n) { const k = pick(ks); if (out.includes(k) || WT_BAN.some(([a, b]) => (k === a && out.includes(b)) || (k === b && out.includes(a)))) continue; out.push(k); } return out; }
+const morN = m => m >= 75 ? 'animado' : m >= 50 ? 'satisfeito' : m >= 25 ? 'desanimado' : 'quase pedindo as contas';
+function wDay() { // ânimo do peão: muda todo dia
+  for (const w of S.workers) { wInit(w);
+    let d = built('casapeao') ? 2 : -1; if (w.fat > 70) d -= 6; else if (w.fat < 30) d += 2; if (w.miss) d -= 10; if (w.off === S.day - 1) d += 8;
+    w.mor = cl(w.mor + d, 0, 100);
+    if (w.mor < 20 && !wHas(w, 'leal')) { w.low = (w.low || 0) + 1; if (w.low === 1) toast('😟 ' + w.n + ' anda desanimado(a). Dê uma folga, um agrado ou um aumento.'); }
+    else w.low = 0;
+    if (wHas(w, 'festeiro') && S.day % 7 === 2 && Math.random() < 0.3) { w.off = S.day; toast('🎉 ' + w.n + ' exagerou no forró e faltou hoje.'); }
+  }
+  const quit = S.workers.filter(w => w.low >= 3); quit.forEach(w => { toast('😠 ' + w.n + ' pediu as contas: estava muito desanimado(a).'); releaseSeat && releaseSeat(w.id); }); if (quit.length) S.workers = S.workers.filter(w => w.low < 3);
+}
+function wCardExtra(w) { wInit(w); const tr = w.tr.map(k => `<span class="chip" title="${WTRAITS[k][1]}" style="display:inline-block;margin:1px 3px 1px 0;padding:0 5px;border:1px solid #8a5a2a;border-radius:3px;font-size:.85em">${WTRAITS[k][0]}</span>`).join('');
+  return `<div style="margin:2px 0">${tr || '<span class="mut">Sem manias conhecidas.</span>'}</div><div class="mut" style="font-size:.85em">${w.tr.map(k => WTRAITS[k][1]).join(' ')}</div><div class="row sp"><span>Ânimo</span>${bar(w.mor, w.mor >= 50 ? '' : 'r')}<b>${morN(w.mor)}</b></div>${w.off === S.day ? '<div>🏖️ De folga hoje.</div>' : ''}<div class="row">${btn('🏖️ Folga amanhã', 'wFolga', w.id, w.off === S.day + 1)}${btn('🎁 Agrado (R$ 50)', 'wGift', w.id, w.giftD === S.day)}${btn('💰 Aumento de 10%', 'wRaise', w.id, w.raiseD && S.day - w.raiseD < 7)}</div>`; }
+A.wFolga = v => { const w = S.workers.find(x => x.id === +v); if (!w) return; w.off = S.day + 1; toast('🏖️ ' + w.n + ' folga amanhã. Volta descansado(a).'); renderModal(); };
+A.wGift = v => { const w = S.workers.find(x => x.id === +v); if (!w || w.giftD === S.day || !pay(50, 'Agrado para ' + w.n)) return; wInit(w); w.giftD = S.day; w.mor = cl(w.mor + 12, 0, 100); toast('🎁 ' + w.n + ': "Deus lhe pague, patrão!"'); renderModal(); };
+A.wRaise = v => { const w = S.workers.find(x => x.id === +v); if (!w) return; wInit(w); w.sal = Math.round(w.sal * 1.1); w.raiseD = S.day; w.mor = cl(w.mor + 22, 0, 100); toast('💰 ' + w.n + ' agora ganha ' + fmt(w.sal) + '/semana.'); renderModal(); };
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
@@ -9659,7 +9708,7 @@ A.sellP = v => { const n = S.inv[v] || 0; if (!n) return; useInv(v, n); receive(
 function openBar() { showModal('🍺 Bar da Zefa', [['com', 'Refeições'], ['mur', 'Mural de peões'], ['pro', 'Quem está aqui']], 'com', t => {
   let h = keeperBanner('bar');
   if (t === 'com') h += MEALS.map((m, i) => `<div class="card"><div class="row sp"><b>${m.n}</b><b>${fmt(m.p)}</b></div><span class="mut">+${m.fo} fome · +${m.en} energia</span> ${btn('Pedir', 'meal', i)}</div>`).join('');
-  if (t === 'mur') { if (!S.cand.length) genCandidates(); h += `<p>Vagas: ${S.workers.length}/${workerSlots()} ${S.workers.length >= workerSlots() ? '(construa Casa de Peão para mais vagas)' : ''}</p>` + S.cand.map((c, i) => `<div class="card"><div class="dlg">${charImg(c.ap, 2)}<div style="flex:1"><b>${esc(c.n)}</b> · ${WSPEC[c.spec][0]} nv.${c.lvl}<br><span class="mut">${WSPEC[c.spec][1]}</span><br>Salário: <b>${fmt(c.sal)}</b>/semana ${btn('Contratar', 'hire', i, S.workers.length >= workerSlots())}</div></div></div>`).join('') + '<p class="mut">Novos candidatos a cada 3 dias.</p>'; }
+  if (t === 'mur') { if (!S.cand.length) genCandidates(); h += `<p>Vagas: ${S.workers.length}/${workerSlots()} ${S.workers.length >= workerSlots() ? '(construa Casa de Peão para mais vagas)' : ''}</p>` + S.cand.map((c, i) => `<div class="card"><div class="dlg">${charImg(c.ap, 2)}<div style="flex:1"><b>${esc(c.n)}</b> · ${WSPEC[c.spec][0]} nv.${c.lvl}<br><span class="mut">${WSPEC[c.spec][1]}</span>${(c.tr || []).length ? '<br>Jeito: <b>' + c.tr.map(k => WTRAITS[k][0]).join(', ') + '</b> <span class="mut">(' + c.tr.map(k => WTRAITS[k][1]).join(' ') + ')</span>' : ''}<br>Salário: <b>${fmt(c.sal)}</b>/semana ${btn('Contratar', 'hire', i, S.workers.length >= workerSlots())}</div></div></div>`).join('') + '<p class="mut">Novos candidatos a cada 3 dias.</p>'; }
   if (t === 'pro') { const here = npcs.filter(e => !e.hidden && hyp(e.x - P.x, e.y - P.y) < 70); h += here.map(e => `<div class="card">${charImg(e.d.ap, 1)} <b>${e.d.n}</b> ${btn('Conversar', 'kTalk', e.id)}</div>`).join('') || '<p class="mut">Ninguém por perto agora.</p>'; }
   return h; }); }
 A.meal = v => { const m = MEALS[+v]; if (pay(m.p * priceMul(), m.n)) { P.fo = cl(P.fo + m.fo, 0, 100); P.en = cl(P.en + m.en, 0, 100); AU.munch(); addFr('zefa', 4); toast('😋 ' + m.n); } renderModal(); };
@@ -9732,7 +9781,7 @@ A.finExp = k => { if (S.exp[k]) return; const ent = EXP[k].p * 0.2; if (!canPay(
 /* ---------- casa, galpão, depósito, igreja ---------- */
 function openHouse() { showModal(['Rancho de taipa', 'Casa de alvenaria', 'Casa Sede'][S.house === undefined ? 2 : S.house], null, null, () => {
   const late = hour() >= 18 || hour() < 5;
-  return `<p>${S.house === 0 ? 'O rancho do avô Tiãozinho: paredes de barro, rede na sala e as coisas dele ainda pelos cantos.' : 'Sua casa, com varanda e rede pendurada.'}</p>${memOk('caderno') ? '<div class="card">' + btn('Procurar nas coisas do avô', 'memCaderno') + '</div>' : ''}<div class="row">${btn(late ? '🛏️ Dormir até amanhã' : '🛏️ Dormir (só após 18h)', 'sleep', '', !late)}${btn('👕 Guarda-roupa', 'wardrobe')}${btn('💾 Salvar', 'saveNow')}</div><h3>Cozinha</h3><p class="mut">Coma algo da mochila:</p><div class="row">${Object.keys(S.inv).filter(k => IT[k] && (IT[k].fo || IT[k].en) && S.inv[k] > 0.001).map(k => btn(iic(k, 16) + ' ' + IT[k].n.split(' (')[0] + ' (' + S.inv[k] + ')', 'eat', k)).join('') || '<span class="mut">Nada para comer.</span>'}</div><div class="card">${btn('☕ Passar um café (+12 energia)', 'coffee', '', S.flags.coffee === S.day)}</div>`; }); }
+  return `<p>${S.house === 0 ? 'O rancho do avô Tiãozinho: paredes de barro, rede na sala e as coisas dele ainda pelos cantos.' : 'Sua casa, com varanda e rede pendurada.'}</p>${memOk('caderno') ? '<div class="card">' + btn('Procurar nas coisas do avô', 'memCaderno') + '</div>' : ''}<div class="row">${btn(late ? '🛏️ Dormir até amanhã' : '😴 Pular o dia (dormir agora)', 'sleep')}${btn('👕 Guarda-roupa', 'wardrobe')}${btn('💾 Salvar', 'saveNow')}</div><h3>Cozinha</h3><p class="mut">Coma algo da mochila:</p><div class="row">${Object.keys(S.inv).filter(k => IT[k] && (IT[k].fo || IT[k].en) && S.inv[k] > 0.001).map(k => btn(iic(k, 16) + ' ' + IT[k].n.split(' (')[0] + ' (' + S.inv[k] + ')', 'eat', k)).join('') || '<span class="mut">Nada para comer.</span>'}</div><div class="card">${btn('☕ Passar um café (+12 energia)', 'coffee', '', S.flags.coffee === S.day)}</div>`; }); }
 A.sleep = () => sleep(false);
 A.memCaderno = () => { closeModal(); act('pickup', 1.2, { x: P.x, y: P.y - 8 }, () => memFind('caderno'), { zoom: false }); };
 A.calendar = () => openCalendar();
@@ -11186,7 +11235,7 @@ function openFogao() {
 }
 function openCama() {
   const late = hour() >= 18 || hour() < 5;
-  showModal('Cama', null, null, () => `<p>${late ? 'Já é noite. Hora de descansar.' : 'Dá para deitar e descansar um pouco. Dormir até amanhã só depois das 18h.'}</p><div class="row">${btn('Deitar', 'inLie')}${btn(late ? 'Dormir até amanhã' : 'Dormir (só após 18h)', 'inSleep', '', !late)}${btn('Salvar', 'saveNow')}</div>`, 'farm');
+  showModal('Cama', null, null, () => `<p>${late ? 'Já é noite. Hora de descansar.' : 'Ainda é dia. Dá para deitar um pouco ou pular o resto do dia e dormir até amanhã.'}</p><div class="row">${btn('Deitar', 'inLie')}${btn(late ? 'Dormir até amanhã' : 'Pular o dia (dormir agora)', 'inSleep')}${btn('Salvar', 'saveNow')}</div>`, 'farm');
 }
 function openBauAvo() {
   showModal('Baú do avô', null, null, () => `<p>As coisas de Tiãozinho: cartas, um lenço, o ferro de marcar e o caderno de lida.</p><div class="row">${memOk('caderno') ? btn('Procurar nas coisas do avô', 'memCaderno') : ''}${btn('Legado de Tiãozinho', 'legado')}${btn('Baú de guardados', 'inChest')}</div>`, 'book');
