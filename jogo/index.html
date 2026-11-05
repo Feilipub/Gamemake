@@ -371,7 +371,7 @@ body:has(#mn.on) #toast,body:has(#quad[style*=flex]) #toast{top:auto;bottom:calc
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 204, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '6.7.0', SAVE_V = 9;
+const GAME_V = '6.8.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -602,6 +602,12 @@ function drawLogo() {
 
 /* ============ DADOS ============ */
 const SKINS = ['#f6dcc0', '#eac09a', '#d6a078', '#b47a50', '#8e5a36', '#6a4026', '#4a2a18'];
+// rosto: barba e bigode, sobrancelhas, cor e jeito dos olhos, marcas
+const BEARDS = ['Sem barba', 'Bigode fino', 'Bigode de vaqueiro', 'Cavanhaque', 'Barba curta', 'Barba cheia'];
+const BROWS = ['Normais', 'Grossas', 'Finas', 'Sem sobrancelha'];
+const EYEC = ['#24140c', '#6a4220', '#3a6a3a', '#3a5a9a'];
+const EYES = ['Normais', 'Puxados', 'Arregalados'];
+const MARKS = ['Nenhuma', 'Sardas', 'Cicatriz', 'Rugas da lida', 'Pinta', 'Bochechas coradas'];
 const HAIRS = ['Curto', 'Raspado', 'Cacheado', 'Black Power', 'Longo', 'Rabo de Cavalo', 'Trança', 'Coque'];
 const HAIRC = ['#16100c', '#3a2414', '#6a3c1c', '#a6622c', '#d8b06a', '#8c8c8c', '#ece8e0', '#7a2618'];
 const HATS = [
@@ -615,6 +621,10 @@ const PANTS = ['Jeans', 'Calça de Brim', 'Bombacha', 'Perneira de Couro', 'Saia
 const PANTSC = ['#34507a', '#5a4a36', '#2a2a2a', '#7a6a4a', '#8a3a2a', '#e0d8c4'];
 const BOOTS = ['Botina', 'Bota Cano Alto', 'Alpercata de Couro', 'Bota Texana'];
 const ACCS = ['Nenhum', 'Lenço no Pescoço', 'Cinturão de Fivela', 'Fitas do Bonfim', 'Colar de Sementes', 'Óculos Escuros', 'Cuia de Chimarrão'];
+// peças ganhas na lida e nas festas, ou compradas na selaria (ver WUNL)
+HATS.push({ id: 'campeao', base: 'rodeio', n: 'Chapéu de Campeão', c: '#f4ecd8', band: ['#e8c050', '#f8e8a0'] }, { id: 'palhaJ', base: 'palha', n: 'Chapéu de Palha Remendado', c: '#d8b860', band: ['#c03030', '#3070c0', '#e0c040'] }, { id: 'couroB', base: 'couro', n: 'Chapéu de Couro Bordado', c: '#6a3a18', band: ['#e8c050', '#c03030'] }, { id: 'feltroP', base: 'feltro', n: 'Feltro Preto de Festa', c: '#1e1816' }, { id: 'panama', base: 'feltro', n: 'Chapéu Panamá', c: '#efe6cf', band: ['#2a2a2a'] });
+SHIRTS.push('Camisa Junina Remendada', 'Gibão Bordado', 'Camisa de Festa');
+ACCS.push('Medalha da Missa do Vaqueiro', 'Fivela de Fazenda Modelo', 'Fivela de Campeão');
 const SCARFC = ['#c8402e', '#2f6f9f', '#e0b030', '#3b8a4a', '#f0ece0', '#2a2a2a', '#d0508a'];
 // ornamentos regionais: faixa do chapéu e detalhes
 const ORN = {
@@ -2488,7 +2498,7 @@ function grassTile(lvl, v, fr, se) {
 }
 
 /* ============ PIXEL ART: PERSONAGENS (máquina de poses, 8 quadros) ============ */
-function apKey(a) { return [a.sex, a.skin, a.hair, a.hairC, a.hat, a.shirt, a.shirtC, a.pants, a.pantsC, a.boots, a.acc, a.scarfC, a.orn || 'none', a.tool || ''].join(','); }
+function apKey(a) { return [a.sex, a.skin, a.hair, a.hairC, a.hat, a.shirt, a.shirtC, a.pants, a.pantsC, a.boots, a.acc, a.scarfC, a.orn || 'none', a.tool || '', a.beard || 0, a.brow || 0, a.eyeC || 0, a.eyeS || 0, a.mark || 0, a.gear || 0, a.gl || 0].join(','); }
 function charSpr(ap, dir, fr, pose) {
   const d = dir === 2 ? 3 : dir;
   return cached('C' + apKey(ap) + '|' + d + '|' + fr + '|' + pose, 24, 34, g => drawChar(g, ap, d, fr, pose));
@@ -2526,6 +2536,8 @@ function poseQ(pose, fr) {
   return Q;
 }
 function drawChar(g, ap, dir, fr, pose) {
+  const xs = ap.shirt >= 5 ? ap.shirt : -1, xa = ap.acc >= 7 ? ap.acc : -1; // peças especiais usam o desenho da peça de base e ganham detalhes
+  if (xs >= 0 || xa >= 0) ap = Object.assign({}, ap, xs >= 0 ? { shirt: [0, 2, 3][xs - 5] } : {}, xa >= 0 ? { acc: 0 } : {});
   const OX = 4, OY = 5;
   const p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(OX + x, OY + y, w, h); };
   const clr = (x, y, w, h) => g.clearRect(OX + x, OY + y, w, h);
@@ -2536,7 +2548,7 @@ function drawChar(g, ap, dir, fr, pose) {
   const lea = '#8a5226', leD = '#5e3416', leL = '#c08450';
   const bc = ap.boots === 2 ? '#9a6630' : ap.boots === 3 ? '#7a4422' : '#4a2c16', bD = shade(bc, -.3), bL = shade(bc, .2);
   const H = HATS[ap.hat] || HATS[7], hatC = H.c || '#000', hatD = shade(hatC, -.28), hatL = shade(hatC, .22);
-  const O = ORN[ap.orn || 'none'] || ORN.none, eye = '#24140c', sc = SCARFC[ap.scarfC];
+  const O = ORN[ap.orn || 'none'] || ORN.none, eye = EYEC[ap.eyeC || 0] || '#24140c', sc = SCARFC[ap.scarfC];
   const by = Q.by, side = dir === 3, lean = side ? Q.lean : 0;
   const sleeve = ap.shirt === 2 ? lea : shc, short = ap.shirt === 1;
   const RIB = ['#e03030', '#30a040', '#2050c0', '#f0d020'];
@@ -2611,13 +2623,22 @@ function drawChar(g, ap, dir, fr, pose) {
       else { p(x0 + 2, y0 + 2, 1, 1, leL); p(x0 + 2, y0 + 4, 1, 1, leL); if (Q.mv) p(x0 - 1 - (Q.flap > 1 ? 1 : 0), y0 + 4, 1 + (Q.flap > 1 ? 1 : 0), 2, leD); } }
     if (ap.shirt === 3 && dir === 0) { p(7, y0 + 1, 1, 1, shL); p(7, y0 + 3, 1, 1, shL); p(6, y0, 1, 1, '#f4f0e8'); p(9, y0, 1, 1, '#f4f0e8'); }
     if (ap.shirt === 4) { const ec = SHIRTC[ap.shirtC]; for (let x = x0; x < x0 + w; x++) p(x, y0 + 1, 1, 1, x % 2 ? ec : '#e0b030'); p(x0 + 1, y0 + 2, 1, 1, ec); p(x0 + w - 2, y0 + 2, 1, 1, ec); }
+    if (ap.gear) { // guarda-peito de couro
+      if (dir === 0) { p(5, y0 + 1, 6, 6, lea); p(5, y0 + 1, 6, 1, leL); p(6, y0 + 3, 4, 1, leD); p(7, y0 + 5, 2, 1, leD); p(5, y0 + 1, 1, 6, leD); p(10, y0 + 1, 1, 6, leD); }
+      else if (dir === 1) { p(5, y0, 1, 5, leD); p(10, y0, 1, 5, leD); p(5, y0 + 3, 6, 1, leD); }
+      else { p(x0 + w - 2, y0 + 1, 2, 6, lea); p(x0 + w - 1, y0 + 1, 1, 6, leD); } }
     if (ap.pants !== 4 || side) { p(x0, y0 + 6, w, 1, '#3a2414'); if (dir === 0) { p(7, y0 + 6, 2, 1, ap.acc === 2 ? '#f0d060' : '#b89040'); if (ap.acc === 2) { p(6, y0 + 6, 4, 1, '#e8c050'); p(7, y0 + 5, 2, 1, '#c8a030'); } } }
     else p(5, y0 + 5, 6, 1, '#3a2414');
+    if (xs === 5) { if (dir === 0) { p(x0 + 1, y0 + 2, 2, 2, '#e0c040'); p(x0 + w - 2, y0 + 4, 1, 1, '#c03030'); p(x0 + w - 3, y0 + 1, 1, 1, '#3070c0'); } else if (side) p(x0 + 2, y0 + 3, 2, 2, '#e0c040'); else p(x0 + 2, y0 + 2, 2, 2, '#c03030'); }
+    if (xs === 6) { const gd = '#e8c050'; if (dir === 0) { p(5, y0 + 1, 1, 5, gd); p(10, y0 + 1, 1, 5, gd); p(6, y0, 4, 1, gd); } else if (dir === 1) { p(6, y0 + 1, 4, 1, gd); p(7, y0 + 3, 2, 1, gd); p(6, y0 + 5, 4, 1, gd); } else p(x0 + 1, y0 + 1, 1, 5, gd); }
+    if (xs === 7 && dir === 0) { p(7, y0 + 1, 2, 4, '#a02020'); p(7, y0 + 1, 2, 1, '#c84040'); }
+    if (xa === 7 && dir === 0) { p(7, y0 + 1, 1, 2, '#2050c0'); p(8, y0 + 1, 1, 2, '#f0f0f0'); p(7, y0 + 3, 2, 2, '#e8c050'); p(7, y0 + 3, 1, 1, '#fff0b0'); }
+    if ((xa === 8 || xa === 9) && dir === 0) { p(6, y0 + 5, 4, 2, xa === 8 ? '#d8dce0' : '#e8c050'); p(7, y0 + 5, 2, 2, xa === 8 ? '#e8c050' : '#b88a20'); }
     if (ap.acc === 6) { p(side ? 5 + lean : 11, y0 + 5, 2, 3, '#8a5a2a'); p(side ? 5 + lean : 11, y0 + 4, 1, 1, '#c8c8d0'); }
     if (O.horn && dir !== 0) { if (dir === 1) { p(3, y0 - 1, 10, 1, '#5a3a1a'); p(2, y0 + 2, 3, 2, '#e8dcb8'); p(1, y0 + 3, 2, 2, '#f4ecd0'); } else p(3 + lean, y0, 2, 5, '#e8dcb8'); }
   }
   /* ---------- braços ---------- */
-  function hand(x, y) { p(x, y, 2, 2, sk); }
+  function hand(x, y) { p(x, y, 2, 2, ap.gl ? '#6a3a1a' : sk); if (ap.gl) p(x, y, 2, 1, '#8a5226'); }
   const CUPW = '#f2f0e8', CUPB = '#2a5aa0', CUPD = '#c8c4b8', ALU = '#b8bec4', ALUL = '#e4e8ec', ALUD = '#767c84';
   function cup(x, y, tilt) { if (tilt) { p(x, y, 3, 3, CUPW); p(x, y, 1, 3, CUPB); p(x + 1, y + 2, 2, 1, CUPD); p(x + 3, y + 1, 1, 1, CUPD); return; } p(x, y, 3, 3, CUPW); p(x, y, 3, 1, CUPB); p(x + 1, y + 2, 2, 1, CUPD); p(x + 3, y + 1, 1, 1, CUPD); }
   function cupF(x, y) { p(x, y, 4, 3, CUPW); p(x, y, 4, 1, CUPB); p(x, y + 2, 4, 1, CUPD); p(x + 4, y + 1, 1, 1, CUPD); }
@@ -2685,7 +2706,29 @@ function drawChar(g, ap, dir, fr, pose) {
     else { p(sx, y0, 2, 4, sleeve); p(sx + Math.sign(sw), y0 + 3, 2, 2, sleeve); hand(sx + sw, y0 + 5); }
   }
   /* ---------- cabeça ---------- */
-  const eyes = (x1, x2, y) => { if (Q.blink) { p(x1, y + 1, 1, 1, skD); if (x2 !== null) p(x2, y + 1, 1, 1, skD); return; } p(x1, y, 1, 2, eye); p(x1, y, 1, 1, '#ffffff'); if (x2 !== null) { p(x2, y, 1, 2, eye); p(x2, y, 1, 1, '#ffffff'); } };
+  const eyes = (x1, x2, y) => { if (Q.blink) { p(x1, y + 1, 1, 1, skD); if (x2 !== null) p(x2, y + 1, 1, 1, skD); return; } const es = ap.eyeS || 0;
+    const one = (x, o) => { if (es === 1) { p(x, y + 1, 1, 1, eye); return; } p(x, y, 1, 2, eye); p(x, y, 1, 1, '#ffffff'); if (es === 2) p(x + o, y, 1, 1, '#f4f0ea'); };
+    one(x1, -1); if (x2 !== null) one(x2, 1); };
+  const face = (view, y, lx) => { // barba, bigode, sobrancelhas e marcas
+    const bw = ap.brow || 0, bd = ap.beard || 0, mk = ap.mark || 0, sD = shade(sk, -.22), fr2 = mix(hD, sk, .45);
+    if (view === 'front') {
+      if (bw === 1) { p(5, 4 + y, 2, 1, hD); p(9, 4 + y, 2, 1, hD); } else if (bw === 2) { p(6, 4 + y, 1, 1, fr2); p(9, 4 + y, 1, 1, fr2); } else if (bw === 3 && !fem) { p(6, 4 + y, 1, 1, sk); p(9, 4 + y, 1, 1, sk); }
+      if (mk === 1) { p(5, 6 + y, 1, 1, sD); p(8, 6 + y, 1, 1, sD); p(10, 6 + y, 1, 1, sD); } else if (mk === 2) p(10, 3 + y, 1, 3, mix(sk, '#ffffff', .35)); else if (mk === 3) { p(5, 3 + y, 2, 1, skD); p(9, 3 + y, 2, 1, skD); p(5, 7 + y, 1, 1, skD); p(10, 7 + y, 1, 1, skD); } else if (mk === 4) p(10, 7 + y, 1, 1, '#3a2014'); else if (mk === 5) { p(5, 6 + y, 1, 1, '#e0867a'); p(10, 6 + y, 1, 1, '#e0867a'); }
+      if (bd === 1) p(6, 7 + y, 4, 1, hc);
+      else if (bd === 2) { p(5, 7 + y, 6, 1, hc); p(5, 8 + y, 1, 1, hc); p(10, 8 + y, 1, 1, hc); }
+      else if (bd === 3) { p(6, 7 + y, 4, 1, hc); p(7, 8 + y, 2, 1, hc); p(7, 9 + y, 2, 1, hD); }
+      else if (bd === 4) { p(4, 6 + y, 1, 2, hD); p(11, 6 + y, 1, 2, hD); p(5, 8 + y, 6, 1, hD); p(6, 7 + y, 4, 1, hc); }
+      else if (bd === 5) { p(4, 5 + y, 1, 3, hc); p(11, 5 + y, 1, 3, hc); p(5, 7 + y, 6, 2, hc); p(6, 9 + y, 4, 1, hc); p(7, 7 + y, 2, 1, shade(sk, -.3)); p(5, 8 + y, 1, 1, hD); p(10, 8 + y, 1, 1, hD); }
+    } else if (view === 'side') {
+      if (bw === 1) p(9 + lx, 4 + y, 3, 1, hD); else if (bw === 2) p(10 + lx, 4 + y, 1, 1, fr2); else if (bw === 3 && !fem) p(10 + lx, 4 + y, 2, 1, sk);
+      if (mk === 1) { p(9 + lx, 6 + y, 1, 1, sD); p(11 + lx, 6 + y, 1, 1, sD); } else if (mk === 2) p(9 + lx, 3 + y, 1, 3, mix(sk, '#ffffff', .35)); else if (mk === 3) { p(8 + lx, 3 + y, 3, 1, skD); p(9 + lx, 7 + y, 1, 1, skD); } else if (mk === 4) p(10 + lx, 7 + y, 1, 1, '#3a2014'); else if (mk === 5) p(10 + lx, 6 + y, 1, 1, '#e0867a');
+      if (bd === 1) p(10 + lx, 7 + y, 2, 1, hc);
+      else if (bd === 2) { p(9 + lx, 7 + y, 3, 1, hc); p(11 + lx, 8 + y, 1, 1, hc); }
+      else if (bd === 3) { p(10 + lx, 7 + y, 2, 2, hc); }
+      else if (bd === 4) { p(8 + lx, 6 + y, 1, 2, hD); p(8 + lx, 8 + y, 4, 1, hD); p(10 + lx, 7 + y, 2, 1, hc); }
+      else if (bd === 5) { p(8 + lx, 6 + y, 4, 3, hc); p(11 + lx, 7 + y, 1, 1, shade(sk, -.3)); p(9 + lx, 9 + y, 3, 1, hc); }
+    } else if (bd === 5 || bd === 4) { p(4, 7 + y, 1, 1, bd === 5 ? hc : hD); p(11, 7 + y, 1, 1, bd === 5 ? hc : hD); }
+  };
   function headFront() {
     const y = by; p(7, 9 + y, 2, 1, skD);
     if (ap.hair === 4 || ap.hair === 3) p(3, 4 + y, 10, ap.hair === 4 ? 9 : 3, hD);
@@ -2694,6 +2737,7 @@ function drawChar(g, ap, dir, fr, pose) {
     if (fem) { if (!Q.blink) { p(5, 5 + y, 1, 1, eye); p(10, 5 + y, 1, 1, eye); } p(7, 7 + y, 2, 1, Q.arms === 'eat' && fr ? '#7a2a2a' : '#c0505a'); }
     else { p(6, 4 + y, 1, 1, hD); p(9, 4 + y, 1, 1, hD); p(7, 7 + y, 2, 1, Q.arms === 'eat' && fr ? '#5a2a1a' : shade(sk, -.25)); }
     if (Q.run) p(7, 7 + y, 2, 1, '#5a2a1a');
+    face('front', y, 0);
     if (ap.acc === 5) { p(5, 5 + y, 6, 1, '#1a1a1a'); p(5, 6 + y, 2, 1, '#2a2a3a'); p(9, 6 + y, 2, 1, '#2a2a3a'); }
     hairFront(y);
     if (ap.acc === 1) { p(6, 9 + y, 4, 1, sc); p(7, 10 + y, 2, 1, sc); p(7 + (Q.mv ? Q.sway : 0), 11 + y, 1, 1, shade(sc, -.2)); }
@@ -2721,6 +2765,7 @@ function drawChar(g, ap, dir, fr, pose) {
       if (s === 5) { p(7, 7 + y, 2, 3, hc); p(7 + sw, 10 + y, 2, 3, hc); p(7, 7 + y, 2, 1, '#c03030'); }
       if (s === 6) for (let r = 8; r < 16; r++) p(7 + (r % 2) + (r > 11 ? sw : 0), r + y, 2, 1, r % 2 ? hc : hD);
       if (s === 7) { p(6, 0 + y, 4, 3, hc); p(6, 1 + y, 4, 1, hD); } }
+    face('back', y, 0);
     if (ap.acc === 1) { p(5, 9 + y, 6, 2, sc); p(7 + sw, 11 + y, 2, 1, shade(sc, -.2)); }
   }
   function headSide() {
@@ -2732,7 +2777,7 @@ function drawChar(g, ap, dir, fr, pose) {
     p(5 + lx, 2 + y, 7, 6, sk); p(6 + lx, 8 + y, 5, 1, sk); p(12 + lx, 5 + y, 1, 2, sk);
     eyes(10 + lx, null, 5 + y);
     if (fem) { if (!Q.blink) p(11 + lx, 4 + y, 1, 1, eye); p(11 + lx, 7 + y, 1, 1, '#c0505a'); } else { p(10 + lx, 4 + y, 2, 1, hD); p(11 + lx, 7 + y, 1, 1, shade(sk, -.25)); }
-    p(7 + lx, 5 + y, 1, 2, skD);
+    p(7 + lx, 5 + y, 1, 2, skD); face('side', y, lx);
     if (ap.acc === 5) { p(9 + lx, 5 + y, 3, 1, '#1a1a1a'); p(7 + lx, 5 + y, 2, 1, '#1a1a1a'); }
     if (s === 1) p(5 + lx, 2 + y, 5, 2, mix(hc, sk, .45));
     else if (s === 3) { for (let r = -3; r <= 6; r++) { const w = Math.round(Math.sqrt(Math.max(0, 30 - (r - 1) * (r - 1)))); p(7 - w + lx, r + y, Math.min(w * 2, 12 - (7 - w)), 1, hc); } p(9 + lx, 4 + y, 3, 4, sk); eyes(10 + lx, null, 5 + y); }
@@ -2741,8 +2786,8 @@ function drawChar(g, ap, dir, fr, pose) {
   }
   /* ---------- chapéu ---------- */
   function hat(view) {
-    const id = H.id; if (id === 'none') return;
-    const band = O.band, y0 = by + Q.hatLag, lx = view === 'side' ? lean : 0;
+    const id = H.base || H.id; if (id === 'none') return;
+    const band = H.band && (ap.orn || 'none') === 'none' ? H.band : O.band, y0 = by + Q.hatLag, lx = view === 'side' ? lean : 0;
     const bandRow = (x, y, w) => { for (let i = 0; i < w; i++) p(x + i + lx, y, 1, 1, band[i % band.length]); };
     const P2 = (x, y, w, h, c) => p(x + lx, y, w, h, c);
     const side = view === 'side', bx = side ? 2 : 1, bw = side ? 13 : 14;
@@ -3574,19 +3619,21 @@ const RIG = (() => {
     if (o.saddle && eq && !lie) {
       const sd = o.saddle, sc0 = C(sd.c || '#7a4a22');
       mClear(); poly([P_(L * 0.25, -H - 0.3), P_(-L * 0.12, -H * 0.965 - 0.3), P_(-L * 0.13, -H + D * 0.4), P_(L * 0.24, -H + D * 0.42)]);
-      paint(T(o.pad || '#a83a2a'), 1, { fn: (x, y, c) => (Math.abs(y - (P_(0, -H + D * 0.41)[1])) < 0.6 ? C('#e0c050') : c) });
+      paint(T(o.pad || '#a83a2a'), 1, { fn: (x, y, c) => (Math.abs(y - (P_(0, -H + D * 0.41)[1])) < 0.6 ? C('#e0c050') : o.bord && (Math.round(x) + Math.round(y)) % 3 === 0 ? C('#e8c050') : c) });
       const s0 = P_(L * 0.21, -H - 0.3), s1 = P_(-L * 0.09, -H * 0.965 - 0.5);
       mClear(); poly([add(s0, [1 * K, -1.8 * K]), add(s0, [0.8, 1]), add(s1, [0, 1]), add(s1, [-1.2 * K, -2.4 * K]), add(lerpP(s0, s1, 0.5), [0, -0.4])]); paint(T(sc0), 1, {});
+      if (o.pel) { const m0 = lerpP(s0, s1, 0.5), pd = C(PEL_D[o.pel] || o.pel); mClear(); ell(m0[0], m0[1] - 0.9, L * 0.16, 1.5 * K); paint(tn(o.pel), 1, { fn: (x, y, c) => hsh(x, y, 4) < 0.32 ? pd : c }); }
       if (sd.id === 'basto') { const m0 = lerpP(s0, s1, 0.5); mClear(); ell(m0[0], m0[1] - 0.8, L * 0.15, 1.4 * K); paint(tn('#efe6d6'), 1, { fn: (x, y, c) => hsh(x, y, 4) < 0.3 ? C('#d4c8b4') : c }); }
       if (sd.id === 'amer') { mClear(); limb(s0[0] + 0.5, s0[1] - 1, s0[0] + 1.2, s0[1] - 3.4 * K, 2, 2); paint(tn('#4a2410'), 2, {}); }
       const g0 = P_(L * 0.12, -H + D * 0.38), g1 = P_(L * 0.15, -leg - 0.5); mClear(); limb(g0[0], g0[1], g1[0], g1[1], 2, 2); paint(tn('#3a2410'), 0, {});
       const st0 = P_(L * 0.05, -H + D * 0.3), st1 = add(st0, [0.6, D * 0.62]); mClear(); limb(st0[0], st0[1], st1[0], st1[1], 1, 1); paint(tn('#2a1a0c'), 0, {}); mClear(); ell(st1[0], st1[1] + 0.8, 1.3, 0.9); paint(tn('#a8a8b0'), 3, {});
       const b0 = PH(0.9 * K, -0.5 * K), b1 = PH(1.4 * K, -J * 0.9), b2 = PH(HL * 0.62, J * 0.25), b3 = PH(HL * 0.72, -M * 0.95), bit = PH(HL - 0.7 * K, -M * 0.35);
       const rnC = C(o.rein || '#3a2410'), silv = o.orn === 'prata';
-      [[b0, b1], [b2, b3]].forEach(([p0, p1]) => { for (let k = 0; k <= 5; k++) { const p = lerpP(p0, p1, k / 5); dotIf(p[0], p[1], silv && k % 2 ? C('#e8e8f0') : rnC); } });
+      [[b0, b1], [b2, b3]].forEach(([p0, p1]) => { for (let k = 0; k <= 5; k++) { const p = lerpP(p0, p1, k / 5); dotIf(p[0], p[1], silv && k % 2 ? C('#e8e8f0') : o.cab === 'enf' && k % 2 ? C(['#e03030', '#f0d020', '#2050c0'][k % 3]) : rnC); } });
       dot(bit[0], bit[1], C('#c8c8d0'));
       const rein = add(s0, [1.5 * K, -0.6 * K]); for (let k = 1; k < 12; k++) { const p = lerpP(bit, rein, k / 12); dot(p[0], p[1] + Math.sin(k / 12 * Math.PI) * 1.4 * K, rnC); }
       if (o.peit) { const n0 = P_(L * 0.22, -H + D * 0.42), n1 = P_(L * 0.49, -H * 0.7); mClear(); limb(n0[0], n0[1], n1[0], n1[1], 2, 2); paint(tn(o.rein || '#5a3418'), 1, {}); const m0 = lerpP(n0, n1, 0.62); dot(m0[0], m0[1], C(silv ? '#e8e8f0' : '#d8c070')); }
+      if (o.guiz) { const n0 = P_(L * 0.22, -H + D * 0.42), n1 = P_(L * 0.49, -H * 0.7); for (const t of [0.3, 0.55, 0.8]) { const q = lerpP(n0, n1, t); dot(q[0], q[1] + 1, C('#f0d060')); dot(q[0], q[1] + 2, C('#a8801c')); } }
       if (o.orn === 'fitas') { const fc = ['#e03030', '#30a040', '#2050c0', '#f0d020', '#ffffff']; for (let k = 0; k < 5; k++) { const q = add(b0, [-(k * 0.5) * K, (k * 0.6 + 0.5) * K]); dot(q[0] - 1, q[1], C(fc[k])); dot(q[0] - 1.5, q[1] + 1, C(fc[k])); } }
       if (o.orn === 'borla') { const q = PH(1.6 * K, J * 1.05); mClear(); ell(q[0], q[1] + 1.2 * K, 1.1 * K, 1.5 * K); paint(tn('#c83a2a'), 1, {}); dot(q[0], q[1], C('#f0d020')); }
       seat = add(lerpP(s0, s1, 0.55), [0, -1.4 * K]);
@@ -3789,7 +3836,7 @@ const RIG = (() => {
     if ((o.mane || o.tail) && s.t === 'equino') { s = Object.assign({}, s);
       if (o.mane === 'tosada') { s.maneT = 'roach'; s.maneL = Math.min(s.maneL, 1.1); } else if (o.mane === 'longa') { s.maneL *= 1.6; s.mane *= 1.15; } else if (o.mane === 'trancada' && s.maneT !== 'roach') s.maneT = 'braid';
       if (s.tail === 'horse' || s.tail === 'mule') { if (o.tail === 'aparada') s.tailL *= 0.62; else if (o.tail === 'atada') { s.tailL *= 0.5; s.tailW *= 1.3; s.tailKnot = 1; } else if (o.tail === 'trancada') { s.tailW *= 0.55; s.tailBraid = 1; } } }
-    const key = br + '|' + coat + '|' + view + '|' + a + '|' + f + '|' + (o.k || 1) + '|' + (o.marks || 0) + '|' + (o.seed || 0) + '|' + (o.sex || '') + (o.adult ? 1 : 0) + '|' + (o.saddle ? o.saddle.id : '') + (o.pack ? 'p' + (o.load ? 1 : 0) : '') + (o.harness ? 'h' : '') + '|' + (o.mane || '') + (o.tail || '') + (o.pad || '') + (o.rein || '') + (o.peit ? 'P' : '') + (o.orn || '') + (o.noHorn ? 'm' : '') + (o.brand || '') + (o.bflip ? 'f' : '') + (o.tag ? 'T' : '') + (o.col ? '|c' + o.col + (o.colT || '') : '') + (o.bnd ? '|b' + o.bnd : '');
+    const key = br + '|' + coat + '|' + view + '|' + a + '|' + f + '|' + (o.k || 1) + '|' + (o.marks || 0) + '|' + (o.seed || 0) + '|' + (o.sex || '') + (o.adult ? 1 : 0) + '|' + (o.saddle ? o.saddle.id : '') + (o.pack ? 'p' + (o.load ? 1 : 0) : '') + (o.harness ? 'h' : '') + '|' + (o.mane || '') + (o.tail || '') + (o.pad || '') + (o.rein || '') + (o.peit ? 'P' : '') + (o.orn || '') + (o.pel || '') + (o.bord ? 'B' : '') + (o.cab || '') + (o.guiz ? 'G' : '') + (o.noHorn ? 'm' : '') + (o.brand || '') + (o.bflip ? 'f' : '') + (o.tag ? 'T' : '') + (o.col ? '|c' + o.col + (o.colT || '') : '') + (o.bnd ? '|b' + o.bnd : '');
     let r = CACHE.get(key); if (r) return r;
     if (CACHE.size > 2200) { let n = 0; for (const k of CACHE.keys()) { CACHE.delete(k); if (++n > 600) break; } }
     r = view === 'side' ? sideView(s, co, a, f, o) : fbView(s, co, a, f, o, view === 'back');
@@ -4415,7 +4462,7 @@ function pay(v, desc) {
 function receive(v, desc, to) { v = Math.round(v * 100) / 100; if (to === 'cash') { S.cash += v; ledger(desc, v, 'cx'); } else { S.acct += v; ledger(desc, v, 'cc'); } S.stats.earned += v; AU.coin(); }
 /* ---------- inventário ---------- */
 const INV_BASE = 45; let INV_CAP = 45; // o jegue e a mula com alforje carregam mais
-function invCapNow() { const h = P && P.mnt && S ? byId(P.mnt) : null; return INV_BASE + (h ? (h.sp === 'jumento' ? 25 : h.sp === 'burro' ? 15 : 0) : 0); }
+function invCapNow() { const h = P && P.mnt && S ? byId(P.mnt) : null; return INV_BASE + (h ? (h.sp === 'jumento' ? 25 : h.sp === 'burro' ? 15 : 0) : 0) + cangaBonus(); }
 function itKgE(i) { return IT[i] ? IT[i].kg * (IT[i].c === 'peixe' && S.inv.sambura ? 0.2 : 1) : 0; }
 function invKg() { let k = 0; for (const i in S.inv) if (IT[i]) k += itKgE(i) * S.inv[i]; return Math.round(k * 10) / 10; }
 function addInv(id, n, force) { n = n || 1; if (!force && IT[id] && invKg() + itKgE(id) * n > INV_CAP + 0.01) { say('Mochila pesada demais (' + INV_CAP + ' kg). Use a carroça ou o depósito.'); return false; } S.inv[id] = (S.inv[id] || 0) + n; return true; }
@@ -4684,6 +4731,7 @@ const BIO = {
     sonho: 'Ganhar o concurso de culinária baiana da região.', medo: 'Perder a visão de vez (ele esconde que está enxergando mal).', problema: 'A visão piorando e a concorrência amistosa com o bar da Zefa.',
     segredo: 'Está perdendo a visão e decora os temperos pelo cheiro.', obj: ['Organizar o São João do bairro', 'Ganhar o concurso de culinária'], gosta: ['carnesol', 'linguica'], ama: ['cupim'], odeia: ['rapadura'] }
 };
+const NPC_FACE = { nenem: { beard: 1 }, val: { beard: 2, mark: 5 }, cicero: { mark: 3, beard: 4 }, raimundo: { mark: 3, beard: 1 }, jaco: { beard: 3 }, bene: { beard: 5, mark: 3 }, dede: { brow: 1 }, gilberto: { beard: 1 }, clara: { mark: 1 }, bia: { mark: 5 } };
 const NEWNPC = {
   raimundo: { n: 'Seu Raimundo', role: 'Farmacêutico', ap: { sex: 'M', skin: 1, hair: 1, hairC: 6, hat: 8, shirt: 2, shirtC: 4, pants: 1, pantsC: 1, boots: 0, acc: 1, scarfC: 0, orn: 'none' }, pers: 'Cauteloso e detalhista; fala baixo.', likes: ['cafe', 'queijo'], loves: ['canjica'], dislikes: ['carvao'],
     sched: [[0, 'casa_raimundo', 'home'], [6.8, 'farmacia', 'work'], [12, 'rest_mesa', 'eat'], [13, 'farmacia', 'work'], [18, 'praca2', 'chat'], [19.5, 'casa_raimundo', 'home']], sun: [[0, 'casa_raimundo', 'home'], [8.6, 'igreja', 'missa'], [10.5, 'praca2', 'chat'], [12, 'casa_raimundo', 'home']] },
@@ -4721,6 +4769,7 @@ const NEW_LINES = {
   val: { intro: 'Opa! Val, do Sabor da Terra! Isso aqui é comida de vó, pode provar!', t0: ['Prova esse feijão tropeiro!', 'Fogo de chão é outra coisa.'], t1: ['No tempo da comitiva a gente comia na beira da estrada.', 'A Zefa que me perdoe, mas meu baião é melhor.'], t2: ['Vou te contar uma coisa... ultimamente eu tempero mais pelo cheiro.'], t3: ['Pra você a mesa é sempre a primeira.'], rain: 'Chuva pede caldo de mocotó!', dry: 'Na seca a carne de sol fica no ponto.', night: 'Cozinha fechando, mas sobrou um pratinho.' }
 };
 Object.assign(NPCDEF, NEWNPC); Object.assign(NPC_LINES, NEW_LINES);
+for (const id in NPC_FACE) if (NPCDEF[id] && NPCDEF[id].ap) Object.assign(NPCDEF[id].ap, NPC_FACE[id]);
 
 /* ============ MUNDO: JOGADOR, ANIMAIS, PEÕES, CARROÇA, TEMPO ============ */
 let P = null; // = S.p
@@ -4835,7 +4884,7 @@ function dayTick() { storyCheck(); try { histDaily(); custosDay(); } catch (e) {
       if ((a.sp === 'cavalo') && built('estrebaria')) mate = males.find(m => m.sp === 'cavalo' || m.sp === 'jumento');
       if (a.sp === 'jumento') mate = males.find(m => m.sp === 'jumento');
       if (a.sp === 'cabra') mate = males.find(m => m.sp === 'cabra');
-      if (mate && (a.sp !== 'boi' || a.cio === S.day) && Math.random() < (a.sp === 'boi' ? 0.45 : a.sp === 'cabra' ? 0.14 : 0.07) * (a.hap / 80)) { a.preg = a.sp === 'boi' ? 7 : a.sp === 'cabra' ? 5 : 9; a._pai = mate.id; a._paiN = mate.n; a._paiSp = mate.sp; a._paiBr = mate.br; a._paiGen = mate.gen; }
+      if (mate && (a.sp !== 'boi' || a.cio === S.day) && Math.random() < (a.sp === 'boi' ? 0.45 : a.sp === 'cabra' ? 0.14 : 0.07) * (a.hap / 80)) { a.preg = a.sp === 'boi' ? 7 : a.sp === 'cabra' ? 5 : 9; a._pai = mate.id; a._paiN = mate.n; a._paiSp = mate.sp; a._paiBr = mate.br; a._paiGen = mate.gen; a._paiCoat = mate.coat; a._paiMk = mate.mk; a._paiAnd = mate.and ? mate.and.nv : 0; }
     }
   }
   for (const m of born) { if (m.sp === 'boi' && startLabor(m)) continue; birthCalf(m); }
@@ -6674,6 +6723,7 @@ function menuTab(t) {
     const st = STATES[S.cf.st];
     let h = `<div class="dlg"><div>${charImg(S.cf.ap, 4)}</div><div style="flex:1"><h2 style="margin:0">${esc(S.cf.name)}</h2><p>${S.cf.ap.sex === 'F' ? 'Vaqueira' : 'Vaqueiro'} de <b>${st[1]}</b> (${st[2]})</p><p class="mut">${st[7]}</p><p>Talento: <b>${PERKS[st[5]]}</b></p></div></div>`;
     h += `<div class="card"><div class="row sp">${ic('bolt', 16)} Energia ${bar(P.en)} <b>${Math.round(P.en)}</b></div><div class="row sp">${ic('meat', 16)} Fome (saciedade) ${bar(P.fo, 'y')} <b>${Math.round(P.fo)}</b></div></div>`;
+    h += trajesHTML(false);
     h += '<div class="card"><b>Habilidades</b>' + [['lid', 'Lida (tocar gado)'], ['pec', 'Pecuária (engorda)'], ['lac', 'Laço'], ['mon', 'Montaria']].map(([k, n]) => `<div class="row sp"><span>${n}</span><span class="stars">${'●'.repeat(skill(k))}${'○'.repeat(3 - skill(k))}</span></div>`).join('') + '</div>';
     h += `<div class="card"><div class="row sp"><span>${ic('calendar', 14)} Dia ${S.day} · ${WEEK[wday()]}</span><span>${seasonName()} · ${clock()}</span></div><div class="row sp"><span>Animais vendidos</span><b>${S.stats.sold}</b></div><div class="row sp"><span>Nascimentos</span><b>${S.stats.born}</b></div><div class="row sp"><span>Ovos recolhidos</span><b>${S.stats.eggs}</b></div><div class="row sp"><span>Patrimônio em animais</span><b>${fmt(herdValue())}</b></div></div>`;
     { const ma = (S.missions || []).filter(m => m.st === 'active'); h += '<h3>Compromissos</h3>' + (ma.map(m => misHTML(m)).join('') || '<p class="mut">Nenhum. Veja os pedidos no quadro de avisos da praça.</p>'); }
@@ -6913,6 +6963,10 @@ function sheetActions(a) {
   if (a.sp === 'galinha') L.push(['egg', 'Recolher ovos (' + S.eggs + ')', 'eggs', !S.eggs]);
   if (a.sp === 'cao') { const c = a._cmd || 'seguir'; L.push(['cow', 'Juntar o gado', 'cmdjuntar', c === 'juntar']); L.push(['lasso', 'Tocar o gado', 'cmdtocar', c === 'tocar']); L.push(['eye', 'Farejar fujão', 'cmdfarejar', c === 'farejar']); L.push(['gate', 'Vigiar a fazenda', 'cmdguardar', c === 'guardar']); L.push(['pin', 'Ficar', 'cmdficar', c === 'ficar']); L.push(['boot', 'Seguir', 'cmdseguir', c === 'seguir']); L.push(['call', 'Chamar', 'call']); L.push(['ball', 'Brincar', 'play']); L.push(['book', 'Treinar', 'train']); L.push(['brush', 'Coleira e lenço', 'custom']); }
   if (isH) L.push(['bag', 'Preparar viagem', 'travel', !a.saddle || !has('alforje') || a.travel]);
+  if (a.sp === 'cavalo' && a.sex === 'F' && a.own === 'player') L.push(['heart', a.preg ? 'Prenhe: potro em ~' + a.preg + ' dia(s)' : 'Cobrir a égua', 'cobrir', !!a.preg || a.age < (MATURE.cavalo || 30) || a._cobD === S.day]);
+  if (isH && a.own === 'player' && !a.marca) L.push(['pin', 'Marcar a ferro (' + brandOf() + ')', 'hmarca', !hasFerro() || a.age < 6]);
+  if (isH && a.own === 'player' && gaitOf(a)) L.push(['horse', 'Treinar andamento (' + Math.floor(a.and.nv) + '%)', 'gait', a._trD === S.day || !a.saddle]);
+  if ((a.sp === 'jumento' || a.sp === 'burro') && a.own === 'player') L.push(['bag', a.cang ? 'Tirar a cangalha' : 'Pôr a cangalha', 'cang', !a.cang && (!has('cangalha') || !!a.saddle)]);
   if (isPullOk(a) || ((a.sp === 'jumento' || a.sp === 'burro') && a.age >= 12)) L.push(['farm', 'Atrelar carroça', 'hitch', isHitched(a.id)]);
   if (a.sp === 'boi' && a.sex === 'M' && a.age >= 24) { if ((a.carro || 0) < 100) L.push(['book', 'Amansar p/ carro (' + Math.round(a.carro || 0) + '%)', 'tame', a.tameD === S.day]); else if (S.veh && S.veh.boi.own) L.push(['farm', 'Pôr na canga', 'hitchOx', isHitched(a.id)]); }
   if (isH || a.sp === 'jumento') L.push(['brush', 'Personalizar', 'custom']);
@@ -6926,6 +6980,7 @@ function sheetActions(a) {
   if (SH.sub === 'transfer') h += '<div class="card"><b>Levar para:</b><div class="row">' + myAreas().filter(k => AREAS[k].k === 'pasto' || k === 'conf' || k === 'quar' || k === 'receb').map(k => btn(AREAS[k].n + ' (' + Math.round(areaGrass(k) || 0) + '% capim)', 'saTo', k, k === a.area)).join('') + '</div></div>';
   if (SH.sub === 'custom') h += a.sp === 'cao' ? dogCustHTML(a) : custHTML(a);
   if (SH.sub === 'manejo' || (a.sp === 'boi' && a.labor && SH.sub !== 'ia')) h += manejoHTML(a);
+  if (SH.sub === 'cobrir') h += cobrirHTML(a);
   if (SH.sub === 'ia') h += iaHTML(a);
   if (SH.sub === 'feedHint') h += `<p class="mut">Precisa de ${IT[food].n} na mochila${a.sp === 'cao' ? ' (ou algum corte de carne)' : ''}.</p>`;
   if (SH.conf === 'sell') { const p = a.area === 'curral' ? frigPrice(a) : Math.round(frigPrice(a) - 80); h += `<div class="card">Vender <b>${esc(a.n)}</b> por <b>${fmt(p)}</b>${a.area === 'curral' ? '' : ' (descontado frete de R$ 80 — o animal não está no curral)'}?<div class="row">${btn('Confirmar venda', 'saSell')}${btn('Cancelar', 'saNo')}</div></div>`; }
@@ -6961,10 +7016,10 @@ function custHTML(a) {
   h += '<b>Crina</b>' + op('mane', MANES, cu.mane) + '<b>Cauda</b>' + op('tail', TAILS, cu.tail);
   if (a.sp !== 'jumento') { h += '<b>Manta da sela</b>' + swatch('pad', PADS, cu.pad) + '<b>Rédeas e cabeçada</b>' + swatch('rein', REINS, cu.rein);
     h += `<b>Peitoral</b><div class="ch"><button data-a="cust" data-v="peit|0" class="${!cu.peit ? 'on' : ''}">Sem peitoral</button><button data-a="cust" data-v="peit|1" class="${cu.peit ? 'on' : ''}">Peitoral de couro${st.peit ? '' : ' · ' + fmt(PEIT_P)}</button></div>`;
-    h += '<b>Enfeites</b>' + op('orn', ORNS, cu.orn) + '<p class="mut">Manta, peitoral e enfeites aparecem quando o animal está selado. Peças compradas ficam suas para usar em todas as montarias.</p>'; }
+    h += '<b>Enfeites</b>' + op('orn', ORNS, cu.orn) + '<p class="mut">Manta, peitoral e enfeites aparecem quando o animal está selado. Peças compradas ficam suas para usar em todas as montarias.</p>'; h += custExtraHTML(a); }
   return h + '</div>';
 }
-A.cust = v => { const a = SH.a; if (!a) return; const [k, x] = v.split('|'); a.cust = Object.assign(defCust(), a.cust || {}); S.tack = S.tack || {};
+A.cust = v => { const a = SH.a; if (!a) return; const [k, x] = v.split('|'); a.cust = Object.assign(defCust(), a.cust || {}); S.tack = S.tack || {}; if (TACK_X[k]) return custX(a, k, x);
   if (k === 'peit' && x === '1' && !S.tack.peit) { if (!pay(PEIT_P, 'Peitoral de couro (selaria)')) return; S.tack.peit = 1; toast('Peitoral comprado na selaria.'); }
   if (k === 'orn' && x !== 'none' && !S.tack[x]) { const o = ORNS.find(q => q[0] === x); if (!pay(o[2], o[1] + ' (selaria)')) return; S.tack[x] = 1; toast(o[1] + ' comprado(s).'); }
   a.cust[k] = k === 'peit' ? x === '1' : x; if (k === 'mane' || k === 'tail') { hist(a, k === 'mane' ? 'Crina: ' + MANES.find(m => m[0] === x)[1].toLowerCase() : 'Cauda: ' + TAILS.find(m => m[0] === x)[1].toLowerCase()); a.care = cl(a.care + 2, 0, 100); }
@@ -7017,6 +7072,10 @@ A.sa = k => {
     case 'stay': { if (a._st === 'stay') { a._st = null; } else { a._st = 'stay'; a._home = [a.x, a.y]; a._t = 1e9; say(a.n + ' vai ficar por aqui.', 1800); } renderSheet(); return; }
     case 'play': { const ang = { 0: [0, 1], 1: [0, -1], 2: [-1, 0], 3: [1, 0] }[P.dir]; return act('throw', 0.7, null, () => { }, { zoom: false, onThrow: () => { let tx = P.x + ang[0] * 70, ty = P.y + ang[1] * 60; for (let i = 0; i < 6 && hitAt(tx, ty, 4); i++) { tx = lerp(tx, P.x, 0.3); ty = lerp(ty, P.y, 0.3); } for (let i = 0; i < 8; i++) part(lerp(P.x, tx, i / 8), lerp(P.y - 20, ty, i / 8) - Math.sin(i / 8 * Math.PI) * 20, 'dust', { vx: 0, vy: 0, m: 0.25 + i * 0.04, c: '#8a5a2a', s: 2 }); a._st = 'fetch'; a._tg = [tx, ty]; a._t = 4; AU.bark(a.x, a.y); if (a.playD !== S.day) { a.playD = S.day; a.hap = cl(a.hap + 10, 0, 100); a.cond = cl(a.cond + 2, 0, 100); hist(a, 'Brincou de buscar o graveto'); } } }); }
     case 'train': return doAnimal(a, 'train', 3, () => { P.en = Math.max(0, P.en - 4); if (a.trainD !== S.day) { a.trainD = S.day; a.cond = cl(a.cond + 6, 0, 100); a.care = cl(a.care + 3, 0, 100); bond(a, 3); a.xp = a.xp || { h: 0, g: 0, t: 0, o: 0 }; const fk = a.esp === 'boiadeiro' ? 'h' : a.esp === 'guarda' ? 'g' : a.esp === 'rastreador' ? 't' : 'o'; dogXP(a, 'o', 22); dogXP(a, fk, 10); for (const q of ['h', 'g', 't']) if (q !== fk) dogXP(a, q, 4); hist(a, 'Treinou: senta, fica, vem e busca'); toast('🐕 Treino feito! Obediência +, ' + DOG_SKN[fk] + ' +'); } else toast('Já treinou hoje. Amanhã tem mais!'); a._st = 'sitc'; a._t = 2; });
+    case 'cobrir': SH.sub = SH.sub === 'cobrir' ? null : 'cobrir'; return renderSheet();
+    case 'hmarca': return doAnimal(a, 'brand', 2.2, () => { a.marca = brandOf(); wound(a); hist(a, 'Marcado a ferro na anca: ' + a.marca); dust(a.x, a.y - 10, 2, '#888888'); toast('🔥 ' + a.n + ' marcado(a) com o ferro ' + a.marca + ' na anca.'); });
+    case 'gait': return doAnimal(a, 'brush', 3, () => { const g = gaitOf(a); a._trD = S.day; g.nv = Math.min(100, g.nv + 6 + skill('mon')); a.care = cl((a.care || 50) + 2, 0, 100); toast('🐎 Treino de ' + GAITS[g.t][0].toLowerCase() + ': ' + Math.floor(g.nv) + '%.'); if (g.nv >= 100) S.flags.marcha100 = S.flags.marcha100 || S.day; });
+    case 'cang': return doAnimal(a, 'saddle', 1.6, () => { if (a.cang) { a.cang = 0; addInv('cangalha', 1, true); toast('Cangalha guardada na mochila.'); } else { if (!useInv('cangalha')) return; a.cang = 1; toast('🧺 ' + a.n + ' com cangalha e caçuás: deixe-o seguir você e a mochila leva +40.'); } });
     case 'travel': return doAnimal(a, 'travel', 1.8, () => { if (!useInv('alforje')) return; a.travel = true; a._stam = 100; hist(a, 'Preparado para viagem'); toast('🎒 ' + a.n + ' pronto para viagem: fôlego rende mais.'); });
     case 'hitch': { if (S.veh) useVeh(S.veh.carroca); if (hyp(S.cart.x - a.x, S.cart.y - a.y) > 160) return say('Leve ' + a.n + ' pelo cabresto até a carroça (perto do galpão).', 3000); P.lead = a.id; a._st = 'led'; return approach(S.cart, 26, () => A.hitch(a.id)); }
     case 'hitchOx': { useVeh(S.veh.boi); if (hyp(S.cart.x - a.x, S.cart.y - a.y) > 160) return say('Leve ' + a.n + ' pelo cabresto até o carro de boi.', 3000); P.lead = a.id; a._st = 'led'; return approach(S.cart, 30, () => A.hitch(a.id)); }
@@ -8650,7 +8709,7 @@ const nextSunday = () => { let d = S.day + 1; while (d % 7 !== 0) d++; return d;
 A.amorCasa = id => { if (!useInv('aliancas', 1)) return; S.amor.st = 2; S.amor.wd = nextSunday(); addFr(id, 100); remember(id, 'ficamos noivos'); M.txt = 'Sim! Mil vezes sim! Domingo, na igreja, às 10h. Vou avisar a cidade inteira!'; SFX.fanfare(true); toast('💍 Noivado! O casamento é domingo, dia ' + S.amor.wd + ', às 10h na igreja de Itarantim.'); renderModal(); };
 function csCasamento() {
   const A0 = S.amor, d = NPCDEF[A0.id]; A0.st = 3; A0.cd = S.day;
-  const fim = () => { receive(800, 'Presentes do casamento'); S.stats.earned -= 800; toast('💞 Casados! ' + d.n + ' agora vive com você na Boa Esperança.'); SFX.fanfare(true); };
+  const fim = () => { const ex = trajeFesta() ? 400 : 0; receive(800 + ex, 'Presentes do casamento'); S.stats.earned -= 800 + ex; if (ex) toast('🤵 Todo mundo elogiou o traje de festa: mais presentes!'); toast('💞 Casados! ' + d.n + ' agora vive com você na Boa Esperança.'); SFX.fanfare(true); };
   if (!cenasOn()) { say('Os sinos da igreja tocam: você e ' + d.n + ' estão casados!', 6000); return fim(); }
   if (AU.sfxBell) AU.sfxBell();
   cutscene([
@@ -8674,7 +8733,162 @@ function histDaily() { // todo amanhecer
     if (S.day % 7 === 3) { const g = (d.likes || [])[0]; if (g && IT[g]) { addInv(g, 2, true); toast('💞 ' + d.n + ' deixou um presente para você: ' + IT[g].n + '.'); } }
     else if (Math.random() < 0.5) toast('💞 ' + d.n + ' preparou café com cuscuz: energia e fome renovadas.'); }
 }
-function lidaTick(dt) { if (!S) return; if ((lidaV -= dt) <= 0) { lidaV = 0.15; const el = $('jorn'); if (el) el.style.visibility = M.open || SH.a ? 'hidden' : 'visible'; } if ((lidaT -= dt) <= 0) { lidaT = 1; jornCheck(); pipaTick(); tutTick(); conqTick(); amorTick(); if (jornState().cap >= JORNADA.length && !S.flags.modelo && mode === 'play' && !M.open && !P._act) csModelo(); } }
+/* ---------- ROUPAS QUE SE GANHAM JOGANDO, LOJA E TRAJES SALVOS ---------- */
+// peças que se ganham ou se compram: [como ganhar, condição, preço na loja]
+const WUNL = {
+  'hat:8': ['Vencer uma vaquejada', () => (S.stats.vaq || 0) >= 1], 'hat:9': ['Dançar a quadrilha no São João', () => !!S.flags.sjoao, 60], 'hat:10': ['Ir à Missa do Vaqueiro', () => !!S.flags.missaVaq],
+  'hat:11': ['Selaria da Casa do Agro', null, 220], 'hat:12': ['Selaria da Casa do Agro', null, 180],
+  'shirt:5': ['Dançar a quadrilha no São João', () => !!S.flags.sjoao, 90], 'shirt:6': ['Sair na cavalgada de Itarantim', () => !!S.flags.cavalgada], 'shirt:7': ['Selaria da Casa do Agro', null, 150],
+  'acc:7': ['Ir à Missa do Vaqueiro', () => !!S.flags.missaVaq], 'acc:8': ['Virar Fazenda Modelo do Sertão', () => !!S.flags.modelo], 'acc:9': ['Vencer 5 vaquejadas', () => (S.stats.vaq || 0) >= 5],
+  'gear:1': ['Selaria da Casa do Agro', null, 280], 'gl:1': ['Selaria da Casa do Agro', null, 90]
+};
+const W_LIST = { hat: () => HATS.map(x => x.n), shirt: () => SHIRTS, acc: () => ACCS, gear: () => ['Sem guarda-peito', 'Guarda-peito de couro'], gl: () => ['Sem luvas', 'Luvas de couro'] };
+function wOk(k, i) { const u = WUNL[k + ':' + i]; if (!u) return true; if (!S || !S.flags) return false; if (S.wd && S.wd[k + ':' + i]) return true; try { return !!(u[1] && u[1]()); } catch (e) { return false; } }
+function wName(key) { const [k, i] = key.split(':'); return W_LIST[k]()[+i]; }
+function chipsW(key, list, cur) {
+  const locked = [];
+  const h = `<div class="ch">${list.map((v, i) => { const ok = wOk(key, i); if (!ok) { locked.push(i); if (!setupEdit) return ''; } return `<button data-s="${key}" data-v="${i}" class="${i === cur ? 'on' : ''}" ${ok ? '' : 'disabled'}>${ok ? '' : '🔒 '}${v}</button>`; }).join('')}</div>`;
+  return h + (setupEdit && locked.length ? `<div class="desc">${locked.map(i => { const u = WUNL[key + ':' + i]; return '🔒 <b>' + list[i] + '</b>: ' + u[0] + (u[2] ? ' (' + fmt(u[2]) + ')' : ''); }).join('<br>')}</div>` : '');
+}
+function wardTick() { // avisa quando uma peça nova fica liberada
+  if (!S || !S.flags) return; S.wdSeen = S.wdSeen || {};
+  for (const key in WUNL) { if (S.wdSeen[key]) continue; const [k, i] = key.split(':'); if (wOk(k, +i)) { S.wdSeen[key] = S.day; if (S.day > 1 || (S.wd && S.wd[key])) { toast('👕 Nova peça no guarda-roupa: ' + wName(key) + '!'); break; } } }
+}
+function wShopHTML() {
+  const L = Object.keys(WUNL).filter(key => WUNL[key][2]);
+  return `<h3>👢 Couro e roupas</h3>` + L.map(key => { const [k, i] = key.split(':'), u = WUNL[key], ok = wOk(k, +i); return `<div class="card"><div class="row sp"><b>${wName(key)}</b><b>${fmt(u[2])}</b></div>${ok ? '<span class="mut">✅ Já está no seu guarda-roupa (vista em casa).</span>' : btn('Comprar', 'wbuy', key)}</div>`; }).join('') + '<p class="mut">Traje de couro completo (chapéu de couro, gibão, perneira, guarda-peito e luvas) protege dos espinhos da caatinga e do mato.</p>';
+}
+A.wbuy = key => { const u = WUNL[key]; if (!u || !u[2]) return; if (!pay(u[2], wName(key))) return; S.wd = S.wd || {}; S.wd[key] = S.day; S.wdSeen = S.wdSeen || {}; S.wdSeen[key] = S.day; toast('👕 ' + wName(key) + ' comprado! Vista no guarda-roupa da sua casa.'); renderModal(); };
+// trajes salvos
+const TRAJE_N = ['Lida', 'Festa', 'Missa', 'Casamento'];
+const CLOTH_K = ['hat', 'shirt', 'shirtC', 'pants', 'pantsC', 'boots', 'acc', 'scarfC', 'orn', 'gear', 'gl'];
+const pickCloth = a => { const o = {}; for (const k of CLOTH_K) o[k] = a[k]; return o; };
+function trajesHTML(inSetup) {
+  const T = (S && S.trajes) || [];
+  return `<div class="${inSetup ? 'desc' : 'card'}"><b>👔 Trajes guardados</b><br><span class="mut">Guarde a roupa de cada ocasião e troque com um toque. Festa junina, missa e casamento reconhecem o traje certo.</span>${TRAJE_N.map((n, i) => `<div class="row sp" style="margin:3px 0"><span><b>${n}</b>${T[i] ? '' : ' <span class="mut">(vazio)</span>'}</span><span class="row">${inSetup ? `<button data-s="tVest" data-v="${i}" ${T[i] ? '' : 'disabled'}>Vestir</button><button data-s="tSave" data-v="${i}">Guardar o atual</button>` : btn('Vestir', 'vestir', i, !T[i])}</span></div>`).join('')}</div>`;
+}
+A.vestir = i => { const t = S.trajes && S.trajes[+i]; if (!t) return; Object.assign(S.cf.ap, t); toast('👔 Vestiu o traje de ' + TRAJE_N[+i].toLowerCase() + '.'); renderModal(); };
+const trajeJunino = () => S.cf.ap.shirt === 5 || S.cf.ap.hat === 9;
+const trajeFesta = () => S.cf.ap.shirt === 7 || S.cf.ap.hat === 11 || S.cf.ap.hat === 12;
+const trajeGibao = () => S.cf.ap.shirt === 6 || couroCompleto();
+/* ---------- CRIAÇÃO DE CAVALOS: herança de pelagem, sinais e andamento; cobertura escolhida ---------- */
+const COAT_RARE = c => /^(pampa|appa|sabino|perlino|isabel|palomino|tordilhoNegro|tordilhoVinhoso|rosilhoPrateado|baioCebruno|gateado|lobuno)/.test(c);
+function inheritCoat(mc, pc) { const r = Math.random(); let c = r < 0.45 ? mc : r < 0.9 ? (pc || mc) : pick(COATS_OF.cavalo.filter(x => x !== 'tordilhoBranco')); if (!RIG.COATS[c]) c = mc || 'castanho'; return c; }
+function inheritMk(a, b) { const A1 = mkDec(a || 0), B1 = mkDec(b === undefined ? a : b); let socks = 0; for (let i = 0; i < 4; i++) { const sa = (A1.socks >> i) & 1, sb = (B1.socks >> i) & 1; if ((sa || sb) && Math.random() < (sa && sb ? 0.85 : 0.5)) socks |= 1 << i; } return mkEnc(Math.random() < 0.5 ? A1.face : B1.face, socks, Math.random() < 0.5 ? A1.sh : B1.sh); }
+const brN = k => (mtTab('cavalo')[k] || {}).n || k;
+function horseGenes(c, m) {
+  const pb = m._paiBr && mtTab('cavalo')[m._paiBr] ? m._paiBr : m.br;
+  if (pb !== m.br) { c.br = Math.random() < 0.5 ? m.br : pb; c.cruz = brN(m.br) + ' × ' + brN(pb); }
+  c.coat = inheritCoat(m.coat, m._paiCoat); c.mk = inheritMk(m.mk, m._paiMk);
+  c.and = { t: gaitType(c), nv: Math.round((((m.and && m.and.nv) || 0) + (m._paiAnd || 0)) * 0.15) };
+  S.flags.potro = S.flags.potro || S.day; hist(c, 'Nasceu no haras da Boa Esperança: filho(a) de ' + m.n + ' e ' + (m._paiN || 'pai desconhecido'));
+  const rara = COAT_RARE(c.coat) && !COAT_RARE(m.coat) && !COAT_RARE(m._paiCoat || '');
+  if (rara) S.flags.potroRaro = S.flags.potroRaro || S.day;
+  setTimeout(() => toast((rara ? '✨ Pelagem rara! ' : '🐴 ') + c.n + ' nasceu ' + RIG.COATS[c.coat].n.toLowerCase() + (c.cruz ? ' (' + c.cruz + ')' : '') + '.'), 1200);
+}
+const birthCalf0 = birthCalf;
+birthCalf = function (m, o) { const c = birthCalf0(m, o); try { if (c && c.sp === 'cavalo' && m.sp === 'cavalo') horseGenes(c, m); } catch (e) { console.error(e); } return c; };
+// garanhões do Haras Lagoa Seca (cobertura paga)
+const HARAS_G = [
+  { n: 'Imperador do Lagoa Seca', br: 'mm', coat: 'tordilhoPedres', mk: mkEnc(1, 0, 0), and: 80, gen: 88, p: 1500 },
+  { n: 'Ventania', br: 'qm', coat: 'palomino', mk: mkEnc(2, 3, 0), and: 20, gen: 86, p: 1300 },
+  { n: 'Lampião', br: 'crioulo', coat: 'gateado', mk: 0, and: 30, gen: 84, p: 1100 },
+  { n: 'Sultão', br: 'arabe', coat: 'tordilhoNegro', mk: mkEnc(1, 1, 0), and: 25, gen: 90, p: 1800 },
+  { n: 'Pintado da Serra', br: 'paint', coat: 'pampaOveroPreto', mk: mkEnc(3, 15, 1), and: 15, gen: 82, p: 1400 },
+  { n: 'Rei do Sertão', br: 'nordestino', coat: 'rosilho', mk: mkEnc(1, 2, 0), and: 70, gen: 80, p: 700 }
+];
+function cobrirHTML(a) {
+  const own = S.animals.filter(m => m.own === 'player' && m.sex === 'M' && !m.cast && (m.sp === 'cavalo' || m.sp === 'jumento') && m.age >= (MATURE.cavalo || 30) && m.id !== a.id);
+  const row = (img, t, sub, act, v, dis) => `<div class="card"><div class="row sp">${img}<span style="flex:1"><b>${t}</b><br><span class="mut">${sub}</span></span>${btn('Cobrir', act, v, dis)}</div></div>`;
+  let h = `<div class="card"><b>🐎 Cobrir ${esc(a.n)}</b><p class="mut">O potro herda a pelagem, os sinais, a raça e o jeito de andar dos pais. De vez em quando nasce uma pelagem rara. Com jumento, nasce burro ou mula. Prenhez de cerca de 9 dias.</p></div>`;
+  h += '<h3>Seus garanhões</h3>' + (own.map(m => row(animalImg(m, 1), esc(m.n), (m.sp === 'jumento' ? 'Jumento · nasce muar' : brN(m.br) + ' · ' + RIG.COATS[rigCoat(m)].n) + (m.and ? ' · ' + GAITS[m.and.t][0].toLowerCase() + ' ' + Math.round(m.and.nv) + '%' : ''), 'cobDo', m.id)).join('') || '<p class="mut">Você não tem garanhão adulto inteiro (não castrado).</p>');
+  h += '<h3>Garanhões do Haras Lagoa Seca</h3>' + HARAS_G.map((g, i) => row('<span style="font-size:22px">🐴</span>', g.n, brN(g.br) + ' · ' + RIG.COATS[g.coat].n + ' · ' + fmt(g.p * priceMul()), 'cobHaras', i, !canPay(g.p * priceMul()))).join('');
+  return h + btn('Voltar', 'cobBack');
+}
+function cobrir(a, sire, paid) {
+  a._cobD = S.day; SH.sub = null;
+  doAnimal(a, 'brush', 2.4, () => {
+    if (Math.random() < (paid ? 0.9 : 0.75) * (0.7 + (a.hap || 60) / 300)) { a.preg = 9; a._pai = sire.id || null; a._paiN = sire.n; a._paiSp = sire.sp || 'cavalo'; a._paiBr = sire.br; a._paiGen = sire.gen; a._paiCoat = sire.coat; a._paiMk = sire.mk; a._paiAnd = sire.and && sire.and.nv !== undefined ? sire.and.nv : (sire.and || 0); hist(a, 'Coberta por ' + sire.n); toast('🐎 ' + a.n + ' pegou cria de ' + sire.n + '! O potro nasce em cerca de 9 dias.'); }
+    else toast('A cobertura de ' + a.n + ' não pegou. Tente de novo amanhã.');
+  });
+}
+A.cobDo = id => { const a = SH.a, m = byId(+id); if (!a || !m) return; cobrir(a, m, false); };
+A.cobHaras = i => { const a = SH.a, g = HARAS_G[+i]; if (!a || !g) return; if (!pay(g.p * priceMul(), 'Cobertura no Haras Lagoa Seca: ' + g.n)) return; cobrir(a, Object.assign({ sp: 'cavalo' }, g), true); };
+A.cobBack = () => { SH.sub = null; renderSheet(); };
+/* ---------- ANDAMENTO: marcha picada, batida, esquipado e trote ---------- */
+const GAITS = { picada: ['Marcha picada', 'macia e rápida, quase sem sacolejo: você cansa bem menos'], batida: ['Marcha batida', 'firme e rápida, boa para estrada longa'], esquipado: ['Esquipado', 'o andamento lateral do sertão, o mais veloz sem galopar'], trote: ['Trote', 'andamento comum: treinado, poupa o fôlego'] };
+function gaitType(a) { const br = a.br; if (a.sp === 'burro') return br === 'marchador' ? 'picada' : 'trote'; if (br === 'mm') return a.id % 2 ? 'picada' : 'batida'; if (br === 'mangalarga') return 'picada'; if (br === 'campolina') return 'batida'; if (['nordestino', 'pampa', 'piquira', 'marajoara', 'pantaneiro', 'baixadeiro', 'campeiro', 'lavradeiro'].includes(br)) return 'esquipado'; return 'trote'; }
+function gaitOf(a) { if (a.sp !== 'cavalo' && a.sp !== 'burro') return null; if (!a.and) a.and = { t: gaitType(a), nv: a.main ? 25 : rint(5, 35) }; return a.and; }
+const horseStats0 = horseStats;
+horseStats = function (h) {
+  const r = horseStats0(h), g = gaitOf(h); if (!g) return r; const l = g.nv / 100;
+  const vk = { picada: 0.22, batida: 0.26, esquipado: 0.32, trote: 0.08 }[g.t] || 0, ck = g.t === 'trote' ? 0.25 : 0.15;
+  r.B = Object.assign({}, r.B, { v: [r.B.v[0] * (1 + vk * l), r.B.v[1], r.B.v[2]], cost: r.B.cost * (1 - ck * l), rec: r.B.rec * (1 + 0.1 * l) }); return r;
+};
+function gaitTick() { // treino aos poucos enquanto cavalga no andamento (sem galopar); marcha boa cansa menos o vaqueiro
+  const h = P && P.mnt ? byId(P.mnt) : null; if (!h || mode !== 'play') return; const g = gaitOf(h); if (!g) return; const sp = hyp(P._vx || 0, P._vy || 0); if (sp < 6) return;
+  const B = horseStats(h).B; if (sp < B.v[0] * 1.3) { const n0 = Math.floor(g.nv / 25); g.nv = Math.min(100, g.nv + 0.035); if (Math.floor(g.nv / 25) > n0) toast('🐎 ' + h.n + ' está melhorando na ' + GAITS[g.t][0].toLowerCase() + ': ' + Math.floor(g.nv) + '%.'); }
+  if (g.t === 'picada' || g.t === 'batida') P.en = Math.min(100, P.en + (g.t === 'picada' ? 0.05 : 0.03) * g.nv / 100);
+  if (g.nv >= 100) S.flags.marcha100 = S.flags.marcha100 || S.day;
+}
+/* ---------- ARREIO COMPLETO, GUIZOS E CHOCALHOS ---------- */
+const PELEGOS = [['', 'Sem pelego'], ['#efe6d6', 'Pelego branco', 140], ['#8a6a48', 'Pelego pardo', 140], ['#2a2420', 'Pelego preto', 140]];
+const PEL_D = { '#efe6d6': '#d4c8b4', '#8a6a48': '#6e5236', '#2a2420': '#181412' };
+const TACK_X = { bord: ['Manta bordada a ouro', 180], guiz: ['Guizos no peitoral', 120], cab: ['Cabeçada com miçangas', 90], pel: ['Pelego de carneiro', 140] };
+function custExtraHTML(a) {
+  const cu = a.cust || defCust(), st = S.tack || {}, pr = k => st[k] ? '' : ' · ' + fmt(TACK_X[k][1]);
+  const tg = (k, on, l0, l1) => `<div class="ch"><button data-a="cust" data-v="${k}|0" class="${!on ? 'on' : ''}">${l0}</button><button data-a="cust" data-v="${k}|1" class="${on ? 'on' : ''}">${l1}${pr(k)}</button></div>`;
+  let h = '<b>Pelego (sobre a sela)</b><div class="ch">' + PELEGOS.map(([c, n]) => `<button data-a="cust" data-v="pel|${c}" class="${(cu.pel || '') === c ? 'on' : ''}">${n}${c && !st.pel ? ' · ' + fmt(TACK_X.pel[1]) : ''}</button>`).join('') + '</div>';
+  h += '<b>Manta</b>' + tg('bord', !!cu.bord, 'Lisa', 'Bordada a ouro (' + esc(brandOf()) + ')') + '<b>Cabeçada</b>' + tg('cab', cu.cab === 'enf', 'Simples', 'Com miçangas coloridas') + '<b>Guizos</b>' + tg('guiz', !!cu.guiz, 'Sem guizos', 'Guizos no peitoral (tilintam ao andar)');
+  const g = gaitOf(a); if (g) h += `<p class="mut">Andamento: <b>${GAITS[g.t][0]}</b> (${GAITS[g.t][1]}) · treinado ${Math.floor(g.nv)}%. Treina sozinho enquanto você cavalga sem galopar, ou use “Treinar andamento” uma vez por dia.</p>`;
+  return h;
+}
+function custX(a, k, x) {
+  S.tack = S.tack || {}; const on = k === 'pel' ? !!x : x === '1';
+  if (on && !S.tack[k]) { if (!pay(TACK_X[k][1], TACK_X[k][0] + ' (selaria)')) return; S.tack[k] = 1; toast(TACK_X[k][0] + ' comprado(a) na selaria. Fica seu para todas as montarias.'); }
+  a.cust[k] = k === 'pel' ? x : k === 'cab' ? (on ? 'enf' : 'simples') : on; AU.buckle(); renderSheet();
+}
+const GZ = { t: 0, c: 0, wa: null };
+function guizFrame(dt) {
+  if (mode !== 'play' || !S) return;
+  const h = P.mnt ? byId(P.mnt) : null;
+  if (h && h.saddle && h.cust && h.cust.guiz) { const sp = hyp(P._vx || 0, P._vy || 0); if (sp > 8) { GZ.t -= dt * sp / 34; if (GZ.t <= 0) { GZ.t = 1; AU.osc('triangle', 3300 + rnd(-250, 250), 2900, 0.09, 0.02); AU.osc('sine', 4300 + rnd(-200, 200), 4000, 0.06, 0.012, { delay: 0.03 }); } } }
+  const oc = S.veh && S.veh.boi; if (oc && oc.choc && P.cart && S.cart === oc) { const wa = oc._wa || 0; if (GZ.wa === null) GZ.wa = wa; if (Math.abs(wa - GZ.wa) > 5) { GZ.wa = wa; AU.osc('square', 600 + rnd(-30, 30), 560, 0.14, 0.012); AU.osc('triangle', 1200, 1080, 0.11, 0.01, { delay: 0.04 }); } }
+}
+/* ---------- CANGALHA E CAÇUÁS ---------- */
+Object.assign(IT, { cangalha: { i: '🧺', n: 'Cangalha com caçuás', kg: 6, p: 220, d: 'Arreio de carga para jegue ou burro. Com ele seguindo você (ou montado), a mochila leva +40 de carga.', c: 'var' } });
+const cangaBonus = () => S && S.animals && P && S.animals.some(x => x.cang && x.own === 'player' && (x.id === P.mnt || x._st === 'follow') && hyp(x.x - P.x, x.y - P.y) < 260) ? 40 : 0;
+/* ---------- CARRO DE BOI ENFEITADO ---------- */
+const OX_PINT = [['', 'Madeira natural'], ['#2f6fa8', 'Azul'], ['#b8402a', 'Vermelho'], ['#3b8a4a', 'Verde'], ['#e0b030', 'Amarelo']];
+function oxDecorHTML() {
+  const c = S.veh.boi; if (!c.own) return '';
+  return `<div class="card"><b>🎨 Enfeitar o carro de boi</b><p class="mut">Canga enfeitada, chocalhos que batem no compasso dos bois e a mesa pintada nas cores da sua fazenda.</p><b>Canga</b><div class="ch"><button data-a="oxDec" data-v="canga|0" class="${!c.canga ? 'on' : ''}">Lisa</button><button data-a="oxDec" data-v="canga|1" class="${c.canga ? 'on' : ''}">Enfeitada com fitas${c.cangaB ? '' : ' · ' + fmt(120)}</button></div><b>Chocalhos</b><div class="ch"><button data-a="oxDec" data-v="choc|0" class="${!c.choc ? 'on' : ''}">Sem chocalho</button><button data-a="oxDec" data-v="choc|1" class="${c.choc ? 'on' : ''}">Chocalhos de cobre${c.chocB ? '' : ' · ' + fmt(90)}</button></div><b>Pintura da mesa (${fmt(150)} cada pintura)</b><div class="ch">${OX_PINT.map(([v, n]) => `<button data-a="oxDec" data-v="pint|${v}" class="${(c.pint || '') === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>`;
+}
+A.oxDec = v => { const c = S.veh.boi, [k, x] = v.split('|');
+  if (k === 'pint') { if ((c.pint || '') === x) return; if (!pay(150, 'Pintura do carro de boi')) return; c.pint = x; toast('🎨 Carro de boi pintado!'); }
+  else { const on = x === '1', bk = k + 'B', pr = k === 'canga' ? 120 : 90; if (on && !c[bk]) { if (!pay(pr, k === 'canga' ? 'Canga enfeitada' : 'Chocalhos de cobre')) return; c[bk] = 1; } c[k] = on; }
+  renderModal(); };
+function oxDecor(c, view, flip, a1, a2, cr, x, y) {
+  if (c.pint && cr && cr.b) { const w = cr.b.width, h = cr.b.height, x0 = flip ? x + cr.ox - w : x - cr.ox, y0 = y - cr.oy; X.fillStyle = c.pint; if (view === 'side') { const sx = Math.round(flip ? x0 + w * 0.43 : x0 + w * 0.05), sw = Math.round(w * 0.52), sy = Math.round(y0 + h * 0.44); X.fillRect(sx, sy, sw, 2); X.fillStyle = '#f4ecd8'; X.fillRect(sx + 1, sy + 2, sw - 2, 1); } else { X.fillRect(Math.round(x0 + w * 0.25), Math.round(y0 + h * 0.45), Math.round(w * 0.5), 2); } }
+  const bois = [a1, a2].filter(Boolean); if (!bois.length) return;
+  const k = rigK(bois[0]), s = RIG.spec(rigBreed(bois[0])), sg = flip ? -1 : 1, RIB = ['#e03030', '#f0d020', '#2050c0', '#30a040'];
+  for (const an of bois) {
+    const ax = ix(an), ay = iy(an), nx = view === 'side' ? Math.round(ax + sg * s.L * 0.36 * k) : Math.round(ax), ny = Math.round(ay - s.H * k);
+    if (c.canga) for (let i = 0; i < 4; i++) { X.fillStyle = RIB[i]; X.fillRect(nx - 2 + i, ny + 1, 1, 4 + (i % 2) * 2); }
+    if (c.choc) { const bx = view === 'side' ? nx + sg * 2 : nx, by = ny + Math.round(s.H * k * 0.42); X.fillStyle = '#5a3a1a'; X.fillRect(bx, by - 3, 1, 3); X.fillStyle = '#c8803a'; X.fillRect(bx - 1, by, 3, 3); X.fillStyle = '#8a5220'; X.fillRect(bx - 1, by + 2, 3, 1); }
+  }
+}
+CONQ.push(['potro', '🐴', 'Haras da Boa Esperança', 'Ver nascer um potro na fazenda.', () => !!S.flags.potro], ['potroRaro', '✨', 'Pelagem rara', 'Tirar um potro de pelagem rara.', () => !!S.flags.potroRaro], ['marcha', '🐎', 'Marcha de ouro', 'Treinar o andamento de uma montaria até 100%.', () => !!S.flags.marcha100]);
+/* ---------- traje de couro e os espinhos da caatinga ---------- */
+function couroCompleto(a) { a = a || (S && S.cf && S.cf.ap); return !!a && HATS[a.hat] && (HATS[a.hat].base || HATS[a.hat].id) === 'couro' && a.shirt === 2 && a.pants === 3 && !!a.gear && !!a.gl; }
+function espinhoso() { const r = worldRegion(P.x, P.y); return (r && ['caatinga', 'caatsul', 'serrote', 'mata'].includes(r.id)) || (typeof inForest === 'function' && inForest(P.x, P.y)); }
+function espinhosTick() {
+  if (!S || mode !== 'play' || IN.on || !(input.x || input.y) || !espinhoso()) return;
+  const rapido = input.gal || P.mnt; if (couroCompleto()) { if (!S.flags.couroDica) { S.flags.couroDica = 1; toast('🛡 O traje de couro protege dos espinhos: aqui você corre no mato sem se rasgar.'); } return; }
+  P.en = Math.max(0, P.en - (rapido ? 0.25 : 0.1)); // por segundo
+  if (S.flags.espDia !== S.day) { S.flags.espDia = S.day; toast('🌵 Os espinhos da caatinga arranham e cansam. Um traje de couro completo protege (guarda-roupa).'); }
+}
+function lidaTick(dt) { if (!S) return; if ((lidaV -= dt) <= 0) { lidaV = 0.15; const el = $('jorn'); if (el) el.style.visibility = M.open || SH.a ? 'hidden' : 'visible'; } if ((lidaT -= dt) <= 0) { lidaT = 1; jornCheck(); pipaTick(); tutTick(); conqTick(); amorTick(); espinhosTick(); wardTick(); gaitTick(); if (jornState().cap >= JORNADA.length && !S.flags.modelo && mode === 'play' && !M.open && !P._act) csModelo(); } }
 
 /* ---------- lojas ---------- */
 function shopCart() { return hyp(S.cart.x - P.x, S.cart.y - P.y) < 110 || P.cart; }
@@ -8708,7 +8922,7 @@ function genOxStock() { const L = []; const used = new Set(); for (let i = 0; i 
 function oxTab() {
   let h = '<p class="mut">O carro de boi é a tradição do sertão: rodas maciças de madeira que cantam na estrada, puxado por uma junta de bois amansados na canga.</p>';
   if (!S.veh.boi.own) h += `<div class="card"><div class="row sp"><b>🐂 Carro de boi de madeira</b><b>${fmt(OXCART_P * priceMul())}</b></div><p class="mut">Mesa comprida com fueiros, rodas maciças e cabeçalho com canga para dois bois. Leva até ${OXCART_CAP} kg (a carroça leva ${CART_CAP}). O carpinteiro entrega na fazenda hoje.</p>${btn('Encomendar o carro', 'buyOxCart')}</div>`;
-  else h += '<div class="card">✅ Seu carro de boi está na fazenda, ao lado do galpão.</div>';
+  else h += '<div class="card">✅ Seu carro de boi está na fazenda, ao lado do galpão.</div>' + oxDecorHTML();
   if (!S.oxStock || S.oxStock.day !== S.day) genOxStock();
   h += '<h3>Juntas de bois carreiros</h3><p class="mut">Pares já amansados na canga, entregues no Recebimento amanhã às 6h.</p>' + (S.oxStock.list.map((pr, i) => `<div class="card"><div class="row sp">${animalImg(pr[0], 1)}${animalImg(pr[1], 1)}<span style="flex:1"><b>${esc(pr[0].n)} e ${esc(pr[1].n)}</b><br><span class="mut">${breedOf(pr[0]).n} · ${RIG.COATS[pr[0].coat].n.toLowerCase()} · ${ageStr(pr[0])}</span></span><b>${fmt((animalValue(pr[0]) + animalValue(pr[1])) * 1.05 * priceMul())}</b></div><span class="mut">${esc(breedOf(pr[0]).d || '')}</span><div class="row">${btn('Comprar a junta', 'buyOxPair', i)}</div></div>`).join('') || '<p class="mut">Nenhuma junta à venda hoje. Volte amanhã.</p>');
   h += '<div class="card"><b>Amansar seus próprios bois</b><p class="mut">Qualquer boi macho adulto pode aprender a canga: abra a ficha dele e use <b>Amansar p/ carro</b> uma vez por dia. Caracu, Franqueiro, Crioulo Lageano, Mocho Nacional e Tucura aprendem mais rápido; bois dóceis e com vínculo também.</p></div>';
@@ -8721,7 +8935,7 @@ function openAgro() { showModal('🌿 Casa do Agro', [['ins', 'Insumos'], ['sel'
   if (t === 'ins') h += (season() && clima().seca !== 'normal' ? `<p class="mut">☀ ${SECA_N[clima().seca]}: ração, milho, palma, silagem e sal estão mais caros.</p>` : '') + pipaCard() + ['racao', 'milho', 'sal', 'palma', 'silagem', 'galaoV', 'galao', 'lenha', 'carvao'].map(id => shopRow(id, { frete: 1 })).join('');
   if (t === 'gen') h += geneticaTab();
   if (t === 'sem') h += sementesTab();
-  if (t === 'sel') { h += ['escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho', 'vara', 'minhoca', 'binoculo'].map(id => shopRow(id)).join(''); h += SADDLES.filter(s => s.p).map(s => `<div class="card"><b>${s.n}</b> — ${fmt(s.p)}<p class="mut">${s.d}</p>${S.saddles.includes(s.id) ? '✅ Você já tem' : btn('Comprar', 'buySad', s.id)}</div>`).join(''); }
+  if (t === 'sel') { h += ['escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho', 'vara', 'minhoca', 'binoculo', 'cangalha'].map(id => shopRow(id)).join(''); h += wShopHTML(); h += SADDLES.filter(s => s.p).map(s => `<div class="card"><b>${s.n}</b> — ${fmt(s.p)}<p class="mut">${s.d}</p>${S.saddles.includes(s.id) ? '✅ Você já tem' : btn('Comprar', 'buySad', s.id)}</div>`).join(''); }
   if (t === 'ani') h += feiraTab();
   if (t === 'boi') h += oxTab();
   if (t === 'vet') h += ['vacina', 'vacRaiva', 'pouron', 'vermifugo', 'remedio', 'mataBicheira', 'iodo', 'soro', 'brinco', 'mamadeira', 'balde', 'ferroMarca'].map(id => shopRow(id)).join('') + '<p class="mut">Brucelose: a vacina das bezerras (3 a 8 meses) é aplicada pela veterinária Joana, pelo Manejo da ficha ou no brete.</p>' + '' + `<div class="card"><b>Consulta veterinária</b> — ${fmt(150)}<p class="mut">Joana visita a fazenda e trata todos os animais doentes hoje.</p>${btn('Chamar veterinária', 'vetCall')}</div>`;
@@ -9189,10 +9403,10 @@ function quadLoop(t0) {
 }
 addEventListener('keydown', e => { if (!QD.on) return; const d = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right' }[e.code]; e.preventDefault(); e.stopImmediatePropagation(); if (d && !e.repeat) quadHit(d); }, true);
 function quadEnd() {
-  QD.on = false; const n = QD.ok, el = $('quad'); paused = false;
+  QD.on = false; const jun = trajeJunino(); if (jun) QD.ok = Math.min(10, QD.ok + 2); const n = QD.ok, el = $('quad'); paused = false;
   let m = 0; for (const e of npcs) if (!e.hidden && hyp(e.x - P.x, e.y - P.y) < 200) { addFr(e.id, 2 + n); e.emote = '♥'; e.et = 2.5; m++; }
   S.flags.sjoao = S.flags.sjoao || S.day; P.en = Math.max(0, P.en - 8);
-  let msg = `Você acertou ${n} de 10 passos. ${m} morador(es) dançaram com você.`;
+  let msg = `Você acertou ${n} de 10 passos${jun ? ' (+2 pelo traje junino!)' : ''}. ${m} morador(es) dançaram com você.`;
   if (n >= 8) { receive(150, 'Prêmio de melhor par da quadrilha', 'cash'); addInv('canjica', 2, true); msg += ' Melhor par da quadrilha: R$ 150 e canjica!'; SFX.fanfare(true); }
   else if (n >= 5) { addInv('canjica', 1, true); msg += ' Bonito! Ganhou uma canjica.'; SFX.fanfare(false); }
   el.innerHTML = `<div class="qbox"><div class="qt">🔥 Fim da quadrilha</div><div class="qc">${n >= 8 ? 'Viva São João!' : n >= 5 ? 'Arrasta-pé bonito!' : 'Ano que vem tem mais!'}</div><div class="qr">${msg}</div><div class="qbt"><button data-qx="1">Voltar à festa</button></div></div>`;
@@ -9209,7 +9423,7 @@ function missaHTML() {
 }
 A.missaGo = () => {
   closeModal(); const y = calDate().y; S.flags.missaY = y;
-  const fim = () => { S.flags.missaVaq = S.flags.missaVaq || S.day; for (const a of S.animals) if (a.own === 'player') a.hap = cl((a.hap || 50) + 8, 0, 100); const mt = P.mnt && byId(P.mnt); if (mt) { mt.hap = cl((mt.hap || 50) + 15, 0, 100); } for (const e of npcs) if (!e.hidden) addFr(e.id, 6); P.en = cl(P.en + 10, 0, 100); toast('⛪ Bênção recebida: o gado ficou mais feliz' + (mt ? ' e ' + mt.n + ' também' : '') + '. Amizade com quem foi à missa aumentou.'); SFX.fanfare(false); };
+  const fim = () => { S.flags.missaVaq = S.flags.missaVaq || S.day; for (const a of S.animals) if (a.own === 'player') a.hap = cl((a.hap || 50) + 8, 0, 100); const mt = P.mnt && byId(P.mnt); if (mt) { mt.hap = cl((mt.hap || 50) + 15, 0, 100); } for (const e of npcs) if (!e.hidden) addFr(e.id, 6); if (trajeGibao()) { for (const e of npcs) if (!e.hidden) addFr(e.id, 4); toast('⛪ O padre abençoa o seu gibão de couro na frente de todos.'); } P.en = cl(P.en + 10, 0, 100); toast('⛪ Bênção recebida: o gado ficou mais feliz' + (mt ? ' e ' + mt.n + ' também' : '') + '. Amizade com quem foi à missa aumentou.'); SFX.fanfare(false); };
   if (!cenasOn()) return fim();
   cutscene([
     { fade: 0, mus: 'cena', cam: [84, 44], snap: 1, z: 1.4, grade: 'aurora', txt: '⛪ Terceiro domingo de julho. Vaqueiros de gibão e chapéu de couro chegam a cavalo à matriz.', d: 4.2, fn: () => { try { SFX.bell(); } catch (e) { } } },
@@ -9224,7 +9438,7 @@ function cavalgadaHTML() {
 }
 A.cavGo = () => {
   if (!P.mnt) return; closeModal(); S.flags.cavM = calDate().y * 100 + calDate().m;
-  const fim = () => { S.flags.cavalgada = S.flags.cavalgada || S.day; const mt = byId(P.mnt); if (mt) mt.hap = cl((mt.hap || 50) + 10, 0, 100); for (const e of npcs) if (!e.hidden) addFr(e.id, 5); P.en = Math.max(0, P.en - 10); receive(120, 'Sorteio da cavalgada', 'cash'); toast('🏇 Cavalgada feita! Amizade com a cidade aumentou e você ganhou R$ 120 no sorteio dos cavaleiros.'); SFX.fanfare(false); };
+  const fim = () => { S.flags.cavalgada = S.flags.cavalgada || S.day; const mt = byId(P.mnt); if (mt) mt.hap = cl((mt.hap || 50) + 10, 0, 100); for (const e of npcs) if (!e.hidden) addFr(e.id, 5); P.en = Math.max(0, P.en - 10); receive(120 + (trajeGibao() ? 60 : 0), 'Sorteio da cavalgada' + (trajeGibao() ? ' (+ prêmio de traje de vaqueiro)' : ''), 'cash'); toast('🏇 Cavalgada feita! Amizade com a cidade aumentou e você ganhou R$ 120 no sorteio dos cavaleiros.'); SFX.fanfare(false); };
   if (!cenasOn()) return fim();
   cutscene([
     { fade: 0, mus: 'festa', cam: [84, 50], snap: 1, z: 1.3, txt: '🏇 Sete da manhã: dezenas de cavaleiros se juntam na praça de Itarantim.', d: 3.8 },
@@ -10532,7 +10746,7 @@ function rigAnim(a, br, k) {
 }
 function rigOpts(a, k) {
   const sd = a.saddle ? SADDLES.find(s => s.id === a.saddle) : null, cu = a.cust || {};
-  return { noHorn: !!a.mocho, brand: a.marca || undefined, bflip: !!(a.marca && a.f < 0), tag: !!a.brinco, mane: cu.mane && cu.mane !== 'natural' ? cu.mane : undefined, tail: cu.tail && cu.tail !== 'natural' ? cu.tail : undefined, pad: sd ? cu.pad : undefined, rein: cu.rein && cu.rein !== '#3a2410' ? cu.rein : undefined, peit: !!(sd && cu.peit), orn: cu.orn && cu.orn !== 'none' ? cu.orn : undefined, k, seed: a.id % 97 + 1, marks: a.mk === undefined ? ((a.id * 2654435761) >>> 0) % 64 * (a.id % 3 === 0 ? 0 : 1) : a.mk, sex: a.sex, adult: (a.age || 0) >= (MATURE[a.sp] || 20) * 0.75, saddle: sd ? { id: sd.id, c: sd.c } : null, pack: !!a.travel && (a.sp === 'burro' || a.sp === 'jumento'), load: a.travel ? 1 : 0, harness: S && S.cart && S.cart.hitch === a.id && S.cart.kind !== 'boi', col: a.dc && a.dc.colT !== 'nada' ? a.dc.col : undefined, colT: a.dc ? a.dc.colT : undefined, bnd: a.dc && a.dc.bnd ? a.dc.bnd : undefined };
+  return { noHorn: !!a.mocho, brand: a.marca || undefined, bflip: !!(a.marca && a.f < 0), tag: !!a.brinco, mane: cu.mane && cu.mane !== 'natural' ? cu.mane : undefined, tail: cu.tail && cu.tail !== 'natural' ? cu.tail : undefined, pad: sd ? cu.pad : undefined, rein: cu.rein && cu.rein !== '#3a2410' ? cu.rein : undefined, peit: !!(sd && cu.peit), orn: cu.orn && cu.orn !== 'none' ? cu.orn : undefined, pel: sd && cu.pel ? cu.pel : undefined, bord: !!(sd && cu.bord), cab: cu.cab === 'enf' ? 'enf' : undefined, guiz: !!(sd && cu.guiz), k, seed: a.id % 97 + 1, marks: a.mk === undefined ? ((a.id * 2654435761) >>> 0) % 64 * (a.id % 3 === 0 ? 0 : 1) : a.mk, sex: a.sex, adult: (a.age || 0) >= (MATURE[a.sp] || 20) * 0.75, saddle: sd ? { id: sd.id, c: sd.c } : null, pack: (!!a.travel || !!a.cang) && (a.sp === 'burro' || a.sp === 'jumento'), load: a.travel || a.cang ? 1 : 0, harness: S && S.cart && S.cart.hitch === a.id && S.cart.kind !== 'boi', col: a.dc && a.dc.colT !== 'nada' ? a.dc.col : undefined, colT: a.dc ? a.dc.colT : undefined, bnd: a.dc && a.dc.bnd ? a.dc.bnd : undefined };
 }
 function rigFrame(a, view, an, fr) { const br = rigBreed(a), k = rigK(a); return RIG.get(br, rigCoat(a), view, an, fr, rigOpts(a, k)); }
 function animalDraw(a) { // [canvas, ox, oy, escala, sombra, rig, vista]
@@ -10615,6 +10829,7 @@ function drawOxCart(c) {
   if (view === 'side') { const far = !a2 || (a1 && iy(a1) <= iy(a2)) ? a1 : a2, nr = far === a1 ? a2 : a1; drawOx(far); drawBody(); drawOx(nr); yoke(); }
   else if (view === 'back') { drawOx(a1); drawOx(a2); yoke(); drawBody(); }
   else { drawBody(); drawOx(a1); drawOx(a2); yoke(); }
+  oxDecor(c, view, flip, a1, a2, cr, x, y);
 }
 function drawCart() {
   if (S.cart.kind === 'boi') return drawOxCart(S.cart);
@@ -11473,14 +11688,17 @@ function renderSetup() {
     if (!setupEdit) h += `<label>Nome do vaqueiro</label><input id="pn" maxlength="16" value="${esc(CF.name)}">`;
     h += `<label>Sexo</label><div class="ch"><button data-s="sex" data-v="M" class="${a.sex === 'M' ? 'on' : ''}">Homem</button><button data-s="sex" data-v="F" class="${a.sex === 'F' ? 'on' : ''}">Mulher</button></div>`;
     h += '<label>Pele</label>' + chips('skin', SKINS, a.skin, 1) + '<label>Cabelo</label>' + chips('hair', HAIRS, a.hair) + '<label>Cor do cabelo</label>' + chips('hairC', HAIRC, a.hairC, 1);
+    h += '<label>Barba e bigode</label>' + chips('beard', BEARDS, a.beard || 0) + '<label>Sobrancelhas</label>' + chips('brow', BROWS, a.brow || 0) + '<label>Olhos</label>' + chips('eyeS', EYES, a.eyeS || 0) + chips('eyeC', EYEC, a.eyeC || 0, 1) + '<label>Marcas no rosto</label>' + chips('mark', MARKS, a.mark || 0);
   } else if (setStep === 1) {
     if (!setupEdit) {
       h += `<label>Estado de origem</label><div class="ch">${STATES.map((s, i) => `<button data-s="st" data-v="${i}" class="${i === CF.st ? 'on' : ''}" title="${s[1]}">${s[0]}</button>`).join('')}</div>`;
       h += `<div class="desc"><b>${st[1]}</b> (${st[2]}) — ${st[7]}<br>Talento: <b>${PERKS[st[5]]}</b><br>Habilidades iniciais: Lida ${st[6].lid} · Pecuária ${st[6].pec} · Laço ${st[6].lac} · Montaria ${st[6].mon}<br><span style="opacity:.8">Ao escolher o estado, a vestimenta típica é aplicada (pode mudar abaixo).</span></div>`;
     }
-    h += '<label>Chapéu</label>' + chips('hat', HATS.map(x => x.n), a.hat) + '<label>Camisa</label>' + chips('shirt', SHIRTS, a.shirt) + chips('shirtC', SHIRTC, a.shirtC, 1);
+    if (setupEdit) h += trajesHTML(true);
+    h += '<label>Chapéu</label>' + chipsW('hat', HATS.map(x => x.n), a.hat) + '<label>Camisa</label>' + chipsW('shirt', SHIRTS, a.shirt) + chips('shirtC', SHIRTC, a.shirtC, 1);
     h += '<label>Calça</label>' + chips('pants', PANTS, a.pants) + chips('pantsC', PANTSC, a.pantsC, 1) + '<label>Botas</label>' + chips('boots', BOOTS, a.boots);
-    h += '<label>Acessório</label>' + chips('acc', ACCS, a.acc) + '<label>Cor do lenço</label>' + chips('scarfC', SCARFC, a.scarfC, 1);
+    h += '<label>Proteção de couro</label>' + chipsW('gear', W_LIST.gear(), a.gear || 0) + chipsW('gl', W_LIST.gl(), a.gl || 0) + `<div class="desc">${couroCompleto(a) ? '✅ <b>Traje de couro completo</b>: os espinhos da caatinga e do mato não cansam mais você.' : 'Traje de couro completo = chapéu de couro + gibão + perneira + guarda-peito + luvas. Protege dos espinhos na caatinga e no mato.'}</div>`;
+    h += '<label>Acessório</label>' + chipsW('acc', ACCS, a.acc) + '<label>Cor do lenço</label>' + chips('scarfC', SCARFC, a.scarfC, 1);
     h += `<label>Enfeite regional do chapéu</label><div class="ch">${Object.keys(ORN).map(k => `<button data-s="orn" data-v="${k}" class="${a.orn === k ? 'on' : ''}">${{ none: 'Nenhum', estrelas: 'Estrelas', fitas: 'Fitas do Bonfim', boibumba: 'Boi-Bumbá', capim: 'Capim dourado', marajoara: 'Marajoara', pena: 'Pena', fivela: 'Fivela', barbicacho: 'Barbicacho', berrante: 'Berrante', bumba: 'Bumba-meu-boi', sementes: 'Sementes', congo: 'Congo', pinhao: 'Pinhão' }[k]}</button>`).join('')}</div>`;
   } else if (setStep === 2) {
     const B0 = mountData(), am = ageMod(MOUNT_AGES[CF.age][1]), B = Object.assign({}, B0, { v: [B0.v[0], B0.v[1], B0.v[2] * am.spd], cost: B0.cost * am.cost, rec: B0.rec * am.rec });
@@ -11551,7 +11769,10 @@ $('setup').addEventListener('click', e => {
   else if (k === 'sockH') { const d = mkDec(CF.mk); CF.mk = mkEnc(d.face, d.socks, +v); }
   else if (k === 'cu') { const [kk, x] = v.split('|'); CF.cust = Object.assign(defCust(), CF.cust || {}); CF.cust[kk] = kk === 'peit' ? !CF.cust.peit : x; }
   else if (k === 'coat') CF.coat = v; else if (k === 'mk') CF.mk = +v; else if (k === 'hsex') CF.hsex = v;
-  else if (k === 'sd' || k === 'aj') CF[k] = +v; else CF.ap[k] = +v;
+  else if (k === 'sd' || k === 'aj') CF[k] = +v;
+  else if (k === 'tVest') { const t = S && S.trajes && S.trajes[+v]; if (t) Object.assign(CF.ap, t); }
+  else if (k === 'tSave') { S.trajes = S.trajes || []; S.trajes[+v] = pickCloth(CF.ap); toast('👔 Traje “' + TRAJE_N[+v] + '” guardado.'); }
+  else CF.ap[k] = +v;
   if (k === 'sex' && v === 'F' && CF.ap.hair < 4 && CF.ap.hair !== 2 && CF.ap.hair !== 3) CF.ap.hair = 4;
   renderSetup();
 });
@@ -12099,7 +12320,7 @@ function loop(ts) {
     if (n >= 6) acc = 0;
     ALPHA = cl(acc / STEP, 0, 1);
     if (OPMODES[mode]) { if (HD.on) hdSuspend(); OP.render(); } else { camUpdate(dt); render(dt); } CINE.update(dt); if (!HD.on && !OPMODES[mode]) CINE.post2D(X, W, H); PERF.frame(dt, t1 - t0, performance.now() - t1);
-    if (mode === 'play' || mode === 'cs') { hud(dt); updSheet(dt); AU.ambient(dt); tutFrame(); }
+    if (mode === 'play' || mode === 'cs') { hud(dt); updSheet(dt); AU.ambient(dt); tutFrame(); guizFrame(dt); }
     MUS.update(dt);
     if ($('setup').style.display !== 'none') drawPreview(dt);
   } catch (err) { console.error(err); }
