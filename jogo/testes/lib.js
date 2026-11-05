@@ -38,7 +38,7 @@ class Teste {
   espera(ms) { return this.p.waitForTimeout(ms); }
   async pularCenas(max = 60) { for (let i = 0; i < max && (await this.ev('mode')) !== 'play'; i++) { await this.p.evaluate(() => { const s = document.getElementById('skip'); if (s && s.offsetParent) s.click(); }); await this.espera(400); } }
   /** Começa um jogo novo (com a ficha padrão ou a informada) e pula a abertura. */
-  async jogoNovo(cfCodigo = 'defaultCF()', semTutorial = true) { await this.ev('newGame(' + cfCodigo + ')'); await this.espera(800); await this.pularCenas(); await this.espera(500); if (semTutorial) await this.ev('tutEnd(true); 0'); this.ok((await this.ev('mode')) === 'play', 'o jogo entrou no modo de jogo'); }
+  async jogoNovo(cfCodigo = 'defaultCF()', semTutorial = true) { await this.ev('newGame(' + cfCodigo + ')'); await this.espera(800); await this.pularCenas(); await this.ev('typeof introSkipAll === "function" && introSkipAll(); 0'); await this.pularCenas(); await this.espera(500); if (semTutorial) await this.ev('tutEnd(true); 0'); this.ok((await this.ev('mode')) === 'play', 'o jogo entrou no modo de jogo'); }
   /** Espera até o código do jogo dar verdadeiro (o tempo do jogo corre mais devagar em aparelho lento). */
   async ate(codigo, ms = 8000) { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await this.ev(codigo)) return true; await this.espera(250); } return false; }
   ok(cond, msg) { if (!cond) throw new Falha(msg); this.notas.push('✔ ' + msg); }

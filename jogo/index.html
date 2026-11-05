@@ -266,7 +266,7 @@ body.tst #jorn,body:has(#msg.on) #jorn{opacity:.15;transition:opacity .3s}
 body.hc #jorn,body.hc #msg,body.hc #toast,body.hc .card{background:#120804!important;color:#fff!important;border-color:#ffd34a!important}body.hc .mut{color:#f4e6c8!important;opacity:1!important}body.hc button{outline:2px solid #ffd34a}
 #quad{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;background:rgba(20,8,2,.55)}#quad .qbox{width:min(92vw,420px);background:#f6e2b4;border:4px solid #2b1608;box-shadow:0 0 0 3px #d98a2c;padding:12px;text-align:center;color:#2b1608}#quad .qt{font-weight:800;font-size:calc(13px*var(--fs))}#quad .qc{font-family:var(--fH);font-size:calc(24px*var(--fs));margin:8px 0 2px}#quad .qa{font-size:54px;line-height:1.1;color:#c0461e;text-shadow:2px 2px 0 #2b1608}#quad .qbar{height:10px;border:2px solid #2b1608;background:#fff6dc;margin:6px 0}#quad .qbar i{display:block;height:100%;background:#d98a2c}#quad .qr{min-height:2.6em;font-size:calc(13px*var(--fs))}#quad .qbt{display:flex;gap:8px;justify-content:center;margin-top:6px}#quad .qbt button{font-size:26px;min-width:62px;padding:8px;border:3px solid #2b1608;background:linear-gradient(#f0a84a 0 50%,#d98a2c 50%);color:#2b1608;font-weight:800}
 .padf{outline:3px solid #ffd34a!important;outline-offset:2px;box-shadow:0 0 0 6px rgba(43,22,8,.55)!important;position:relative;z-index:1}
-#jorn .tutsk{margin-top:3px;text-decoration:underline;opacity:.7;font-size:.9em}
+#jorn .bau{margin-top:3px;color:#ffd890;border-top:1px dashed rgba(255,216,144,.35);padding-top:2px}#jorn .tutsk{margin-top:3px;text-decoration:underline;opacity:.7;font-size:.9em}
 #tutArr{position:fixed;z-index:6;display:none;pointer-events:none;color:#ffd34a;font-size:30px;line-height:1;text-shadow:0 0 3px #2b1608,2px 2px 0 #2b1608,-2px -2px 0 #2b1608,2px -2px 0 #2b1608,-2px 2px 0 #2b1608}#tutArr span{display:block;animation:tutb .8s ease-in-out infinite alternate}#tutArr.edge span{animation:none;opacity:.9}@keyframes tutb{from{transform:translateY(-6px)}to{transform:translateY(4px)}}
 body.ttl #tutArr,body.cs #tutArr{display:none!important}#jorn{transition:opacity .3s}#jorn .ck{color:#8ad070;font-weight:800}
 .jk{display:inline-block;min-width:1.3em;font-weight:800}.jk.ok{color:#3a8a2a}.jk.ok::before{content:'\2714'}.jk.no{color:#a07848}.jk.no::before{content:'\25CB'}.jk.cur{color:#c86a1a}.jk.cur::before{content:'\25B6'}
@@ -373,7 +373,7 @@ body:has(#mn.on) #toast,body:has(#quad[style*=flex]) #toast{top:auto;bottom:calc
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 204, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '7.0.0', SAVE_V = 9;
+const GAME_V = '7.1.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -625,6 +625,7 @@ const BOOTS = ['Botina', 'Bota Cano Alto', 'Alpercata de Couro', 'Bota Texana'];
 const ACCS = ['Nenhum', 'Lenço no Pescoço', 'Cinturão de Fivela', 'Fitas do Bonfim', 'Colar de Sementes', 'Óculos Escuros', 'Cuia de Chimarrão'];
 // peças ganhas na lida e nas festas, ou compradas na selaria (ver WUNL)
 HATS.push({ id: 'campeao', base: 'rodeio', n: 'Chapéu de Campeão', c: '#f4ecd8', band: ['#e8c050', '#f8e8a0'] }, { id: 'palhaJ', base: 'palha', n: 'Chapéu de Palha Remendado', c: '#d8b860', band: ['#c03030', '#3070c0', '#e0c040'] }, { id: 'couroB', base: 'couro', n: 'Chapéu de Couro Bordado', c: '#6a3a18', band: ['#e8c050', '#c03030'] }, { id: 'feltroP', base: 'feltro', n: 'Feltro Preto de Festa', c: '#1e1816' }, { id: 'panama', base: 'feltro', n: 'Chapéu Panamá', c: '#efe6cf', band: ['#2a2a2a'] });
+HATS.push({ id: 'avo', base: 'couro', n: 'Chapéu do Avô', c: '#6a3c1c', band: ['#c8a050', '#e8d090'] });
 SHIRTS.push('Camisa Junina Remendada', 'Gibão Bordado', 'Camisa de Festa');
 ACCS.push('Medalha da Missa do Vaqueiro', 'Fivela de Fazenda Modelo', 'Fivela de Campeão');
 const SCARFC = ['#c8402e', '#2f6f9f', '#e0b030', '#3b8a4a', '#f0ece0', '#2a2a2a', '#d0508a'];
@@ -8391,11 +8392,11 @@ function jornCheck() { const J = jornState(); const C = JORNADA[J.cap]; if (!C) 
 function jornHUD() {
   let el = $('jorn'); if (!el) { el = document.createElement('div'); el.id = 'jorn'; document.body.appendChild(el); el.addEventListener('click', e => { if (e.target.closest && e.target.closest('.tutsk')) { A.tutSkip(); return; } AU.click && AU.click(); const J = jornState(); if (J.min) { J.min = 0; jornHUD(); } else openMenu('jor'); }); }
   if (!S || mode !== 'play' || SET.jorn === false) { el.style.display = 'none'; return; } el.style.display = 'block'; if (tutHUD(el)) return; const J = jornState(), C = JORNADA[J.cap];
-  if (!C) { el.innerHTML = '<b>📜 Jornada completa!</b>'; return; } const left = C.o.filter(o => !J.ok[o[0]]);
-  el.innerHTML = `<b>📜 ${C.n}</b> <span class="jn">${C.o.length - left.length}/${C.o.length}</span>` + (J.min ? '' : left.slice(0, 3).map(o => `<div>○ ${o[1]}</div>`).join(''));
+  if (!C) { el.innerHTML = '<b>📜 Jornada completa!</b>' + bauLine(); return; } const left = C.o.filter(o => !J.ok[o[0]]);
+  el.innerHTML = `<b>📜 ${C.n}</b> <span class="jn">${C.o.length - left.length}/${C.o.length}</span>` + (J.min ? '' : left.slice(0, 3).map(o => `<div>○ ${o[1]}</div>`).join('') + bauLine());
 }
 function jornHTML() {
-  const J = jornState(); let h = `<div class="card"><b>📜 Jornada do vaqueiro</b><p class="mut">Capítulos com objetivos que ensinam a lida e dão recompensas. O painel no canto da tela mostra os próximos passos (toque nele para abrir aqui).</p><div class="ch">${btn(SET.jorn === false ? 'Mostrar painel na tela' : 'Esconder painel da tela', 'jornTog')}</div></div>`;
+  const J = jornState(); let h = bauHTML() + `<div class="card"><b>📜 Jornada do vaqueiro</b><p class="mut">Capítulos com objetivos que ensinam a lida e dão recompensas. O painel no canto da tela mostra os próximos passos (toque nele para abrir aqui).</p><div class="ch">${btn(SET.jorn === false ? 'Mostrar painel na tela' : 'Esconder painel da tela', 'jornTog')}</div></div>`;
   JORNADA.forEach((C, i) => { const done = i < J.cap, cur = i === J.cap; if (i > J.cap + 1) return;
     h += `<div class="card" style="${done ? 'opacity:.7' : ''}"><b><span class="jk ${done ? 'ok' : cur ? 'cur' : 'no'}"></span>Capítulo ${i + 1}: ${C.n}${done ? ' (concluído)' : !cur ? ' (bloqueado)' : ''}</b> <span class="mut">${C.d}</span>` + (i <= J.cap ? C.o.map(([k, n, , tip]) => { const ok = done || J.ok[k]; return `<div style="margin:4px 0"><span class="jk ${ok ? 'ok' : 'no'}"></span><b>${n}</b>${!ok && tip ? `<br><span class="mut">${tip}</span>` : ''}</div>`; }).join('') : '<p class="mut">Termine o capítulo anterior.</p>') + `<p class="mut">Recompensa: R$ ${C.r.cash || 0}${C.r.it && Object.keys(C.r.it).some(k => C.r.it[k]) ? ' + ' + Object.keys(C.r.it).filter(k => C.r.it[k]).map(k => IT[k].n.split(' (')[0].toLowerCase()).join(', ') : ''}</p></div>`; });
   h += climaHTML();
@@ -8466,18 +8467,17 @@ let lidaV = 0;
 const tutHorse = () => S.animals.find(a => a.own === 'player' && a.sp === 'cavalo' && !a.dead);
 const tutCow = () => { let best = null, bd = 1e12; for (const a of S.animals) { if (a.own !== 'player' || a.sp !== 'boi' || a.dead) continue; const d = (a.x - P.x) ** 2 + (a.y - P.y) ** 2; if (d < bd) { bd = d; best = a; } } return best; };
 const tutTr = () => { const i = trIdx('p1', 'agua'); const t = TROUGHS[i]; return t ? [(t.x + t.w / 2) * TS, (t.y + 0.5) * TS] : null; };
-const TUT = [
-  { k: 'andar', t: 'Ande pela fazenda: use o joystick (no computador, WASD ou as setas).', ok: T => Math.hypot(P.x - T.x0, P.y - T.y0) > 4 * TS },
+const TUT = [ // a ordem começa pelo que é mais gostoso: montar e tocar o gado
+  { k: 'montar', t: 'Monte de novo no seu cavalo: botão Montar (tecla R). Longe dele, o mesmo botão assobia e ele vem.', at: () => { const a = tutHorse(); return a && !P.mnt ? [a.x, a.y] : null; }, ok: () => !!P.mnt || !tutHorse() },
+  { k: 'aboio', t: 'Agora a parte boa: chegue perto do gado e solte o Aboio (tecla Q). A boiada segue você!', at: () => { const a = tutCow(); return a ? [a.x, a.y] : null; }, ok: () => (S.flags.aboio || 0) > 0 || !tutCow() },
   { k: 'ficha', t: 'Toque num animal para abrir a ficha dele: ali você alimenta, dá água, cuida e vende.', at: () => { const a = tutCow() || tutHorse(); return a ? [a.x, a.y] : null; }, ok: () => !!SH.a || !!S.flags.tutFicha },
   { k: 'agua', t: 'Encha o cocho d’água do Piquete 1: toque no cocho e despeje o galão. Galão vazio? Encha no reservatório da sede.', at: tutTr, ok: T => { const i = trIdx('p1', 'agua'); if (i < 0) return true; const f = S.tr[i] / trCap(i); if (T.tr0 === undefined) T.tr0 = f; return !!S.flags.tutAgua || T.tr0 >= 0.98 || (T.tr0 < 0.9 && f >= 0.9); } },
-  { k: 'montar', t: 'Monte no seu cavalo: botão Montar (tecla R). Longe dele, o mesmo botão assobia e ele vem.', at: () => { const a = tutHorse(); return a && !P.mnt ? [a.x, a.y] : null; }, ok: () => !!P.mnt || !tutHorse() },
-  { k: 'aboio', t: 'Chegue perto do gado e use o Aboio (tecla Q): os bichos seguem você.', at: () => { const a = tutCow(); return a ? [a.x, a.y] : null; }, ok: () => (S.flags.aboio || 0) > 0 || !tutCow() },
   { k: 'horta', t: 'Na horta atrás do rancho: capine um canteiro com a enxada e plante uma semente.', at: () => { const r = HORTA_BEDS[0]; return [(r[0] + r[2] + 1) / 2 * TS, (r[1] + r[3] + 1) / 2 * TS]; }, ok: () => agroPlots().some(q => q.kind === 'h' && ['plant', 'maduro'].includes(plotSt(q.id).st)) },
   { k: 'menu', t: 'Abra o Menu (botão Menu ou tecla M): Mochila, Gado, Mapa, Banco e a Jornada estão lá.', ok: () => !!S.flags.tutMenu },
   { k: 'cidade', t: 'Vá até Itarantim, a leste depois da ponte, e converse com um morador.', at: () => [74.5 * TS, 58.5 * TS], ok: () => npcMet() >= 1 },
   { k: 'dormir', t: 'Depois das 18h, volte e durma na Casa Sede: o dia fecha, o jogo salva e você recupera a energia.', at: () => [7.5 * TS, 29.5 * TS], ok: T => S.day > T.d0 }
 ];
-function tutOn() { return S && S.tut && !S.tut.done && mode === 'play'; }
+function tutOn() { return S && S.tut && !S.tut.done && mode === 'play' && !(S.story && (S.story.ride || (S.story.parto && S.story.parto < 2))); }
 function tutStart(again) { S.tut = { i: 0, d0: S.day, done: 0 }; S.flags.tutAgua = 0; if (again) { toast('🎓 Tutorial reiniciado.'); closeModal(); } jornHUD(); }
 function tutTick() {
   if (!tutOn()) return; const T = S.tut, st = TUT[T.i]; if (!st) return tutEnd();
@@ -8493,6 +8493,7 @@ function tutEnd(skip) {
 A.tutSkip = () => tutEnd(true);
 A.tutAgain = () => tutStart(true);
 function tutHUD(el) { // desenha o passo do tutorial no painel da Jornada; true = ocupou o painel
+  { const o = introObj(); if (o) { el.innerHTML = `<b>⭐ Chegada</b><div>${o}</div>`; return true; } }
   if (!tutOn()) return false; const T = S.tut, st = TUT[T.i]; if (!st) return false;
   el.innerHTML = `<b>🎓 Tutorial</b> <span class="jn">${T.i + 1}/${TUT.length}</span><div>${st.t}</div><div class="tutsk" >Pular tutorial</div>`; return true;
 }
@@ -8507,10 +8508,191 @@ function tutArrow(p) {
 }
 function tutFrame() { // a cada quadro: posiciona a seta
   if (S && M.open && M.tabs === MTABS && S.flags) S.flags.tutMenu = 1;
+  if (S && S.story && mode === 'play' && !M.open && !SH.a) { const ip = introTarget(); if (ip !== undefined) { tutArrow(ip && Math.hypot(ip[0] - P.x, ip[1] - P.y) > 1.8 * TS ? ip : null); return; } }
   if (!tutOn() || M.open || SH.a) { if (tutEl) tutEl.style.display = 'none'; return; }
   const st = TUT[S.tut.i]; let p = null; try { p = st && st.at ? st.at() : null; } catch (e) { }
   if (p && Math.hypot(p[0] - P.x, p[1] - P.y) < 1.6 * TS && st.k !== 'ficha') p = null; // já chegou
   tutArrow(p);
+}
+/* ---------- O PRIMEIRO DIA: chegada a cavalo, parto da Estrela, fogueira e o baú do avô ----------
+   S.story.ride = 1 → o jogador conduz o cavalo da porteira até o rancho, onde o Seu Felipe espera.
+   S.story.parto: 1 = a Estrela está parindo (seta até ela) · 1.5 = em cena / nome do bezerro · 2 = feito. */
+const INTRO = { galT: 0, mooT: 0, closed: 0 };
+const felE = () => npcs.find(e => e.id === 'felipe');
+function estrela() { const id = S.story && S.story.estrela; return S.animals.find(a => a.own === 'player' && !a.dead && (id ? a.id === id : a.sp === 'boi' && a.n === 'Estrela')); }
+function introObj() {
+  if (!S || !S.story || mode !== 'play') return null;
+  if (S.story.ride) return 'Siga a seta pela estrada até o rancho: o Seu Felipe espera você. ' + (SET.mode === 'touch' ? 'Segure o botão de galope (o primeiro, acima do Laço) para correr!' : 'Segure <b>Shift</b> para galopar!');
+  if (S.story.parto === 1) { const m = estrela(); return '🐄 ' + (m ? esc(m.n) : 'A vaca') + ' está parindo no pasto! Vá até ela e ajude.'; }
+  return null;
+}
+function introTarget() { // ponto da seta durante a chegada e o parto (undefined = sem seta da chegada)
+  if (!S || !S.story) return undefined;
+  if (S.story.ride) { const f = felE(); return f ? [f.x, f.y] : [11.5 * TS, 35.6 * TS]; }
+  if (S.story.parto === 1) { const m = estrela(); return m ? [m.x, m.y] : undefined; }
+  return undefined;
+}
+function introRide(resume) {
+  S.story.ride = 1; S.story.intro = 0.5; INTRO.closed = 0; INTRO.galT = 0;
+  const f = felE(); if (f) { f.cs = true; f.hidden = false; f.path = []; f.x = 11.5 * TS + 38; f.y = 35.6 * TS + 3; f.dir = 2; f.pose = 'idle'; }
+  if (!resume) { const g = GATES.find(g => Math.abs(g.x - 58) < 3 && Math.abs(g.y - 44) < 3); if (g && !g.open) g.open = true; }
+  jornHUD(); if (!resume) say('Bem-vindo à Fazenda Boa Esperança! Agora é com você.', 4000); SAVE.save('auto', true);
+}
+function introTick(dt) {
+  if (!S || !S.story || mode !== 'play' || M.open || CS.on) return;
+  if (S.bau && !S.bau.done) bauTick(dt);
+  if (S.story.ride) {
+    const g = GATES.find(g => Math.abs(g.x - 58) < 3 && Math.abs(g.y - 44) < 3);
+    if (!INTRO.closed && g && g.open && P.x < 55 * TS && Math.abs(P.y - 44 * TS) < 6 * TS) { INTRO.closed = 1; if (toggleGate(g, true)) toast('A porteira fecha atrás de você. Bem-vindo à Boa Esperança!'); }
+    const going = P.mnt && input.gal && Math.abs(input.x) + Math.abs(input.y) > 0.3;
+    if (going) {
+      INTRO.galT += dt; cam.taz = lerp(cam.taz || 1, 0.78, Math.min(1, dt * 1.4)); if (Math.random() < dt * 9) dust(P.x + rnd(-4, 4), P.y + 3, 1, '#c8a878');
+      if (INTRO.galT > 0.7 && !S.story.gal1) { S.story.gal1 = 1; toast('🐎 Primeiro galope! Sinta o vento do sertão.'); if (MUS.unlocked) MUS.play('baiao', 1.2); myAnimals('cao').forEach((d, i) => setTimeout(() => AU.bark(d.x, d.y), 300 + i * 400)); }
+    } else { INTRO.galT = 0; cam.taz = lerp(cam.taz || 1, 1, Math.min(1, dt * 1.4)); }
+    const f = felE(); if (!f || hyp(P.x - f.x, P.y - f.y) < 3.2 * TS) { cam.taz = 1; csArrive(); }
+    return;
+  }
+  if (S.story.parto === 1) {
+    const m = estrela(); if (!m || !m.preg) { S.story.parto = 2; jornHUD(); return; }
+    m._st = 'idle'; m._t = 99; m._fx = { pose: 'lie', t0: drawT, until: drawT + 30 };
+    if ((INTRO.mooT -= dt) <= 0) { INTRO.mooT = rnd(5, 9); AU.moo(m.x, m.y, 1.15); }
+    if (hyp(P.x - m.x, P.y - m.y) < 2.4 * TS) csNasce(m);
+    return;
+  }
+  if (S.story.parto === 1.5) { const c = byId(S.story.calf); introDone(c); }
+}
+function csArrive() {
+  const fel = felE(), h = mainHorse(), dogs = myAnimals('cao'); S.story.ride = 0;
+  if (!fel) return partoStart();
+  const two = () => { cam.fx = (P.x + fel.x) / 2; cam.fy = (P.y + fel.y) / 2 - 8; };
+  const TIAO = { sex: 'M', skin: 3, hair: 1, hairC: 6, hat: 0, shirt: 3, shirtC: 3, pants: 1, pantsC: 1, boots: 1, acc: 1, scarfC: 0, orn: 'none' };
+  let tiao = null; const tx0 = 8.4 * TS, ty0 = 29.6 * TS, tx1 = 6.1 * TS, ty1 = 29.0 * TS;
+  const m = estrela();
+  cutscene([
+    { fade: 0, cam: [(P.x + fel.x) / 2 / TS, (P.y + fel.y) / 2 / TS - 0.3], z: 2.0, spd: 1.5, pitch: 44, dof: 0.5, d: 1.4, fn: () => { fel.pose = 'talk'; fel.dir = P.x < fel.x ? 2 : 3; fel.emote = '♥'; fel.et = 1.6; dogs.forEach(d => AU.bark(d.x, d.y)); } },
+    { d: 1.0, clr: 1, fn: () => { fel.pose = 'idle'; if (P.mnt && h) { act('dismount', 0.85, h, () => { P.mnt = null; h._st = 'idle'; h._t = 30; }, { ex: P.x, ey: P.y + 4, keep: 1, zoom: false }); AU.saddleCreak(); } }, upd: dt => { if (P._act) updAct(dt); } },
+    csSay('felipe', 'Seja bem-vindo! Seu avô, Tiãozinho, era o homem mais querido de Itarantim. Agora a Boa Esperança é sua.', { look: false, z: 2.3, pitch: 50, dof: 0.65, focus: 0.44, fn: () => { P._act = null; if (P.mnt && h) { P.mnt = null; h._st = 'idle'; h._t = 30; } two(); P.dir = fel.x > P.x ? 3 : 2; } }),
+    csSay('me', 'Vou cuidar de tudo do jeito que ele cuidava, Seu Felipe.', { look: false, fn: two }),
+    { cam: [5.6, 28.4], z: 2.6, spd: 1.2, pitch: 40, dof: 0.75, focus: 0.42, txt: 'No esteio da varanda, o chapéu de couro de Tiãozinho continua no prego, como se ele fosse voltar a qualquer hora.', d: 4.0 },
+    { grade: 'memoria', flash: 1, rays: 0.9, cam: [6.9, 28.9], z: 2.3, spd: 0.8, d: 5.2, txt: '<i>Toda tarde, ao voltar do campo, Tiãozinho pendurava o chapéu no mesmo prego.</i>',
+      fn: () => { tiao = cineActor({ ap: Object.assign({}, TIAO), x: tx0, y: ty0, dir: 2, pose: 'walk', alpha: 1, dist: 0 }); },
+      upd: (dt, u) => { if (!tiao) return; const k = Math.min(1, u / 0.62), nx = lerp(tx0, tx1, easeIO(k)), ny = lerp(ty0, ty1, easeIO(k)); tiao.dist += hyp(nx - tiao.x, ny - tiao.y); tiao.x = nx; tiao.y = ny;
+        if (k < 1) { tiao.pose = 'walk'; tiao.fr = Math.floor(tiao.dist / 5) % 4; tiao.dir = 2; } else { tiao.pose = 'idle'; tiao.fr = 0; tiao.dir = 1; if (u > 0.8 && tiao.ap.hat !== 7) { tiao.ap = Object.assign({}, tiao.ap, { hat: 7 }); AU.buckle && AU.buckle(); } } } },
+    { d: 2.4, txt: '<i>O chapéu ficou. O lugar dele também.</i>', upd: (dt, u) => { if (tiao) tiao.alpha = 1 - easeIO(u); } },
+    { grade: 'aurora', flash: 1, rays: 0.5, cam: [(P.x + fel.x) / 2 / TS, (P.y + fel.y) / 2 / TS - 0.3], snap: 1, z: 2.3, spd: 1.4, pitch: 46, dof: 0.6, txt: '<i>Do pasto vem um berro comprido…</i>', d: 2.2, fn: () => { CINE.actors.length = 0; tiao = null; if (m) AU.moo(m.x, m.y, 1.25); fel.dir = 2; } },
+    csSay('felipe', 'Escutou? É a Estrela! Ela tá parindo, e é o primeiro bezerro da fazenda nas suas mãos. Corre lá no pasto, que ela precisa de você!', { look: false, fn: two }),
+    { clr: 1, d: 0.1 }
+  ], () => { CINE.actors.length = 0; fel.cs = false; fel.pose = 'idle'; partoStart(); });
+}
+function partoStart() {
+  S.story.intro = 1; S.story.ride = 0; const m = estrela();
+  if (!m) { S.story.parto = 2; return introDone(null); }
+  S.story.parto = 1; m.preg = Math.max(1, Math.min(m.preg || 1, 3)); m.labor = 0;
+  const open = (x0, y0) => !PROPS.some(q => TREES.has(q.t) && hyp(q.x - x0, q.y - y0) < 56) && !hitAt(x0, y0, 6) && !hitAt(x0 - 16, y0 + 3, 4) && !hitAt(x0 + 16, y0 + 3, 4);
+  if (!open(m.x, m.y)) for (let i = 0; i < 60; i++) { const q = m.area && AREAS[m.area] ? randIn(m.area) : randIn('p1'); if (open(q[0], q[1])) { m.x = q[0]; m.y = q[1]; m._px = m.x; m._py = m.y; break; } }
+  jornHUD(); say('Siga a seta até a ' + m.n + ', no pasto. Ela está deitada, esperando ajuda.', 5000); SAVE.save('auto', true);
+}
+function csNasce(m) {
+  S.story.parto = 1.5; const s = m.f || 1, x = m.x, y = m.y;
+  const birth = () => { if (S.story.calf && byId(S.story.calf)) return; m.preg = 0; m.labor = 0; const c = birthCalf(m, { help: 1 }); bond(m, 12); bond(c, 12); hist(m, 'Primeiro parto na fazenda com ' + S.cf.name + ' ao lado'); c.x = x - s * 12; c.y = y + 5; c._fx = { pose: 'lie', t0: drawT, until: drawT + 4 }; CS._calf = c; S.story.calf = c.id; P._act = null; for (let i = 0; i < 8; i++) heart(x - s * 12 + rnd(-6, 6), y - 10); AU.chime(); };
+  cutscene([
+    { fade: 0, cam: [x / TS, y / TS - 0.6], snap: 0, z: 2.3, pitch: 40, dof: 0.5, txt: esc(m.n) + ' está deitada, inquieta. Chegou a hora.', d: 2.6, fn: () => { P.mnt = null; P.cart = false; P.x = x - s * 15; P.y = y + 3; P.dir = s > 0 ? 3 : 2; P._act = { k: 'calving', t: 0, dur: 99, a: m, opt: {} }; m._fx = { pose: 'lie', t0: drawT, until: drawT + 60 }; AU.moo(x, y, 1.15); } },
+    { txt: 'Você se ajoelha do lado dela, fala baixinho e ajuda com cuidado.', d: 2.8, upd: dt => { if (Math.random() < dt * 1.2) AU.moo(x, y, 1.2); if (Math.random() < dt * 3) dust(P.x, P.y, 1); } },
+    { txt: 'Mais uma força, ' + esc(m.n) + '…', d: 1.6, fn: () => { m._fx = { pose: 'scared', t0: drawT, until: drawT + 1.4 }; AU.moo(x, y, 1.3); } },
+    { txt: '', d: 0.2, fn: () => { m._fx = { pose: 'lie', t0: drawT, until: drawT + 60 }; birth(); } },
+    { txt: 'Nasceu! A mãe se levanta e lambe o bezerro, que já tenta ficar de pé nas pernas bambas.', d: 3.4, fn: () => { m._fx = { pose: 'sniff', t0: drawT, until: drawT + 3.6 }; } },
+    { clr: 1, d: 0.1 }
+  ], () => { P._act = null; m._fx = null; if (CS._calf) CS._calf._fx = null; CS._calf = null; csClear(); birth(); nameCalf(); });
+}
+function nameCalf() {
+  const c = byId(S.story.calf); if (!c) return introDone(null);
+  const F = c.sex === 'F', sug = F ? ['Esperança', 'Estrelinha', 'Mimosa', 'Aurora', 'Boneca', 'Graúna'] : ['Tiãozinho', 'Pintado', 'Sertão', 'Valente', 'Trovãozinho', 'Bonito'];
+  showModal('🐄 Dê um nome ' + (F ? 'à bezerra' : 'ao bezerro'), null, null, () => `<div class="card"><b>${F ? 'É uma bezerra!' : 'É um bezerro!'}</b> ${animalImg(c, 1)}<p class="mut">O primeiro animal nascido na Boa Esperança desde que você chegou. Que nome ${F ? 'ela' : 'ele'} vai ter?</p><input id="calfN" maxlength="14" value="${esc(c.n)}" style="width:100%"><div class="ch" style="margin-top:8px">${sug.map(n => `<button data-a="calfSug" data-v="${n}">${n}</button>`).join('')}</div><div class="row" style="margin-top:10px">${btn('Dar o nome', 'calfName')}</div></div>`);
+}
+A.calfSug = v => { const i = $('calfN'); if (i) i.value = v; };
+A.calfName = () => { const c = byId(S.story.calf), n = (($('calfN') && $('calfN').value) || '').trim(); if (c && n && n !== c.n) { hist(c, 'Batizado de ' + n + ' por ' + S.cf.name); c.n = n; } closeModal(); introDone(c); };
+function introDone(c) {
+  if (!S.story || S.story.parto === 2) return; S.story.parto = 2; S.story.intro = 1;
+  if (S.tut) { S.tut.arm = 0; } S.flags.tutAgua = 0; jornHUD();
+  addInv('iodo', 2, true);
+  if (c) { toast('🐮 ' + c.n + ' nasceu na Boa Esperança!'); setTimeout(() => toast('🧴 O Seu Felipe deixou iodo na mochila: cure o umbigo de ' + c.n + ' hoje (ficha › Manejo).'), 1600); }
+  say('Agora siga o tutorial no canto da tela. Primeiro, monte de novo e vá tocar o gado!', 6000);
+  SAVE.save('auto', true);
+}
+function introSkipAll() { // usado pelos testes automáticos: pula a chegada inteira
+  if (!S.story) return; if (CS.on) skipCS();
+  if (S.story.ride) { const f = felE(); if (f) f.cs = false; S.story.ride = 0; const h = mainHorse(); P.mnt = null; P.x = 11.5 * TS + 14; P.y = 35.6 * TS + 3; P.dir = 3; if (h) { h.x = 11.5 * TS; h.y = 35.6 * TS; h._st = 'idle'; h._t = 20; } partoStart(); }
+  if (S.story.parto === 1) { const m = estrela(); if (m) { m.preg = 0; const c = birthCalf(m, { help: 1 }); S.story.calf = c.id; m._fx = null; } }
+  if (M.open) closeModal(); if (S.story.parto !== 2) introDone(byId(S.story.calf));
+  S.story.fog = 1; S.bau = S.bau || { st: 1, f: {} }; if (CS.on) skipCS(); jornHUD();
+}
+/* fogueira da primeira noite: causos e o mistério do baú */
+function fogTick() {
+  if (!S || !S.story || S.story.intro !== 1 || S.story.parto !== 2 || S.story.fog || S.day > 4) return;
+  if (hour() < 18.4 || mode !== 'play' || M.open || CS.on || P._act || sleeping || (typeof IN !== 'undefined' && IN.on)) return;
+  csFogueira();
+}
+function csFogueira() {
+  S.story.fog = 1; const f = objPos('fogueira'); if (!f) { S.bau = S.bau || { st: 1, f: {} }; return; }
+  const fx = f.x, fy = f.y, fel = felE(), bene = npcs.find(e => e.id === 'bene'), L = [fel, bene].filter(Boolean);
+  const seat = (e, dx, dy, dir) => { e.cs = true; e.hidden = false; e.path = []; e.x = fx + dx; e.y = fy + dy; e.dir = dir; e.pose = 'sit'; };
+  cutscene([
+    { fade: 1, d: 0.7 },
+    { fade: 0, grade: 'noite', cam: [fx / TS, fy / TS - 0.7], snap: 1, z: 2.2, pitch: 42, dof: 0.55, d: 4, txt: 'No fim do primeiro dia, o Seu Felipe e o Seu Bené acendem a fogueira no terreiro, como no tempo de Tiãozinho.',
+      fn: () => { if (S.min < 19 * 60 + 10) S.min = 19 * 60 + 10; S.fires.fog = Math.max(S.fires.fog || 0, 240); S.fireLitAt = S.day * 1440 + S.min; S.fireOffAt = null; P.mnt = null; P.cart = false; P.x = fx; P.y = fy - 0.85 * TS; P.dir = 0; if (fel) seat(fel, 1.75 * TS, 0.1 * TS, 2); if (bene) seat(bene, -1.75 * TS, 0.1 * TS, 3); myAnimals('cao').forEach((d, i) => { d.x = fx + (i ? -0.9 : 0.9) * TS; d.y = fy - 0.95 * TS; d._pose = 'sit'; d._st = 'cs'; }); SFX.fire && SFX.fire(fx, fy); } },
+    csSay('bene', 'Teu avô contava causo nesta roda até a lua ir embora. Uma vez laçou um barbatão na Mata dos Fundos que nem eu, no meu tempo, consegui pegar!', { look: false }),
+    csSay('felipe', 'Tem uma coisa que você precisa saber. Antes de partir, Tiãozinho trancou um baú lá no quarto dele.', { look: false }),
+    csSay('felipe', 'Disse que a chave ficava “onde ele pendurava o que tinha de mais valor”. Nunca entendi o que ele quis dizer.', { look: false }),
+    csSay('me', 'O chapéu… Ele pendurava o chapéu no esteio da varanda, todo santo dia.', { look: false }),
+    csSay('bene', 'Então vai lá ver. Tiãozinho nunca fazia nada à toa.', { look: false }),
+    { txt: '🗝️ <b>Novo mistério: o baú do avô.</b> A pista fica no painel da Jornada.', d: 3.2 },
+    { clr: 1, d: 0.1 }
+  ], () => { L.forEach(e => { e.cs = false; e.pose = 'idle'; placeNpc(e); }); myAnimals('cao').forEach(d => { d._st = null; d._pose = null; }); S.bau = S.bau || { st: 1, f: {} }; jornHUD(); SAVE.save('auto', true); });
+}
+/* o baú do avô: a chave no esteio da varanda e quatro lembranças espalhadas pela fazenda e pela cidade */
+const BAU_KEY = { at: [6.1, 29.4], r: 1.5, pista: 'A chave do baú: “onde Tiãozinho pendurava o que tinha de mais valor”.' };
+const BAU = [
+  { k: 'porteira', n: 'As iniciais na porteira', at: [43.4, 42.6], r: 1.8, pista: 'As iniciais que ele entalhou na porteira do curral.', t: '“Entalhei <b>T.S.</b> nesta porteira no dia em que a Boa Esperança virou minha. Eu não tinha um boi. Tinha só vontade. Vontade, neto, é o que faz a terra render.”', rw: () => { receive(100, 'Lembrança do avô', 'cash'); S.stats.earned -= 100; return 'R$ 100 guardados num vão da porteira.'; } },
+  { k: 'acude', n: 'O açude das pescarias', at: [48, 72.5], r: 4.5, pista: 'O açude da fazenda, onde ele pescava ao amanhecer.', t: '“Foi neste açude que eu ensinei teu pai a pescar. Ele tinha medo da água e eu tinha medo de ele crescer depressa. Os dois medos passaram.”', rw: () => { addFr('felipe', 10); P.en = Math.min(100, P.en + 30); return 'Você se sente descansado: +30 de energia.'; } },
+  { k: 'igreja', n: 'A medalha na Matriz', at: [84, 43.8], r: 2.2, pista: 'A Matriz de Itarantim, onde ele rezava antes da lida.', t: '“O Padre Antônio guarda a medalha da minha primeira Missa do Vaqueiro. Eu tinha dezessete anos e um gibão emprestado. Pede pra ele te contar.”', rw: () => { addFr('padre', 20); remember('padre', 'veio buscar a história da medalha de Tiãozinho'); return 'O Padre Antônio passa a gostar mais de você.'; } },
+  { k: 'bene', n: 'O berrante do Bené', npc: 'bene', at: [109.5, 43.4], r: 2, pista: 'O companheiro de lida dele, o Seu Bené, guarda alguma coisa.', t: '“O meu berrante ficou com o Bené. Ele tocava melhor que eu, mas nunca admiti. Diz pra ele que agora eu admito.”', rw: () => { addFr('bene', 25); remember('bene', 'ouviu o recado de Tiãozinho sobre o berrante'); return 'O Seu Bené chora e ri ao mesmo tempo. Amizade com ele +25.'; } }
+];
+function bauNext() { if (!S.bau) return null; if (S.bau.st === 1) return BAU_KEY; return BAU.find(b => !S.bau.f[b.k]) || null; }
+function bauLine() { if (!S || !S.bau || S.bau.done || SET.jorn === false) return ''; const n = bauNext(); return n ? `<div class="bau">🗝️ ${n.pista}</div>` : ''; }
+function bauHTML() {
+  if (!S || !S.bau) return ''; const B = S.bau; let h = `<div class="card"><b>🗝️ O baú do avô</b> <span class="mut">${B.done ? '· desvendado' : B.st === 1 ? '· trancado' : '· ' + Object.keys(B.f).length + '/' + BAU.length + ' lembranças'}</span>`;
+  if (B.st === 1) h += `<p class="mut">${BAU_KEY.pista}</p>`; else h += BAU.map(b => `<div style="margin:4px 0"><span class="jk ${B.f[b.k] ? 'ok' : 'no'}"></span>${B.f[b.k] ? '<b>' + b.n + '</b> — <i>' + b.t + '</i>' : b.pista}</div>`).join('');
+  return h + '</div>';
+}
+let bauSp = 0;
+function bauTick(dt) {
+  if (typeof IN !== 'undefined' && IN.on) return; const B = S.bau;
+  const L = B.st === 1 ? [BAU_KEY] : BAU.filter(b => !B.f[b.k]);
+  bauSp -= dt; const spark = bauSp <= 0; if (spark) bauSp = 0.35;
+  for (const b of L) {
+    const x = b.at[0] * TS, y = b.at[1] * TS, d = hyp(P.x - x, P.y - y);
+    let near = d < b.r * TS; if (!near && b.npc) { const e = npcs.find(q => q.id === b.npc); near = !!(e && !e.hidden && hyp(P.x - e.x, P.y - e.y) < 1.8 * TS); }
+    if (spark && d < 6 * TS && !b.npc) part(x + rnd(-6, 6), y - rnd(4, 14), 'spark', { vx: rnd(-6, 6), vy: rnd(-18, -8), m: 1.1, c: pick(['#ffe060', '#fff4c0']) });
+    if (near) return bauFound(b);
+  }
+}
+function bauFound(b) {
+  const B = S.bau; AU.chime(); buzz(20);
+  if (b === BAU_KEY) {
+    B.st = 2; jornHUD(); SAVE.save('auto', true);
+    return showModal('🗝️ A chave do baú', null, null, () => `<div class="card"><p>Atrás do prego onde ficava o chapéu, um buraquinho no esteio guarda uma chave pequena, enferrujada.</p><p>No quarto, o baú abre com um estalo. Dentro: um maço de cartas amarradas com barbante. A de cima diz:</p><p><i>“Se você está lendo isto, a Boa Esperança é sua. Mas terra não é só chão, é lembrança. Deixei pedaços da minha história por aí. Vai atrás deles.”</i></p><p class="mut">As pistas das ${BAU.length} lembranças ficam no painel da Jornada e em Menu › Jornada.</p></div>`);
+  }
+  B.f[b.k] = S.day; const rw = b.rw ? b.rw() : ''; const all = BAU.every(q => B.f[q.k]);
+  if (all) { B.done = 1; receive(500, 'Herança de Tiãozinho', 'cash'); S.stats.earned -= 500; }
+  jornHUD(); SAVE.save('auto', true);
+  showModal('📜 ' + b.n, null, null, () => `<div class="card"><p><i>${b.t}</i></p><p class="mut">${rw}</p>${all ? `<hr><p><b>A última carta</b></p><p><i>“Agora você conhece a Boa Esperança como eu conhecia. Cuida dela, que ela cuida de você. O meu chapéu é seu. — Tiãozinho”</i></p><p>🎁 <b>Chapéu do Avô</b> liberado no guarda-roupa · R$ 500 da herança.</p>` : `<p class="mut">Faltam ${BAU.filter(q => !B.f[q.k]).length} lembrança(s).</p>`}</div>`);
+}
+/* a primeira venda é comemorada */
+function firstSaleTick() {
+  if (!S || !S.flags || S.flags.venda1 || (S.stats.sold || 0) < 1) return; if (mode !== 'play' || M.open || CS.on) return;
+  S.flags.venda1 = 1; SFX.fanfare && SFX.fanfare(false); buzz(30);
+  for (let i = 0; i < 16; i++) part(P.x + rnd(-20, 20), P.y - 10 + rnd(-10, 6), 'icon', { vx: rnd(-22, 22), vy: rnd(-44, -16), m: 1.6, t: pick(['$', '★', '♦']), c: pick(['#ffd040', '#fff0a0', '#60c060']) });
+  toast('🎉 Primeiro negócio fechado! A notícia correu Itarantim.'); say('Seu Felipe: “Primeira venda! Tiãozinho ia ficar orgulhoso. É assim que a fazenda cresce.”', 6500); addFr('felipe', 10); remember('felipe', 'fez a primeira venda da fazenda');
 }
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
@@ -8522,6 +8704,7 @@ const CONQ = [
   ['reb10', '🐂', 'Boiada pequena', 'Ter 10 cabeças de gado.', () => nAni('boi') >= 10],
   ['reb25', '🐂', 'Boiada de respeito', 'Ter 25 cabeças de gado.', () => nAni('boi') >= 25],
   ['reb50', '🐂', 'Mar de gado', 'Ter 50 cabeças de gado.', () => nAni('boi') >= 50],
+  ['avo', '🗝️', 'Memórias de Tiãozinho', 'Desvendar o baú do avô.', () => !!(S.bau && S.bau.done)],
   ['ven1', '🤝', 'Primeiro negócio', 'Vender o primeiro animal.', () => (S.stats.sold || 0) >= 1],
   ['ven25', '🚚', 'Boiadeiro', 'Vender 25 animais.', () => (S.stats.sold || 0) >= 25],
   ['din10', '💰', 'Dinheiro suado', 'Ganhar R$ 10.000 com a lida.', () => (S.stats.earned || 0) >= 10000],
@@ -8768,6 +8951,7 @@ const WUNL = {
   'acc:7': ['Ir à Missa do Vaqueiro', () => !!S.flags.missaVaq], 'acc:8': ['Virar Fazenda Modelo do Sertão', () => !!S.flags.modelo], 'acc:9': ['Vencer 5 vaquejadas', () => (S.stats.vaq || 0) >= 5],
   'gear:1': ['Selaria da Casa do Agro', null, 280], 'gl:1': ['Selaria da Casa do Agro', null, 90]
 };
+WUNL['hat:' + HATS.findIndex(h => h.id === 'avo')] = ['Desvendar o baú do avô', () => !!(S.bau && S.bau.done)];
 const W_LIST = { hat: () => HATS.map(x => x.n), shirt: () => SHIRTS, acc: () => ACCS, gear: () => ['Sem guarda-peito', 'Guarda-peito de couro'], gl: () => ['Sem luvas', 'Luvas de couro'] };
 function wOk(k, i) { const u = WUNL[k + ':' + i]; if (!u) return true; if (!S || !S.flags) return false; if (S.wd && S.wd[k + ':' + i]) return true; try { return !!(u[1] && u[1]()); } catch (e) { return false; } }
 function wName(key) { const [k, i] = key.split(':'); return W_LIST[k]()[+i]; }
@@ -8914,7 +9098,7 @@ function espinhosTick() {
   P.en = Math.max(0, P.en - (rapido ? 0.25 : 0.1)); // por segundo
   if (S.flags.espDia !== S.day) { S.flags.espDia = S.day; toast('🌵 Os espinhos da caatinga arranham e cansam. Um traje de couro completo protege (guarda-roupa).'); }
 }
-function lidaTick(dt) { if (!S) return; if ((lidaV -= dt) <= 0) { lidaV = 0.15; const el = $('jorn'); if (el) el.style.visibility = M.open || SH.a ? 'hidden' : 'visible'; } if ((lidaT -= dt) <= 0) { lidaT = 1; jornCheck(); pipaTick(); tutTick(); conqTick(); amorTick(); espinhosTick(); wardTick(); gaitTick(); if (jornState().cap >= JORNADA.length && !S.flags.modelo && mode === 'play' && !M.open && !P._act) csModelo(); } }
+function lidaTick(dt) { if (!S) return; if ((lidaV -= dt) <= 0) { lidaV = 0.15; const el = $('jorn'); if (el) el.style.visibility = M.open || SH.a ? 'hidden' : 'visible'; } if ((lidaT -= dt) <= 0) { lidaT = 1; jornCheck(); pipaTick(); tutTick(); fogTick(); firstSaleTick(); conqTick(); amorTick(); espinhosTick(); wardTick(); gaitTick(); if (jornState().cap >= JORNADA.length && !S.flags.modelo && mode === 'play' && !M.open && !P._act) csModelo(); } }
 
 /* ---------- lojas ---------- */
 function shopCart() { return hyp(S.cart.x - P.x, S.cart.y - P.y) < 110 || P.cart; }
@@ -11392,38 +11576,15 @@ function csIntro() {
       CINE.phi = 30; CINE.fov = 30; CINE.rays = 1; CINE.warm = 1;
       bois.forEach((b, i) => { b.x = (4.4 + i * 2.4) * TS; b.y = (49.6 + (i % 2) * 1.1 + (i > 1 ? 1.6 : 0)) * TS; b._st = 'idle'; b._t = 99; b._pose = 'graze'; b.f = i % 2 ? -1 : 1; });
       dogs.forEach((d, i) => { const [x, y] = trail(r1, 0, i); d.x = x; d.y = y; d._st = 'cs'; d._pose = 'sit'; d._cmd = 'seguir'; });
-      fel.cs = true; fel.hidden = false; fel.x = 19.5 * TS; fel.y = 39.6 * TS; fel.dir = 1; fel.path = []; fel.pose = 'idle'; } },
+      fel.cs = true; fel.hidden = false; fel.x = fx; fel.y = ey; fel.dir = 2; fel.path = []; fel.pose = 'idle'; } },
     // 1. madrugada no sertão: o açude da fazenda, garças passando
-    { fade: 0, mus: 'titulo', cam: [48, 74], z: 1.3, snap: 1, d: 4.6, dof: 0.2, drift: 0.6, fn: () => { csTitle('RF GAMES APRESENTA'); birdsFly('garca', 4, 36, 70, -0.25); setTimeout(() => birdCall('garca', 48 * TS, 74 * TS), 1200); } },
-    { mus: 'titulo', cam: [40, 62], pan: 1, spd: 0.4, d: 5.2, pitch: 36, rays: 1, fn: () => { csTitle('LIDA NO SERTÃO', 'Itarantim · sudoeste da Bahia'); birdsFly('marreca', 6, 30, 66, -0.6); setTimeout(() => birdCall('marreca', 38 * TS, 60 * TS), 900); } },
-    // 2. a estrada: o vaqueiro chega a cavalo, com os cães correndo ao lado
-    { mus: 'baiao', fn: () => csTitle(null), cam: [75, 43.5], snap: 1, spd: 6, z: 1.5, pitch: 42, dof: 0.3, txt: 'O dia nasce em Itarantim. Do outro lado da ponte do riacho fica a <b>Fazenda Boa Esperança</b>.', d: 6, upd: rideD(r1, 1) },
-    { mus: 'baiao', spd: 6, z: 1.45, pitch: 46, rays: 0.7, txt: `<b>${nm}</b>${dogs.length ? ', com ' + dn + ',' : ''} chega para cuidar da herança do avô, <b>Tiãozinho</b>.`, d: 7.5, fn: () => { if (gateE && !gateE.open) { gateE.open = true; AU.creak(); } }, upd: rideD(r2, 1) },
-    // 3. o que ficou: dois bois e um rancho
-    { cam: [6, 50.6], z: 1.7, spd: 1.3, pitch: 34, dof: 0.6, focus: 0.42, txt: 'No pasto, o que ficou: os bois <b>Malhado</b> e <b>Fumaça</b> e a vaca <b>Estrela</b>, prenha do touro do Seu Felipe. É pouco, mas é um começo.', d: 4.8, fn: () => { if (gateE) gateE.open = false; setTimeout(() => bois[0] && AU.moo(bois[0].x, bois[0].y, 0.95), 600); setTimeout(() => bois[1] && AU.moo(bois[1].x, bois[1].y, 1.08), 2200); } },
-    // 4. Seu Felipe espera na frente do rancho e acena
-    { cam: [13.5, 36.6], z: 2.0, spd: 1.5, pitch: 44, dof: 0.5, d: 2.4, txt: 'Seu Felipe, o vizinho da Fazenda Campos, já esperava na frente do rancho.', fn: () => { fel.pose = 'talk'; fel.dir = 1; dogs.forEach(d => { d._pose = 'run'; AU.bark(d.x, d.y); }); }, upd: (dt, u) => { dogs.forEach((d, i) => { const tx = 19.5 * TS - 10 - i * 12, ty = 39.6 * TS + 8, k = Math.min(1, dt * 3); const mv = hyp(tx - d.x, ty - d.y); d.x = lerp(d.x, tx, k); d.y = lerp(d.y, ty, k); d._mv = mv > 2 ? 40 : 0; d._dist = (d._dist || 0) + mv * k; d.f = tx > d.x ? 1 : -1; d._pose = mv > 4 ? 'run' : 'sit'; if (u > 0.8 && !d._hrt) { d._hrt = 1; heart(d.x, d.y - 16); } }); } },
-    { d: 1.0, clr: 1, fn: () => { P.dir = 3; fel.pose = 'idle'; if (h) { h.f = 1; act('dismount', 0.85, h, () => { P.mnt = null; P.x = ex; P.y = ey; h._st = 'idle'; h._t = 30; }, { ex, ey, keep: 1, zoom: false }); AU.saddleCreak(); } }, upd: dt => { if (P._act) updAct(dt); } },
-    { cam: [12.8, 36], z: 2.1, spd: 1.4, pitch: 48, dof: 0.45, d: 2.8, fn: () => { P._act = null; P.mnt = null; P.x = ex; P.y = ey; fel.pose = 'walk'; fel._dist = fel._dist || 0; }, upd: (dt, u) => { const k = Math.min(1, u * 1.15), nx = lerp(19.5 * TS, fx, k), ny = lerp(39.6 * TS, ey, Math.min(1, k * 1.6)); fel._dist += hyp(nx - fel.x, ny - fel.y); fel.dir = Math.abs(nx - fel.x) > Math.abs(ny - fel.y) ? 2 : 1; fel.x = nx; fel.y = ny; if (k >= 1) { fel.pose = 'idle'; fel.dir = 2; } dogs.forEach((d, i) => { const tx = ex + 8 + i * 10, ty = ey + 14; d.x = lerp(d.x, tx, Math.min(1, dt * 2)); d.y = lerp(d.y, ty, Math.min(1, dt * 2)); d._pose = hyp(tx - d.x, ty - d.y) > 3 ? 'run' : 'sit'; d.f = 1; }); } },
-    csSay('felipe', 'Seja bem-vindo! Seu avô, Tiãozinho, era o homem mais querido de Itarantim.', { look: false, z: 2.3, pitch: 50, dof: 0.65, focus: 0.44, rays: 0.4, fn: () => { two(); fel.emote = '♥'; fel.et = 1.6; } }),
-    csSay('felipe', 'A fazenda agora é sua. A Estrela tá prenha do meu touro: daqui a uns dias vem bezerro. E deixei sementes pra você começar a horta.', { look: false, fn: two }),
-    csSay('felipe', 'Precisando, é só me procurar na Fazenda Campos, aqui do lado. E não esqueça: gado bem tratado é gado que engorda.', { look: false, z: 2.45, fn: two }),
-    csSay('me', 'Pode deixar, Seu Felipe. Vou cuidar de tudo do jeito que ele cuidava.', { look: false, fn: () => { two(); P.dir = 3; } }),
-    // 5. a lembrança do avô
-    { cam: [5.6, 28.4], z: 2.6, spd: 1.2, pitch: 40, dof: 0.75, focus: 0.42, txt: 'No esteio da varanda, o chapéu de couro de Tiãozinho continua no prego, como se ele fosse voltar a qualquer hora.', d: 4.6 },
-    { grade: 'memoria', flash: 1, rays: 0.9, cam: [6.9, 28.9], z: 2.3, spd: 0.8, d: 6, txt: '<i>Toda tarde, ao voltar do campo, Tiãozinho pendurava o chapéu no mesmo prego.</i>',
-      fn: () => { tiao = cineActor({ ap: Object.assign({}, TIAO), x: tx0, y: ty0, dir: 2, pose: 'walk', alpha: 1, dist: 0 }); },
-      upd: (dt, u) => { if (!tiao) return; const k = Math.min(1, u / 0.62), nx = lerp(tx0, tx1, easeIO(k)), ny = lerp(ty0, ty1, easeIO(k)); tiao.dist += hyp(nx - tiao.x, ny - tiao.y); tiao.x = nx; tiao.y = ny;
-        if (k < 1) { tiao.pose = 'walk'; tiao.fr = Math.floor(tiao.dist / 5) % 4; tiao.dir = 2; } else { tiao.pose = 'idle'; tiao.fr = 0; tiao.dir = 1; if (u > 0.8 && tiao.ap.hat !== 7) { tiao.ap = Object.assign({}, tiao.ap, { hat: 7 }); AU.buckle && AU.buckle(); } } } },
-    { d: 3.2, txt: '<i>O chapéu ficou. O lugar dele também.</i>', upd: (dt, u) => { if (tiao) tiao.alpha = 1 - easeIO(u); } },
-    { grade: 'aurora', flash: 1, rays: 0.6, cam: [43.4, 42.2], snap: 1, z: 2.6, spd: 1.1, pitch: 30, dof: 0.85, focus: 0.46, txt: 'Na porteira do curral, as iniciais que ele mesmo entalhou: <b>T.S.</b> Cada canto desta terra guarda uma lembrança dele.', d: 5.2, fn: () => { CINE.actors.length = 0; tiao = null; } },
-    // 6. o primeiro dia: a câmera sobe sobre a fazenda
-    { mus: 'titulo', cam: [11.5, 36.5], z: 1.0, spd: 0.7, pitch: 50, dof: 0.15, rays: 0.9, d: 5.4, clr: 1, fn: () => { csTitle('A LIDA COMEÇA', 'Fazenda Boa Esperança · Dia 1'); birdsFly('periquito', 8, 6, 46, -0.15); setTimeout(() => birdCall('periquito', 22 * TS, 42 * TS), 700); dogs.forEach(d => setTimeout(() => AU.bark(d.x, d.y), 400 + Math.random() * 800)); AU.whistle && setTimeout(() => AU.whistle(), 1600); } },
-    { fade: 1, d: 0.9, clr: 1, fn: () => csTitle(null) },
-    { fade: 0, fn: () => { final(); fel.cs = false; S.min = Math.max(S.min, 6 * 60 + 15); S.story.intro = 1; addFr('felipe', 30); npcState('felipe').met = 1; remember('felipe', 'recebeu você na chegada'); }, clr: 1, d: 0.2 }
+    { fade: 0, mus: 'titulo', cam: [48, 74], z: 1.3, snap: 1, d: 4.2, dof: 0.2, drift: 0.6, fn: () => { csTitle('LIDA NO SERTÃO', 'Itarantim · sudoeste da Bahia'); birdsFly('garca', 4, 36, 70, -0.25); setTimeout(() => birdCall('garca', 48 * TS, 74 * TS), 1200); } },
+    // 2. a estrada: o vaqueiro chega a cavalo, com os cães correndo ao lado. Depois disso quem conduz é o jogador.
+    { mus: 'baiao', fn: () => csTitle(null), cam: [75, 43.5], snap: 1, spd: 6, z: 1.5, pitch: 42, dof: 0.3, txt: `<b>${nm}</b>${dogs.length ? ', com ' + dn + ',' : ''} chega para cuidar da herança do avô, <b>Tiãozinho</b>: a <b>Fazenda Boa Esperança</b>.`, d: 5.6, upd: rideD(r1, 1) },
+    { d: 0.5, clr: 1, fn: () => { if (gateE && !gateE.open) { gateE.open = true; AU.creak(); } } }
   ];
   steps.forEach(st => { const u0 = st.upd; st.upd = (dt, u) => { S.min = Math.min(S.min + dt * 1.1, 7 * 60); if (u0) u0(dt, u); }; });
-  cutscene(steps, () => { final(); fel.cs = false; S.story.intro = 1; P._gal = 0; setTimeout(() => { toast('📋 Primeiras tarefas: encher os cochos d’água'); setTimeout(() => toast('📋 Capinar e plantar a horta (você tem sementes)'), 900); setTimeout(() => toast('📋 Cuidar da Estrela: o bezerro nasce em ~6 dias'), 1800); setTimeout(() => toast('📋 Conhecer Itarantim, depois da ponte'), 2700); }, 6800); say(SET.mode === 'touch' ? 'Toque no chão para andar e nos bois para ver a ficha. O Aboio faz o gado seguir você.' : 'Joystick ou WASD para andar, Correr para galopar. Toque nos bois para ver a ficha; o Aboio faz o gado seguir você.', 6500); SAVE.save('auto', true); });
+  cutscene(steps, () => { fel.cs = false; P._gal = 0; P._st = 'idle'; if (h) { P.mnt = h.id; h._st = 'ridden'; } dogs.forEach(d => { d._st = null; d._pose = null; d._cmd = 'seguir'; }); bois.forEach(b => { b._t = 0; b._pose = null; }); introRide(false); });
 }
 function removeLock(k, u) { const y = EXP[k].y; const xs = [37, 38, 39]; const n = Math.ceil(u * xs.length); for (let i = 0; i < n; i++) { const x = xs[i], idx = gi(x, y); if (obj[idx] === 1) { obj[idx] = 0; dust((x + .5) * TS, (y + .8) * TS, 6, '#c8a878'); AU.hammer(); } } }
 function csExpansion(k) {
@@ -11797,6 +11958,16 @@ function defaultCF() {
   const st = 4; const pre = STATES[st][3];
   return { dogs: [defDog(0)], di: 0, dogO: 'BR', dAllC: false, name: 'Zé do Gado', st, sk: Object.assign({}, STATES[st][6]), mt: 'cavalo', hn: 'Trovão', hbr: 'mm', coat: RIG.BR.mm.coats[0], mk: 5, hsex: 'M', sd: 0, aj: 2, age: 2, cust: defCust(), allC: false, ap: { sex: 'M', skin: 2, hair: 0, hairC: 1, hat: pre.hat, shirt: pre.shirt, shirtC: pre.shirtC, pants: pre.pants, pantsC: pre.pantsC, boots: pre.boots, acc: pre.acc, scarfC: pre.scarfC, orn: STATES[st][4] } };
 }
+function randomCF(full) { // vaqueiro pronto: visual sorteado com bom gosto, roupa típica do estado
+  const F = Math.random() < 0.5, st = rint(0, STATES.length - 1), pre = STATES[st][3], a = CF.ap;
+  CF.st = st; CF.sk = Object.assign({}, STATES[st][6]);
+  Object.assign(a, { sex: F ? 'F' : 'M', skin: rint(0, SKINS.length - 1), hair: F ? pick([2, 3, 4, 5, 6, 7]) : pick([0, 1, 2, 3]), hairC: rint(0, 5), beard: F ? 0 : pick([0, 0, 1, 2, 3, 4, 5]), brow: 0, eyeS: 0, eyeC: rint(0, EYEC.length - 1), mark: 0,
+    hat: pre.hat, shirt: pre.shirt, shirtC: pre.shirtC, pants: F && Math.random() < 0.4 ? 4 : pre.pants, pantsC: pre.pantsC, boots: pre.boots, acc: pre.acc, scarfC: pre.scarfC, orn: STATES[st][4] });
+  if (!full) return;
+  CF.name = pick(F ? ['Maria do Gado', 'Rita Vaqueira', 'Zefinha', 'Toinha', 'Luzia', 'Francisca'] : ['Zé do Gado', 'Chico Vaqueiro', 'Toinho', 'Severino', 'João do Sertão', 'Raimundo']);
+  CF.mt = 'cavalo'; CF.hbr = pick(['mm', 'campolina', 'nordestino', 'qm', 'crioulo', 'pampa']); CF.hsex = pick(['M', 'F']); CF.age = 2;
+  const cs = RIG.BR[rigBreedKey('cavalo', CF.hbr, CF.hsex)].coats; CF.coat = pick(cs); CF.hn = pick(CF.hsex === 'F' ? ['Estrela-d’Alva', 'Ventania', 'Pitanga', 'Morena'] : ['Trovão', 'Relâmpago', 'Ventania', 'Corisco', 'Alazão']);
+}
 function defDog(i) { const br = i ? 'mantiqueira' : 'caramelo'; return { br, coat: RIG.BR[br].coats[0], sex: i ? 'F' : 'M', age: 2, pt: 1, n: i ? 'Baleia' : 'Caramelo', col: i ? '#b02020' : '#8a4a1e', colT: i ? 'sino' : 'couro', bnd: i ? '' : '#b02020', tr: [], esp: i ? 'guarda' : 'boiadeiro' }; }
 const DOG_COATS_ALL = (() => { const s = new Set(); for (const k in DOGS) { const b = RIG.BR[k]; if (b && b.coats) b.coats.forEach(c => s.add(c)); } return [...s]; })();
 function dogAgeTxt(i) { return ['Filhote de poucos meses: aprende tudo muito rápido, mas ainda cansa logo e não segura boi bravo.', 'Jovem: cheio de energia e bom de aprender. Ainda meio estabanado na lida.', 'Adulto no auge: força, velocidade e fôlego no ponto.', 'Maduro e experiente: um pouco mais lento, mas obedece de primeira e não se perde.', 'Veterano: lento e dorminhoco, mas sabe tudo da lida e é o mais obediente.'][i]; }
@@ -11840,6 +12011,7 @@ function renderSetup() {
   let h = `<div class="sw2"><div class="pvbox"><h2>${ic(setupEdit ? 'brush' : 'hat', 20)} ${setupEdit ? 'Guarda-roupa' : 'Novo vaqueiro'}</h2><canvas id="pv" width="360" height="170"></canvas>
     <div class="steps">${STEPS.map((n, i) => `<button data-s="step" data-v="${i}" class="${i === setStep ? 'on' : ''}">${i + 1}. ${n}</button>`).join('')}</div></div><div>`;
   if (setStep === 0) {
+    if (!setupEdit) h += `<div class="desc" style="text-align:center"><b>Com pressa de ir pra lida?</b><br>O jogo monta um vaqueiro pronto e você muda tudo depois no guarda-roupa.</div><div class="row" style="gap:8px;margin:6px 0 4px"><button data-s="quick" style="flex:2;padding:11px;font-size:calc(15px*var(--fs))">⚡ Começar rápido</button><button class="btn" data-s="rand" style="flex:1;padding:11px">🎲 Sortear visual</button></div>`;
     if (!setupEdit) h += `<label>Nome do vaqueiro</label><input id="pn" maxlength="16" value="${esc(CF.name)}">`;
     h += `<label>Sexo</label><div class="ch"><button data-s="sex" data-v="M" class="${a.sex === 'M' ? 'on' : ''}">Homem</button><button data-s="sex" data-v="F" class="${a.sex === 'F' ? 'on' : ''}">Mulher</button></div>`;
     h += '<label>Pele</label>' + chips('skin', SKINS, a.skin, 1) + '<label>Cabelo</label>' + chips('hair', HAIRS, a.hair) + '<label>Cor do cabelo</label>' + chips('hairC', HAIRC, a.hairC, 1);
@@ -11900,6 +12072,8 @@ $('setup').addEventListener('input', e => { if (e.target.id === 'dn') CF.dogs[CF
 $('setup').addEventListener('click', e => {
   const b = e.target.closest('[data-s]'); if (!b) return; const k = b.dataset.s, v = b.dataset.v; AU.init(); AU.click();
   if (k === 'go') return setupEdit ? finishWardrobe() : newGame(CF);
+  if (k === 'quick') { randomCF(true); return newGame(CF); }
+  if (k === 'rand') { randomCF(false); return renderSetup(); }
   if (k === 'back') { $('setup').style.display = 'none'; document.body.classList.remove('ovl'); mode = 'title'; return; }
   if (k === 'next') { setStep++; $('setup').scrollTop = 0; return renderSetup(); }
   if (k === 'prev') { setStep--; $('setup').scrollTop = 0; return renderSetup(); }
@@ -11987,7 +12161,7 @@ function newGame(cf) {
   // dois bois Pé-Duro
   const bois = [put(mkAnimal('boi', 'peduro', { sex: 'M', age: 34, n: 'Malhado', coat: 'peVermelho' }), 'p1'), put(mkAnimal('boi', 'peduro', { sex: 'M', age: 30, n: 'Fumaça', coat: 'amarelo' }), 'p1')]; bois.forEach(b => { b.cast = 1; b.marca = 'TS'; }); S.gadoV = 2;
   // a vaca Estrela, prenha do touro nelore do Seu Felipe: o primeiro bezerro vem em poucos dias
-  { const v = put(mkAnimal('boi', 'peduro', { sex: 'F', age: 44, n: 'Estrela', coat: 'peVermelho', hap: 85, cond: 62, gen: 66 }), 'p1'); v.marca = 'TS'; v.preg = 6; v._pai = 0; v._paiN = 'Imperador (touro do Seu Felipe)'; v._paiSp = 'boi'; v._paiBr = 'nelore'; v._paiGen = 72; v.temp = 'dócil'; v.traits = ['docil', 'sociavel']; hist(v, 'Prenha do touro nelore do Seu Felipe'); }
+  { const v = put(mkAnimal('boi', 'peduro', { sex: 'F', age: 44, n: 'Estrela', coat: 'peVermelho', hap: 85, cond: 62, gen: 66 }), 'p1'); v.marca = 'TS'; v.preg = 3; S.story = S.story || { intro: 0, mem: {}, seen: {} }; S.story.estrela = v.id; v._pai = 0; v._paiN = 'Imperador (touro do Seu Felipe)'; v._paiSp = 'boi'; v._paiBr = 'nelore'; v._paiGen = 72; v.temp = 'dócil'; v.traits = ['docil', 'sociavel']; hist(v, 'Prenha do touro nelore do Seu Felipe'); }
   // sementes para a horta (a terra precisa de capina antes do plantio)
   S.agro.seeds = { alface: 3, couve: 2, cheiro: 3, tomate: 2, feijao: 2, abobora: 1, pimenta: 1 };
   (cf.dogs && cf.dogs.length ? cf.dogs : [defDog(0)]).forEach((d, i) => S.animals.push(mkDogCF(d, i))); S.caoV = 1; S.dep.racaoCao = (S.dep.racaoCao || 0) + 10;
@@ -12003,14 +12177,14 @@ function startPlay(intro) {
   document.body.classList.remove('ttl'); $('title').style.display = 'none'; $('setup').style.display = 'none';
   mode = 'play'; paused = false; resize(); AU.init(); cam.snap = true; cam.taz = 1; cam.az = 1; cam.uz = SET.uz || 1.3; cam.z = cam.uz; cam.free = false; cam.fx = cam.fy = null; curReg = null; closeSheet();
   if (intro && !S.tut) tutStart();
-  if (intro || (S.story && !S.story.intro)) { MUS.setScene('cutscene', 2.5); csIntro(); } else { MUS.setScene('game', 2.5); say('Bem-vindo de volta, ' + S.cf.name + '! ' + WEEK[wday()] + ', dia ' + S.day + '.', 4000); }
+  if (intro || (S.story && !S.story.intro)) { MUS.setScene('cutscene', 2.5); csIntro(); } else { MUS.setScene('game', 2.5); if (S.stats && S.stats.sold > 0 && S.flags) S.flags.venda1 = 1; if (S.story && S.story.ride) introRide(true); say('Bem-vindo de volta, ' + S.cf.name + '! ' + WEEK[wday()] + ', dia ' + S.day + '.', 4000); }
   OP.orientHint();
 }
 
 /* ============ ABERTURA CINEMATOGRÁFICA — RF GAMES · amanhecer no sertão · menu ============ */
 const OP = {
   t: 0, phase: 'gate', u: 0, cv: null, g: null, vw: 0, vh: 0, ps: 4, hy: 0, sky: null, skyU: -1, skyKey: '',
-  herd: [], birds: [], dust: [], clouds: [], blades: [], stars: [], hills: null, herdT: 0, birdT: 0, menuAt: 14.2, revAt: 11.2, skipped: false, logoT: 0,
+  herd: [], birds: [], dust: [], clouds: [], blades: [], stars: [], hills: null, herdT: 0, birdT: 0, menuAt: 9.6, revAt: 7.4, skipped: false, logoT: 0,
   init() {
     const [c, g] = mkC(16, 16); this.cv = c; this.g = g;
     const R = mulberry(4021);
@@ -12031,12 +12205,12 @@ const OP = {
   update(dt) {
     if (this.phase === 'gate') return;
     this.t += dt; const t = this.t;
-    if (this.phase === 'rf') { this.logoT += dt; this.drawRFLogo(this.logoT); if (t > 4.5) { $('rf').style.opacity = 0; } if (t > 5.4) { $('rf').style.display = 'none'; this.phase = 'scene'; } }
+    if (this.phase === 'rf') { this.logoT += dt; this.drawRFLogo(this.logoT); if (t > 2.9) { $('rf').style.opacity = 0; } if (t > 3.6) { $('rf').style.display = 'none'; this.phase = 'scene'; } }
     if ((this.phase === 'scene' || this.phase === 'rf') && t > this.revAt) $('title').classList.add('rev');
     if (this.phase !== 'menu' && t > this.menuAt) this.toMenu();
-    this.u = this.phase === 'menu' ? 1 : cl((t - 5.1) / 8.5, 0, 1); this.u = this.u * this.u * (3 - 2 * this.u);
+    this.u = this.phase === 'menu' ? 1 : cl((t - 3.4) / 5.6, 0, 1); this.u = this.u * this.u * (3 - 2 * this.u);
     // boiada: entra pela direita e cruza a estrada
-    this.herdT -= dt; if (this.herdT <= 0 && t > 6) { this.spawnHerd(); this.herdT = this.phase === 'menu' ? 46 : 60; }
+    this.herdT -= dt; if (this.herdT <= 0 && t > 4) { this.spawnHerd(); this.herdT = this.phase === 'menu' ? 46 : 60; }
     for (const h of this.herd) { h.x -= h.sp * dt; h.d += h.sp * dt; if (Math.random() < dt * 6 && h.x > -0.1 && h.x < 1.1) this.dust.push({ x: h.x + 0.01, y: h.y, vx: 0.012 + Math.random() * 0.01, vy: -0.01 - Math.random() * 0.012, l: 1.6 + Math.random(), r: 1 + Math.random() * 2 }); }
     this.herd = this.herd.filter(h => h.x > -0.25);
     for (const d of this.dust) { d.x += d.vx * dt; d.y += d.vy * dt; d.l -= dt; d.r += dt * 1.6; } this.dust = this.dust.filter(d => d.l > 0);
@@ -12110,7 +12284,7 @@ const OP = {
   render() {
     this.ensure(); if (!this.hills) this.buildHills();
     const g = this.g, { vw, vh, hy, u } = this, t = this.t, H0 = this.hills;
-    const pan = this.phase === 'menu' ? 0 : (1 - cl((t - 5) / 9, 0, 1)) * 14;
+    const pan = this.phase === 'menu' ? 0 : (1 - cl((t - 3.3) / 6.2, 0, 1)) * 14;
     this.drawSky();
     // estrelas
     if (u < 0.75) for (const s of this.stars) { const a = (1 - u / 0.75) * (0.55 + 0.45 * Math.sin(t * 2 + s[2])); if (a <= 0.05) continue; g.fillStyle = `rgba(255,250,230,${a})`; g.fillRect(Math.round(s[0] * vw), Math.round(s[1] * hy), s[3], 1); }
@@ -12164,7 +12338,7 @@ const OP = {
     const SX = sx * this.ps, SY = sy * this.ps;
     if (u > 0.2) { X.globalCompositeOperation = 'lighter'; for (let k = 0; k < 5; k++) { const a = -2.2 + k * 0.32 + Math.sin(t * 0.1 + k) * 0.03, L = Math.max(W, H) * 1.3; const gr = X.createRadialGradient(SX, SY, 0, SX, SY, L); gr.addColorStop(0, `rgba(255,210,140,${0.10 * u})`); gr.addColorStop(1, 'rgba(255,200,120,0)'); X.fillStyle = gr; X.beginPath(); X.moveTo(SX, SY); X.lineTo(SX + Math.cos(a) * L, SY + Math.sin(a) * L); X.lineTo(SX + Math.cos(a + 0.09) * L, SY + Math.sin(a + 0.09) * L); X.closePath(); X.fill(); } X.globalCompositeOperation = 'source-over'; }
     const vg = X.createRadialGradient(W / 2, H * 0.45, Math.min(W, H) * 0.3, W / 2, H * 0.5, Math.max(W, H) * 0.75); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(10,4,2,0.55)'); X.fillStyle = vg; X.fillRect(0, 0, W, H);
-    if (this.phase === 'scene' || this.phase === 'rf') { const fa = cl(1 - (t - 5.2) / 1.6, 0, 1); if (fa > 0) { X.fillStyle = `rgba(0,0,0,${fa})`; X.fillRect(0, 0, W, H); } }
+    if (this.phase === 'scene' || this.phase === 'rf') { const fa = cl(1 - (t - 3.5) / 1.2, 0, 1); if (fa > 0) { X.fillStyle = `rgba(0,0,0,${fa})`; X.fillRect(0, 0, W, H); } }
     if (mode === 'setup') { X.fillStyle = 'rgba(20,10,5,0.35)'; X.fillRect(0, 0, W, H); }
   },
   cactus(x, y, h, c, tip) { // mandacaru: tronco colunar com braços que sobem, pontas arredondadas e gomos
@@ -12509,7 +12683,7 @@ function loop(ts) {
     if (n >= 6) acc = 0;
     ALPHA = cl(acc / STEP, 0, 1);
     if (OPMODES[mode]) { if (HD.on) hdSuspend(); OP.render(); } else { camUpdate(dt); render(dt); } CINE.update(dt); if (!HD.on && !OPMODES[mode]) CINE.post2D(X, W, H); PERF.frame(dt, t1 - t0, performance.now() - t1);
-    if (mode === 'play' || mode === 'cs') { hud(dt); updSheet(dt); AU.ambient(dt); tutFrame(); guizFrame(dt); }
+    if (mode === 'play' || mode === 'cs') { hud(dt); updSheet(dt); AU.ambient(dt); tutFrame(); introTick(dt); guizFrame(dt); }
     MUS.update(dt);
     if ($('setup').style.display !== 'none') drawPreview(dt);
   } catch (err) { console.error(err); }
