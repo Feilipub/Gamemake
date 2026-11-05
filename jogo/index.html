@@ -357,7 +357,7 @@ body.lan .sw2 .pvbox{position:sticky;top:0}
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 204, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '6.5.0', SAVE_V = 9;
+const GAME_V = '6.5.1', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -1346,7 +1346,7 @@ function farmPath(fromK, toK) {
 function nearestFarmKey(x, y) { const a = areaAt(x, y); if (a) return a; let best = 'sede', bd = 1e9; for (const k of ['sede', 'deposito', 'galpao', 'reserv']) { const p = FSP[k].p; const d = hyp(p[0] * TS - x, p[1] * TS - y); if (d < bd) { bd = d; best = k; } } return best; }
 /* ---------- chão pré-renderizado ---------- */
 /* chão em blocos (chunks) de 32×32 tiles: só os blocos perto da câmera ficam na memória; os outros são descartados (LRU) */
-const GCK = 32, GCK_MAX = 16, GCH2 = new Map();
+const GCK = 32, GCK_MAX = 24, GCH2 = new Map();
 let groundSeason = -1, gFrame = 0;
 function groundChunk(cx, cy) {
   const k = cx + ',' + cy; let e = GCH2.get(k);
@@ -4824,6 +4824,7 @@ function stepTo(a, tx, ty, sp, dt, who) {
   return false;
 }
 function updAnimal(a, dt, gm, threats) {
+  if (mode === 'cs' && (a._st === 'cs' || a._csHold)) return;
   a._mv = 0;
   if (a.own === 'player' || a.own === 'felipe' || a.own === 'ryan') { const eat = a.sp === 'jumento' ? 0.6 : a.sp === 'burro' ? 0.8 : 1; a.food = cl(a.food - gm * 0.07 * eat, 0, 100); a.water = cl(a.water - gm * (season() ? 0.095 : 0.075) * (a.sp === 'jumento' ? 0.7 : 1) * heatF(), 0, 100); if (a.sp === 'boi') { a._fA = (a._fA || 0) + a.food * gm; a._fT = (a._fT || 0) + gm; } }
   if ((a._at = (a._at || 0) - dt) < 0) { a._at = 0.8; a.area = areaAt(a.x, a.y); }
@@ -8226,8 +8227,8 @@ function csChuva() {
   const [px, py] = [10, 50];
   cutscene([
     { fade: 1, d: 0.4 },
-    { fade: 0, cam: [px, py], snap: 1, z: 1.4, pitch: 38, dof: 0.3, txt: 'Um trovão rola longe, lá pras bandas da serra…', d: 3.2, fn: () => { AU.thunder && AU.thunder(); } },
-    { cam: [px + 4, py - 2], spd: 0.7, txt: '🌧 <b>Chegou a chuva!</b> O cheiro de terra molhada toma conta do sertão.', d: 4.2, fn: () => { AU.thunder && setTimeout(() => AU.thunder(), 900); } },
+    { fade: 0, cam: [px, py], snap: 1, z: 1.4, pitch: 38, dof: 0.3, txt: 'Um trovão rola longe, lá pras bandas da serra…', d: 3.2, fn: () => { S.weather = 'nublado'; if (S.wx) S.wx.ci = 0.9; AU.thunder && AU.thunder(); } },
+    { cam: [px + 4, py - 2], spd: 0.7, txt: '🌧 <b>Chegou a chuva!</b> O cheiro de terra molhada toma conta do sertão.', d: 4.2, fn: () => { S.weather = 'chuva'; if (S.wx) { S.wx.ri = 0.85; S.wx.ci = 0.95; } AU.thunder && setTimeout(() => AU.thunder(), 900); } },
     { cam: [px + 8, py - 4], spd: 0.6, txt: 'O gado levanta a cabeça para a chuva. Em poucos dias o pasto vai verdejar.', d: 4, fn: () => { myAnimals('boi').slice(0, 3).forEach((b, i) => setTimeout(() => AU.moo(b.x, b.y, 1 + i * 0.05), 400 + i * 700)); } },
     { cam: [px + 10, py - 8], z: 1.1, spd: 0.6, txt: 'E a <b>asa-branca</b>, que tinha ido embora na seca, voltou.', d: 4.2, fn: () => { for (let j = 0; j < 7; j++) AVES.push({ id: aveId++, k: 'asaBranca', x: (px - 8) * TS - j * 10, y: (py - 10) * TS + rnd(-10, 10), z: rnd(40, 60), st: 'pass', vx: 48, vy: 14, f: 1, gid: 998, ph: Math.random() * 4 }); setTimeout(() => birdCall('asaBranca', (px + 8) * TS, (py - 6) * TS), 1200); } },
     { clr: 1, d: 0.1 }
@@ -10163,7 +10164,7 @@ function collectItems(tx0, tx1, ty0, ty1, vw, vh, se, vx0, vy0) {
     if (!l) add(y0 + 4, () => { X.fillStyle = '#8a5a2a'; [[x0 + 2, y0 + 2], [x0 + 108, y0 + 2], [x0 + 2, y1 - 4], [x0 + 108, y1 - 4]].forEach(([x, y]) => { X.fillRect(x, y - 6, 2, 7); X.fillStyle = '#e04a2a'; X.fillRect(x - 1, y - 7, 4, 2); X.fillStyle = '#8a5a2a'; }); X.fillStyle = 'rgba(240,220,160,0.5)'; X.fillRect(x0 + 3, y0 + 1, 106, 1); X.fillRect(x0 + 3, y1 - 5, 106, 1); X.fillStyle = '#e8dcc0'; X.fillRect(x0 + 48, y1 - 14, 16, 9); X.fillStyle = '#6a4422'; X.fillRect(x0 + 55, y1 - 6, 2, 6); txt((x, y, w, h, c) => { X.fillStyle = c; X.fillRect(x, y, w, h); }, k, x0 + 54, y1 - 12, '#7a3a1a'); }, x0 + 56, { flat: 1 });
     else if (l.b === 'roca') { if (!l.done) add(y0 + 4, () => drawRocaPrep(x0, y0, r, l.prog), x0 + 56, { flat: 1 }); }
     else { const stg = l.done ? 3 : l.prog < 0.3 ? 0 : l.prog < 0.65 ? 1 : 2; add(y1 - 4, () => X.drawImage(consSpr(l.b, stg), x0 - 4, y0 - 20), x0 + 56, { w: 150, h: 150, b: y1, fade: 1 });
-      if (!l.done && hour() >= 7 && hour() < 17 && !isRain()) BUILDER_AP.forEach((ap, i) => { const bx = x0 + 20 + i * 70, by = y1 + 4; add(by, () => drawPerson(ap, bx, by, i ? 2 : 3, Math.floor(drawT * 3 + i) % 2, 'hammer'), bx); if (Math.random() < dt * 1.2) { AU.hammer(bx, by); dust(bx + (i ? -10 : 10), by - 6, 1, '#b8a888'); } }); } }
+      if (!l.done && hour() >= 7 && hour() < 17 && !isRain()) BUILDER_AP.forEach((ap, i) => { const bx = x0 + 20 + i * 70, by = y1 + 4; add(by, () => drawPerson(ap, bx, by, i ? 2 : 3, Math.floor(drawT * 3 + i) % 2, 'hammer'), bx); if (Math.random() < 0.02) { AU.hammer(bx, by); dust(bx + (i ? -10 : 10), by - 6, 1, '#b8a888'); } }); } }
   TROUGHS.forEach((t, i) => { const x = t.x * TS, y = t.y * TS; if (!inV(x, y, 40)) return; add(y + 15, () => X.drawImage(troughSpr(t, S.tr[i] / trCap(i)), x - 2, y - 2), x + t.w * 8, { w: t.w * 16 + 16, h: 40, b: y + 16 }); });
   for (const a of S.animals) { if (a.id === P.mnt || a._wr || !inV(a.x, a.y, 40)) continue; add(iy(a), () => drawAnimal(a), ix(a), { w: 110, h: 100 }); }
   aucDrawLot(add); drawCSX(add); drawCSA(add); drawAgro(add, inV); drawCityDeco(add, inV); drawTraffic(add, inV); drawBirds(add, inV); drawParkedBoat(add, inV); drawPipa(add, inV);
@@ -10407,6 +10408,7 @@ function renderHD0(dt) {
   let px = 0, py = HATY, rowH = 0;
   for (const c of cards) { if (px + c.w > HCW) { px = 0; py += rowH + 1; rowH = 0; } if (py + c.h > HCH) { c.skip = 1; continue; } c.sx = px; c.sy = py; px += c.w + 1; rowH = Math.max(rowH, c.h);
     X.save(); X.beginPath(); X.rect(c.sx, c.sy, c.w, c.h); X.clip(); X.setTransform(1, 0, 0, 1, c.sx + c.w / 2 - c.x, c.sy + c.h - HMARG - c.b); try { c.f(); } catch (e) { if (!HD.err) { HD.err = 1; console.error(e); } } X.restore(); }
+  HD.nCards = cards.length; HD.nSkip = cards.filter(c => c.skip).length; HD.usedPx = (py - HATY) / (HCH - HATY);
   const usedH = Math.min(HCH - HATY, py + rowH + 1 - HATY);
   gl.pixelStorei(gl.UNPACK_SKIP_ROWS, HATY); gl.bindTexture(gl.TEXTURE_2D, HD.tA); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, HCW, Math.max(1, usedH), 0, gl.RGBA, gl.UNSIGNED_BYTE, C); gl.pixelStorei(gl.UNPACK_SKIP_ROWS, 0); gl.pixelStorei(gl.UNPACK_ROW_LENGTH, 0);
   // 3) geometria
@@ -10462,17 +10464,24 @@ function sub(t) { const s = $('sub'); s.classList.remove('dl'); s.innerHTML = t;
 function talkShow(who) { const s = $('sub'), me = who === 'me'; const ap = me ? S.cf.ap : NPCDEF[who].ap, nm = me ? esc(S.cf.name) : NPCDEF[who].n; s.classList.add('dl'); s.classList.remove('done'); s.innerHTML = `<div class="pt">${charImg(ap, 4)}</div><div class="bx"><b class="nm">${nm}</b><span class="tx"></span></div>`; s.style.display = 'flex'; }
 function csTitle(a, b) { const el = $('cstitle'); if (a === null) { CINE.titleT = 0; return; } el.querySelector('.t1').textContent = a; el.querySelector('.t2').textContent = b || ''; el.classList.add('on'); CINE.titleT = 1; }
 function hideSub() { $('sub').style.display = 'none'; }
-function cutscene(steps, end) { closeModal(); CS.on = true; CS.steps = steps; CS.i = 0; CS.t = 0; CS.end = end; mode = 'cs'; document.body.classList.add('cs'); CINE.reset(); CINE.phiT = 44; CINE.dofT = 0.35; CINE.driftT = 0.5; CINE.grainT = 0.025; $('skip').style.display = 'block'; input.x = input.y = 0; input.gal = false; startStep(); }
+function cutscene(steps, end) { closeModal(); CS.on = true; CS.steps = steps; CS.i = 0; CS.t = 0; CS.end = end; CS.warm = []; mode = 'cs'; document.body.classList.add('cs'); CINE.reset(); CINE.phiT = 44; CINE.dofT = 0.35; CINE.driftT = 0.5; CINE.grainT = 0.025; $('skip').style.display = 'block'; input.x = input.y = 0; input.gal = false; startStep(); }
+const csPortraitK = () => { const a = W / Math.max(1, H); return a < 0.62 ? 0.74 : a < 0.85 ? 0.84 : 1; }; // celular em pé: abre o plano para nada sair pela borda
+function csWarmQueue(s) { // prepara aos poucos o chão (e a grama) do plano que vem, para não engasgar na troca
+  if (!s || !s.cam) return; const cx = s.cam[0] * TS, cy = s.cam[1] * TS, r = Math.max(VW(), VH()) * 0.75 + 64, K = GCK * TS;
+  for (let y = Math.floor((cy - r) / K); y <= Math.floor((cy + r) / K); y++) for (let x = Math.floor((cx - r) / K); x <= Math.floor((cx + r) / K); x++) if (x >= 0 && y >= 0 && x * GCK < MW && y * GCK < MH) CS.warm.push(['g', x, y]); }
+function csWarmTick() { if (!CS.warm || !CS.warm.length || typeof groundSeason === 'undefined' || groundSeason !== season() || !PAL[groundSeason]) return; const t0 = performance.now(); while (CS.warm.length && performance.now() - t0 < 6) { const [k, x, y] = CS.warm.shift(); if (k === 'g' && !GCH2.has(x + ',' + y)) groundChunk(x, y); else if (k === 'f' && typeof x === 'function') { try { x(); } catch (e) { } } } }
 function startStep() {
   const s = CS.steps[CS.i]; if (!s) return endCS(); CS.t = 0;
-  if (s.cam) { cam.fx = s.cam[0] * TS; cam.fy = s.cam[1] * TS; cam.spd = s.spd || 1.4; if (s.snap) cam.snap = true; }
-  if (s.z) cam.taz = s.z / (cam.uz || 1);
+  if (s.cam) { const nx = s.cam[0] * TS, ny = s.cam[1] * TS, far = cam.fx !== null && cam.fx !== undefined ? hyp(nx - (cam.x + VW() / 2), ny - (cam.y + VH() / 2)) : 0;
+    cam.fx = nx; cam.fy = ny; cam.spd = s.spd || 1.4; if (s.snap || (s.snap === undefined && !s.pan && far > Math.max(VW(), VH()) * 1.1)) cam.snap = true; }
+  if (s.z) cam.taz = s.z * csPortraitK() / (cam.uz || 1);
+  if (!CS.warm) CS.warm = []; csWarmQueue(CS.steps[CS.i + 1]); csWarmQueue(CS.steps[CS.i + 2]);
   if (s.txt) sub(s.txt); else if (s.clr) hideSub();
   if (s.fade !== undefined) fadeTo(s.fade);
   CINE.step(s); if (typeof inCam === 'function') inCam(s);
   if (s.fn) s.fn();
 }
-function updCS(dt) { const s = CS.steps[CS.i]; if (!s) return; CS.t += dt; if (s.upd) s.upd(dt, Math.min(1, CS.t / (s.d || 1))); if (CS.t >= (s.d || 0)) { CS.i++; startStep(); } }
+function updCS(dt) { const s = CS.steps[CS.i]; if (!s) return; CS.t += dt; csWarmTick(); if (s.upd) s.upd(dt, Math.min(1, CS.t / (s.d || 1))); if (CS.t >= (s.d || 0)) { CS.i++; startStep(); } }
 function endCS() { if (IN.on) IN.camT = null; csTitle(null); CINE.reset(); $('sub').classList.remove('done'); MUS.setScene('game', 2.5); CS.on = false; cam.fx = cam.fy = null; cam.taz = 1; mode = 'play'; document.body.classList.remove('cs'); $('skip').style.display = 'none'; hideSub(); fadeTo(0); const e = CS.end; CS.end = null; if (e) e(); }
 function skipCS() { if (!CS.on) return; CINE.fade = CINE.fadeT = 0; for (let i = CS.i + 1; i < CS.steps.length; i++) { const s = CS.steps[i]; if (s.fn) s.fn(); if (s.upd) s.upd(0, 1); } const cur = CS.steps[CS.i]; if (cur && cur.upd) cur.upd(0, 1); CS.i = CS.steps.length; endCS(); }
 $('skip').onclick = skipCS;
@@ -10485,7 +10494,7 @@ function csIntro() {
   const T = p => [p[0] * TS, p[1] * TS];
   const r1 = [[75, 44], [66, 44], [59.5, 44]].map(T), r2 = [[59.5, 44], [38.5, 44.5], [20.5, 44.5], [11.5, 44.5], [11.5, 35.6]].map(T);
   const ride = (route, gal) => (dt, u) => { const [x, y, dx, dy] = pathLerp(route, u); const mv = hyp(x - P.x, y - P.y); P.x = x; P.y = y; if (h) { h.x = x; h.y = y; } P._gal = u < 1 ? (gal || 1) : 0; P._cyc = ((P._cyc || 0) + mv / (gal === 2 ? 46 : 28)) % 1; P._st = u < 1 ? (gal === 2 ? 'gallop' : 'walk') : 'idle'; P._mv = mv / Math.max(dt, 1e-3);
-    if (Math.abs(dx) > Math.abs(dy)) { P.dir = dx > 0 ? 3 : 2; if (h) h.f = dx > 0 ? 1 : -1; } else if (dy) P.dir = dy > 0 ? 0 : 1; if (u < 1 && Math.random() < dt * 5) AU.hoof(x, y); cam.fx = x; cam.fy = y; };
+    if (Math.abs(dx) > Math.abs(dy)) { P.dir = dx > 0 ? 3 : 2; if (h) h.f = dx > 0 ? 1 : -1; } else if (dy) P.dir = dy > 0 ? 0 : 1; if (u < 1 && Math.random() < dt * 5) AU.hoof(x, y); const dl = hyp(dx, dy) || 1, lead = u < 1 ? 26 : 0; cam.fx = x + dx / dl * lead; cam.fy = y - 8 + dy / dl * lead * 0.6; cam.spd = 6; };
   const ax = 11.5 * TS, ay = 35.6 * TS, ex = ax + 14, ey = ay + 3, fx = ex + 24;
   const two = () => { cam.fx = (P.x + fel.x) / 2; cam.fy = (P.y + fel.y) / 2 - 8; };
   const final = () => { // estado final (também usado ao pular)
@@ -10509,11 +10518,11 @@ function csIntro() {
       dogs.forEach((d, i) => { const [x, y] = trail(r1, 0, i); d.x = x; d.y = y; d._st = 'cs'; d._pose = 'sit'; d._cmd = 'seguir'; });
       fel.cs = true; fel.hidden = false; fel.x = 19.5 * TS; fel.y = 39.6 * TS; fel.dir = 1; fel.path = []; fel.pose = 'idle'; } },
     // 1. madrugada no sertão: o açude da fazenda, garças passando
-    { fade: 0, cam: [48, 74], z: 1.05, snap: 1, d: 4.6, dof: 0.2, drift: 0.6, fn: () => { csTitle('RF GAMES APRESENTA'); birdsFly('garca', 4, 36, 70, -0.25); setTimeout(() => birdCall('garca', 48 * TS, 74 * TS), 1200); } },
-    { cam: [38, 60], spd: 0.4, d: 5.2, pitch: 36, rays: 1, fn: () => { csTitle('LIDA NO SERTÃO', 'Itarantim · sudoeste da Bahia'); birdsFly('marreca', 6, 30, 66, -0.6); setTimeout(() => birdCall('marreca', 38 * TS, 60 * TS), 900); } },
+    { fade: 0, cam: [48, 74], z: 1.3, snap: 1, d: 4.6, dof: 0.2, drift: 0.6, fn: () => { csTitle('RF GAMES APRESENTA'); birdsFly('garca', 4, 36, 70, -0.25); setTimeout(() => birdCall('garca', 48 * TS, 74 * TS), 1200); } },
+    { cam: [40, 62], pan: 1, spd: 0.4, d: 5.2, pitch: 36, rays: 1, fn: () => { csTitle('LIDA NO SERTÃO', 'Itarantim · sudoeste da Bahia'); birdsFly('marreca', 6, 30, 66, -0.6); setTimeout(() => birdCall('marreca', 38 * TS, 60 * TS), 900); } },
     // 2. a estrada: o vaqueiro chega a cavalo, com os cães correndo ao lado
-    { fn: () => csTitle(null), spd: 1.6, z: 1.15, pitch: 42, dof: 0.3, txt: 'O dia nasce em Itarantim. Do outro lado da ponte do riacho fica a <b>Fazenda Boa Esperança</b>.', d: 6, upd: rideD(r1, 1) },
-    { spd: 1.6, pitch: 46, rays: 0.7, txt: `<b>${nm}</b>${dogs.length ? ', com ' + dn + ',' : ''} chega para cuidar da herança do avô, <b>Tiãozinho</b>.`, d: 7.5, fn: () => { if (gateE && !gateE.open) { gateE.open = true; AU.creak(); } }, upd: rideD(r2, 1) },
+    { fn: () => csTitle(null), cam: [75, 43.5], snap: 1, spd: 6, z: 1.5, pitch: 42, dof: 0.3, txt: 'O dia nasce em Itarantim. Do outro lado da ponte do riacho fica a <b>Fazenda Boa Esperança</b>.', d: 6, upd: rideD(r1, 1) },
+    { spd: 6, z: 1.45, pitch: 46, rays: 0.7, txt: `<b>${nm}</b>${dogs.length ? ', com ' + dn + ',' : ''} chega para cuidar da herança do avô, <b>Tiãozinho</b>.`, d: 7.5, fn: () => { if (gateE && !gateE.open) { gateE.open = true; AU.creak(); } }, upd: rideD(r2, 1) },
     // 3. o que ficou: dois bois e um rancho
     { cam: [6, 50.6], z: 1.7, spd: 1.3, pitch: 34, dof: 0.6, focus: 0.42, txt: 'No pasto, o que ficou: os bois <b>Malhado</b> e <b>Fumaça</b> e a vaca <b>Estrela</b>, prenha do touro do Seu Felipe. É pouco, mas é um começo.', d: 4.8, fn: () => { if (gateE) gateE.open = false; setTimeout(() => bois[0] && AU.moo(bois[0].x, bois[0].y, 0.95), 600); setTimeout(() => bois[1] && AU.moo(bois[1].x, bois[1].y, 1.08), 2200); } },
     // 4. Seu Felipe espera na frente do rancho e acena
@@ -10526,7 +10535,7 @@ function csIntro() {
     csSay('me', 'Pode deixar, Seu Felipe. Vou cuidar de tudo do jeito que ele cuidava.', { look: false, fn: () => { two(); P.dir = 3; } }),
     // 5. a lembrança do avô
     { cam: [5.6, 28.4], z: 2.6, spd: 1.2, pitch: 40, dof: 0.75, focus: 0.42, txt: 'No esteio da varanda, o chapéu de couro de Tiãozinho continua no prego, como se ele fosse voltar a qualquer hora.', d: 4.6 },
-    { grade: 'memoria', flash: 1, rays: 0.9, cam: [7, 28.4], z: 2.3, spd: 0.8, d: 6, txt: '<i>Toda tarde, ao voltar do campo, Tiãozinho pendurava o chapéu no mesmo prego.</i>',
+    { grade: 'memoria', flash: 1, rays: 0.9, cam: [6.9, 28.9], z: 2.3, spd: 0.8, d: 6, txt: '<i>Toda tarde, ao voltar do campo, Tiãozinho pendurava o chapéu no mesmo prego.</i>',
       fn: () => { tiao = cineActor({ ap: Object.assign({}, TIAO), x: tx0, y: ty0, dir: 2, pose: 'walk', alpha: 1, dist: 0 }); },
       upd: (dt, u) => { if (!tiao) return; const k = Math.min(1, u / 0.62), nx = lerp(tx0, tx1, easeIO(k)), ny = lerp(ty0, ty1, easeIO(k)); tiao.dist += hyp(nx - tiao.x, ny - tiao.y); tiao.x = nx; tiao.y = ny;
         if (k < 1) { tiao.pose = 'walk'; tiao.fr = Math.floor(tiao.dist / 5) % 4; tiao.dir = 2; } else { tiao.pose = 'idle'; tiao.fr = 0; tiao.dir = 1; if (u > 0.8 && tiao.ap.hat !== 7) { tiao.ap = Object.assign({}, tiao.ap, { hat: 7 }); AU.buckle && AU.buckle(); } } } },
