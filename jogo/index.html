@@ -373,7 +373,7 @@ body:has(#mn.on) #toast,body:has(#quad[style*=flex]) #toast{top:auto;bottom:calc
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '7.5.0', SAVE_V = 9;
+const GAME_V = '7.6.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -2624,10 +2624,11 @@ function grassTile(lvl, v, fr, se) {
 }
 
 /* ============ PIXEL ART: PERSONAGENS (máquina de poses, 8 quadros) ============ */
-function apKey(a) { return [a.sex, a.skin, a.hair, a.hairC, a.hat, a.shirt, a.shirtC, a.pants, a.pantsC, a.boots, a.acc, a.scarfC, a.orn || 'none', a.tool || '', a.beard || 0, a.brow || 0, a.eyeC || 0, a.eyeS || 0, a.mark || 0, a.gear || 0, a.gl || 0].join(','); }
+function apKey(a) { return [a.sex, a.skin, a.hair, a.hairC, a.hat, a.shirt, a.shirtC, a.pants, a.pantsC, a.boots, a.acc, a.scarfC, a.orn || 'none', a.tool || '', a.beard || 0, a.brow || 0, a.eyeC || 0, a.eyeS || 0, a.mark || 0, a.gear || 0, a.gl || 0, a.mood || ''].join(','); }
 function charSpr(ap, dir, fr, pose) {
   const d = dir === 2 ? 3 : dir;
-  return cached('C' + apKey(ap) + '|' + d + '|' + fr + '|' + pose, 24, 34, g => drawChar(g, ap, d, fr, pose));
+  const c = cached('C' + apKey(ap) + '|' + d + '|' + fr + '|' + pose, 24, 34, g => drawChar(g, ap, d, fr, pose));
+  if (!c._lk) { c._lk = 1; charLook(c); } return c; // luz, sombra e contorno colorido
 }
 // parâmetros corporais de cada pose/quadro
 function poseQ(pose, fr) {
@@ -2710,7 +2711,7 @@ function drawChar(g, ap, dir, fr, pose) {
     p(wide ? 4 : 5, 17 + by, wide ? 4 : 3, 5 - by - lL, pc); p(8, 17 + by, wide ? 4 : 3, 5 - by - lR, pc);
     p(7, 18 + by, 1, 3, pD); p(8, 18 + by, 1, 3, pD); clr(7, 20 + by, 2, 3 - by);
     if (wide) { p(5, 19 + by, 1, 2, pD); p(10, 19 + by, 1, 2, pD); p(4, 21 - lL, 4, 1, pD); p(8, 21 - lR, 4, 1, pD); }
-    if (ap.pants === 3) { p(4, 18 + by, 2, 4 - by - lL, lea); p(10, 18 + by, 2, 4 - by - lR, lea); p(4, 19 + by, 1, 1, leL); p(11, 19 + by, 1, 1, leL); }
+    if (ap.pants === 3) { p(4, 18 + by, 2, 4 - by - lL, lea); p(10, 18 + by, 2, 4 - by - lR, lea); p(4, 19 + by, 1, 1, leL); p(11, 19 + by, 1, 1, leL); p(5, 20 + by, 1, 1, leD); p(10, 20 + by, 1, 1, leD); }
     if (ap.pants === 0) { p(6, 18 + by, 1, 1, pL); p(9, 18 + by, 1, 1, pL); }
     bootF(4, 22, lL); bootF(8, 22, lR);
   }
@@ -2743,7 +2744,7 @@ function drawChar(g, ap, dir, fr, pose) {
     if (fem && side) p(x0 + w - 1, y0 + 2, 1, 2, shL);
     if (ap.shirt === 0) { for (let y = 0; y < 6; y++) for (let x = x0; x < x0 + w; x++) if (x % 3 === 0 || y % 3 === 1) p(x, y0 + y, 1, 1, (x % 3 === 0 && y % 3 === 1) ? shade(shc, -.4) : shD); }
     if (ap.shirt === 1 && !side && dir === 0) p(7, y0, 2, 1, sk);
-    if (ap.shirt === 2) { p(x0 - (side ? 0 : 1), y0, w + (side ? 0 : 2), 6, lea); p(side ? 6 + lean : 4, y0, side ? 5 : 8, 1, leL);
+    if (ap.shirt === 2) { p(x0 - (side ? 0 : 1), y0, w + (side ? 0 : 2), 6, lea); p(side ? 6 + lean : 4, y0, side ? 5 : 8, 1, leL); for (let x = x0 - (side ? 0 : 1); x < x0 + w + (side ? 0 : 1); x += 2) p(x, y0 + 5, 1, 1, leD); // costura da barra
       if (dir === 0) { p(7, y0 + 1, 2, 5, SHIRTC[ap.shirtC]); p(5, y0 + 2, 1, 1, leL); p(10, y0 + 2, 1, 1, leL); p(5, y0 + 4, 1, 1, leL); p(10, y0 + 4, 1, 1, leL); }
       else if (dir === 1) { p(6, y0 + 1, 4, 1, leL); p(7, y0 + 2, 2, 2, leL); p(6, y0 + 4, 4, 1, leL); }
       else { p(x0 + 2, y0 + 2, 1, 1, leL); p(x0 + 2, y0 + 4, 1, 1, leL); if (Q.mv) p(x0 - 1 - (Q.flap > 1 ? 1 : 0), y0 + 4, 1 + (Q.flap > 1 ? 1 : 0), 2, leD); } }
@@ -2753,7 +2754,7 @@ function drawChar(g, ap, dir, fr, pose) {
       if (dir === 0) { p(5, y0 + 1, 6, 6, lea); p(5, y0 + 1, 6, 1, leL); p(6, y0 + 3, 4, 1, leD); p(7, y0 + 5, 2, 1, leD); p(5, y0 + 1, 1, 6, leD); p(10, y0 + 1, 1, 6, leD); }
       else if (dir === 1) { p(5, y0, 1, 5, leD); p(10, y0, 1, 5, leD); p(5, y0 + 3, 6, 1, leD); }
       else { p(x0 + w - 2, y0 + 1, 2, 6, lea); p(x0 + w - 1, y0 + 1, 1, 6, leD); } }
-    if (ap.pants !== 4 || side) { p(x0, y0 + 6, w, 1, '#3a2414'); if (dir === 0) { p(7, y0 + 6, 2, 1, ap.acc === 2 ? '#f0d060' : '#b89040'); if (ap.acc === 2) { p(6, y0 + 6, 4, 1, '#e8c050'); p(7, y0 + 5, 2, 1, '#c8a030'); } } }
+    if (ap.pants !== 4 || side) { p(x0, y0 + 6, w, 1, '#3a2414'); if (dir === 0) { p(7, y0 + 6, 2, 1, ap.acc === 2 ? '#f0d060' : '#b89040'); if (ap.acc === 2) { p(6, y0 + 6, 4, 1, '#e8c050'); p(7, y0 + 5, 2, 1, '#c8a030'); } p(7, y0 + 6, 1, 1, '#fff4c0'); } }
     else p(5, y0 + 5, 6, 1, '#3a2414');
     if (xs === 5) { if (dir === 0) { p(x0 + 1, y0 + 2, 2, 2, '#e0c040'); p(x0 + w - 2, y0 + 4, 1, 1, '#c03030'); p(x0 + w - 3, y0 + 1, 1, 1, '#3070c0'); } else if (side) p(x0 + 2, y0 + 3, 2, 2, '#e0c040'); else p(x0 + 2, y0 + 2, 2, 2, '#c03030'); }
     if (xs === 6) { const gd = '#e8c050'; if (dir === 0) { p(5, y0 + 1, 1, 5, gd); p(10, y0 + 1, 1, 5, gd); p(6, y0, 4, 1, gd); } else if (dir === 1) { p(6, y0 + 1, 4, 1, gd); p(7, y0 + 3, 2, 1, gd); p(6, y0 + 5, 4, 1, gd); } else p(x0 + 1, y0 + 1, 1, 5, gd); }
@@ -2857,11 +2858,12 @@ function drawChar(g, ap, dir, fr, pose) {
   };
   function headFront() {
     const y = by; p(7, 9 + y, 2, 1, skD);
+    const md = ap.mood || '', mouthM = c => { if (Q.arms === 'eat' || Q.run || !md) return p(7, 7 + y, 2, 1, c); if (md === 'feliz') { p(6, 7 + y, 1, 1, c); p(7, 8 + y, 2, 1, c); p(9, 7 + y, 1, 1, c); } else if (md === 'fome') { p(7, 7 + y, 2, 1, c); p(6, 8 + y, 1, 1, c); p(9, 8 + y, 1, 1, c); p(5, 4 + y, 1, 1, '#9ad0f0'); } else { p(7, 7 + y, 2, 2, c); if (!Q.blink) { p(6, 5 + y, 1, 1, shade(sk, -.3)); p(9, 5 + y, 1, 1, shade(sk, -.3)); } } }; // feliz: sorriso · fome: boca triste e uma gota de suor · cansado: olhos pesados e boca aberta
     if (ap.hair === 4 || ap.hair === 3) p(3, 4 + y, 10, ap.hair === 4 ? 9 : 3, hD);
     p(4, 2 + y, 8, 6, sk); p(5, 8 + y, 6, 1, sk); p(4, 7 + y, 1, 1, skD); p(11, 7 + y, 1, 1, skD); p(3, 5 + y, 1, 2, sk); p(12, 5 + y, 1, 2, sk);
     eyes(6, 9, 5 + y);
-    if (fem) { if (!Q.blink) { p(5, 5 + y, 1, 1, eye); p(10, 5 + y, 1, 1, eye); } p(7, 7 + y, 2, 1, Q.arms === 'eat' && fr ? '#7a2a2a' : '#c0505a'); }
-    else { p(6, 4 + y, 1, 1, hD); p(9, 4 + y, 1, 1, hD); p(7, 7 + y, 2, 1, Q.arms === 'eat' && fr ? '#5a2a1a' : shade(sk, -.25)); }
+    if (fem) { if (!Q.blink) { p(5, 5 + y, 1, 1, eye); p(10, 5 + y, 1, 1, eye); } mouthM(Q.arms === 'eat' && fr ? '#7a2a2a' : '#c0505a'); if (md === 'feliz') { p(5, 7 + y, 1, 1, mix(sk, '#e0867a', .45)); p(10, 7 + y, 1, 1, mix(sk, '#e0867a', .45)); } }
+    else { p(6, 4 + y, 1, 1, hD); p(9, 4 + y, 1, 1, hD); mouthM(Q.arms === 'eat' && fr ? '#5a2a1a' : md ? shade(sk, -.48) : shade(sk, -.25)); }
     if (Q.run) p(7, 7 + y, 2, 1, '#5a2a1a');
     face('front', y, 0);
     if (ap.acc === 5) { p(5, 5 + y, 6, 1, '#1a1a1a'); p(5, 6 + y, 2, 1, '#2a2a3a'); p(9, 6 + y, 2, 1, '#2a2a3a'); }
@@ -2904,6 +2906,7 @@ function drawChar(g, ap, dir, fr, pose) {
     eyes(10 + lx, null, 5 + y);
     if (fem) { if (!Q.blink) p(11 + lx, 4 + y, 1, 1, eye); p(11 + lx, 7 + y, 1, 1, '#c0505a'); } else { p(10 + lx, 4 + y, 2, 1, hD); p(11 + lx, 7 + y, 1, 1, shade(sk, -.25)); }
     p(7 + lx, 5 + y, 1, 2, skD); face('side', y, lx);
+    if (ap.acc === 1 && (Q.mv || Q.legs === 'ride')) { const sc2 = SCARFC[ap.scarfC], fl = Q.flap || 1; p(4 + lx - fl, 9 + y, 1 + fl, 1, sc2); p(4 + lx - fl, 10 + y - (fl > 1 ? 1 : 0), 1, 1, shade(sc2, -.2)); }
     if (ap.acc === 5) { p(9 + lx, 5 + y, 3, 1, '#1a1a1a'); p(7 + lx, 5 + y, 2, 1, '#1a1a1a'); }
     if (s === 1) p(5 + lx, 2 + y, 5, 2, mix(hc, sk, .45));
     else if (s === 3) { for (let r = -3; r <= 6; r++) { const w = Math.round(Math.sqrt(Math.max(0, 30 - (r - 1) * (r - 1)))); p(7 - w + lx, r + y, Math.min(w * 2, 12 - (7 - w)), 1, hc); } p(9 + lx, 4 + y, 3, 4, sk); eyes(10 + lx, null, 5 + y); }
@@ -5441,7 +5444,7 @@ function updPlayer(dt) {
   if (b & 1) P._vx *= 0.15; if (b & 2) P._vy *= 0.15;
   pushFromAnimals(hb);
   const moved = hyp(P.x - ox, P.y - oy), spd = moved / dt; P._mv = spd;
-  unstickTick(dt, mag, moved, hb);
+  unstickTick(dt, mag, moved, hb); footTick(moved);
   // direção com histerese e quadro de virada
   const fx = mag ? ix : P._vx, fy = mag ? iy : P._vy;
   if (mag > 0.3 || spd > 4) { const ax = Math.abs(fx), ay = Math.abs(fy), horiz = P.dir >= 2; let nd = P.dir;
@@ -9169,6 +9172,53 @@ function openBret() { showModal('🧰 Baú do brete', null, null, () => {
   return h; }, 'bag'); }
 A.bretGet = v => { const [k, q] = v.split('|'), have = (S.bret || {})[k] || 0, n = q === 'all' ? have : Math.min(1, have); if (!n) return; S.bret[k] -= n; if (!S.bret[k]) delete S.bret[k]; addInv(k, n, true); renderModal(); };
 const BAG_CAT = [['comida', '🍽️ Comida'], ['prod', '🧺 Produtos da roça e da mata'], ['trato', '🌽 Trato e insumos'], ['vet', '💉 Veterinária'], ['ferr', '🔧 Ferramentas'], ['carne', '🥩 Carnes'], ['peixe', '🐟 Peixes']];
+/* ============ VISUAL DOS PERSONAGENS E DO CHÃO (v7.6) ============
+   charLook: luz e sombra (luz de cima à esquerda) e contorno colorido (o contorno pega a cor da peça, mais escura).
+   Pegadas na terra, brilho do sol na água. Tudo calculado uma vez por sprite (fica guardado no cache). */
+function charLook(c) {
+  if (SET.look === false) return; const W = c.width, H = c.height, g = c.getContext('2d'), im = g.getImageData(0, 0, W, H), d = im.data, o = new Uint8ClampedArray(d);
+  const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? -1 : (y * W + x) * 4;
+  const isOut = i => i >= 0 && d[i + 3] > 200 && d[i] === 38 && d[i + 1] === 22 && d[i + 2] === 14;
+  const edge = i => i < 0 || d[i + 3] < 128 || isOut(i);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = (y * W + x) * 4; if (d[i + 3] < 128) continue;
+    if (isOut(i)) { // contorno colorido: pega a cor da peça vizinha (prefere a de cima/esquerda, onde bate a luz)
+      let n = -1; for (const [dx, dy] of [[0, -1], [-1, 0], [1, 0], [0, 1]]) { const j = at(x + dx, y + dy); if (j >= 0 && d[j + 3] > 200 && !isOut(j)) { n = j; break; } }
+      if (n >= 0) { const below = edge(at(x, y + 1)) && at(x, y + 1) >= 0 ? 0 : 0, k = (y > H * 0.82 ? 0.2 : 0.3) + below; o[i] = d[n] * k + 14; o[i + 1] = d[n + 1] * k + 8; o[i + 2] = d[n + 2] * k + 6; }
+      continue;
+    }
+    const r = edge(at(x + 1, y)), b = edge(at(x, y + 1)), l = edge(at(x - 1, y)), t = edge(at(x, y - 1));
+    let k = 1; if (r || b) k = 0.8; else if (l || t) k = 1.15; else if (edge(at(x + 2, y)) || edge(at(x, y + 2))) k = 0.93;
+    if (k !== 1) { o[i] = Math.min(255, d[i] * k + (k > 1 ? 8 : 0)); o[i + 1] = Math.min(255, d[i + 1] * k + (k > 1 ? 6 : 0)); o[i + 2] = Math.min(255, d[i + 2] * k * (k < 1 ? 1.07 : 1) + (k > 1 ? 2 : 0)); }
+  }
+  im.data.set(o); g.putImageData(im, 0, 0);
+}
+// humor do rosto: feliz, cansado ou com fome (o jogador pela energia e fome; os moradores pela amizade)
+function moodTick() {
+  if (!S || !S.cf) return; S.cf.ap.mood = P.en < 22 ? 'cansado' : P.fo < 18 ? 'fome' : (P.en > 55 && P.fo > 45 ? 'feliz' : '');
+  for (const e of npcs) if (e.d && e.d.ap) { const hr = hearts(e.id), h = hour(); e.d.ap.mood = (h >= 21 || h < 5.5) ? 'cansado' : hr >= 4 ? 'feliz' : ''; }
+}
+// pegadas na terra
+const FOOT = []; let footD = 0;
+function footTick(moved) {
+  if (!S || !moved) return; footD += moved; const step = P.mnt ? 13 : 8; if (footD < step) return; footD = 0;
+  const g = ground[gi(Math.floor(P.x / TS), Math.floor(P.y / TS))]; if (g !== G.DIRT && g !== G.SAND && g !== G.MUD && g !== G.DRY) return;
+  const side = (FOOT.length % 2 ? 1 : -1) * (P.mnt ? 3 : 2); const vx = P._vx || 0, vy = P._vy || 0, horiz = Math.abs(vx) > Math.abs(vy);
+  FOOT.push({ x: P.x + (horiz ? 0 : side), y: P.y + 1 + (horiz ? side * 0.6 : 0), t: drawT, h: !!P.mnt, mud: g === G.MUD, hz: horiz }); if (FOOT.length > 90) FOOT.shift();
+}
+function drawFoot() {
+  for (let i = FOOT.length - 1; i >= 0; i--) { const f = FOOT[i], age = drawT - f.t; if (age > 40) { FOOT.splice(i, 1); continue; }
+    const a = Math.min(1, (1 - age / 40) * 1.4) * (f.mud ? 0.6 : 0.42); X.fillStyle = `rgba(70,42,18,${a.toFixed(3)})`;
+    if (f.h) { X.fillRect(Math.round(f.x - 2), Math.round(f.y - 1), 4, 3); X.fillStyle = `rgba(40,24,10,${(a * 0.8).toFixed(3)})`; X.fillRect(Math.round(f.x - 1), Math.round(f.y), 2, 1); }
+    else { X.fillRect(Math.round(f.x - 1), Math.round(f.y), f.hz ? 3 : 2, 2); } }
+}
+// brilho do sol na água (só de dia e sem chuva)
+function drawGlints(tx0, tx1, ty0, ty1) {
+  const h = hour(); if (h < 7 || h > 17 || isRain()) return; const t = Math.floor(drawT * 2.2);
+  X.fillStyle = 'rgba(255,255,235,0.75)';
+  for (let y = ty0; y <= ty1; y++) for (let x = tx0; x <= tx1; x++) { if (ground[gi(x, y)] !== G.WATER) continue; const r = H2(x * 3 + t, y * 5 - t, 41); if (r > 0.04) continue;
+    const px = x * TS + Math.floor(H2(x, y, 42) * 12) + 2, py = y * TS + Math.floor(H2(y, x, 43) * 10) + 3; X.fillRect(px, py, 3, 1); X.fillRect(px + 1, py - 1, 1, 3); }
+}
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
@@ -9576,7 +9626,7 @@ function espinhosTick() {
   P.en = Math.max(0, P.en - (rapido ? 0.25 : 0.1)); // por segundo
   if (S.flags.espDia !== S.day) { S.flags.espDia = S.day; toast('🌵 Os espinhos da caatinga arranham e cansam. Um traje de couro completo protege (guarda-roupa).'); }
 }
-function lidaTick(dt) { if (!S) return; if ((lidaV -= dt) <= 0) { lidaV = 0.15; const el = $('jorn'); if (el) el.style.visibility = M.open || SH.a ? 'hidden' : 'visible'; } if ((lidaT -= dt) <= 0) { lidaT = 1; jornCheck(); pipaTick(); tutTick(); fogTick(); firstSaleTick(); mataTick(); planToast(); conqTick(); amorTick(); espinhosTick(); wardTick(); gaitTick(); if (jornState().cap >= JORNADA.length && !S.flags.modelo && mode === 'play' && !M.open && !P._act) csModelo(); } }
+function lidaTick(dt) { if (!S) return; if ((lidaV -= dt) <= 0) { lidaV = 0.15; const el = $('jorn'); if (el) el.style.visibility = M.open || SH.a ? 'hidden' : 'visible'; } if ((lidaT -= dt) <= 0) { lidaT = 1; jornCheck(); pipaTick(); tutTick(); fogTick(); firstSaleTick(); mataTick(); planToast(); moodTick(); conqTick(); amorTick(); espinhosTick(); wardTick(); gaitTick(); if (jornState().cap >= JORNADA.length && !S.flags.modelo && mode === 'play' && !M.open && !P._act) csModelo(); } }
 
 /* ---------- lojas ---------- */
 function shopCart() { return hyp(S.cart.x - P.x, S.cart.y - P.y) < 110 || P.cart; }
@@ -11768,7 +11818,7 @@ function render(dt) {
   drawGroundView(sx, sy, sx + sw, sy + sh);
   const tx0 = Math.max(0, Math.floor(cam.x / TS) - 3), tx1 = Math.min(MW - 1, Math.ceil((cam.x + vw) / TS) + 3), ty0 = Math.max(0, Math.floor(cam.y / TS) - 2), ty1 = Math.min(MH - 1, Math.ceil((cam.y + vh) / TS) + 5);
   const se = season(), wind = S.weather === 'vento' ? 2 : 1;
-  groundLayer(tx0, tx1, ty0, ty1, se, wind);
+  groundLayer(tx0, tx1, ty0, ty1, se, wind); drawGlints(tx0, tx1, ty0, ty1); drawFoot();
   VIEW.x0 = cam.x; VIEW.y0 = cam.y; VIEW.x1 = cam.x + vw; VIEW.y1 = cam.y + vh;
   const L = collectItems(tx0, tx1, ty0, ty1, vw, vh, se, cam.x, cam.y);
   const inV = (x, y, m) => x > cam.x - m && x < cam.x + vw + m && y > cam.y - 20 && y < cam.y + vh + m * 1.5;
@@ -11943,7 +11993,7 @@ function renderHD0(dt) {
   X.setTransform(1, 0, 0, 1, -F.x0, -F.y0);
   drawGroundView(F.x0, F.y0, F.x1, F.y1); groundLayer(tx0, tx1, ty0, ty1, se, wind);
   const items = collectItems(tx0, tx1, ty0, ty1, gw, gh, se, F.x0, F.y0);
-  for (const it of items) if (it.o && it.o.flat) it.f();
+  drawGlints(tx0, tx1, ty0, ty1); drawFoot(); for (const it of items) if (it.o && it.o.flat) it.f();
   drawEventDecor(true); drawMemGlints(); misMarkers(); drawMoveFx(); drawDebugCol(); worldFx(dt);
   X.setTransform(1, 0, 0, 1, 0, 0);
   const gl = HD.gl; gl.pixelStorei(gl.UNPACK_ROW_LENGTH, HCW); gl.pixelStorei(gl.UNPACK_SKIP_PIXELS, 0); gl.pixelStorei(gl.UNPACK_SKIP_ROWS, 0);
