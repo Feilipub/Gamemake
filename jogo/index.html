@@ -5376,6 +5376,20 @@ function separate(a) {
 function mountBreed(h) { return h.sp === 'jumento' ? (DONKEYS[h.br] && DONKEYS[h.br].v ? DONKEYS[h.br] : DONKEYS.nordestino) : h.sp === 'burro' ? (MULES[h.br] || MULES.mula) : (HORSES[h.br] || HORSES.crioulo); }
 function horseStats(h) { const B0 = mountBreed(h), m = ageMod(yrs(h)); const B = Object.assign({}, B0, { v: [B0.v[0], B0.v[1], B0.v[2] * m.spd], cost: B0.cost * m.cost, rec: B0.rec * m.rec }); const sd = SADDLES.find(s => s.id === h.saddle) || SADDLES[0]; return { B, sd }; }
 function pullOf(a) { if (!a) return 1; if (a.sp === 'boi') return (CATTLE[a.br] || {}).carro || 1; const B = mountBreed(a); return B.pull || (a.sp === 'burro' ? 1.1 : 1); }
+/* destrava o vaqueiro quando ele fica preso (ex.: entrou montado no brete, que é estreito demais para o cavalo) */
+function openAt(x, y, hb) { return !boxHit(x, y, hb, 'p') && ((!boxHit(x + 8, y, hb, 'p') && !boxHit(x - 8, y, hb, 'p')) || (!boxHit(x, y + 6, hb, 'p') && !boxHit(x, y - 6, hb, 'p'))); }
+function freeSpotNear(x, y, hb, maxR) { for (let r = 6; r <= maxR; r += 4) for (let k = 0; k < 16; k++) { const a = k / 16 * 6.283, nx = x + Math.cos(a) * r, ny = y + Math.sin(a) * r; if (openAt(nx, ny, hb)) return [nx, ny]; } return null; }
+function unstickTick(dt, mag, moved, hb) {
+  const embedded = boxHit(P.x, P.y, hb, 'p');
+  if (embedded || (mag > 0.3 && moved < 2 * dt)) P._stk = (P._stk || 0) + dt; else P._stk = Math.max(0, (P._stk || 0) - dt * 2);
+  if (P._stk < (embedded ? 0.25 : 1.4)) return; P._stk = 0;
+  if (P.mnt && inBrete(P.x, P.y)) { const h = byId(P.mnt), f0 = freeSpotNear(P.x, P.y, HB.foot, 24); P.mnt = null; if (h) { h._st = 'idle'; h._t = 10; } if (f0 && boxHit(P.x, P.y, HB.foot, 'p')) { P.x = f0[0]; P.y = f0[1]; } P._vx = P._vy = 0; say('O brete é estreito demais para o cavalo: você desceu. Passe a pé.', 3200); return; }
+  if (!embedded && openAt(P.x, P.y, hb)) return; // só encostado numa cerca: nada a fazer
+  let f = freeSpotNear(P.x, P.y, hb, 64);
+  if (!f && P.mnt) { const h = byId(P.mnt); f = freeSpotNear(P.x, P.y, HB.foot, 64); if (f && h) { P.mnt = null; h._st = 'idle'; h._t = 10; say('Apertado demais para o cavalo: você desceu.', 2600); } }
+  if (f) { P.x = f[0]; P.y = f[1]; P._vx = P._vy = 0; }
+}
+const inBrete = (x, y) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); return tx >= 49 && tx <= 51 && ty >= 33 && ty <= 42; };
 function updPlayer(dt) {
   if (P._vx === undefined) { P._vx = P._vy = 0; P._dist = 0; }
   if (P._act) { updAct(dt); P._vx *= 0.7; P._vy *= 0.7; return; }
@@ -5417,6 +5431,7 @@ function updPlayer(dt) {
   if (b & 1) P._vx *= 0.15; if (b & 2) P._vy *= 0.15;
   pushFromAnimals(hb);
   const moved = hyp(P.x - ox, P.y - oy), spd = moved / dt; P._mv = spd;
+  unstickTick(dt, mag, moved, hb);
   // direção com histerese e quadro de virada
   const fx = mag ? ix : P._vx, fy = mag ? iy : P._vy;
   if (mag > 0.3 || spd > 4) { const ax = Math.abs(fx), ay = Math.abs(fy), horiz = P.dir >= 2; let nd = P.dir;
