@@ -372,8 +372,8 @@ body:has(#mn.on) #toast,body:has(#quad[style*=flex]) #toast{top:auto;bottom:calc
 'use strict';
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
-const TS = 16, MW = 192, MH = 204, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '7.1.1', SAVE_V = 9;
+const TS = 16, MW = 192, MH = 264, WPX = MW * TS, HPX = MH * TS;
+const GAME_V = '7.2.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -557,6 +557,11 @@ function itemIconURL(id) {
     case 'foice': p(3, 5, 1, 6, '#8a5a2a'); p(3, 2, 6, 1, '#c8c8d0'); p(8, 3, 1, 3, '#c8c8d0'); break;
     case 'pulverizador': p(3, 2, 6, 8, '#d0d0c8'); p(3, 2, 6, 2, '#3a6aa0'); p(9, 6, 2, 1, '#4a4a52'); break;
     case 'defensivo': p(4, 1, 4, 2, '#2a2a2a'); p(3, 3, 6, 8, '#e0b030'); p(4, 5, 4, 3, '#2a2a2a'); break;
+    case 'caja': p(3, 4, 6, 6, '#f0c030'); p(4, 4, 2, 2, '#f8e080'); p(5, 2, 1, 2, '#4a7a2e'); break;
+    case 'umbu': p(3, 4, 6, 6, '#9ab848'); p(4, 4, 2, 2, '#c8e070'); p(5, 2, 2, 2, '#4a7a2e'); break;
+    case 'jatoba': p(2, 3, 8, 6, '#6a3a1a'); p(3, 4, 6, 1, '#8a5a2a'); p(3, 7, 6, 1, '#4a2a10'); break;
+    case 'mel': p(3, 3, 6, 8, '#e8a020'); p(3, 3, 6, 2, '#c8ccd0'); p(4, 6, 2, 3, '#f8d060'); break;
+    case 'erva': for (let k = 0; k < 4; k++) p(3 + k * 2, 3 + (k % 2), 1, 7, '#4a8a3a'); p(2, 9, 8, 1, '#c8a050'); p(4, 2, 2, 2, '#f0d040'); break;
     default: if (IT[id] && IT[id].c === 'carne') meat('#c84a4a', '#f0e0c0'); else { p(2, 2, 8, 8, '#c8a050'); p(4, 4, 4, 4, '#8a6a30'); }
   }
   outline(g, 12, 12); u = c.toDataURL(); icCache.set(key, u); return u;
@@ -912,6 +917,13 @@ const IT = {
   carnesol: { i: '🥓', n: 'Carne de Sol (kg)', kg: 1, p: 55, d: 'Tradição sertaneja.', c: 'carne' },
   assado: { i: '🍽️', n: 'Prato de churrasco', kg: 0.5, p: 30, d: 'Carne assada: +40 fome, +15 energia. Ótimo presente.', c: 'comida', en: 15, fo: 40 }
 };
+Object.assign(IT, { // frutos e achados da mata (v7.2)
+  caja: { i: '', n: 'Cajá', kg: 0.05, p: 1.5, en: 4, fo: 6, d: 'Fruta azedinha da cajazeira da Mata Grande. Coma ou venda no Mercadinho.', c: 'prod' },
+  umbu: { i: '', n: 'Umbu', kg: 0.05, p: 1.2, en: 3, fo: 6, d: 'A fruta do umbuzeiro, a árvore sagrada do sertão. Coma ou venda no Mercadinho.', c: 'prod' },
+  jatoba: { i: '', n: 'Jatobá (fava)', kg: 0.1, p: 2, en: 5, fo: 10, d: 'Fava dura com uma farinha doce por dentro. Sustenta na lida.', c: 'prod' },
+  mel: { i: '', n: 'Mel da mata (pote)', kg: 0.5, p: 28, en: 20, fo: 8, d: 'Mel silvestre das colmeias da Mata Grande. Vale bem no Mercadinho.', c: 'prod' },
+  erva: { i: '', n: 'Ervas do mato (maço)', kg: 0.1, p: 6, d: 'Boldo, erva-cidreira e alecrim do campo. O povo compra para chá e remédio caseiro.', c: 'prod' }
+});
 const MATS = { madeira: ['🪵', 'Dúzia de tábuas', 280], tijolo: ['🧱', 'Milheiro de tijolos', 950], cimento: ['🪨', 'Saco de cimento', 38], telha: ['🏠', 'Cento de telhas', 260], arame: ['➰', 'Rolo de arame', 210] };
 const MEALS = [
   { n: 'Cuscuz com Café', p: 12, fo: 30, en: 12 }, { n: 'Baião de Dois', p: 22, fo: 48, en: 6 },
@@ -1241,6 +1253,7 @@ function genMap() {
   for (let y = 46; y <= 50; y++) for (let x = 96; x <= 109; x++) obj[gi(x, y)] = 0;
   fenceRect([100, 46, 105, 49]);
   PROPS.push({ t: 'arquibancada', x: 97.6 * TS, y: 49.9 * TS, v: 0 }, { t: 'arquibancada', x: 107.9 * TS, y: 49.9 * TS, v: 1 }, { t: 'tribuna', x: 102.6 * TS, y: 50.95 * TS, v: 0 });
+  genMataGrande(R);
   computeDepth();
   // taboas e capim-d'água nas margens dos açudes
   for (let y = 1; y < MH - 1; y++) for (let x = 1; x < MW - 1; x++) { const i = gi(x, y); if (ground[i] !== G.SAND || obj[i]) continue; let w = 0; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (ground[gi(x + dx, y + dy)] === G.WATER) w++; if (w && R() < (pondT[gi(x, y)] || x < 60 ? 0.42 : 0.3)) PROPS.push({ t: 'taboa', x: (x + 0.5) * TS, y: (y + 0.9) * TS, v: Math.floor(R() * 4) }); }
@@ -1284,6 +1297,88 @@ function genForest(R) {
 }
 function vnoise(x, y, s) { const x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0, sm = t => t * t * (3 - 2 * t), a = H2(x0, y0, s), b = H2(x0 + 1, y0, s), c = H2(x0, y0 + 1, s), d = H2(x0 + 1, y0 + 1, s), u = sm(fx), v = sm(fy); return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; }
 function pick2(R, a) { return a[Math.floor(R() * a.length)]; }
+/* ============ MATA GRANDE (v7.2): expansão do mapa ao sul do Rio Pardo ============
+   Mata alta de transição (mata atlântica e caatinga) com trilhas, a Tapera do Retiro, cajazeiras e jatobás,
+   colmeias, ervas, a Cachoeira do Pardo com o poço, a Gruta das Pinturas, o Mirante da Pedra, a Lagoinha
+   e a Grota do Barbatão. As linhas novas ficam no fim do mapa: nenhum lugar antigo muda de coordenada. */
+const MG = { y0: 204, top: 208, tap: [90.5, 229, 5.2], caj: [56, 223, 3.6], jat: [124, 243, 3.4], mir: [28, 249, 6.5], gru: [24.5, 242.4], cach: [153, 212.9], poco: [153, 216.8, 4.4, 2.7], grota: [172, 251, 4.8], lag: [62, 240, 3.8, 2.5], stream: [], fords: [], cachProp: null };
+const MG_PL = { // lugares: [x, y, raio de descoberta, nome, texto]
+  entrada: [90.5, 210, 5, 'Mata Grande', 'A estrada vira trilha e a mata fecha por cima. Aqui mora muito bicho, e o Barbatão.'],
+  tapera: [90.5, 229, 5, 'Tapera do Retiro', 'A casa de taipa onde os vaqueiros dormiam quando campeavam na Mata Grande.'],
+  cachoeira: [153, 216.5, 6, 'Cachoeira do Pardo', 'A água despenca do paredão num poço fundo e gelado.'],
+  gruta: [24.5, 243.6, 3.5, 'Gruta das Pinturas', 'Uma boca de pedra escura, com pinturas muito antigas nas paredes.'],
+  mirante: [28, 248.5, 4.5, 'Mirante da Pedra', 'Do alto da pedra se vê a mata inteira até o Rio Pardo.'],
+  grota: [172, 251, 5, 'Grota do Barbatão', 'Lama remexida, capim amassado e rastro de casco grande. É aqui que ele dorme.'],
+  lagoinha: [62, 240, 5, 'Lagoinha da Mata', 'Uma lagoa escondida, onde os bichos vêm beber ao entardecer.']
+};
+const MG_PL_KEYS = Object.keys(MG_PL);
+const MATA_COL = []; // frutas, mel e ervas para colher: { t, x, y }
+const COL_DEF = { cajazeira: ['caja', 3, 6, 3, '🍋 Colher cajá'], jatoba: ['jatoba', 2, 4, 4, '🌰 Colher jatobá'], umbu: ['umbu', 4, 8, 3, '🍏 Colher umbu'], colmeia: ['mel', 1, 1, 6, '🍯 Tirar mel'], erva: ['erva', 1, 3, 2, '🌿 Colher ervas'] }; // [item, mín, máx, dias para voltar, rótulo]
+function mgSX(y) { const f = y2 => 152 + Math.round(Math.sin(y2 * 0.19) * 3 + Math.sin(y2 * 0.071 + 1.3) * 4); return y < 226 ? Math.round(153 + (f(226) - 153) * (y - 219) / 7) : f(y); }
+function genMataGrande(R) {
+  const Y0 = MG.y0; MATA_COL.length = 0; MG.stream.length = 0; MG.fords.length = 0;
+  // 1. limpa o que as outras regiões pintaram nas linhas novas
+  for (let i = PROPS.length - 1; i >= 0; i--) if (PROPS[i].y >= Y0 * TS) PROPS.splice(i, 1);
+  for (let i = WPLANTS.length - 1; i >= 0; i--) if (WPLANTS[i].y >= Y0 * TS) WPLANTS.splice(i, 1);
+  for (let y = Y0; y < MH; y++) for (let x = 0; x < MW; x++) { const i = gi(x, y); obj[i] = 0; forest[i] = 0; pondT[i] = 0; areaId[i] = -1; lockId[i] = -1; gateId[i] = -1; ground[i] = G.GRASS; }
+  // 2. borda de caatinga e a mata alta
+  for (let y = Y0; y < MH; y++) for (let x = 0; x < MW; x++) { const i = gi(x, y), edge = MG.top + (vnoise(x * 0.25, 3, 71) > 0.55 ? 1 : 0) - (vnoise(x * 0.18, 9, 72) > 0.7 ? 1 : 0);
+    if (y < edge) ground[i] = vnoise(x * 0.2, y * 0.2, 73) > 0.72 ? G.ROCK : G.DRY; else forest[i] = 1; }
+  for (let y = MH - 2; y < MH; y++) for (let x = 0; x < MW; x++) ground[gi(x, y)] = G.ROCK; // serra ao fundo
+  // 3. trilhas (2 casas de largura)
+  const clr = new Uint8Array(MW * MH), mark = (x, y, r) => { for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= Y0 && xx < MW && yy < MH) clr[gi(xx, yy)] = 1; } };
+  const T = [], seg = (ax, ay, bx, by) => { const n = Math.ceil(Math.hypot(bx - ax, by - ay) * 2); for (let k = 0; k <= n; k++) { const x = Math.round(ax + (bx - ax) * k / n + Math.sin(k * 0.45) * 0.5), y = Math.round(ay + (by - ay) * k / n); T.push([x, y]); } };
+  const line = pts => { for (let i = 1; i < pts.length; i++) seg(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]); };
+  fillR(90, Y0, 91, 224, G.DIRT); for (let y = Y0; y <= 224; y++) { mark(90, y, 1); mark(91, y, 1); }
+  line([[88, 230], [72, 227], [56, 225], [42, 232], [32, 238], [28, 243]]); line([[56, 226], [60, 236]]);
+  line([[93, 230], [108, 236], [124, 240], [138, 236], [151, 232], [160, 238], [168, 246], [171, 249]]); line([[151, 232], [152, 226], [153, 221]]);
+  for (const [x, y] of T) for (const dx of [0, 1]) { const i = gi(x + dx, y); if (y >= MG.top && y < MH - 2) { ground[i] = G.DIRT; mark(x + dx, y, 1); } }
+  MG.trails = T;
+  // 4. clareiras
+  const clearing = (cx, cy, r) => { for (let y = Math.floor(cy - r); y <= cy + r; y++) for (let x = Math.floor(cx - r); x <= cx + r; x++) if (Math.hypot(x + 0.5 - cx, (y + 0.5 - cy) * 1.2) <= r) { const i = gi(x, y); if (ground[i] !== G.DIRT) ground[i] = G.GRASS; clr[i] = 1; } };
+  clearing(...MG.tap); clearing(...MG.caj); clearing(...MG.jat); clearing(MG.grota[0], MG.grota[1], MG.grota[2]); clearing(MG.mir[0], MG.mir[1], MG.mir[2] + 1.5);
+  // 5. Mirante: lajedo de pedra alto, e a Gruta na face norte
+  { const [cx, cy, r] = MG.mir; for (let y = Math.floor(cy - r); y <= cy + r; y++) for (let x = Math.floor(cx - r); x <= cx + r; x++) { const d = Math.hypot(x + 0.5 - cx, (y + 0.5 - cy) * 1.15) + vnoise(x * 0.5, y * 0.5, 74) * 1.6; if (d <= r) ground[gi(x, y)] = G.ROCK; } }
+  // 6. Cachoeira: paredão de pedra (sólido), espuma de areia e o poço fundo; riacho que desce para o sul
+  for (let y = 209; y <= 212; y++) for (let x = 144; x <= 162; x++) { const i = gi(x, y); ground[i] = G.ROCK; obj[i] = 3; clr[i] = 1; }
+  for (let x = 146; x <= 160; x++) { ground[gi(x, 213)] = G.SAND; clr[gi(x, 213)] = 1; }
+  { const [cx, cy, rx, ry] = MG.poco; regionPond(cx, cy, rx, ry, 75); for (let y = Math.floor(cy - ry - 2); y <= cy + ry + 2; y++) for (let x = Math.floor(cx - rx - 2); x <= cx + rx + 2; x++) clr[gi(x, y)] = 1; }
+  for (let y = 219; y < MH - 2; y++) { const sx = mgSX(y); for (let x = sx; x <= sx + 1; x++) { const i = gi(x, y); const onT = T.some(([tx, ty]) => ty === y && Math.abs(tx - x) <= 1); ground[i] = onT ? G.SAND : G.WATER; pondT[i] = 0; clr[i] = 1; MG.stream.push(i); if (onT) MG.fords.push([x, y]); } }
+  // 7. Lagoinha e a lama da Grota
+  { const [cx, cy, rx, ry] = MG.lag; regionPond(cx, cy, rx, ry, 76); for (let y = Math.floor(cy - ry - 2); y <= cy + ry + 2; y++) for (let x = Math.floor(cx - rx - 2); x <= cx + rx + 2; x++) clr[gi(x, y)] = 1; }
+  { const [cx, cy] = MG.grota; for (let y = cy - 3; y <= cy + 3; y++) for (let x = cx - 4; x <= cx + 4; x++) if (Math.hypot(x + 0.5 - cx, (y + 0.5 - cy) * 1.4) < 3 + vnoise(x * 0.6, y * 0.6, 77)) ground[gi(x, y)] = G.MUD; }
+  // 8. lugares e plantas especiais
+  const put = (t, x, y, solid, extra) => { const o = Object.assign({ t, x: x * TS, y: y * TS, v: Math.floor(R() * 8), mata: 1 }, extra || {}); PROPS.push(o); if (solid) for (let dx = -solid + 1; dx < solid; dx++) obj[gi(Math.floor(x) + dx, Math.floor(y - 0.1))] = 3; if (COL_DEF[t]) MATA_COL.push(o); for (let dy = -1; dy <= 1; dy++) for (let dx = -2; dx <= 2; dx++) clr[gi(Math.floor(x) + dx, Math.floor(y) + dy)] = 1; return o; };
+  put('placaMata', 93.3, 206.6, 0);
+  put('tapera', 90.5, 227.0, 2); put('tronco', 87.4, 230.6, 0); put('tronco', 93.6, 230.8, 0); put('pedra', 86.6, 228.2, 0);
+  for (let k = 0; k < 5; k++) { const a = k / 5 * 6.28 + 0.4, [cx, cy] = MG.caj; put(k === 4 ? 'umbu' : 'cajazeira', cx + Math.cos(a) * 2.6, cy + Math.sin(a) * 1.7 + 0.85, 1); }
+  for (let k = 0; k < 3; k++) { const a = k / 3 * 6.28 + 1.1, [cx, cy] = MG.jat; put('jatoba', cx + Math.cos(a) * 2.4, cy + Math.sin(a) * 1.5 + 0.85, 1); }
+  MG.cachProp = put('cachoeira', MG.cach[0], MG.cach[1], 0);
+  put('gruta', MG.gru[0], MG.gru[1], 2); obj[gi(23, 241)] = obj[gi(24, 241)] = obj[gi(25, 241)] = 3;
+  for (const [x, y] of [[23, 246.9], [33, 252.9], [31.5, 244.9], [22.5, 251.9]]) put('pedra', x, y, 0);
+  for (const [x, y] of [[20.5, 246.85], [35.5, 249.85]]) put('umbu', x, y, 1);
+  for (const [x, y] of [[70.5, 224.85], [115.5, 233.85], [40.5, 235.85], [164.5, 241.85]]) put('colmeia', x, y, 1);
+  for (const [x, y] of [[76.5, 228.8], [48.5, 228.8], [100.5, 236.8], [132.5, 238.8], [145.5, 231.8], [61.5, 233.8], [35.5, 240.8], [158.5, 236.8], [92.6, 215.8], [88.5, 219.8]]) put('erva', x, y, 0);
+  for (const [x, y] of [[168.6, 253.6], [175.4, 249.4], [170.2, 248.2]]) put('tronco', x, y, 0);
+  // 9. a mata em si: árvores altas, palmeiras, moitas, samambaias e bromélias
+  const occ = new Uint8Array(MW * MH);
+  for (let y = MG.top; y < MH - 2; y++) for (let x = 1; x < MW - 1; x++) {
+    const i = gi(x, y); if (!forest[i] || clr[i] || occ[i] || obj[i] || ground[i] !== G.GRASS) continue;
+    const nearW = Math.abs(x - mgSX(y)) < 4 && y > 218, r = R(); let t = null;
+    if (r < 0.17) t = pick2(R, nearW ? ['inga', 'mata1', 'inga', 'samambaia'] : ['mata1', 'mata1', 'mata2', 'jatoba', 'ipe', 'barriguda', 'mata2', 'inga']);
+    else if (r < 0.29) t = pick2(R, ['arbusto', 'moita', 'samambaia', 'bromelia', 'moita']);
+    else if (r < 0.31) t = pick2(R, ['pedra', 'tronco', 'pedra']);
+    if (!t) continue;
+    const big = ['mata1', 'mata2', 'jatoba', 'ipe', 'barriguda', 'inga'].includes(t), rad = big ? 1 : 0;
+    for (let dy = -rad; dy <= rad; dy++) for (let dx = -rad; dx <= rad; dx++) occ[gi(x + dx, y + dy)] = 1;
+    PROPS.push({ t, x: (x + 0.5) * TS, y: (y + 0.85) * TS, v: Math.floor(R() * 8), mata: 1 });
+    if (big || t === 'pedra' || t === 'tronco') obj[i] = 3;
+  }
+  // 10. a Mata dos Fundos também ganha o que colher: os umbuzeiros e ervas nas clareiras
+  for (const q of PROPS) if (q.mata && q.t === 'umbu' && q.y < 22 * TS && q.x < 30 * TS) MATA_COL.push(q);
+  for (const [x, y] of [[11.5, 8.0], [14.2, 12.6], [22.2, 6.9], [7.2, 6.6], [9.0, 13.4]]) { const i = gi(Math.floor(x), Math.floor(y)); if (ground[i] === G.GRASS && !obj[i]) { const o = { t: 'erva', x: x * TS, y: y * TS, v: Math.floor(R() * 8), mata: 1 }; PROPS.push(o); MATA_COL.push(o); } }
+}
+function mataDepthFix() { for (const i of MG.stream) if (ground[i] === G.WATER) wdepth[i] = 1; }
 /* ---------- colisão ---------- */
 function solidT(tx, ty, who) {
   if (tx < 0 || ty < 0 || tx >= MW || ty >= MH) return true;
@@ -1575,7 +1670,7 @@ function computeDepth() {
   while (q.length) { const i = q.shift(), x = i % MW, y = (i / MW) | 0; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= MW || ny >= MH) continue; const j = gi(nx, ny); if (ground[j] === G.WATER && pondT[j] && !wdepth[j]) { wdepth[j] = Math.min(4, wdepth[i] + 1); q.push(j); } } }
   // riacho da estrada (2 de fundo: o cavalo vadeia, o gado só passa pela ponte) e córrego da mata (raso)
   for (let i = 0; i < MW * MH; i++) if (ground[i] === G.WATER && !pondT[i]) wdepth[i] = (i % MW) >= 60 || i >= 90 * MW ? 2 : 1;
-  if (typeof aguasDepthFix === 'function') aguasDepthFix();
+  if (typeof aguasDepthFix === 'function') aguasDepthFix(); mataDepthFix();
 }
 function waterDepthAt(x, y) { // profundidade contínua (0 margem .. 1 nado) amostrando os centros das casas vizinhas
   const fx = x / TS - 0.5, fy = y / TS - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), u = fx - x0, v = fy - y0;
@@ -2048,6 +2143,31 @@ function propSpr(t, v, se) {
     };
     if (pardoPropSpr(t, v, p, BX, BY, R)) return;
     switch (t) {
+      // ---- Mata Grande (v7.2) ----
+      case 'jatoba': bigTree({ tw: 9, th: 24, cy: BY - 46, rx: 23, ry: 14, n: 9, bark: '#5a4030', cols: ['#1a3a16', '#2e5a26', '#4e8a3a'], br: [[-11, -10], [11, -12], [0, -14]], fruit: [['#6a3a1a', '#7a4a22', '#5a3014'], 6] }); break;
+      case 'cajazeira': bigTree({ tw: 6, th: 18, cy: BY - 38, rx: 19, ry: 13, n: 8, bark: '#7a6a52', cols: ['#2a5222', '#44782e', '#6aa046'], fruit: [['#f0c030', '#e8a020', '#f8d850'], 10] }); break;
+      case 'colmeia': { bigTree({ tw: 7, th: 20, cy: BY - 42, rx: 19, ry: 13, n: 8, bark: '#4a3a2a', cols: ['#173a14', '#2a5a24', '#4a8a36'] }); const hx = BX + 10, hy = BY - 27; p(hx, hy - 7, 1, 3, '#3a2a1a'); blob(p, hx, hy, 4, '#8a6a3a'); p(hx - 3, hy - 2, 7, 1, '#b8964e'); p(hx - 3, hy + 1, 7, 1, '#6a4a22'); p(hx - 4, hy - 1, 1, 2, '#6a4a22'); p(hx, hy + 3, 2, 1, '#2a1a0a'); for (let k = 0; k < 4; k++) p(hx - 6 + k * 4, hy - 6 + (k % 2) * 3, 1, 1, '#f0d040'); break; }
+      case 'erva': for (let k = 0; k < 7; k++) { const x = BX - 6 + k * 2, h = 4 + (k * 5 + v) % 5; p(x, BY - h, 1, h, k % 2 ? '#4a8a3a' : '#5a9a44'); p(x - 1, BY - h, 3, 1, '#6aaa50'); } for (let k = 0; k < 4; k++) p(BX - 5 + k * 3, BY - 6 - (k % 2) * 2, 2, 2, v % 2 ? '#e8e0f0' : '#f0d040'); break;
+      case 'bromelia': for (let k = -3; k <= 3; k++) { const ang = k * 0.38; for (let r = 0; r < 7; r++) p(Math.round(BX + Math.sin(ang) * r * 1.2), Math.round(BY - 1 - Math.cos(ang) * r * 0.9), 2, 1, r > 4 ? '#7ab048' : '#3e7a2e'); } p(BX - 1, BY - 4, 3, 3, v % 2 ? '#d03a3a' : '#e87a20'); break;
+      case 'tapera': { const x0 = BX - 22; // casa de taipa abandonada: paredes rachadas, porta sem folha, telhado de palha caindo
+        p(x0, BY - 18, 44, 18, '#a88a62'); for (let y = BY - 18; y < BY; y += 4) p(x0, y, 44, 1, '#8a6e4a'); for (let x = x0; x < x0 + 44; x += 5) p(x, BY - 18, 1, 18, '#957a54');
+        p(x0 + 17, BY - 13, 9, 13, '#2a1a10'); p(x0 + 4, BY - 14, 7, 6, '#2a1a10'); p(x0 + 33, BY - 14, 7, 6, '#2a1a10'); p(x0 + 5, BY - 11, 5, 1, '#6a5030');
+        for (let k = 0; k < 6; k++) p(x0 + 28 + k, BY - 18 + k * 2, 1, 2, '#5a4a32'); for (let k = 0; k < 4; k++) p(x0 + 2 + k, BY - 7 + k, 1, 2, '#5a4a32');
+        for (let k = 0; k < 25; k++) { const x = x0 - 3 + k * 2, sag = k > 15 ? k - 15 : 0; p(x, BY - 27 + sag + (k % 2), 2, Math.max(3, 9 - sag), k % 3 ? '#8a7448' : '#a08a58'); }
+        p(x0 + 31, BY - 2, 12, 2, '#7a6440'); for (let k = 0; k < 9; k++) p(x0 - 2 + k * 6 + (v % 3), BY - 3 - (k % 3), 2, 3 + (k % 3), '#4a7a32'); break; }
+      case 'gruta': { // morro de pedra com a boca escura da gruta e trepadeiras
+        blob(p, BX, BY - 18, 22, '#6e6a62'); blob(p, BX - 11, BY - 12, 13, '#7e7a72'); blob(p, BX + 12, BY - 10, 12, '#76726a'); blob(p, BX - 4, BY - 27, 12, '#8e8a82');
+        for (let k = 0; k < 16; k++) p(Math.round(BX - 20 + R() * 40), Math.round(BY - 36 + R() * 32), 2, 1, R() < 0.5 ? '#a8a49c' : '#5a564e');
+        blob(p, BX, BY - 9, 9, '#1a1612'); p(BX - 9, BY - 2, 18, 2, '#1a1612'); blob(p, BX, BY - 10, 6, '#0a0806');
+        for (let k = 0; k < 10; k++) p(BX - 15 + k * 3, BY - 31 + (k % 4) * 3, 1, 6 + (k % 3), '#3e7a2e'); for (let k = 0; k < 4; k++) p(BX - 13 + k * 8, BY - 25 + (k % 2) * 4, 2, 2, '#e87a90'); break; }
+      case 'cachoeira': { // paredão de pedra, a queda d'água (3 quadros) e a espuma no pé
+        p(BX - 30, BY - 62, 60, 54, '#6a665e'); for (let k = 0; k < 46; k++) p(Math.round(BX - 30 + R() * 60), Math.round(BY - 62 + R() * 54), 3, 1, R() < .5 ? '#7e7a72' : '#56524a');
+        blob(p, BX - 25, BY - 60, 10, '#3e7a2e'); blob(p, BX + 25, BY - 58, 9, '#3e7a2e'); blob(p, BX - 20, BY - 64, 6, '#5a9a44'); blob(p, BX + 20, BY - 63, 6, '#5a9a44');
+        p(BX - 9, BY - 64, 18, 56, '#8ab8e0'); p(BX - 9, BY - 64, 2, 56, '#6a9ac8'); p(BX + 7, BY - 64, 2, 56, '#6a9ac8');
+        for (let x = BX - 8; x < BX + 8; x++) for (let y = BY - 64; y < BY - 8; y += 3) if ((x * 7 + y + v * 2) % 5 < 2) p(x, y + ((x + v) % 3), 1, 2, '#eaf6ff');
+        p(BX - 9, BY - 64, 18, 2, '#cfe8ff'); for (let k = 0; k < 22; k++) p(Math.round(BX - 15 + R() * 30), Math.round(BY - 12 + R() * 8), 2, 2, (k + v) % 3 ? '#f4fbff' : '#cfe4f4'); break; }
+      case 'placaMata': { p(BX - 1, BY - 16, 2, 16, '#6a4a2a'); p(BX - 15, BY - 26, 30, 11, '#e8d8b0'); p(BX - 15, BY - 26, 30, 1, '#fff0c8'); p(BX - 15, BY - 16, 30, 1, '#8a6a3a');
+        for (let k = 0; k < 4; k++) p(BX - 12 + k * 5, BY - 23, 3, 1, '#2a6a2a'); for (let k = 0; k < 3; k++) p(BX - 10 + k * 5, BY - 20, 3, 1, '#2a6a2a'); blob(p, BX + 10, BY - 22, 3, '#2a6a2a'); p(BX + 10, BY - 20, 1, 3, '#6a4a2a'); break; }
       case 'umbu': bigTree({ tw: 7, th: 14, cy: BY - 30, rx: 24, ry: 12, n: 8, bark: '#6a5038', cols: se ? ['#5a6436', '#7a8a4a', '#a0a862'] : ['#2e5a20', '#4f7a32', '#7aa848'], br: [[-12, -10], [11, -9], [-3, -14], [5, -13]] }); if (se) for (let i = 0; i < 6; i++) p(BX - 14 + Math.floor(R() * 28), BY - 38 + Math.floor(R() * 12), 2, 2, '#c8c060'); break;
       case 'juazeiro': bigTree({ tw: 6, th: 12, cy: BY - 28, rx: 21, ry: 13, n: 8, bark: '#5a4434', cols: ['#1e4a1c', '#2f6a2a', '#5a9a44'], br: [[-9, -9], [8, -10], [0, -12]] }); for (let i = 0; i < 5; i++) p(BX - 12 + Math.floor(R() * 24), BY - 34 + Math.floor(R() * 12), 1, 1, '#e8c860'); break;
       case 'mata1': bigTree({ tw: 8, th: 22, cy: BY - 44, rx: 21, ry: 15, n: 9, bark: '#4a3a2a', cols: ['#173a14', '#2a5a24', '#4a8a36'], br: [[-10, -10], [10, -12], [0, -14]] }); break;
@@ -4987,6 +5107,7 @@ function stepTo(a, tx, ty, sp, dt, who) {
 }
 function updAnimal(a, dt, gm, threats) {
   if (mode === 'cs' && (a._st === 'cs' || a._csHold)) return;
+  if (a.barb === 1 && mode === 'play' && updBarb(a, dt)) return;
   a._mv = 0;
   if (a.own === 'player' || a.own === 'felipe' || a.own === 'ryan') { const eat = a.sp === 'jumento' ? 0.6 : a.sp === 'burro' ? 0.8 : 1; a.food = cl(a.food - gm * 0.07 * eat, 0, 100); a.water = cl(a.water - gm * (season() ? 0.095 : 0.075) * (a.sp === 'jumento' ? 0.7 : 1) * heatF(), 0, 100); if (a.sp === 'boi') { a._fA = (a._fA || 0) + a.food * gm; a._fT = (a._fT || 0) + gm; } }
   if ((a._at = (a._at || 0) - dt) < 0) { a._at = 0.8; a.area = areaAt(a.x, a.y); }
@@ -5412,6 +5533,7 @@ function doLasso() {
   const h = P.mnt ? byId(P.mnt) : null; const sd = h ? horseStats(h).sd : SADDLES[0];
   const R = 72 * (h ? sd.lr : 0.8) * (1 + skill('lac') * 0.08) * (perk() === 'laco' ? 1.25 : 1);
   let t = null, bd = R; for (const a of S.animals) { if (a.id === P.mnt || a.sp === 'galinha' || a.sp === 'cao' || isHitched(a.id)) continue; const d = hyp(a.x - P.x, a.y - P.y); if (d < bd && (a.own === 'player' || a.own.startsWith('quest'))) { bd = d; t = a; } }
+  if (t && t.barb === 1 && !(t._acu > 0)) { lasso.anim = 0.5; AU.lasso(); say('O laço passou raspando! O Barbatão é ligeiro demais: acue com os cães ou canse ele na carreira.', 3000); return; }
   lasso.anim = 0.5; AU.lasso();
   if (t) { lasso.t = t; t._st = 'lasso'; t.tie = null; bond(t, -2); if (P.lead === t.id) P.lead = null; say('Laçou ' + t.n + '! Leve até onde quiser.', 2500); P.en = Math.max(0, P.en - 1.5); buzz(20); }
   else say('Nenhum animal ao alcance do laço (' + Math.round(R / TS) + ' m).', 1800);
@@ -5926,7 +6048,7 @@ const WKIND = {
 let WILD = [], wildT = 0;
 const isNightish = () => { const h = hour(); return h >= 18 || h < 5.5; };
 function wildCount(k) { return WILD.filter(w => w.k === k).length; }
-function forestSpot(tries) { for (let i = 0; i < (tries || 30); i++) { const [x0, y0, x1, y1] = FOREST.r, x = rnd(x0 + 1, x1) * TS, y = rnd(y0 + 1, y1) * TS; if (inForest(x, y) && !hitAt(x, y, 5)) return [x, y]; } return null; }
+function forestSpot(tries) { if (typeof MG !== 'undefined' && P && P.y > (MG.top - 2) * TS) { for (let i = 0; i < (tries || 30); i++) { const a = Math.random() * 6.28, r = rnd(5, 22) * TS, x = P.x + Math.cos(a) * r, y = P.y + Math.sin(a) * r * 0.7; if (y > (MG.top + 1) * TS && y < (MH - 3) * TS && x > TS && x < (MW - 2) * TS && inForest(x, y) && !hitAt(x, y, 5)) return [x, y]; } return null; } for (let i = 0; i < (tries || 30); i++) { const [x0, y0, x1, y1] = FOREST.r, x = rnd(x0 + 1, x1) * TS, y = rnd(y0 + 1, y1) * TS; if (inForest(x, y) && !hitAt(x, y, 5)) return [x, y]; } return null; }
 function spawnWild(k, at) {
   const p = at || forestSpot(); if (!p) return null; const K = WKIND[k];
   const w = { k, sp: 'fauna', id: 9000 + Math.floor(Math.random() * 99999), x: p[0], y: p[1], home: [p[0], p[1]], hp: K.hp, st: null, t: 0, f: Math.random() < 0.5 ? 1 : -1, _dist: 0, _mv: 0, age: 30, sex: Math.random() < 0.5 ? 'F' : 'M', br: K.rig ? K.rig[0] : k };
@@ -5942,7 +6064,7 @@ function updWildAll(dt) {
     oncaSchedule();
   }
   for (const w of WILD.slice()) updWild(w, dt);
-  WILD = WILD.filter(w => !w.gone);
+  WILD = WILD.filter(w => !w.gone && (w.k === 'onca' || hyp(w.x - P.x, w.y - P.y) < 80 * TS)); // bicho longe some e nasce outro perto de onde o vaqueiro anda
 }
 function edgeSpot() { for (let i = 0; i < 20; i++) { const x = rnd(2, 58) * TS, y = rnd(22, 66) * TS; if (!inForest(x, y) && !hitAt(x, y, 5) && ground[gi(Math.floor(x / TS), Math.floor(y / TS))] !== G.WATER) return [x, y]; } return null; }
 function oncaSchedule() {
@@ -5954,6 +6076,7 @@ function oncaSchedule() {
 function wildDayTick() { if (S.wild && S.wild.cd > 0) S.wild.cd--; }
 function updWild(w, dt) {
   const K = WKIND[w.k], d = hyp(P.x - w.x, P.y - w.y);
+  if (!w._seen && d < (K.sky ? 170 : 110) && mode === 'play') { w._seen = 1; cadSee(w.k); }
   if (K.sky) { w.ang += dt * 0.35; w.x = w.cx + Math.cos(w.ang) * 70; w.y = w.cy + Math.sin(w.ang) * 40; w.f = Math.cos(w.ang + 1.57) > 0 ? 1 : -1; w._mv = 20; w._dist += dt * 20; if (Math.random() < dt * 0.02) { w.cx = P.x + rnd(-200, 200); w.cy = P.y + rnd(-150, 100); } return; }
   w.t -= dt; if (w.hitT > 0) w.hitT -= dt;
   // ameaças: vaqueiro e cães
@@ -6852,7 +6975,7 @@ function mapHTML() {
   for (const k of ['norte', 'sul']) if (!S.exp[k]) { g.fillStyle = 'rgba(40,20,10,0.45)'; const y0 = k === 'norte' ? 0 : 67; g.fillRect(0, y0 * sc, 60 * sc, 22 * sc); }
   g.font = cvFont(10 * (SET.fs || 1), 800); g.textAlign = 'center';
   const lab = (t, x, y) => { g.fillStyle = '#000'; g.fillText(t, x * sc + 1, y * sc + 1); g.fillStyle = '#fff4c0'; g.fillText(t, x * sc, y * sc); };
-  lab('SUA FAZENDA', 20, 22); lab('ITARANTIM', 90, 32); lab('F. CAMPOS', 75, 2.5); lab('F. DUARTE', 75, 89); lab('HARAS LAGOA SECA', 148, 5); lab('F. SERRA AZUL', 150, 92); lab('SÍTIO UMBURANA', 36, 95); lab('RETIRO', 76, 121); lab('AÇUDE', 110, 106); lab('RIO PARDO', 112, 170); lab('PORTO', 72, 155); lab('VEREDA', 22, 183); lab('BREJO', 51, 196); lab('BARRAGEM', 152, 197); lab('RIO', 40, 126); lab('MATA DO RIO', 44, 145); lab('LAJEDOS', 140, 140); lab('SERROTE', 187, 30); lab('Curral', 45, 38); lab('Pastos', 18, 56); if (!S.exp.norte) lab('À VENDA', 30, 11); if (!S.exp.sul) lab('À VENDA', 30, 78);
+  lab('SUA FAZENDA', 20, 22); lab('ITARANTIM', 90, 32); lab('F. CAMPOS', 75, 2.5); lab('F. DUARTE', 75, 89); lab('HARAS LAGOA SECA', 148, 5); lab('F. SERRA AZUL', 150, 92); lab('SÍTIO UMBURANA', 36, 95); lab('RETIRO', 76, 121); lab('AÇUDE', 110, 106); lab('RIO PARDO', 112, 170); lab('MATA GRANDE', 96, 236); if (S.mata) for (const k of MG_PL_KEYS) if (S.mata.pl[k] && k !== 'entrada') lab(MG_PL[k][3], MG_PL[k][0], MG_PL[k][1] - 2.5); lab('PORTO', 72, 155); lab('VEREDA', 22, 183); lab('BREJO', 51, 196); lab('BARRAGEM', 152, 197); lab('RIO', 40, 126); lab('MATA DO RIO', 44, 145); lab('LAJEDOS', 140, 140); lab('SERROTE', 187, 30); lab('Curral', 45, 38); lab('Pastos', 18, 56); if (!S.exp.norte) lab('À VENDA', 30, 11); if (!S.exp.sul) lab('À VENDA', 30, 78);
   for (const a of S.animals) if (a.own === 'player') { g.fillStyle = a.sp === 'boi' ? '#f4f0e8' : '#c08040'; g.fillRect(a.x / TS * sc - 1, a.y / TS * sc - 1, 2, 2); }
   for (const e of npcs) if (!e.hidden) { g.fillStyle = '#40a0e0'; g.fillRect(e.x / TS * sc - 2, e.y / TS * sc - 2, 4, 4); }
   g.fillStyle = '#ff3020'; g.beginPath(); g.arc(P.x / TS * sc, P.y / TS * sc, 4, 0, 7); g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 1.5; g.stroke();
@@ -6959,7 +7082,7 @@ function sheetStats(a) {
 }
 function sheetActions(a) {
   const own = a.own === 'player', near2 = hyp(a.x - P.x, a.y - P.y) < 60;
-  if (!own) { const who = a.own.startsWith('quest') ? NPCDEF[a.own.split(':')[1]].n : NPCDEF[a.own] ? NPCDEF[a.own].n : ''; return `<p class="mut">${a.own.startsWith('quest') ? 'Animal fujão de ' + who + '. Laçe e leve até o pasto dele.' : 'Pertence a ' + who + '. Para comprar, negocie com o dono.'}</p><div class="ag">${ibtn('eye', 'Examinar', 'sa', 'exam')}</div>`; }
+  if (!own) { const who = a.own.startsWith('quest') ? NPCDEF[a.own.split(':')[1]].n : NPCDEF[a.own] ? NPCDEF[a.own].n : ''; return `<p class="mut">${a.barb ? 'O Barbatão, o boi bravo da Mata Grande. Acue com os cães ou canse ele na carreira, laçe e leve até um pasto da sua fazenda.' : a.own.startsWith('quest') ? 'Animal fujão de ' + who + '. Laçe e leve até o pasto dele.' : 'Pertence a ' + who + '. Para comprar, negocie com o dono.'}</p><div class="ag">${ibtn('eye', 'Examinar', 'sa', 'exam')}</div>`; }
   const L = [];
   const isH = a.sp === 'cavalo' || a.sp === 'burro', big = a.sp !== 'galinha' && a.sp !== 'cao';
   if (isH) { if (P.mnt === a.id) L.push(['mount', 'Desmontar', 'dismount']); else L.push(['mount', 'Montar', 'mount', a.age < 12 || a.sick]); L.push(['saddle', a.saddle ? 'Tirar sela' : 'Selar', a.saddle ? 'unsaddle' : 'saddle', P.mnt === a.id]); }
@@ -8396,7 +8519,7 @@ function jornHUD() {
   el.innerHTML = `<b>📜 ${C.n}</b> <span class="jn">${C.o.length - left.length}/${C.o.length}</span>` + (J.min ? '' : left.slice(0, 3).map(o => `<div>○ ${o[1]}</div>`).join('') + bauLine());
 }
 function jornHTML() {
-  const J = jornState(); let h = bauHTML() + `<div class="card"><b>📜 Jornada do vaqueiro</b><p class="mut">Capítulos com objetivos que ensinam a lida e dão recompensas. O painel no canto da tela mostra os próximos passos (toque nele para abrir aqui).</p><div class="ch">${btn(SET.jorn === false ? 'Mostrar painel na tela' : 'Esconder painel da tela', 'jornTog')}</div></div>`;
+  const J = jornState(); let h = bauHTML() + mataHTML() + `<div class="card"><b>📜 Jornada do vaqueiro</b><p class="mut">Capítulos com objetivos que ensinam a lida e dão recompensas. O painel no canto da tela mostra os próximos passos (toque nele para abrir aqui).</p><div class="ch">${btn(SET.jorn === false ? 'Mostrar painel na tela' : 'Esconder painel da tela', 'jornTog')}</div></div>`;
   JORNADA.forEach((C, i) => { const done = i < J.cap, cur = i === J.cap; if (i > J.cap + 1) return;
     h += `<div class="card" style="${done ? 'opacity:.7' : ''}"><b><span class="jk ${done ? 'ok' : cur ? 'cur' : 'no'}"></span>Capítulo ${i + 1}: ${C.n}${done ? ' (concluído)' : !cur ? ' (bloqueado)' : ''}</b> <span class="mut">${C.d}</span>` + (i <= J.cap ? C.o.map(([k, n, , tip]) => { const ok = done || J.ok[k]; return `<div style="margin:4px 0"><span class="jk ${ok ? 'ok' : 'no'}"></span><b>${n}</b>${!ok && tip ? `<br><span class="mut">${tip}</span>` : ''}</div>`; }).join('') : '<p class="mut">Termine o capítulo anterior.</p>') + `<p class="mut">Recompensa: R$ ${C.r.cash || 0}${C.r.it && Object.keys(C.r.it).some(k => C.r.it[k]) ? ' + ' + Object.keys(C.r.it).filter(k => C.r.it[k]).map(k => IT[k].n.split(' (')[0].toLowerCase()).join(', ') : ''}</p></div>`; });
   h += climaHTML();
@@ -8641,7 +8764,7 @@ function csFogueira() {
     { fade: 1, d: 0.7 },
     { fade: 0, grade: 'noite', cam: [fx / TS, fy / TS - 0.7], snap: 1, z: 2.2, pitch: 42, dof: 0.55, d: 4, txt: 'No fim do primeiro dia, o Seu Felipe e o Seu Bené acendem a fogueira no terreiro, como no tempo de Tiãozinho.',
       fn: () => { if (S.min < 19 * 60 + 10) S.min = 19 * 60 + 10; S.fires.fog = Math.max(S.fires.fog || 0, 240); S.fireLitAt = S.day * 1440 + S.min; S.fireOffAt = null; P.mnt = null; P.cart = false; P.x = fx; P.y = fy - 0.85 * TS; P.dir = 0; if (fel) seat(fel, 1.75 * TS, 0.1 * TS, 2); if (bene) seat(bene, -1.75 * TS, 0.1 * TS, 3); myAnimals('cao').forEach((d, i) => { d.x = fx + (i ? -0.9 : 0.9) * TS; d.y = fy - 0.95 * TS; d._pose = 'sit'; d._st = 'cs'; }); SFX.fire && SFX.fire(fx, fy); } },
-    csSay('bene', 'Teu avô contava causo nesta roda até a lua ir embora. Uma vez laçou um barbatão na Mata dos Fundos que nem eu, no meu tempo, consegui pegar!', { look: false }),
+    csSay('bene', 'Teu avô contava causo nesta roda até a lua ir embora. O melhor era o do Barbatão, um boi bravo da Mata Grande, depois do Rio Pardo. Nem ele, nem eu: ninguém nunca laçou aquele boi!', { look: false }),
     csSay('felipe', 'Tem uma coisa que você precisa saber. Antes de partir, Tiãozinho trancou um baú lá no quarto dele.', { look: false }),
     csSay('felipe', 'Disse que a chave ficava “onde ele pendurava o que tinha de mais valor”. Nunca entendi o que ele quis dizer.', { look: false }),
     csSay('me', 'O chapéu… Ele pendurava o chapéu no esteio da varanda, todo santo dia.', { look: false }),
@@ -8695,6 +8818,125 @@ function firstSaleTick() {
   for (let i = 0; i < 16; i++) part(P.x + rnd(-20, 20), P.y - 10 + rnd(-10, 6), 'icon', { vx: rnd(-22, 22), vy: rnd(-44, -16), m: 1.6, t: pick(['$', '★', '♦']), c: pick(['#ffd040', '#fff0a0', '#60c060']) });
   toast('🎉 Primeiro negócio fechado! A notícia correu Itarantim.'); say('Seu Felipe: “Primeira venda! Tiãozinho ia ficar orgulhoso. É assim que a fazenda cresce.”', 6500); addFr('felipe', 10); remember('felipe', 'fez a primeira venda da fazenda');
 }
+/* ---------- MATA GRANDE: lugares, coleta, Caderneta da Mata, o Barbatão e a onça ---------- */
+const MS = () => S.mata || (S.mata = { pl: {}, cad: {}, col: {} });
+const inMataGrande = () => P && P.y > (MG.top - 1) * TS;
+const nearMata = () => P && (P.y > (MG.y0 - 4) * TS || (P.y < 24 * TS && P.x < 31 * TS));
+function cadSee(k) {
+  if (!S || !WKIND[k]) return; const M0 = MS(); if (M0.cad[k]) return; M0.cad[k] = S.day;
+  const n = Object.keys(M0.cad).length; toast('📖 Caderneta da Mata: ' + WKIND[k].n + ' (' + n + '/' + Object.keys(WKIND).length + ')'); AU.chime && AU.chime();
+}
+let mataT = 0, mataSnd = 0;
+function mataFrame(dt) {
+  if (!S || mode !== 'play' || !MG.cachProp) return;
+  const c = MG.cachProp, d = hyp(P.x - c.x, P.y - c.y);
+  if (d < 26 * TS) { c.v = Math.floor(drawT * 6) % 3; if (Math.random() < dt * 10) part(c.x + rnd(-7, 7), c.y - rnd(2, 10), 'spark', { vx: rnd(-10, 10), vy: rnd(-16, -4), m: 0.8, c: pick(['#f4fbff', '#d8ecff']) }); }
+  if (d < 11 * TS && (mataSnd -= dt) <= 0) { mataSnd = 0.7; AU.nz && AU.nz(0.9, 0.035 * (1 - d / (11 * TS)), 'bandpass', 700, 0.8); }
+  if ((mataT -= dt) > 0) return; mataT = 0.5;
+  if (!nearMata()) return; const M0 = MS();
+  for (const k of MG_PL_KEYS) { if (M0.pl[k]) continue; const [x, y, r, n, t] = MG_PL[k]; if (hyp(P.x - x * TS, P.y - y * TS) < r * TS) { M0.pl[k] = S.day; toast('🌳 Lugar descoberto: ' + n); say(t, 4500); AU.chime && AU.chime(); if ((k === 'cachoeira' || k === 'mirante') && cenasOn() && !M.open && !P._act) csMataVista(k); break; } }
+}
+function csMataVista(k) {
+  const [x, y] = MG_PL[k], far = k === 'mirante';
+  cutscene([
+    { fade: 0, cam: far ? [x + 14, y - 12] : [x, y - 3.5], snap: 0, spd: 0.9, z: far ? 0.75 : 1.6, pitch: far ? 30 : 40, dof: far ? 0.2 : 0.45, rays: 0.8, txt: far ? 'Do alto do Mirante da Pedra, a Mata Grande se espalha até perder de vista. Lá no norte, o brilho do Rio Pardo.' : 'A Cachoeira do Pardo despenca do paredão. O barulho da água abafa até os passarinhos.', d: 4.6 },
+    { txt: far ? 'Em algum lugar ali embaixo, o Barbatão pasta escondido.' : 'Dizem que banho de cachoeira tira o cansaço de uma semana de lida.', d: 3.2 },
+    { clr: 1, d: 0.1 }
+  ]);
+}
+function colReady(q) { const D = COL_DEF[q.t], last = MS().col[MATA_COL.indexOf(q)]; return last === undefined || S.day - last >= D[3]; }
+function mataInteractables(add, foot) {
+  if (!nearMata()) return;
+  for (let i = 0; i < MATA_COL.length; i++) { const q = MATA_COL[i]; if (Math.abs(q.x - P.x) > 3 * TS || Math.abs(q.y - P.y) > 3 * TS) continue; const D = COL_DEF[q.t], ok = colReady(q);
+    add({ k: 'col', label: ok ? D[4] : D[4].split(' ')[0] + ' (colhido: volta em ' + Math.max(1, D[3] - (S.day - MS().col[i])) + ' dia[s])', x: q.x, y: q.y - 4, r: 26, prio: ok ? 2 : -1, hit: [q.x - 14, q.y - 30, q.x + 14, q.y + 4], fn: () => ok ? colher(i) : say('Já foi colhido. Volta em alguns dias.', 1800) }); }
+  if (!inMataGrande()) return;
+  const at = (k, dx, dy) => [(MG_PL[k][0] + (dx || 0)) * TS, (MG_PL[k][1] + (dy || 0)) * TS];
+  { const [x, y] = at('cachoeira', 0, 3.2); add({ k: 'banho', label: '🚿 Banho de cachoeira', x, y, r: 34, prio: 2, hit: [x - 30, y - 24, x + 30, y + 12], fn: banhoCachoeira }); }
+  if (foot) { const [x, y] = at('gruta', 0, 0); add({ k: 'gruta', label: '🔦 Entrar na gruta', x, y, r: 24, prio: 3, hit: [x - 20, y - 30, x + 20, y + 6], fn: openGruta }); }
+  { const [x, y] = at('tapera', 0, 0.2); add({ k: 'tapera', label: '🪑 Descansar na tapera', x, y, r: 26, prio: 2, hit: [x - 24, y - 30, x + 24, y + 8], fn: descansoTapera }); }
+  { const [x, y] = at('mirante', 0, -0.5); add({ k: 'mirante', label: '👀 Olhar do mirante', x, y, r: 30, prio: 1, hit: [x - 30, y - 20, x + 30, y + 14], fn: () => csMataVista('mirante') }); }
+}
+function colher(i) {
+  const q = MATA_COL[i], D = COL_DEF[q.t];
+  act('reach', q.t === 'erva' ? 0.9 : 1.2, { x: q.x, y: q.y - 6 }, () => {
+    const n = rint(D[1], D[2]); if (!addInv(D[0], n)) return; MS().col[i] = S.day; AU.coin && AU.coin(); S.stats.colheu = (S.stats.colheu || 0) + n;
+    if (q.t === 'colmeia') { if (Math.random() < (has('facao') ? 0.18 : 0.35)) playerHurt(6, q, 'As abelhas ferroaram! Mas o mel veio.'); else toast('🍯 Tirou um pote de mel sem levar ferroada.'); }
+    else toast('🧺 ' + n + 'x ' + IT[D[0]].n + ' na mochila.');
+    for (let k = 0; k < 5; k++) part(q.x + rnd(-8, 8), q.y - rnd(10, 26), 'icon', { vx: rnd(-10, 10), vy: rnd(-26, -12), m: 1, t: '•', c: q.t === 'colmeia' ? '#f0b020' : q.t === 'erva' ? '#6aaa50' : '#e8c040' });
+  }, { zoom: false });
+}
+function banhoCachoeira() {
+  const M0 = MS(); if (M0.banho === S.day) return say('Já tomou o banho de hoje. A água é gelada demais pra repetir!', 2400);
+  M0.banho = S.day; P.mnt = null; fadeTo(1, () => { S.min = Math.min(1439, S.min + 30); P.en = Math.min(100, P.en + 35); P.hp = Math.min(100, (P.hp === undefined ? 100 : P.hp) + 15); P.poison = 0; fadeTo(0); toast('🚿 Banho de cachoeira: +35 de energia e o corpo novo em folha.'); AU.nz && AU.nz(1.4, 0.05, 'bandpass', 900, 0.7); });
+}
+function descansoTapera() {
+  const M0 = MS(); if (M0.tap === S.day) return say('Já descansou na tapera hoje.', 1800);
+  M0.tap = S.day; P.mnt = null; fadeTo(1, () => { S.min = Math.min(1439, S.min + 40); P.en = Math.min(100, P.en + 20); fadeTo(0); say('Na parede da tapera, riscado a carvão: “Retiro do Barbatão — aqui ninguém dorme com fome”.', 4200); });
+}
+function openGruta() {
+  const M0 = MS(), first = !M0.grutaIn; M0.grutaIn = 1; if (first) { addFr('bene', 10); remember('bene', 'achou a inscrição da gruta'); }
+  showModal('🔦 Gruta das Pinturas', null, null, () => `<div class="card"><p>Lá dentro é fresco e escuro. Na luz da lanterna aparecem <b>pinturas antigas em vermelho e branco</b>: veados, gente de braços abertos, um sol e marcas de mão.</p><p class="mut">Foram feitas há muito tempo pelos povos que viviam nestas terras. Aqui não se mexe e não se risca: só se admira.</p><p>Num canto, bem mais novo, alguém riscou na pedra: <i>“T.S. e B. — abrigados da chuva campeando o Barbatão, 1974”</i>.</p><p class="mut">Tiãozinho e o Seu Bené estiveram aqui.${first ? ' O Seu Bené vai gostar de saber.' : ''}</p></div>`);
+}
+/* o Barbatão: boi bravo que vive na Grota, foge do vaqueiro e só para quando os cães acuam ou quando cansa */
+function barbEnsure() {
+  if (!S.story || S.barb === undefined && !(S.story.fog || S.day > 6)) return; if (S.barb && (S.barb.caught || byId(S.barb.id))) return;
+  const cs = (RIG.BR.peduro && RIG.BR.peduro.coats) || [], coat = cs.find(c => /preto|escuro|chumbo/.test(c)) || cs[0];
+  const a = mkAnimal('boi', 'peduro', { own: 'quest:bene', sex: 'M', age: 110, n: 'Barbatão', coat, gen: 94, hap: 40, cond: 85 }); a.barb = 1; a.temp = 'bravo'; a.traits = ['agitado', 'independente']; a.wt = 640;
+  a.x = MG.grota[0] * TS; a.y = MG.grota[1] * TS; S.animals.push(a); S.barb = { id: a.id, d: S.day };
+}
+function updBarb(a, dt) {
+  if (lasso.t === a) return false;
+  const hx = MG.grota[0] * TS, hy = MG.grota[1] * TS, dP = hyp(P.x - a.x, P.y - a.y);
+  if (a._acu > 0) {
+    a._acu -= dt; a._mv = 0; a._pose = 'idle'; a.f = P.x > a.x ? 1 : -1;
+    if ((a._bT = (a._bT || 0) - dt) <= 0) { a._bT = 2.4; AU.moo(a.x, a.y, 0.62); a._fx = { pose: 'scared', t0: drawT, until: drawT + 0.8 }; }
+    if (dP < 16 && !P.mnt && (a._chg = (a._chg || 0) - dt) <= 0) { a._chg = 3; playerHurt(10, a, 'O Barbatão deu uma chifrada!'); }
+    if (a._acu <= 0) a._run = 5; return true;
+  }
+  for (const d of S.animals) if (d.sp === 'cao' && d.own === 'player' && !d.dead && hyp(d.x - a.x, d.y - a.y) < 2.4 * TS) { a._acu = 7; a._run = 0; if (dP < 20 * TS) { say('Os cães acuaram o Barbatão! Laçe agora!', 2600); AU.bark && AU.bark(d.x, d.y); } return true; }
+  if (dP < 7 * TS || (a._run > 0.5 && dP < 12 * TS)) {
+    a._run = (a._run || 0) + dt; if (a._run > 16) { a._acu = 6; a._run = 0; say('O Barbatão cansou e parou, bufando. É agora!', 2600); return true; }
+    const dx = a.x - P.x, dy = a.y - P.y, dd = hyp(dx, dy) || 1; let tx = a.x + dx / dd * 60, ty = a.y + dy / dd * 60;
+    ty = cl(ty, (MG.top + 2) * TS, (MH - 4) * TS); tx = cl(tx, 3 * TS, (MW - 4) * TS);
+    const r = stepTo(a, tx, ty, 68, dt, 'a'); if (r === 'stuck') stepTo(a, a.x + rnd(-80, 80), a.y + rnd(-60, 60), 68, dt, 'a');
+    a._pose = 'run'; if (Math.random() < dt * 6) dust(a.x, a.y + 2, 1, '#8a7a5a'); if (!a._warn && dP < 9 * TS) { a._warn = 1; say('É o Barbatão! Ele é ligeiro: chame os cães para acuar ou canse ele na carreira.', 3600); } return true;
+  }
+  a._run = Math.max(0, (a._run || 0) - dt * 0.5);
+  if (hyp(a.x - hx, a.y - hy) > 14 * TS) { stepTo(a, hx, hy, 22, dt, 'a'); a._pose = 'walk'; return true; }
+  return false;
+}
+function barbTick() {
+  if (!S || !S.barb || S.barb.caught) return; const a = byId(S.barb.id); if (!a || a.barb !== 1) return;
+  const ak = areaAt(a.x, a.y), A0 = ak && AREAS[ak];
+  if (A0 && A0.k !== 'npc' && a.y < 100 * TS && a.x < 60 * TS) barbCaught(a);
+}
+function barbCaught(a) {
+  a.barb = 2; a.own = 'player'; a._acu = 0; a._run = 0; if (lasso.t === a) lasso.t = null; a._st = null; hist(a, 'Laçado na Mata Grande por ' + S.cf.name + '. O boi mais famoso de Itarantim.');
+  S.barb.caught = S.day; addFr('bene', 40); addFr('felipe', 15); for (const id in NPCDEF) if (id !== 'bene' && id !== 'felipe') addFr(id, 8); remember('bene', 'laçou o Barbatão');
+  receive(2500, 'Prêmio do Sindicato Rural pelo Barbatão', 'cash'); worldLog && worldLog(S.cf.name + ' laçou o Barbatão da Mata Grande!', ['bene'], true);
+  const go = () => { toast('🏆 Você laçou o Barbatão! Prêmio de R$ 2.500 e fama em Itarantim.'); SFX.fanfare && SFX.fanfare(true); SAVE.save('auto', true); };
+  if (!cenasOn()) return go();
+  cutscene([
+    { fade: 0, cam: [a.x / TS, a.y / TS - 1], snap: 1, z: 2.2, pitch: 40, dof: 0.5, rays: 0.6, txt: 'O Barbatão, o boi que ninguém pegava, agora está na sua fazenda.', d: 3.6, fn: () => AU.moo(a.x, a.y, 0.6) },
+    csSay('bene', 'Cinquenta anos campeando esse boi! O Tiãozinho ia rir até de madrugada. Você é vaqueiro de verdade!', { look: false }),
+    { txt: 'A notícia correu Itarantim. O Sindicato Rural mandou um prêmio de <b>R$ 2.500</b>.', d: 3.4 },
+    { clr: 1, d: 0.1 }
+  ], go);
+}
+function mataTick() {
+  if (!S) return; barbEnsure(); barbTick();
+  if (inMataGrande() && isNightish() && !wildCount('onca') && Math.random() < 0.012) { const p = forestSpot(); if (p) { const w = spawnWild('onca', p); if (w) { w.st = 'flee'; w.t = 9; AU.growl && AU.growl(w.x, w.y); say('Um rosnado no escuro da mata... uma onça-parda! Fique perto dos cães.', 3200); } } }
+}
+function mataHTML() {
+  if (!S) return ''; const M0 = MS(), nPl = MG_PL_KEYS.filter(k => M0.pl[k]).length, ks = Object.keys(WKIND), nC = ks.filter(k => M0.cad[k]).length;
+  let h = `<div class="card"><b>🌳 Mata Grande</b> <span class="mut">· ${nPl}/${MG_PL_KEYS.length} lugares · ${nC}/${ks.length} bichos na caderneta</span>`;
+  if (!M0.pl.entrada) h += '<p class="mut">Pela estrada do sul: atravesse a ponte do Rio Pardo e siga pela caatinga até a mata fechar.</p>';
+  h += '<div style="margin:4px 0"><b>Lugares</b></div>' + MG_PL_KEYS.map(k => `<div style="margin:2px 0"><span class="jk ${M0.pl[k] ? 'ok' : 'no'}"></span>${M0.pl[k] ? '<b>' + MG_PL[k][3] + '</b> — <span class="mut">' + MG_PL[k][4] + '</span>' : '???'}</div>`).join('');
+  h += '<div style="margin:6px 0 2px"><b>Caderneta da Mata</b> <span class="mut">(chegue perto dos bichos para anotar)</span></div>' + ks.map(k => M0.cad[k] ? `<div style="margin:2px 0"><span class="jk ok"></span><b>${WKIND[k].n}</b> — <span class="mut">${WKIND[k].d}</span></div>` : '').join('') + (nC < ks.length ? `<div class="mut">… e mais ${ks.length - nC} bicho(s) para encontrar.</div>` : '');
+  const B = S.barb; h += `<div style="margin:6px 0 2px"><b>O Barbatão</b></div><div class="mut">${!B ? 'O Seu Bené fala de um boi bravo que ninguém laça. Converse na fogueira e procure na Mata Grande.' : B.caught ? '✅ Laçado no dia ' + B.caught + '. Hoje ele é o touro mais famoso da sua fazenda.' : 'Vive na Grota do Barbatão, no leste da mata. Foge do vaqueiro: acue com os cães (eles precisam chegar bem perto) ou canse ele na carreira, e laçe. Depois leve no laço até um pasto da sua fazenda.'}</div>`;
+  h += '<div style="margin:6px 0 2px"><b>O que colher</b></div><div class="mut">Cajá, jatobá e umbu nas clareiras, mel nas colmeias (cuidado com as abelhas) e ervas na beira das trilhas. Tudo volta a dar em poucos dias, e o Mercadinho compra.</div>';
+  return h + '</div>';
+}
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
@@ -8705,6 +8947,9 @@ const CONQ = [
   ['reb10', '🐂', 'Boiada pequena', 'Ter 10 cabeças de gado.', () => nAni('boi') >= 10],
   ['reb25', '🐂', 'Boiada de respeito', 'Ter 25 cabeças de gado.', () => nAni('boi') >= 25],
   ['reb50', '🐂', 'Mar de gado', 'Ter 50 cabeças de gado.', () => nAni('boi') >= 50],
+  ['matag', '🌳', 'Desbravador da Mata', 'Descobrir todos os lugares da Mata Grande.', () => !!(S.mata && MG_PL_KEYS.every(k => S.mata.pl[k]))],
+  ['cad10', '📖', 'Olho de mateiro', 'Anotar 10 bichos na Caderneta da Mata.', () => !!(S.mata && Object.keys(S.mata.cad).length >= 10)],
+  ['barb', '🐂', 'O Barbatão', 'Laçar o Barbatão da Mata Grande.', () => !!(S.barb && S.barb.caught)],
   ['avo', '🗝️', 'Memórias de Tiãozinho', 'Desvendar o baú do avô.', () => !!(S.bau && S.bau.done)],
   ['ven1', '🤝', 'Primeiro negócio', 'Vender o primeiro animal.', () => (S.stats.sold || 0) >= 1],
   ['ven25', '🚚', 'Boiadeiro', 'Vender 25 animais.', () => (S.stats.sold || 0) >= 25],
@@ -9099,7 +9344,7 @@ function espinhosTick() {
   P.en = Math.max(0, P.en - (rapido ? 0.25 : 0.1)); // por segundo
   if (S.flags.espDia !== S.day) { S.flags.espDia = S.day; toast('🌵 Os espinhos da caatinga arranham e cansam. Um traje de couro completo protege (guarda-roupa).'); }
 }
-function lidaTick(dt) { if (!S) return; if ((lidaV -= dt) <= 0) { lidaV = 0.15; const el = $('jorn'); if (el) el.style.visibility = M.open || SH.a ? 'hidden' : 'visible'; } if ((lidaT -= dt) <= 0) { lidaT = 1; jornCheck(); pipaTick(); tutTick(); fogTick(); firstSaleTick(); conqTick(); amorTick(); espinhosTick(); wardTick(); gaitTick(); if (jornState().cap >= JORNADA.length && !S.flags.modelo && mode === 'play' && !M.open && !P._act) csModelo(); } }
+function lidaTick(dt) { if (!S) return; if ((lidaV -= dt) <= 0) { lidaV = 0.15; const el = $('jorn'); if (el) el.style.visibility = M.open || SH.a ? 'hidden' : 'visible'; } if ((lidaT -= dt) <= 0) { lidaT = 1; jornCheck(); pipaTick(); tutTick(); fogTick(); firstSaleTick(); mataTick(); conqTick(); amorTick(); espinhosTick(); wardTick(); gaitTick(); if (jornState().cap >= JORNADA.length && !S.flags.modelo && mode === 'play' && !M.open && !P._act) csModelo(); } }
 
 /* ---------- lojas ---------- */
 function shopCart() { return hyp(S.cart.x - P.x, S.cart.y - P.y) < 110 || P.cart; }
@@ -9266,7 +9511,7 @@ function openMercadinho() { showModal('🧺 Mercadinho Itarantim', [['com', 'Com
   if (t === 'com') h += ['rapadura', 'queijo', 'cafe', 'farinha'].map(id => shopRow(id)).join('');
   if (t === 'var') h += ['buque', 'aliancas', 'violao', 'viola', 'lampiao', 'galaoV'].map(id => shopRow(id)).join('');
   if (t === 'ven') h += '<h3>Peixe fresco (80% do preço do porto)</h3>' + fishSellRows(0.8);
-  if (t === 'ven') { const o = S.inv.ovo || 0, l = S.inv.leite || 0; h += `<div class="card">🥚 Ovos na mochila: <b>${o}</b> × ${fmt2(IT.ovo.p)} ${btn('Vender todos', 'sellP', 'ovo', !o)}</div><div class="card">🥛 Leite na mochila: <b>${l}</b> L × ${fmt2(IT.leite.p)} ${btn('Vender todo', 'sellP', 'leite', !l)}</div><p class="mut">Recolha ovos no galinheiro e leite na Sala de Ordenha.</p>`; h += '<h3>Da sua horta</h3>' + ['alface', 'couve', 'cheiro', 'tomate', 'pimenta', 'abobora', 'feijaoV'].map(k => `<div class="card">${iic(k, 18)} ${IT[k].n}: <b>${S.inv[k] || 0}</b> × ${fmt2(IT[k].p)} ${btn('Vender todos', 'sellP', k, !S.inv[k])}</div>`).join(''); }
+  if (t === 'ven') { const o = S.inv.ovo || 0, l = S.inv.leite || 0; h += `<div class="card">🥚 Ovos na mochila: <b>${o}</b> × ${fmt2(IT.ovo.p)} ${btn('Vender todos', 'sellP', 'ovo', !o)}</div><div class="card">🥛 Leite na mochila: <b>${l}</b> L × ${fmt2(IT.leite.p)} ${btn('Vender todo', 'sellP', 'leite', !l)}</div><p class="mut">Recolha ovos no galinheiro e leite na Sala de Ordenha.</p>`; h += '<h3>Da sua horta e da mata</h3>' + ['alface', 'couve', 'cheiro', 'tomate', 'pimenta', 'abobora', 'feijaoV', 'caja', 'umbu', 'jatoba', 'mel', 'erva'].map(k => `<div class="card">${iic(k, 18)} ${IT[k].n}: <b>${S.inv[k] || 0}</b> × ${fmt2(IT[k].p)} ${btn('Vender todos', 'sellP', k, !S.inv[k])}</div>`).join(''); }
   return h; }); }
 A.sellP = v => { const n = S.inv[v] || 0; if (!n) return; useInv(v, n); receive(n * IT[v].p, 'Venda de ' + n + 'x ' + IT[v].n, 'cash'); addFr('dito', 5); renderModal(); };
 function openBar() { showModal('🍺 Bar da Zefa', [['com', 'Refeições'], ['mur', 'Mural de peões'], ['pro', 'Quem está aqui']], 'com', t => {
@@ -11333,7 +11578,7 @@ function lighting() {
 /* ---------- HUD e região ---------- */
 let hudT = 0, regT = 0, curReg = null, regHide = null;
 const WXIC = { sol: 'sun', nublado: 'cloud', chuva: 'rain', neblina: 'fog', vento: 'wind' };
-function regionAt(x, y) { const tx = x / TS, ty = y / TS; if (tx >= 112 || ty >= 90) { const r = worldRegion(x, y); return r ? [r.n, r.s || 'ITARANTIM · BAHIA'] : ['Estrada do sul', 'ITARANTIM · BAHIA']; } if (tx < 60) return ty < 21 && S.exp.norte ? ['Gleba do Mandacaru', 'FAZENDA BOA ESPERANÇA'] : ty > 67 && S.exp.sul ? ['Gleba do Açude', 'FAZENDA BOA ESPERANÇA'] : ['Fazenda Boa Esperança', 'SUA PROPRIEDADE']; if (tx > 66 && ty < 27) return ['Fazenda Campos', 'SR. FELIPE']; if (tx > 66 && ty > 62) return ['Fazenda Duarte', 'SR. RYAN']; if (tx >= 68 && ty >= 28 && ty <= 62) return ['Itarantim', 'CENTRO DA CIDADE']; return ['Estrada do Riacho', 'ITARANTIM · BAHIA']; }
+function regionAt(x, y) { const tx = x / TS, ty = y / TS; if (ty >= MG.top) return ['Mata Grande', 'RESERVA DA MATA · ITARANTIM']; if (ty >= MG.y0) return ['Caatinga da Mata', 'ITARANTIM · BAHIA']; if (tx >= 112 || ty >= 90) { const r = worldRegion(x, y); return r ? [r.n, r.s || 'ITARANTIM · BAHIA'] : ['Estrada do sul', 'ITARANTIM · BAHIA']; } if (tx < 60) return ty < 21 && S.exp.norte ? ['Gleba do Mandacaru', 'FAZENDA BOA ESPERANÇA'] : ty > 67 && S.exp.sul ? ['Gleba do Açude', 'FAZENDA BOA ESPERANÇA'] : ['Fazenda Boa Esperança', 'SUA PROPRIEDADE']; if (tx > 66 && ty < 27) return ['Fazenda Campos', 'SR. FELIPE']; if (tx > 66 && ty > 62) return ['Fazenda Duarte', 'SR. RYAN']; if (tx >= 68 && ty >= 28 && ty <= 62) return ['Itarantim', 'CENTRO DA CIDADE']; return ['Estrada do Riacho', 'ITARANTIM · BAHIA']; }
 function hud(dt) {
   if ((regT -= dt) < 0 && mode === 'play') { regT = 0.5; const r = regionAt(P.x, P.y); if (!curReg) curReg = r[0]; else if (r[0] !== curReg) { curReg = r[0]; const el = $('reg'); el.innerHTML = r[0] + '<small>' + r[1] + '</small>'; el.classList.add('on'); clearTimeout(regHide); regHide = setTimeout(() => el.classList.remove('on'), 2400); AU.jingle(); } }
   if ((hudT -= dt) > 0) return; hudT = 0.25;
@@ -11873,7 +12118,7 @@ const SAVE = {
     for (const k in base.dep) if (o.dep[k] === undefined) o.dep[k] = 0;
     if (IN.on) { IN.on = false; IN.seq = null; IN.lie = false; IN.seat = null; document.body.classList.remove('inside'); }
     S = o; P = S.p; initVeh(S); initAgro(S); initAguas(S); if (FS.on) stopFishing(); AVES.length = 0; FISHV.length = 0; if (P.boat && gt(Math.floor(P.x / TS), Math.floor(P.y / TS)) !== G.WATER) P.boat = false; if (!S.caoV) { S.animals.forEach(a => { if (a.sp !== 'cao') return; if (!a.dc) a.dc = { col: '#8a4a1e', colT: 'couro', bnd: '' }; if (!a.xp) a.xp = { h: 0, g: 0, t: 0, o: 0 }; if (a.en === undefined) a.en = 100; const cs = (RIG.BR[a.br] || {}).coats; if (cs && !cs.includes(a.coat)) a.coat = cs[0]; }); S.caoV = 1; } if (!S.gadoV) { S.animals.forEach(a => { if (a.own === 'player' && a.sp === 'boi' && a.sex === 'M' && a.age >= 24) a.cast = 1; }); S.gadoV = 2; } lasso.t = null; parts = []; rings = []; if (S.cf && S.cf.ap) delete S.cf.ap.tool; if (!S.chest) S.chest = {}; if (!S.esc) S.esc = []; S.esc = []; S.animals.forEach(a => { if (!a.hist) a.hist = []; if (a._st === 'route') a._st = null; });
-    genMap(); agroMap(); genCityDeco(); initGrass(); if (S.grass) { const u = new Uint8Array(MW * MH); decodeU8(S.grass, u); for (let i = 0; i < u.length; i++) if (ground[i] === G.PAST) grass[i] = u[i]; }
+    genMap(); agroMap(); genCityDeco(); initGrass(); if (S.grass) { const u = new Uint8Array(MW * MH), n = Math.min(u.length, Math.floor(S.grass.length * 3 / 4)); decodeU8(S.grass, u); for (let i = 0; i < n; i++) if (ground[i] === G.PAST) grass[i] = u[i]; } // save de mapa menor: o resto fica com o capim novo
     GATES.forEach((g, i) => { g.open = !!S.gates[i]; g.anim = g.open ? 1 : 0; });
     while (S.tr.length < TROUGHS.length) S.tr.push(TROUGHS[S.tr.length].cap * 0.5);
     for (const k of ['norte', 'sul']) if (S.exp[k]) { const y = EXP[k].y; for (const x of [37, 38, 39]) obj[gi(x, y)] = 0; }
@@ -12632,7 +12877,7 @@ function interactables(forTap) {
   { const [ex, ey] = fpx('eggs'); add({ k: 'eggs', label: '🥚 Ovos (' + S.eggs + ')', x: ex, y: ey, r: 18, prio: 2, hit: [ex - 22, ey - 34, ex + 22, ey + 2], fn: () => S.eggs ? act('pickup', 0.8, { x: ex, y: ey - 1 }, collectEggs) : collectEggs() }); }
   if (has('galaoV') || forTap) { const R0 = FARM.reservoir, [cx, cy] = fpx('cistern'); add({ k: 'res', label: '💧 Encher galões', x: R0.lbl[0] * TS, y: R0.lbl[1] * TS, r: 30, prio: 1, hit: R0.hit.map(v => v * TS), fn: () => has('galaoV') ? act('pickup', 0.9, { x: R0.stand[0] * TS, y: R0.stand[1] * TS }, fillGallons) : say('Você não tem galões vazios.') }); add({ k: 'cist', label: '💧 Cisterna: encher galões', x: cx, y: cy + 6, r: 22, prio: 2, hit: [cx - 14, cy - 26, cx + 14, cy + 4], fn: () => has('galaoV') ? act('pickup', 0.9, { x: cx + 12, y: cy + 4 }, fillGallons) : say('Você não tem galões vazios.') }); }
   if (foot) { const f = objPos('fogueira'), c = objPos('churrasqueira'); add({ k: 'fire', label: 'Fogueira', x: f.x, y: f.y, r: 24, prio: 2, hit: [f.x - 16, f.y - 22, f.x + 16, f.y + 10], fn: openFire }); add({ k: 'bbq', label: 'Churrasqueira', x: c.x + 0.5 * TS, y: c.y + 0.8 * TS, r: 22, prio: 2, hit: [c.x - TS, c.y - 2.2 * TS, c.x + 2 * TS, c.y + 0.4 * TS], fn: openChurras }); }
-  farmInteractables(add);
+  farmInteractables(add); mataInteractables(add, foot);
   { const b = objPos('bau'); add({ k: 'chest', label: 'Baú', x: b.x, y: b.y + 0.5 * TS, r: 20, prio: 2, hit: [b.x - 9, b.y - 15, b.x + 9, b.y + 1], fn: () => act('reach', 0.3, { x: b.x, y: b.y }, openChest, { zoom: false }) }); }
   { const ev = eventNow(); if (ev === 'vaquejada') add({ k: 'vaq', label: 'Correr na vaquejada', x: 87.5 * TS, y: 74.5 * TS, r: 40, prio: 5, hit: [85 * TS, 72 * TS, 90 * TS, 77 * TS], fn: startVaquejada }); else if (ev && EVENTS[ev].place === 'praca') add({ k: 'evento', label: EVENTS[ev].n, x: 84 * TS, y: 50 * TS, r: 44, prio: 4, hit: [80 * TS, 46 * TS, 88 * TS, 57 * TS], fn: () => openEventDesk(ev) }); else if (ev === 'criadores') add({ k: 'evento', label: EVENTS[ev].n, x: 95 * TS, y: 59 * TS, r: 30, prio: 6, hit: [92 * TS, 57 * TS, 98 * TS, 60 * TS], fn: () => openEventDesk(ev) }); }
   add({ k: 'placa_ita', label: 'Placa: história de Itarantim', x: 79.6 * TS, y: 48 * TS, r: 24, prio: 3, hit: [78.8 * TS, 45.2 * TS, 80.4 * TS, 47.4 * TS], fn: () => showModal('Itarantim', null, null, () => ITA_FACTS.map(f => `<p>${esc(f)}</p>`).join('') + '<p class="mut">Fontes: IBGE Cidades e registros públicos do município.</p>', 'book') });
@@ -12689,7 +12934,7 @@ function loop(ts) {
     if (n >= 6) acc = 0;
     ALPHA = cl(acc / STEP, 0, 1);
     if (OPMODES[mode]) { if (HD.on) hdSuspend(); OP.render(); } else { camUpdate(dt); render(dt); } CINE.update(dt); if (!HD.on && !OPMODES[mode]) CINE.post2D(X, W, H); PERF.frame(dt, t1 - t0, performance.now() - t1);
-    if (mode === 'play' || mode === 'cs') { hud(dt); updSheet(dt); AU.ambient(dt); tutFrame(); introTick(dt); guizFrame(dt); }
+    if (mode === 'play' || mode === 'cs') { hud(dt); updSheet(dt); AU.ambient(dt); tutFrame(); introTick(dt); mataFrame(dt); guizFrame(dt); }
     MUS.update(dt);
     if ($('setup').style.display !== 'none') drawPreview(dt);
   } catch (err) { console.error(err); }
