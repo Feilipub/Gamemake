@@ -4573,7 +4573,19 @@ function engordaHTML() {
   if (V.length) { const lu = V.reduce((s, x) => s + x.v - x.buy, 0), dd = V.reduce((s, x) => s + Math.max(1, x.d - x.bd), 0); h += `<b>Vendas de animais comprados</b><br><span class="mut">${V.length} venda(s) · lucro ${fmt(lu)} · média ${fmt(lu / V.length)} por cabeça · ${fmt(lu / dd)} por cabeça/dia</span>` + V.slice(0, 8).map(s => `<br><span class="mut">Dia ${s.d}:</span> ${esc(s.n)} ${s.w0}→${s.w} kg em ${s.d - s.bd} dias: ${fmt(s.buy)} → ${fmt(s.v)} (<b style="color:${s.v >= s.buy ? '#2a7a2a' : '#b02020'}">${s.v >= s.buy ? '+' : ''}${fmt(s.v - s.buy)}</b>)`).join(''); }
   return h + '</div>';
 }
-function dietHTML(a) { const warn = (gmdReal(a, breedOf(a)) < 0 && a.age >= 3) ? '<div class="row" style="margin:2px 0;color:#b02020;font-weight:800">⚠️ Está emagrecendo: falta comida. Ponha ração ou silagem no cocho, dê palma, ou leve para um pasto com capim.</div>' : ''; return warn + dietHTML0(a); }
+function dietHTML(a) { return dietWhy(a) + dietHTML0(a); }
+function dietWhy(a) { // por que o animal não está engordando, em palavras simples
+  if (gmdReal(a, breedOf(a)) >= 0 || a.age < 3) return ''; const ar = a.area && AREAS[a.area], g = ar && (ar.k === 'pasto' || ar.k === 'npc') ? areaGrass(a.area) || 0 : null;
+  let why = '';
+  if (P.lead === a.id || lasso.t === a) why = 'No cabresto ou no laço ele não pasta: solte num pasto com capim.';
+  else if (isHitched(a.id)) why = 'Na canga do carro ele não come: solte depois do serviço.';
+  else if (a._st === 'tied') why = 'Amarrado no mourão ele não pasta: solte num pasto.';
+  else if (g === null) why = 'Aqui não tem capim: ponha ração no cocho ou leve para um pasto.';
+  else if (g < 25) why = 'O capim deste pasto acabou: ponha ração ou silagem no cocho, ou troque de pasto.';
+  else if (a.food >= 35) why = 'Ele já voltou a comer. A conta usa a média do dia: amanhã o ganho melhora.';
+  else why = 'Está com fome agora. Deixe ele solto no pasto ou ponha ração no cocho.';
+  return '<div class="row" style="margin:2px 0;color:#b02020;font-weight:800">⚠️ Está emagrecendo. ' + why + '</div>';
+}
 function dietHTML0(a) { const R = dietOf(a), g = gmdReal(a, breedOf(a)) * GAME_DAYS, parts = []; if (R.leite) parts.push('leite da mãe'); if (R.pasto > 0.05) parts.push('pasto ' + (season() === 0 ? 'das águas' : 'seco')); if (R.sal) parts.push('sal mineral'); if (R.racao) parts.push('ração ' + Math.round(R.racao / 0.38 * 100) + '%'); if (R.silagem) parts.push('silagem'); if (R.palma) parts.push('palma'); if (R.conf > 1) parts.push('confinamento'); return `<div class="row mut" style="margin:2px 0">Dieta: ${parts.join(' + ') || 'quase nada'} · ganho previsto ${g >= 0 ? '+' : ''}${g.toFixed(1)} kg por dia de jogo (≈ 1 mês) · peso ideal p/ idade ${Math.round(expWt(a))} kg · adulto ${Math.round(adultW(a.br, a.sex, a.cast))} kg</div>`; }
 /* ---------- dinheiro ---------- */
 function ledger(desc, v, acc) { S.ledger.unshift({ d: S.day, h: clock(), desc, v: Math.round(v * 100) / 100, acc: acc || 'cc' }); if (S.ledger.length > 160) S.ledger.length = 160; }
