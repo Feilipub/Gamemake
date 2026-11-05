@@ -249,6 +249,12 @@ body.cs #joy,body.cs .pad,body.cs #hud,body.cs #bar{opacity:0}
 #inp .lbl{width:100%;font-size:calc(12px*var(--fs));color:var(--gold)}
 body.in .pad,body.in #joy{display:none!important}
 body.fsh .pad,body.fsh #joy{display:none!important}
+#jorn{position:absolute;left:calc(6px + var(--sal));top:calc(70px + var(--sat));z-index:7;max-width:min(46vw,260px);background:rgba(20,10,5,.72);color:#fbe9c2;border:2px solid rgba(124,68,36,.9);padding:4px 7px;font-size:calc(11.5px*var(--fs));line-height:1.35;display:none;cursor:pointer}
+#jorn b{color:#ffe08a;font-family:var(--fH);font-weight:400}#jorn .jn{opacity:.75;font-size:.9em}#jorn div{opacity:.92}
+body.ttl #jorn,body.cs #jorn,body.fsh #jorn,body.in #jorn,body.ovl #jorn{display:none!important}
+body.lan #jorn{top:calc(46px + var(--sat))}
+body.tst #jorn{opacity:.18;transition:opacity .3s}#jorn{transition:opacity .3s}#jorn .ck{color:#8ad070;font-weight:800}
+.jk{display:inline-block;min-width:1.3em;font-weight:800}.jk.ok{color:#3a8a2a}.jk.ok::before{content:'\2714'}.jk.no{color:#a07848}.jk.no::before{content:'\25CB'}.jk.cur{color:#c86a1a}.jk.cur::before{content:'\25B6'}
 #fishUI{position:absolute;left:0;right:0;bottom:0;display:none;padding:8px 10px;padding-bottom:calc(8px + var(--sab));background:rgba(20,10,5,.94);border-top:4px solid var(--leather);z-index:15;color:#fbe9c2;max-width:720px;margin:0 auto;user-select:none;-webkit-user-select:none;touch-action:none}
 #fishUI .fmsg{font-size:calc(13.5px*var(--fs));line-height:1.4;margin-bottom:6px;min-height:1.4em}
 #fishUI .fbar{position:relative;height:14px;border:2px solid var(--ink);background:#3a2414;margin:4px 0}#fishUI .fbar i{display:block;height:100%}
@@ -351,7 +357,7 @@ body.lan .sw2 .pvbox{position:sticky;top:0}
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 204, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '6.4.0', SAVE_V = 9;
+const GAME_V = '6.5.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -400,17 +406,16 @@ const EMO_IC = { '🐄': 'cow', '🐕': 'dog', '🐎': 'horse', '🐴': 'horse',
 const noEmo = t => String(t).replace(EMO_RE, '').replace(/^\s+/, '');
 function emoHTML(h) { return String(h).replace(/✅|✔️?/gu, '<b style="color:#2a7a2a">✓</b>').replace(/⭐/gu, '★').replace(/⚠️?/gu, '<b style="color:#b02020">!</b>').replace(EMO_RE, m => { const k = m.trim().replace(/\uFE0F/g, ''); return EMO_IC[k] && typeof ic === 'function' ? ic(EMO_IC[k], 14) + ' ' : ''; }); }
 function say(t, ms) { const m = $('msg'); t = noEmo(t); m.textContent = t; m.classList.add('on'); msgT = ms || 3500; }
-function toast(t) { const d = document.createElement('div'); d.textContent = noEmo(t).replace(/^\s*([!✓])?/, '$1'); $('toast').appendChild(d); setTimeout(() => d.remove(), 2700); }
 const shownTips = {};
 function tip(k, t) { if (S && S.flags['tip_' + k]) return; if (S) S.flags['tip_' + k] = 1; say(t, 6500); }
 
 /* ============ CONFIGURAÇÕES, ÍCONES E MOLDURAS PIXEL ============ */
-const SET = { q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on', cenas: true, transito: true, aves: 'normal' };
+const SET = { q: 'alta', ctl: 1, vib: true, tips: true, uz: 1.3, mode: 'joy', ori: 'livre', aucCs: 'on', cenas: true, transito: true, aves: 'normal', dia: 12 };
 try { Object.assign(SET, JSON.parse(localStorage.getItem('lida_set') || '{}')); } catch (e) { }
 if (!SET.font) SET.font = 'sertao'; if (!SET.fs) SET.fs = 1; document.documentElement.dataset.font = SET.font; document.documentElement.dataset.fs = String(SET.fs);
 function cvFont(px, w) { const f = SET.font === 'leitura' ? "'Atkinson Hyperlegible',sans-serif" : SET.font === 'pixel' ? "'Pixelify Sans',monospace" : "'Nunito',sans-serif"; return (w || 700) + ' ' + px + 'px ' + f; }
 function applyFont() { const r = document.documentElement; r.dataset.font = SET.font || 'sertao'; r.dataset.fs = String(SET.fs || 1); }
-function saveSet() { applyFont(); try { localStorage.setItem('lida_set', JSON.stringify(SET)); } catch (e) { } document.documentElement.style.setProperty('--ctl', SET.ctl); document.body && document.body.classList.toggle('tapmode', SET.mode === 'touch'); }
+function saveSet() { applyFont(); try { applyDia(); } catch (e) { } try { localStorage.setItem('lida_set', JSON.stringify(SET)); } catch (e) { } document.documentElement.style.setProperty('--ctl', SET.ctl); document.body && document.body.classList.toggle('tapmode', SET.mode === 'touch'); }
 function buzz(ms) { if (SET.vib && navigator.vibrate) try { navigator.vibrate(ms || 8); } catch (e) { } }
 // ícones 10x10 desenhados à mão: paleta + linhas
 const ICONS = {
@@ -4062,12 +4067,13 @@ const cam = { x: 0, y: 0, z: 1, uz: 1.3, az: 1, taz: 1, fx: null, fy: null, free
 let W = 480, H = 800, BASE = 2;
 const SCL = () => Math.max(1, Math.round(BASE * cam.z)); // escala inteira do mundo (pixel art nítida)
 const VW = () => W / SCL(), VH = () => H / SCL();
-const GMPS = 6; // minutos de jogo por segundo real (24h = 4 min)
+let GMPS = 2; // minutos de jogo por segundo real (ajustável em Config › Tempo; padrão 24h = 12 min)
+try { applyDia(); } catch (e) { }
 const WEEK = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const hour = () => S.min / 60;
 const isNight = () => S && (S.min >= 19 * 60 || S.min < 5 * 60);
 const season = () => [10, 11, 0, 1, 2, 3].includes(calDate().m) ? 0 : 1; // águas: nov–abr
-const seasonName = () => season() ? 'Seca' : 'Águas';
+const seasonName = () => season() ? (S && S.clima && S.clima.seca !== 'normal' ? (S.clima.seca === 'severa' ? 'Seca severa' : 'Seca forte') : 'Seca') : 'Águas';
 const wday = () => (S.day) % 7; // dia 1 = segunda
 function period() { const h = hour(); return h < 5 ? 'Madrugada' : h < 11 ? 'Manhã' : h < 14 ? 'Meio-dia' : h < 18 ? 'Tarde' : 'Noite'; }
 function clock() { const m = Math.floor(S.min), h = Math.floor(m / 60), mm = Math.floor(m % 60 / 10) * 10; return String(h).padStart(2, '0') + ':' + String(mm).padStart(2, '0'); }
@@ -4300,7 +4306,7 @@ function pay(v, desc) {
 }
 function receive(v, desc, to) { v = Math.round(v * 100) / 100; if (to === 'cash') { S.cash += v; ledger(desc, v, 'cx'); } else { S.acct += v; ledger(desc, v, 'cc'); } S.stats.earned += v; AU.coin(); }
 /* ---------- inventário ---------- */
-const INV_BASE = 30; let INV_CAP = 30; // o jegue e a mula com alforje carregam mais
+const INV_BASE = 45; let INV_CAP = 45; // o jegue e a mula com alforje carregam mais
 function invCapNow() { const h = P && P.mnt && S ? byId(P.mnt) : null; return INV_BASE + (h ? (h.sp === 'jumento' ? 25 : h.sp === 'burro' ? 15 : 0) : 0); }
 function itKgE(i) { return IT[i] ? IT[i].kg * (IT[i].c === 'peixe' && S.inv.sambura ? 0.2 : 1) : 0; }
 function invKg() { let k = 0; for (const i in S.inv) if (IT[i]) k += itKgE(i) * S.inv[i]; return Math.round(k * 10) / 10; }
@@ -4638,7 +4644,7 @@ function hourTick(h) {
   const se = season(), rain = isRain();
   regrow(1);
   // reservatório
-  if (built('poco')) S.res = 100; else S.res = cl(S.res + (rain ? 2.5 : 0) - (se ? 0.35 : 0.1), 0, 100);
+  if (built('poco')) S.res = 100; else S.res = cl(S.res + (rain ? 2.5 : 0) - (se ? 0.35 * secaK() : 0.1), 0, 100);
   if (rain) TROUGHS.forEach((t, i) => { if (t.k === 'agua' && AREAS[t.a].k === 'pasto') S.tr[i] = Math.min(trCap(i), S.tr[i] + 12); });
   if (built('bebedouro')) TROUGHS.forEach((t, i) => { if (t.k === 'agua' && (AREAS[t.a].k === 'pasto' || t.a === 'conf' || t.a === 'haras') && !(AREAS[t.a].exp && !S.exp[AREAS[t.a].exp])) { const need = trCap(i) - S.tr[i]; if (need > 0 && S.res > 1) { const take = Math.min(need, S.res * 30); S.tr[i] += take; S.res -= take / 30 * 0.5; } } });
   TROUGHS.forEach((t, i) => { if (AREAS[t.a].k === 'npc') S.tr[i] = trCap(i); });
@@ -4658,7 +4664,7 @@ function hourTick(h) {
 function regrow(hrs) {
   const se = season(), rain = isRain();
   const restK = {}; for (const k of AKEYS) if (AREAS[k].k === 'pasto' || AREAS[k].k === 'npc' || AREAS[k].k === 'haras') restK[k] = (S.rest[k] || 0) >= 3 ? 1.5 : 1;
-  for (let i = 0; i < grass.length; i++) { if (ground[i] !== G.PAST) continue; const g = grass[i]; const ak = AKEYS[areaId[i]]; const rate = (se ? 0.35 : 1.25) * (rain ? 1.6 : 1) * (g < 40 ? 0.35 : 1) * (restK[ak] || 1); grass[i] = Math.min(255, g + rate * hrs); }
+  for (let i = 0; i < grass.length; i++) { if (ground[i] !== G.PAST) continue; const g = grass[i]; const ak = AKEYS[areaId[i]]; const rate = (se ? 0.35 : 1.25) * grassK() * (rain ? 1.6 : 1) * (g < 40 ? 0.35 : 1) * (restK[ak] || 1); grass[i] = Math.min(255, g + rate * hrs); }
   if (hrs > 1 && !built('poco')) S.res = cl(S.res + (rain ? 2.5 : 0) * hrs, 0, 100);
 }
 function layEggs() {
@@ -4677,7 +4683,7 @@ function dogDay() { for (const d of myAnimals('cao')) { d.water = Math.max(d.wat
     if ((S.dep.racaoCao || 0) >= kg) { S.dep.racaoCao = +(S.dep.racaoCao - kg).toFixed(2); d.food = 100; d.fedDay = S.day; }
     else if ((S.inv.racaoCao || 0) >= kg / 10) { useInv('racaoCao', kg / 10); d.food = 100; d.fedDay = S.day; }
     else if (d.food < 40) { d.hap = cl(d.hap - 6, 0, 100); if (Math.random() < 0.4 * dogStat(d, 'track')) { d.food = cl(d.food + 45, 0, 100); toast('🐕 ' + d.n + ' caçou um preá no mato. Compre ração de cão e guarde no depósito: o cão come sozinho de manhã.'); } } } if (myAnimals('cao').length && (S.dep.racaoCao || 0) < 2 && !(S.inv.racaoCao > 0.1)) toast('🦴 A ração dos cães está acabando no depósito.'); }
-function dayTick() { storyCheck(); regionDay(); missionDay(); socialDay(); dogDay(); aguasDay();
+function dayTick() { storyCheck(); regionDay(); missionDay(); socialDay(); dogDay(); aguasDay(); climaDay();
   wildDayTick(); rollOffer(); setTimeout(() => S && eventAnnounce(), 2500); if (S.offer && S.offer.day < S.day - 1) S.offer = null;
   S.day++;
   const se = season();
@@ -5229,6 +5235,7 @@ function mountToggle() {
 }
 /* ---------- aboio e laço ---------- */
 function doAboio() {
+  if (S && S.flags) S.flags.aboio = (S.flags.aboio || 0) + 1;
   if (mode !== 'play' || abCd > 0 || P._act) return; abCd = 3.5;
   const R = 150 * (perk() === 'aboio' ? 1.4 : 1) * (1 + skill('lid') * 0.05);
   rings.push({ x: P.x, y: P.y - 10, r: 6, l: 1, R }); AU.aboio(); P.en = Math.max(0, P.en - 1); buzz(15);
@@ -6089,7 +6096,7 @@ function climateOf(m) {
   const aguas = { sol: 22, parcial: 20, nublado: 14, garoa: 15, chuva: 15, tempestade: 8, neblina: 6 };
   const seca = { sol: 52, parcial: 18, vento: 16, nublado: 7, neblina: 4, garoa: 3 };
   const meio = { sol: 36, parcial: 22, nublado: 12, vento: 8, garoa: 10, chuva: 7, neblina: 5 };
-  return [11, 0, 1, 2].includes(m) ? aguas : [3, 10].includes(m) ? meio : seca;
+  return climaRain(m, [11, 0, 1, 2].includes(m) ? aguas : [3, 10].includes(m) ? meio : seca);
 }
 function rollWx(day) { const P0 = climateOf(calDate(day).m); let t = 0; for (const k in P0) t += P0[k]; let r = Math.random() * t; for (const k in P0) { r -= P0[k]; if (r <= 0) return k; } return 'sol'; }
 // plano do dia: manhã, tarde e noite podem variar do tempo base (temporal de fim de tarde no verão, neblina de manhã na seca)
@@ -6108,7 +6115,7 @@ function wxDay() { if (!S.wx) return wxInit(); S.wx.fc.shift(); S.wx.fc.push(rol
 function wxNowType() { const h = hour(); let t = S.wx.plan[0][1]; for (const [hh, k] of S.wx.plan) if (h >= hh) t = k; return t; }
 function updWeather(dt, gm) {
   if (!S.wx) wxInit(); const W0 = S.wx; const t = wxNowType();
-  if (t !== S.weather) { const was = S.weather; S.weather = t; if (WXT[t].rain > 0.5 && !(WXT[was] && WXT[was].rain > 0.5)) toast((t === 'tempestade' ? 'Tempestade chegando' : 'Começou a chover') + '...'); if (was && WXT[was] && WXT[was].rain > 0.2 && !WXT[t].rain) toast('A chuva passou.'); }
+  if (t !== S.weather) { const was = S.weather; S.weather = t; if (WXT[t].rain > 0.2 && !(WXT[was] && WXT[was].rain > 0.2)) climaRainStart(); if (WXT[t].rain > 0.5 && !(WXT[was] && WXT[was].rain > 0.5)) toast((t === 'tempestade' ? 'Tempestade chegando' : 'Começou a chover') + '...'); if (was && WXT[was] && WXT[was].rain > 0.2 && !WXT[t].rain) toast('A chuva passou.'); }
   const T = WXT[S.weather] || WXT.sol, k = Math.min(1, dt * 0.25); // transição suave (~10 min do jogo)
   W0.ri += (T.rain - W0.ri) * k; W0.ci += (T.cloud - W0.ci) * k * 0.8;
   // lama nas estradas e nível do açude
@@ -6128,7 +6135,7 @@ function drawMudTile(tx, ty, g) {
   if (S.mud > 0.3 && H2(tx, ty, 41) < 0.16) { const px = tx * TS + 3 + Math.floor(H2(tx, ty, 42) * 6), py = ty * TS + 5 + Math.floor(H2(tx, ty, 43) * 6), w = 5 + Math.floor(S.mud * 5); X.fillStyle = `rgba(70,88,104,${0.55 * S.mud})`; X.fillRect(px, py, w, 3); X.fillRect(px + 1, py - 1, w - 2, 5); X.fillStyle = `rgba(190,215,235,${0.4 * S.mud})`; X.fillRect(px + 1, py, 2, 1); if (S.wx && S.wx.ri > 0.2 && Math.sin(drawT * 5 + tx) > 0.6) { X.fillStyle = 'rgba(220,235,250,0.7)'; X.fillRect(px + 2 + Math.floor(H2(tx, ty, Math.floor(drawT * 3)) * (w - 3)), py + 1, 1, 1); } }
 }
 // açude baixo na seca: a margem rasa vira lama rachada
-function drawPondShore(tx, ty) { if (!pondT[gi(tx, ty)] || wdepth[gi(tx, ty)] !== 1 || S.res > 40) return; const k = cl((40 - S.res) / 30, 0, 1); X.fillStyle = `rgba(130,104,70,${0.85 * k})`; X.fillRect(tx * TS, ty * TS, TS, TS); if (k > 0.5) { X.fillStyle = 'rgba(70,50,30,0.6)'; X.fillRect(tx * TS + 3, ty * TS + 7, 9, 1); X.fillRect(tx * TS + 8, ty * TS + 3, 1, 9); } }
+function drawPondShore(tx, ty) { const dpt = wdepth[gi(tx, ty)]; if (!pondT[gi(tx, ty)] || !(dpt === 1 || (dpt === 2 && S.res < 18)) || S.res > 40 || ty > 149) return; const k = dpt === 2 ? cl((18 - S.res) / 12, 0, 1) : cl((40 - S.res) / 30, 0, 1); X.fillStyle = `rgba(130,104,70,${0.85 * k})`; X.fillRect(tx * TS, ty * TS, TS, TS); if (k > 0.5) { X.fillStyle = 'rgba(70,50,30,0.6)'; X.fillRect(tx * TS + 3, ty * TS + 7, 9, 1); X.fillRect(tx * TS + 8, ty * TS + 3, 1, 9); } }
 /* ---------- calendário na tela ---------- */
 function upcomingEvents(n) { const out = []; for (let d = 0; d < n; d++) for (const k of eventsOnDay(S.day + d)) out.push([S.day + d, k]); return out; }
 function calendarHTML() {
@@ -6500,7 +6507,7 @@ const A = {};
 const EMO = { '🌿': 'farm', '🧺': 'bag', '🍺': 'meat', '🥩': 'meat', '🔨': 'build', '🏧': 'bank', '🏦': 'bank', '🏡': 'farm', '🔧': 'gear', '🌽': 'feed', '⛪': 'heart', '🪧': 'map', '🛒': 'farm', '🔥': 'sun', '❓': 'scroll', '⚙️': 'gear', '💰': 'sell', '🎒': 'bag', '📦': 'chest', '⚙': 'gear' };
 function showModal(title, tabs, tab, fn, icon) {
   if (SH.a) closeSheet();
-  const was = M.open; M.open = true; M.title = title; M.tabs = tabs; M.tab = tab || (tabs && tabs[0][0]); M.fn = fn; M.sel = null; M.sub = null; M.icon = icon || null;
+  const was = M.open; M.open = true; { const je = $('jorn'); if (je) je.style.visibility = 'hidden'; } M.title = title; M.tabs = tabs; M.tab = tab || (tabs && tabs[0][0]); M.fn = fn; M.sel = null; M.sub = null; M.icon = icon || null;
   paused = mode === 'play'; input.x = input.y = 0; P && (P._auto = null);
   renderModal(); const mn = $('mn'); mn.classList.add('on'); mn.style.display = 'block'; mn.scrollTop = 0; if (!was) { AU.whoosh(true); buzz(6); }
 }
@@ -6516,7 +6523,7 @@ function renderModal() {
   $('mtt').textContent = noEmo(tt); $('mic').innerHTML = M.icon ? ic(M.icon, 22) : (cur && cur[2] ? ic(cur[2], 22) : '');
   $('mc').innerHTML = emoHTML(M.fn(M.tab)); $('mn').scrollTop = st;
 }
-function closeModal() { if (!M.open) return; M.open = false; const mn = $('mn'); mn.classList.remove('on'); mn.style.display = 'none'; paused = mode !== 'play' && mode !== 'cs' ? true : false; if (mode === 'play') paused = false; AU.whoosh(false); }
+function closeModal() { if (!M.open) return; M.open = false; { const je = $('jorn'); if (je && !SH.a) je.style.visibility = 'visible'; } const mn = $('mn'); mn.classList.remove('on'); mn.style.display = 'none'; paused = mode !== 'play' && mode !== 'cs' ? true : false; if (mode === 'play') paused = false; AU.whoosh(false); }
 A.tab = v => { M.tab = v; M.sel = null; M.sub = null; renderModal(); $('mn').scrollTop = 0; AU.click(); };
 const btn = (l, a, v, dis, cls) => `<button data-a="${a}" data-v="${v === undefined ? '' : esc(v)}" ${dis ? 'disabled' : ''} ${cls ? `class="${cls}"` : ''}>${l}</button>`;
 const ibtn = (icn, l, a, v, dis) => `<button data-a="${a}" data-v="${v === undefined ? '' : esc(v)}" ${dis ? 'disabled' : ''}>${ic(icn, 18)}<span>${l}</span></button>`;
@@ -6551,7 +6558,7 @@ A.bagSel = v => { M.sel = v; renderModal(); AU.click(); };
 A.eat = v => { const it = IT[v]; if (!has(v)) return; closeModal(); act('eat', 0.9, null, () => { useInv(v); P.en = cl(P.en + (it.en || 0), 0, 100); P.fo = cl(P.fo + (it.fo || 0), 0, 100); AU.munch(); toast(`+${it.en || 0} energia · +${it.fo || 0} fome`); }, { zoom: 1.2 }); };
 A.drop = v => { useInv(v); renderModal(); };
 /* ---------- menu principal ---------- */
-const MTABS = [['nat', 'Natureza', 'eye'], ['vaq', 'Vaqueiro', 'hat'], ['inv', 'Mochila', 'bag'], ['ani', 'Animais', 'cow'], ['gad', 'Gado', 'cow'], ['faz', 'Fazenda', 'farm'], ['map', 'Mapa', 'map'], ['ban', 'Banco', 'bank'], ['obr', 'Obras', 'build'], ['peo', 'Peões', 'worker'], ['rel', 'Relações', 'heart'], ['cfg', 'Config.', 'gear']];
+const MTABS = [['jor', 'Jornada', 'scroll'], ['nat', 'Natureza', 'eye'], ['vaq', 'Vaqueiro', 'hat'], ['inv', 'Mochila', 'bag'], ['ani', 'Animais', 'cow'], ['gad', 'Gado', 'cow'], ['faz', 'Fazenda', 'farm'], ['map', 'Mapa', 'map'], ['ban', 'Banco', 'bank'], ['obr', 'Obras', 'build'], ['peo', 'Peões', 'worker'], ['rel', 'Relações', 'heart'], ['cfg', 'Config.', 'gear']];
 function openMenu(tab) { showModal('', MTABS, tab || 'vaq', menuTab); }
 function menuTab(t) {
   if (t === 'vaq') {
@@ -6586,6 +6593,7 @@ function menuTab(t) {
   }
   if (t === 'cfg') return cfgHTML(true);
   if (t === 'nat') return natHTML();
+  if (t === 'jor') return jornHTML();
   return '';
 }
 A.aniF = v => { M.sub = v; renderModal(); };
@@ -6596,6 +6604,7 @@ function cfgHTML(inGame) {
   const opt = (k, v, l) => `<button data-a="setOpt" data-v="${k}|${v}" class="${SET[k] === v ? 'on' : ''}">${l}</button>`;
   let h = volHTML();
   h += `<div class="card"><b>Letras</b><p class="mut">Escolha o estilo e o tamanho do texto. Muda na hora em todo o jogo.</p><div class="ch">${opt('font', 'sertao', 'Sertão (padrão)')}${opt('font', 'leitura', 'Leitura fácil')}${opt('font', 'cordel', 'Cordel')}${opt('font', 'pixel', 'Pixel clássico')}</div><p class="mut">${{ sertao: 'Texto arredondado e claro (Nunito) com títulos em serifa de madeira (Bree Serif).', leitura: 'Atkinson Hyperlegible: letras bem diferentes entre si (I, l, 1, O, 0), feita para quem tem baixa visão ou cansa de ler.', cordel: 'Títulos em letra de cartaz de feira e capa de cordel (Rye), texto em Nunito.', pixel: 'A fonte pixelada das versões antigas.' }[SET.font || 'sertao']}</p><b>Tamanho do texto</b><div class="ch">${opt('fs', 0.9, 'Pequeno')}${opt('fs', 1, 'Normal')}${opt('fs', 1.12, 'Grande')}${opt('fs', 1.25, 'Muito grande')}${opt('fs', 1.4, 'Enorme')}</div><div class="fprev"><b style="font-family:var(--fH);font-weight:400;font-size:calc(17px*var(--fs))">Fazenda Boa Esperança</b><br>Ô vaqueiro! O gado nelore está no Piquete 1 — 12 cabeças, 3.480 kg. Ação, ração, coração: ã õ ç é ê í ó ú.</div></div>`;
+  h += `<div class="card"><b>Tempo</b><p class="mut">Quanto tempo real dura um dia inteiro no jogo (das 0h às 24h). Mais calmo = mais tempo para a lida de cada dia.</p><div class="ch">${DIA_OPTS.map(([v, n]) => opt('dia', v, n)).join('')}</div></div>`;
   h += `<div class="card"><b>Aves</b><p class="mut">Quantidade de pássaros no mundo.</p><div class="ch">${opt('aves', 'poucas', 'Poucas')}${opt('aves', 'normal', 'Normal')}${opt('aves', 'muitas', 'Muitas')}</div></div>`;
   h += `<div class="card"><b>Visual</b><p class="mut">HD-2D: câmera em perspectiva com profundidade, sombras do sol, luz das fogueiras e desfoque nas bordas, mantendo a pixel art. Clássico: o 2D de antes.</p><div class="ch">${opt('view', 'hd2d', 'HD-2D (3D)')}${opt('view', '2d', 'Clássico 2D')}</div><b>Desfoque de profundidade</b><div class="ch">${opt('dof', true, 'Ligado')}${opt('dof', false, 'Desligado')}</div><b>Cenas curtas da lida</b><p class="mut">Caminhão boiadeiro, parto, brete, ladrão de gado… Desligue para ir direto ao resultado.</p><div class="ch">${opt('cenas', true, 'Ligadas')}${opt('cenas', false, 'Desligadas')}</div><b>Trânsito na cidade</b><div class="ch">${opt('transito', true, 'Ligado')}${opt('transito', false, 'Desligado')}</div></div>`;
   h += `<div class="card"><b>Conversas com IA</b><p class="mut">Na versão publicada, os moradores podem responder perguntas livres usando o Claude (pede sua permissão na primeira vez). Sem internet ou sem permissão, eles usam as falas do próprio jogo.</p><div class="ch">${opt('ia', true, 'Ligada')}${opt('ia', false, 'Desligada')}</div><b>Limite por dia</b><div class="ch">${opt('iaMax', 15, '15')}${opt('iaMax', 30, '30')}${opt('iaMax', 60, '60')}</div></div>`;
@@ -7099,7 +7108,7 @@ function genFeira() {
   if (w !== 1) bezerros(pick(BR_COMUM), rint(2, 4)); if (Math.random() < 0.6) L.push(feiraLot('Oportunidade: raça especial', 'boi', null, 1, () => mkAnimal('boi', pick(R), { own: 'agro', age: rint(10, 30) })));
   S.feira = { day: S.day, lots: L };
 }
-const feiraPrice = a => Math.round(animalValue(a) * (a.sp === 'boi' ? 1.03 : 1.05) * priceMul() * (a.sp === 'boi' ? repoF() : 1) + (a._calf ? animalValue(a._calf) * 1.05 * priceMul() : 0));
+const feiraPrice = a => Math.round(animalValue(a) * (a.sp === 'boi' ? 1.03 : 1.05) * priceMul() * (a.sp === 'boi' ? repoF() * secaBuyK(a) : 1) + (a._calf ? animalValue(a._calf) * 1.05 * priceMul() : 0));
 function feiraTab() {
   if (!S.feira || S.feira.day !== S.day) genFeira();
   const w = wday(); let h = `<div class="card"><b>📅 Hoje: ${FEIRA_TEMA[w]}</b><br><span class="mut">O catálogo muda todo dia. Semana: Seg bezerros · Ter reposição · Qua matrizes · Qui touros de raça · Sex equinos · Sáb pequenos animais · Dom feira geral. Entrega no Recebimento amanhã às 6h.</span><br><span class="mut">Arroba hoje ${fmt2(S.arroba)} · boi gordo ≈ ${fmt2(kgPrice())}/kg vivo · reposição ${season() === 0 ? 'em alta (águas)' : 'em baixa (seca)'}</span></div>`;
@@ -7217,6 +7226,7 @@ A.agWat = id => { const pl = plotById(id), p = plotSt(id); plotAct(pl, 'waterCan
 A.agWatAll = () => { const L = agroPlots().filter(q => q.kind === 'h' && ['plant', 'pronto'].includes(plotSt(q.id).st)); closeModal(); const [x, y] = [24.5 * TS, 38 * TS]; approach({ x, y }, 12, () => act('waterCan', 1 + L.length * 0.6, { x: x - 10, y: y - 8 }, () => { L.forEach(q => { plotSt(q.id).w = S.day; }); S.res = Math.max(0, S.res - L.length * 0.5); P.en = Math.max(0, P.en - 2); toast('💧 Horta regada: ' + L.length + ' canteiro(s).'); }, { zoom: 1.2 }), 'Horta'); };
 A.agSpr = id => { const pl = plotById(id), p = plotSt(id); plotAct(pl, 'sprayer', 2.4, () => { if (!useInv('defensivo')) return; p.praga = 0; toast('🧴 Praga controlada no ' + pl.nm + '.'); }); };
 function harvestPlot(pl, p, sil) {
+  S.flags.colheu = 1;
   const C = CROPS[p.crop], q = plotQ(p); let msg;
   if (sil) { const kg = Math.round(C.silKg * q); S.dep.silagem = (S.dep.silagem || 0) + kg; msg = kg + ' kg de silagem de ' + C.n.toLowerCase(); p.st = 'mato'; p.mato = 0.3; p.crop = null; p.prog = 0; }
   else if (pl.kind === 'h') { const n = Math.max(1, Math.round(C.q * q)); addInv(C.item, n, true); msg = n + ' × ' + IT[C.item].n.split(' (')[0].toLowerCase(); }
@@ -8108,10 +8118,144 @@ function aguasTick(dt) {
 function drawParkedBoat(add, inV) {
   { const bx = 76.2 * TS, by = 162.5 * TS, h = hour(); if (h >= 5.5 && h < 18.5 && inV(bx, by, 30)) add(by, () => { drawPerson(BENE_AP, bx + 4, by, 0, (drawT % 4) < 0.15 ? 3 : 0, 'idle'); if (Math.random() < 0.002 && hyp(P.x - bx, P.y - by) < 90) say('Seu Bené: ' + pick(['Ô moço, peixe fresquinho aqui!', 'Vai uma vara aí? Hoje o rio tá pra peixe.', 'Quer alugar a canoa?']), 2600); }, bx, { w: 40, h: 50 }); } if (!S.boat || P.boat || !inV(S.boat.x, S.boat.y, 40)) return; add(S.boat.y, () => drawBoat(S.boat.x, S.boat.y, 3, false), S.boat.x, { w: 60, h: 40 }); }
 
+/* ============ v6.5: TEMPO, AVISOS, JORNADA DO VAQUEIRO E SECA DE VERDADE ============ */
+// ---------- tempo: duração do dia ajustável ----------
+const DIA_OPTS = [[6, 'Rápido (6 min)'], [12, 'Normal (12 min)'], [18, 'Calmo (18 min)'], [24, 'Bem calmo (24 min)']];
+function applyDia() { GMPS = 1440 / ((SET.dia || 12) * 60); }
+// ---------- avisos: fila com no máximo 3 na tela, repetidos agrupados, histórico ----------
+const NOTIF = { q: [], vis: [], log: [], grp: null };
+function toastShow(o) {
+  const el = $('toast'); if (!el) return; const d = document.createElement('div'); d.textContent = o.t + (o.n > 1 ? ' (×' + o.n + ')' : ''); d.style.animationDuration = '3.4s'; o.el = d; el.appendChild(d); NOTIF.vis.push(o);
+  setTimeout(() => { d.remove(); NOTIF.vis.splice(NOTIF.vis.indexOf(o), 1); toastPump(); }, 3400);
+}
+function toastPump() { while (NOTIF.vis.length < 3 && NOTIF.q.length) toastShow(NOTIF.q.shift()); document.body.classList.toggle('tst', NOTIF.vis.length > 0); }
+function toast(t) {
+  t = noEmo(String(t)).replace(/^\s*([!✓])?/, '$1'); if (!t.trim()) return;
+  NOTIF.log.unshift({ t, d: S ? S.day : 0, c: S && typeof clock === 'function' ? clock() : '' }); if (NOTIF.log.length > 80) NOTIF.log.length = 80;
+  if (/está precisando de ajuda/.test(t)) { // pedidos dos vizinhos: um aviso só
+    if (!NOTIF.grp) { NOTIF.grp = { n: 0, last: t }; setTimeout(() => { const g = NOTIF.grp; NOTIF.grp = null; toastPush(g.n > 1 ? g.n + ' vizinhos estão precisando de ajuda. Veja o quadro de avisos da praça.' : g.last); }, 450); }
+    NOTIF.grp.n++; NOTIF.grp.last = t; return; }
+  toastPush(t);
+}
+function toastPush(t) { const same = NOTIF.vis.find(o => o.t === t) || NOTIF.q.find(o => o.t === t); if (same) { same.n = (same.n || 1) + 1; if (same.el) same.el.textContent = same.t + ' (×' + same.n + ')'; return; } if (NOTIF.q.length > 6) NOTIF.q.shift(); NOTIF.q.push({ t, n: 1 }); toastPump(); }
+// ---------- jornada do vaqueiro: capítulos com objetivos e recompensas ----------
+const npcMet = () => Object.keys(NPCDEF).filter(id => id !== 'felipe' && S.npcs && S.npcs[id] && S.npcs[id].met).length;
+const ownedLand = () => !!(S.land && (S.land.piquetes || S.land.leste || S.land.galinheiro) || (S.exp && (S.exp.norte || S.exp.sul)));
+const depFeed = () => (S.dep.racao || 0) + (S.dep.silagem || 0) + (S.dep.palma || 0) + (S.dep.milho || 0) + (S.dep.sorgo || 0) + (S.dep.capim || 0);
+const JORNADA = [
+  { n: 'A chegada', d: 'Os primeiros dias na Fazenda Boa Esperança.', r: { cash: 400, it: { racao: 0 } }, o: [
+    ['agua', 'Encher o cocho d’água do Piquete 1', () => { const i = trIdx('p1', 'agua'); return i >= 0 && S.tr[i] >= trCap(i) * 0.9; }, 'Pegue o galão no reservatório ao lado da casa e despeje no cocho, ou use o botão do cocho.'],
+    ['horta', 'Capinar e plantar um canteiro da horta', () => agroPlots().some(q => q.kind === 'h' && ['plant', 'maduro'].includes(plotSt(q.id).st)), 'A horta fica atrás do rancho. Capine primeiro, depois plante uma das sementes.'],
+    ['aboio', 'Juntar o gado com o Aboio', () => (S.flags.aboio || 0) > 0, 'Chegue perto dos bois e use o Aboio (tecla Q ou botão Aboio).'],
+    ['vizinhos', 'Conhecer 3 moradores de Itarantim', () => npcMet() >= 3, 'A cidade fica depois da ponte do riacho, a leste.']] },
+  { n: 'Primeiros passos', d: 'Fazer a fazenda dar o primeiro dinheiro.', r: { cash: 600, it: { vara: 1, minhoca: 10 } }, o: [
+    ['bezerro', 'Ver nascer o primeiro bezerro', () => (S.stats.born || 0) > 0, 'A vaca Estrela está prenha. Deixe-a bem alimentada e com água.'],
+    ['colheita', 'Colher algo da horta', () => !!S.flags.colheu, 'Regue a horta todo dia; quando estiver madura, colha.'],
+    ['venda', 'Vender alguma coisa', () => (S.stats.earned || 0) > 0, 'Leite, ovos e verduras no Mercadinho; peixe no Porto; boi no açougue ou no frigorífico.'],
+    ['peixe', 'Pescar um peixe', () => Object.keys(S.pesca || {}).length > 0, 'Siga a estrada do sul até o Rio Pardo. Seu Bené vende vara e isca.']] },
+  { n: 'Criando raiz', d: 'Aumentar o rebanho e se preparar para a seca.', r: { cash: 1200, it: { sal: 1 } }, o: [
+    ['rebanho6', 'Ter 6 cabeças de gado', () => myAnimals('boi').length >= 6, 'Compre bezerros na feira da Casa do Agro ou espere as crias.'],
+    ['obra', 'Concluir uma obra na fazenda', () => Object.values(S.lots || {}).some(l => l && l.done), 'Encomende uma construção num dos lotes (menu Obras).'],
+    ['reserva', 'Guardar 500 kg de comida no depósito', () => depFeed() >= 500, 'Ração, milho, silagem e palma seguram o gado na seca.'],
+    ['dinheiro', 'Juntar R$ 5.000 (caixa + banco)', () => S.cash + S.acct >= 5000, 'Engorde e venda, plante, pesque, faça favores aos vizinhos.']] },
+  { n: 'Vaqueiro respeitado', d: 'O povo de Itarantim já fala de você.', r: { cash: 2500 }, o: [
+    ['titulo', 'Ganhar o primeiro título', () => (S.rankI || 0) >= 1, 'O título sobe com o patrimônio da fazenda.'],
+    ['rebanho12', 'Ter 12 cabeças de gado', () => myAnimals('boi').length >= 12, 'Cuide das vacas, insemine ou compre na feira.'],
+    ['terra', 'Comprar mais terra', () => ownedLand(), 'Piquetes e glebas à venda na placa da divisa e no menu Fazenda.'],
+    ['seca1', 'Atravessar uma seca forte ou severa', () => !!S.flags.secaVencida, 'Guarde comida, cuide da água e não deixe o gado definhar.']] },
+  { n: 'Senhor do sertão', d: 'A herança de Tiãozinho virou uma fazenda de respeito.', r: { cash: 6000 }, o: [
+    ['rebanho25', 'Ter 25 cabeças de gado', () => myAnimals('boi').length >= 25, ''],
+    ['poco', 'Construir o Poço Artesiano', () => built('poco'), 'Água o ano inteiro, mesmo na pior seca.'],
+    ['patrimonio', 'Patrimônio de R$ 80.000', () => patrimonio() >= 80000, ''],
+    ['aves', 'Anotar 10 aves na caderneta', () => Object.keys(S.aves || {}).length >= 10, 'Use o binóculo e visite rio, lagoa e caatinga.']] }
+];
+function jornState() { if (!S.jorn) { S.jorn = { cap: 0, ok: {}, min: 0 }; if (S.day > 3) { // saves antigos: capítulos já cumpridos passam sem recompensa
+    while (JORNADA[S.jorn.cap] && JORNADA[S.jorn.cap].o.every(o => { try { return o[2](); } catch (e) { return false; } })) S.jorn.cap++; } } return S.jorn; }
+function jornCheck() { const J = jornState(); const C = JORNADA[J.cap]; if (!C) return; let all = true;
+  for (const [k, n, f] of C.o) { if (J.ok[k]) continue; let ok = false; try { ok = !!f(); } catch (e) { } if (ok) { J.ok[k] = S.day; toast('✅ Jornada: ' + n); AU.chime && AU.chime(); } else all = false; }
+  if (all) { const r = C.r || {}; if (r.cash) { receive(r.cash, 'Recompensa da Jornada: ' + C.n, 'cash'); S.stats.earned -= r.cash; } for (const id in r.it || {}) if (r.it[id] && IT[id]) addInv(id, r.it[id], true);
+    toast('🏆 Capítulo concluído: ' + C.n + '! Recompensa: R$ ' + (r.cash || 0) + (r.it && Object.keys(r.it).some(k => r.it[k]) ? ' e presentes' : '')); AU.jingle && AU.jingle(); J.cap++; if (JORNADA[J.cap]) setTimeout(() => toast('📜 Novo capítulo: ' + JORNADA[J.cap].n), 3600); }
+  jornHUD(); }
+function jornHUD() {
+  let el = $('jorn'); if (!el) { el = document.createElement('div'); el.id = 'jorn'; document.body.appendChild(el); el.addEventListener('click', () => { AU.click && AU.click(); const J = jornState(); if (J.min) { J.min = 0; jornHUD(); } else openMenu('jor'); }); }
+  if (!S || mode !== 'play' || SET.jorn === false) { el.style.display = 'none'; return; } const J = jornState(), C = JORNADA[J.cap]; el.style.display = 'block';
+  if (!C) { el.innerHTML = '<b>📜 Jornada completa!</b>'; return; } const left = C.o.filter(o => !J.ok[o[0]]);
+  el.innerHTML = `<b>📜 ${C.n}</b> <span class="jn">${C.o.length - left.length}/${C.o.length}</span>` + (J.min ? '' : left.slice(0, 3).map(o => `<div>○ ${o[1]}</div>`).join(''));
+}
+function jornHTML() {
+  const J = jornState(); let h = `<div class="card"><b>📜 Jornada do vaqueiro</b><p class="mut">Capítulos com objetivos que ensinam a lida e dão recompensas. O painel no canto da tela mostra os próximos passos (toque nele para abrir aqui).</p><div class="ch">${btn(SET.jorn === false ? 'Mostrar painel na tela' : 'Esconder painel da tela', 'jornTog')}</div></div>`;
+  JORNADA.forEach((C, i) => { const done = i < J.cap, cur = i === J.cap; if (i > J.cap + 1) return;
+    h += `<div class="card" style="${done ? 'opacity:.7' : ''}"><b><span class="jk ${done ? 'ok' : cur ? 'cur' : 'no'}"></span>Capítulo ${i + 1}: ${C.n}${done ? ' (concluído)' : !cur ? ' (bloqueado)' : ''}</b> <span class="mut">${C.d}</span>` + (i <= J.cap ? C.o.map(([k, n, , tip]) => { const ok = done || J.ok[k]; return `<div style="margin:4px 0"><span class="jk ${ok ? 'ok' : 'no'}"></span><b>${n}</b>${!ok && tip ? `<br><span class="mut">${tip}</span>` : ''}</div>`; }).join('') : '<p class="mut">Termine o capítulo anterior.</p>') + `<p class="mut">Recompensa: R$ ${C.r.cash || 0}${C.r.it && Object.keys(C.r.it).some(k => C.r.it[k]) ? ' + ' + Object.keys(C.r.it).filter(k => C.r.it[k]).map(k => IT[k].n.split(' (')[0].toLowerCase()).join(', ') : ''}</p></div>`; });
+  h += climaHTML();
+  h += `<h3>Avisos recentes</h3><div class="card" style="max-height:260px;overflow:auto">${NOTIF.log.length ? NOTIF.log.map(n => `<div style="margin:2px 0"><span class="mut">Dia ${n.d} ${n.c}</span> · ${esc(n.t)}</div>`).join('') : '<span class="mut">Nenhum aviso ainda.</span>'}</div>`;
+  return h;
+}
+A.jornTog = () => { SET.jorn = SET.jorn === false; saveSet(); jornHUD(); renderModal(); };
+// ---------- seca e chuva ----------
+const SECA_N = { normal: 'Seca normal', forte: 'Seca forte', severa: 'Seca severa' }, INV_N = { bom: 'Inverno bom', regular: 'Inverno regular', fraco: 'Inverno fraco' };
+function clima() { if (!S.clima) S.clima = { seca: 'normal', inv: 'bom', sem: 0, choveu: 0, chuvaK: '', y: calDate().y, mSeca: 0 }; return S.clima; }
+const secaK = () => { const c = clima(); return !season() ? 1 : c.seca === 'severa' ? 1.7 : c.seca === 'forte' ? 1.3 : 1; }; // evaporação
+const grassK = () => { const c = clima(); return season() ? (c.seca === 'severa' ? 0.4 : c.seca === 'forte' ? 0.7 : 1) : (c.inv === 'fraco' ? 0.75 : c.inv === 'regular' ? 0.9 : 1.1); };
+const feedK = id => { const c = clima(); if (!season() || !['racao', 'milho', 'palma', 'silagem', 'sal'].includes(id)) return 1; return c.seca === 'severa' ? 1.35 : c.seca === 'forte' ? 1.15 : 1; };
+const secaBuyK = a => { const c = clima(); if (!season() || a.sp !== 'boi') return 1; return c.seca === 'severa' ? 0.78 : c.seca === 'forte' ? 0.9 : 1; };
+function climaRain(m, P0) { // ajusta a chance de chuva do mês conforme o ano
+  const c = clima(), O = Object.assign({}, P0), rainK = [3, 4, 5, 6, 7, 8, 9].includes(m) ? (c.seca === 'severa' ? 0.05 : c.seca === 'forte' ? 0.4 : 1) : (c.inv === 'fraco' ? 0.55 : c.inv === 'regular' ? 0.8 : 1.15);
+  for (const k of ['garoa', 'chuva', 'tempestade']) if (O[k]) O[k] *= rainK; if (rainK < 1) O.sol = (O.sol || 0) * (1 + (1 - rainK) * 0.6); return O; }
+function climaDay() {
+  const c = clima(), cd = calDate(); if (c.choveu) c.sem = 0; else c.sem++; c.choveu = 0;
+  if (cd.d === 1 && cd.m === 4) { // começa a seca: sorteia como vai ser o ano
+    if (c.y === 1 && S.day < 5) c.seca = 'normal'; else { const r = Math.random(); c.seca = r < 0.45 ? 'normal' : r < 0.8 ? 'forte' : 'severa'; }
+    c.y = cd.y; c.secaD = S.day;
+    toast(c.seca === 'normal' ? '☀ Começou a seca. Ano de seca normal: guarde comida e água.' : c.seca === 'forte' ? '☀ Começou a seca, e vai ser FORTE. Ração e milho já subiram.' : '🔥 Começou a seca, e vai ser SEVERA! Os açudes vão secar. Guarde comida, encomende carro-pipa e não deixe o gado definhar.');
+    setTimeout(() => say('Seu Felipe: ' + (c.seca === 'severa' ? '"Ano ruim, meu filho. Quem tiver gado demais vende cedo, quem tiver comida guardada compra barato."' : c.seca === 'forte' ? '"A seca vai apertar. Planta palma, faz silagem e enche o depósito enquanto dá."' : '"Seca de todo ano. Cuida da água e do sal que o gado aguenta."'), 6000), 3500); }
+  if (cd.d === 1 && cd.m === 10) { // fim da seca: sorteia o inverno (as águas)
+    if (c.seca !== 'normal') { S.flags.secaVencida = 1; toast('🌧 Você atravessou a ' + SECA_N[c.seca].toLowerCase() + '!'); }
+    const r = Math.random(); c.inv = r < 0.5 ? 'bom' : r < 0.85 ? 'regular' : 'fraco'; c.seca = 'normal'; c.chuvaK = ''; toast('🌦 Começa o tempo das águas: ' + INV_N[c.inv].toLowerCase() + ' previsto.'); }
+  // avisos da seca
+  if (season() && c.seca !== 'normal' && cd.d === 15) toast('☀ ' + SECA_N[c.seca] + ': ' + c.sem + ' dias sem chuva, reservatório em ' + Math.round(S.res) + '%.');
+  if (season() && S.res < 20 && !built('poco') && (cd.d % 7 === 0)) toast('💧 Reservatório baixo (' + Math.round(S.res) + '%). Encomende um carro-pipa na Casa do Agro ou construa um poço.');
+  const fome = myAnimals('boi').filter(a => a.food < 25).length; if (fome >= 2) toast('🐄 ' + fome + ' cabeças com fome: falta capim. Dê ração, silagem ou palma no cocho.');
+}
+function climaRainStart() { // chamado quando começa a chover
+  const c = clima(); c.choveu = 1; const key = calDate().y + ':' + season();
+  if (!season() && c.chuvaK !== key && c.sem >= 6) { c.chuvaK = key; if (cenasOn() && mode === 'play' && !P._act && !FS.on) csChuva(); else { toast('🌧 Chegou a chuva! O pasto vai verdejar.'); chuvaBoost(); } }
+  else if (season() && c.seca !== 'normal' && c.sem >= 20) toast('🌦 Uma chuvinha no meio da seca! Alivia um pouco.');
+}
+function chuvaBoost() { for (let i = 0; i < grass.length; i++) if (ground[i] === G.PAST) grass[i] = Math.min(255, grass[i] + 30); S.res = Math.min(100, S.res + 10); }
+function csChuva() {
+  const [px, py] = [10, 50];
+  cutscene([
+    { fade: 1, d: 0.4 },
+    { fade: 0, cam: [px, py], snap: 1, z: 1.4, pitch: 38, dof: 0.3, txt: 'Um trovão rola longe, lá pras bandas da serra…', d: 3.2, fn: () => { AU.thunder && AU.thunder(); } },
+    { cam: [px + 4, py - 2], spd: 0.7, txt: '🌧 <b>Chegou a chuva!</b> O cheiro de terra molhada toma conta do sertão.', d: 4.2, fn: () => { AU.thunder && setTimeout(() => AU.thunder(), 900); } },
+    { cam: [px + 8, py - 4], spd: 0.6, txt: 'O gado levanta a cabeça para a chuva. Em poucos dias o pasto vai verdejar.', d: 4, fn: () => { myAnimals('boi').slice(0, 3).forEach((b, i) => setTimeout(() => AU.moo(b.x, b.y, 1 + i * 0.05), 400 + i * 700)); } },
+    { cam: [px + 10, py - 8], z: 1.1, spd: 0.6, txt: 'E a <b>asa-branca</b>, que tinha ido embora na seca, voltou.', d: 4.2, fn: () => { for (let j = 0; j < 7; j++) AVES.push({ id: aveId++, k: 'asaBranca', x: (px - 8) * TS - j * 10, y: (py - 10) * TS + rnd(-10, 10), z: rnd(40, 60), st: 'pass', vx: 48, vy: 14, f: 1, gid: 998, ph: Math.random() * 4 }); setTimeout(() => birdCall('asaBranca', (px + 8) * TS, (py - 6) * TS), 1200); } },
+    { clr: 1, d: 0.1 }
+  ], () => { chuvaBoost(); toast('🌱 O capim dos pastos cresce mais rápido nas águas.'); });
+}
+// ---------- carro-pipa ----------
+const pipaPreco = () => { const c = clima(); return season() ? (c.seca === 'severa' ? 750 : c.seca === 'forte' ? 580 : 420) : 380; };
+A.pipa = () => { if (S.pipa) return toast('O carro-pipa já está a caminho.'); if (built('poco')) return toast('Com o poço artesiano, o reservatório está sempre cheio.'); if (!pay(pipaPreco() * priceMul(), 'Carro-pipa (10 mil litros)')) return; S.pipa = { due: S.day * 1440 + S.min + 150 }; toast('🚚 Carro-pipa encomendado: chega em umas 2 horas e meia.'); renderModal(); };
+function pipaCard() { return `<div class="card"><div class="row sp"><span style="flex:1"><b>🚚 Carro-pipa (10 mil litros)</b><br><span class="mut">Enche o reservatório da fazenda (+65%). Reservatório agora: ${Math.round(S.res)}%.${season() && clima().seca !== 'normal' ? ' Na ' + SECA_N[clima().seca].toLowerCase() + ' fica mais caro.' : ''}</span></span><b>${fmt(pipaPreco())}</b></div>${S.pipa ? '<p class="mut">A caminho…</p>' : btn('Encomendar', 'pipa', '', built('poco'))}</div>`; }
+function pipaTick() { if (!S.pipa) return; const now = S.day * 1440 + S.min; if (!S.pipa.on && now >= S.pipa.due) { S.pipa.on = 1; S.pipa.t = 0; S.res = Math.min(100, S.res + 65); toast('🚚 O carro-pipa chegou e encheu o reservatório!'); AU.splash && AU.splash(); } }
+function pipaSpr() { return cached('pipa', 70, 34, g => { const p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+  p(2, 22, 66, 4, '#2a2a2e'); p(46, 8, 20, 16, '#2a6aa0'); p(48, 10, 10, 6, '#a8d0e8'); p(46, 8, 20, 2, '#4a8ac0'); p(64, 18, 3, 3, '#f0e080');
+  p(4, 6, 42, 17, '#d8dce0'); p(4, 6, 42, 3, '#f0f2f4'); p(4, 20, 42, 3, '#a8acb0'); p(6, 13, 38, 3, '#2a6aa0'); for (let x = 8; x < 44; x += 6) p(x, 7, 1, 15, '#c0c4c8');
+  for (const x of [10, 22, 54]) { p(x - 1, 24, 10, 9, '#1a1a1e'); p(x + 2, 27, 4, 3, '#8a8a90'); } }); }
+function drawPipa(add, inV) { if (!S.pipa || !S.pipa.on) return; const [cx, cy] = fpx('cistern'), x = cx + 34, y = cy + 26; S.pipa.t += 0.016; if (S.pipa.t > 30) { S.pipa = null; return; } if (!inV(x, y, 60)) return;
+  add(y, () => { X.drawImage(pipaSpr(), Math.round(x - 35), Math.round(y - 32)); X.strokeStyle = '#2a3a4a'; X.lineWidth = 2; X.beginPath(); X.moveTo(x - 30, y - 8); X.quadraticCurveTo(x - 40, y + 4, cx + 4, cy - 2); X.stroke(); if (Math.random() < 0.4) part(cx + 4, cy - 6, 'spark', { vx: rnd(-8, 8), vy: rnd(-16, -6), m: 0.4, c: '#d8f0ff' }); }, x, { w: 90, h: 50 }); }
+// ---------- painel do clima (na Jornada e no menu Fazenda) ----------
+function climaHTML() { const c = clima(), se = season(), fc = (S.wx && S.wx.fc) || [];
+  return `<h3>Clima do ano</h3><div class="card"><b>${se ? SECA_N[c.seca] : INV_N[c.inv]}</b> <span class="mut">· ${c.sem} dia(s) sem chuva · reservatório ${Math.round(S.res)}%</span><p class="mut">${se ? (c.seca === 'severa' ? 'Quase não chove. Os açudes secam, o capim some, ração e milho custam 35% a mais, e muita gente vende gado barato na feira.' : c.seca === 'forte' ? 'Chove pouco. O capim cresce devagar e a ração está 15% mais cara. Bezerro na feira sai mais em conta.' : 'Seca de todo ano: o capim cresce devagar. Guarde comida para os meses de setembro e outubro.') : 'Tempo das águas: o capim cresce rápido e o reservatório enche com as chuvas.'}</p><p class="mut">Próximos dias: ${fc.slice(0, 3).map(k => WXT[k] ? WXT[k].n : k).join(' → ') || '—'}</p></div>`; }
+// ---------- laço por quadro ----------
+let lidaT = 0;
+let lidaV = 0;
+function lidaTick(dt) { if (!S) return; if ((lidaV -= dt) <= 0) { lidaV = 0.15; const el = $('jorn'); if (el) el.style.visibility = M.open || SH.a ? 'hidden' : 'visible'; } if ((lidaT -= dt) <= 0) { lidaT = 1; jornCheck(); pipaTick(); } }
+
 /* ---------- lojas ---------- */
 function shopCart() { return hyp(S.cart.x - P.x, S.cart.y - P.y) < 110 || P.cart; }
 function buyItem(id, n, dest) {
-  const it = IT[id], cost = it.p * n * priceMul();
+  const it = IT[id], cost = it.p * n * priceMul() * feedK(id);
   if (dest === 'cart' && cartKg() + it.kg * n > cartCap()) return say('A carroça não comporta tanto peso.');
   if (dest === 'inv' && invKg() + it.kg * n > INV_CAP) return say('Mochila pesada demais. Use a carroça ou a entrega.');
   if (dest === 'frete') { const fee = 60; if (!pay(cost + fee, 'Compra de ' + n + 'x ' + it.n + ' + frete')) return; S.fretePend = S.fretePend || {}; const kg = ['racao', 'milho', 'sal', 'racaoCao'].includes(id) ? it.kg * n : n; S.fretePend[id] = (S.fretePend[id] || 0) + kg; S.frete = true; toast('🚚 Entrega no depósito amanhã às 6h'); return; }
@@ -8122,7 +8266,7 @@ function buyItem(id, n, dest) {
 A.buy = v => { const [id, n, dest] = v.split('|'); const before = (S.inv[id] || 0) + ((S.cart.cargo || {})[id] || 0); buyItem(id, +n, dest); const got = (S.inv[id] || 0) + ((S.cart.cargo || {})[id] || 0) - before; if (got > 0 && S.discount && (IT[id].c === 'ferr' || id === 'escova' || id === 'alforje' || id === 'lampiao')) { receive(Math.round(IT[id].p * got * (1 - S.discount) * 100) / 100, 'Desconto combinado na Casa do Agro', 'cash'); S.discount = 0; toast('Desconto de 20% aplicado.'); } renderModal(); };
 function shopRow(id, opt) {
   const it = IT[id], heavy = it.kg >= 8; opt = opt || {};
-  return `<div class="card"><div class="row sp"><span>${iic(id, 28)}</span><span style="flex:1"><b>${it.n}</b><br><span class="mut">${it.d}</span></span><b>${fmt2(it.p * priceMul())}</b></div><div class="row">${btn('+1 mochila', 'buy', id + '|1|inv')}${heavy ? '' : btn('+5', 'buy', id + '|5|inv')}${it.c === 'vet' && it.kg <= 0.1 ? btn('+20', 'buy', id + '|20|inv') : ''}${heavy && shopCart() ? btn('+1 carroça', 'buy', id + '|1|cart') + btn('+5 carroça', 'buy', id + '|5|cart') : ''}${heavy && opt.frete ? btn('+5 entrega (R$60)', 'buy', id + '|5|frete') : ''}<span class="mut">tem ${S.inv[id] || 0}</span></div></div>`;
+  return `<div class="card"><div class="row sp"><span>${iic(id, 28)}</span><span style="flex:1"><b>${it.n}</b><br><span class="mut">${it.d}</span></span><b>${fmt2(it.p * priceMul() * feedK(id))}</b></div><div class="row">${btn('+1 mochila', 'buy', id + '|1|inv')}${heavy ? '' : btn('+5', 'buy', id + '|5|inv')}${it.c === 'vet' && it.kg <= 0.1 ? btn('+20', 'buy', id + '|20|inv') : ''}${heavy && shopCart() ? btn('+1 carroça', 'buy', id + '|1|cart') + btn('+5 carroça', 'buy', id + '|5|cart') : ''}${heavy && opt.frete ? btn('+5 entrega (R$60)', 'buy', id + '|5|frete') : ''}<span class="mut">tem ${S.inv[id] || 0}</span></div></div>`;
 }
 function openBuilding(b) {
   const k = b.act; if (k === 'none') return say(b.n + ': fechado.');
@@ -8150,7 +8294,7 @@ A.buyOxCart = () => { if (S.veh.boi.own) return; if (!pay(OXCART_P * priceMul(),
 A.buyOxPair = v => { const pr = S.oxStock.list[+v]; if (!pr) return; const cost = (animalValue(pr[0]) + animalValue(pr[1])) * 1.05 * priceMul(); if (!pay(cost, 'Junta de bois ' + pr[0].n + ' e ' + pr[1].n)) return; for (const a of pr) { a.own = 'delivery'; a.x = a.y = -999; markBought(a, cost / 2); S.animals.push(a); S.delivery.push({ id: a.id, day: S.day + 1, to: 'receb' }); } S.oxStock.list.splice(+v, 1); toast('🐂 Junta comprada! Chega amanhã cedo no Recebimento.'); renderModal(); };
 function openAgro() { showModal('🌿 Casa do Agro', [['ins', 'Insumos'], ['sel', 'Selaria'], ['ani', 'Feira de animais'], ['boi', 'Carro de boi'], ['vet', 'Veterinária'], ['gen', 'Genética'], ['sem', 'Sementes']], 'ins', t => {
   let h = keeperBanner('agro'); if (!shopCart()) h += '<p class="mut">💡 Estacione a carroça aqui perto para levar sacos pesados, ou peça entrega.</p>';
-  if (t === 'ins') h += ['racao', 'milho', 'sal', 'palma', 'silagem', 'galaoV', 'galao', 'lenha', 'carvao'].map(id => shopRow(id, { frete: 1 })).join('');
+  if (t === 'ins') h += (season() && clima().seca !== 'normal' ? `<p class="mut">☀ ${SECA_N[clima().seca]}: ração, milho, palma, silagem e sal estão mais caros.</p>` : '') + pipaCard() + ['racao', 'milho', 'sal', 'palma', 'silagem', 'galaoV', 'galao', 'lenha', 'carvao'].map(id => shopRow(id, { frete: 1 })).join('');
   if (t === 'gen') h += geneticaTab();
   if (t === 'sem') h += sementesTab();
   if (t === 'sel') { h += ['escova', 'alforje', 'lampiao', 'facao', 'espingarda', 'cartucho', 'vara', 'minhoca', 'binoculo'].map(id => shopRow(id)).join(''); h += SADDLES.filter(s => s.p).map(s => `<div class="card"><b>${s.n}</b> — ${fmt(s.p)}<p class="mut">${s.d}</p>${S.saddles.includes(s.id) ? '✅ Você já tem' : btn('Comprar', 'buySad', s.id)}</div>`).join(''); }
@@ -10022,7 +10166,7 @@ function collectItems(tx0, tx1, ty0, ty1, vw, vh, se, vx0, vy0) {
       if (!l.done && hour() >= 7 && hour() < 17 && !isRain()) BUILDER_AP.forEach((ap, i) => { const bx = x0 + 20 + i * 70, by = y1 + 4; add(by, () => drawPerson(ap, bx, by, i ? 2 : 3, Math.floor(drawT * 3 + i) % 2, 'hammer'), bx); if (Math.random() < dt * 1.2) { AU.hammer(bx, by); dust(bx + (i ? -10 : 10), by - 6, 1, '#b8a888'); } }); } }
   TROUGHS.forEach((t, i) => { const x = t.x * TS, y = t.y * TS; if (!inV(x, y, 40)) return; add(y + 15, () => X.drawImage(troughSpr(t, S.tr[i] / trCap(i)), x - 2, y - 2), x + t.w * 8, { w: t.w * 16 + 16, h: 40, b: y + 16 }); });
   for (const a of S.animals) { if (a.id === P.mnt || a._wr || !inV(a.x, a.y, 40)) continue; add(iy(a), () => drawAnimal(a), ix(a), { w: 110, h: 100 }); }
-  aucDrawLot(add); drawCSX(add); drawCSA(add); drawAgro(add, inV); drawCityDeco(add, inV); drawTraffic(add, inV); drawBirds(add, inV); drawParkedBoat(add, inV);
+  aucDrawLot(add); drawCSX(add); drawCSA(add); drawAgro(add, inV); drawCityDeco(add, inV); drawTraffic(add, inV); drawBirds(add, inV); drawParkedBoat(add, inV); drawPipa(add, inV);
   cineDrawActors(add, inV);
   for (const e of npcs) { if (e.hidden || !inV(e.x, e.y, 30)) continue; add(iy(e), () => { const [pz, fr] = npcPose(e); X.globalAlpha = e.alpha === undefined ? 1 : e.alpha; drawPerson(e.d.ap, ix(e), iy(e), e.dir, fr, pz); X.globalAlpha = 1; if (e.emote && e.et > 0) emote(ix(e), iy(e) - 34, e.emote); }, ix(e), { w: 90, h: 100 }); }
   for (const w of S.workers) { if (w.x === undefined || !inV(w.x, w.y, 30)) continue; if (w._mnt) { const h = workerHorse(w); if (h) { add(w.y, () => { const sp = h._mv || 0, an = sp < 2 ? 'idle' : sp > 40 ? 'trot' : 'walk', cyc = RIG.cycleLen(rigBreed(h), an === 'idle' ? 'walk' : an, rigK(h)) || 20; drawMounted(h, w.ap, w.x, w.y, w.dir || 0, an, an === 'idle' ? 0 : Math.floor(((h._dist || 0) / cyc % 1) * 8) % 8); }, w.x, { w: 120, h: 120 }); continue; } } if (w._sleep) continue; add(iy(w), () => { const wx = ix(w), wy = iy(w); const pz = w._pose === 'walk' ? 'walk' : w._pose || 'idle'; drawPerson(w.ap, wx, wy, w.dir || 0, pz === 'walk' ? Math.floor((w._ph || 0) / 22 * 8 / 0.22) % 8 : Math.floor(drawT * 3) % 2, pz === 'carry' && w._pose === 'walk' ? 'carryW' : pz); if (w.task && w._pose !== 'walk' && !w._wait) { X.fillStyle = '#2b1608'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), 16, 3); X.fillStyle = '#7ad040'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), Math.round(16 * (w.task.prog || 0)), 3); } }, ix(w), { w: 90, h: 100 }); }
@@ -11290,7 +11434,7 @@ const STEP = 1 / 60; let acc = 0, lastT = 0, saveT = 0;
 function tick(dt) {
   drawT += dt;
   if (mode === 'play' && !paused) {
-    holdTick(); placeTick(dt); INV_CAP = invCapNow(); const gm = updTime(dt); agroTick(gm); updWeather(dt, gm); updMissions(dt); updAuction(dt); updDirector(dt); if (VQ.on) updVaquejada(dt); else if (IN.on) updInterior(dt); else updPlayer(dt); updAnimals(dt, gm); updTraffic(dt); aguasTick(dt); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
+    holdTick(); placeTick(dt); INV_CAP = invCapNow(); const gm = updTime(dt); agroTick(gm); updWeather(dt, gm); updMissions(dt); updAuction(dt); updDirector(dt); if (VQ.on) updVaquejada(dt); else if (IN.on) updInterior(dt); else updPlayer(dt); updAnimals(dt, gm); updTraffic(dt); aguasTick(dt); lidaTick(dt); updWildAll(dt); updPlayerHealth(dt); forestSounds(dt);
     { const h = P.mnt ? byId(P.mnt) : null; if (h && h._react && (h._react.t -= dt) <= 0) h._react = null; }
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);
