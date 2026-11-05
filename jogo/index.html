@@ -261,9 +261,11 @@ body.fsh .pad,body.fsh #joy{display:none!important}
 #jorn b{color:#ffe08a;font-family:var(--fH);font-weight:400}#jorn .jn{opacity:.75;font-size:.9em}#jorn div{opacity:.92}
 body.ttl #jorn,body.cs #jorn,body.fsh #jorn,body.in #jorn,body.ovl #jorn{display:none!important}
 body.lan #jorn{top:calc(46px + var(--sat))}
+body.cs #msg{opacity:0!important}
 body.tst #jorn,body:has(#msg.on) #jorn{opacity:.15;transition:opacity .3s}
 body.hc #jorn,body.hc #msg,body.hc #toast,body.hc .card{background:#120804!important;color:#fff!important;border-color:#ffd34a!important}body.hc .mut{color:#f4e6c8!important;opacity:1!important}body.hc button{outline:2px solid #ffd34a}
 #quad{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;background:rgba(20,8,2,.55)}#quad .qbox{width:min(92vw,420px);background:#f6e2b4;border:4px solid #2b1608;box-shadow:0 0 0 3px #d98a2c;padding:12px;text-align:center;color:#2b1608}#quad .qt{font-weight:800;font-size:calc(13px*var(--fs))}#quad .qc{font-family:var(--fH);font-size:calc(24px*var(--fs));margin:8px 0 2px}#quad .qa{font-size:54px;line-height:1.1;color:#c0461e;text-shadow:2px 2px 0 #2b1608}#quad .qbar{height:10px;border:2px solid #2b1608;background:#fff6dc;margin:6px 0}#quad .qbar i{display:block;height:100%;background:#d98a2c}#quad .qr{min-height:2.6em;font-size:calc(13px*var(--fs))}#quad .qbt{display:flex;gap:8px;justify-content:center;margin-top:6px}#quad .qbt button{font-size:26px;min-width:62px;padding:8px;border:3px solid #2b1608;background:linear-gradient(#f0a84a 0 50%,#d98a2c 50%);color:#2b1608;font-weight:800}
+.padf{outline:3px solid #ffd34a!important;outline-offset:2px;box-shadow:0 0 0 6px rgba(43,22,8,.55)!important;position:relative;z-index:1}
 #jorn .tutsk{margin-top:3px;text-decoration:underline;opacity:.7;font-size:.9em}
 #tutArr{position:fixed;z-index:6;display:none;pointer-events:none;color:#ffd34a;font-size:30px;line-height:1;text-shadow:0 0 3px #2b1608,2px 2px 0 #2b1608,-2px -2px 0 #2b1608,2px -2px 0 #2b1608,-2px 2px 0 #2b1608}#tutArr span{display:block;animation:tutb .8s ease-in-out infinite alternate}#tutArr.edge span{animation:none;opacity:.9}@keyframes tutb{from{transform:translateY(-6px)}to{transform:translateY(4px)}}
 body.ttl #tutArr,body.cs #tutArr{display:none!important}#jorn{transition:opacity .3s}#jorn .ck{color:#8ad070;font-weight:800}
@@ -371,7 +373,7 @@ body:has(#mn.on) #toast,body:has(#quad[style*=flex]) #toast{top:auto;bottom:calc
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 204, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '6.8.0', SAVE_V = 9;
+const GAME_V = '6.9.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -3788,7 +3790,7 @@ const RIG = (() => {
         if (can) { dot(hx - 0.5, ny, C('#141010'), lay); dot(hx + 0.5, ny, C('#141010'), lay); if (Q.mouth) { dot(hx - 0.5, ny + 2, C('#e06070'), lay); dot(hx + 0.5, ny + 2, C('#e06070'), lay); } }
         else { dot(hx - mw * 0.75, ny, mul(mzT.d, 0.7), lay); dot(hx + mw * 0.75 - 1, ny, mul(mzT.d, 0.7), lay); if (Q.mouth || Q.chew) dot(hx - 0.5, Math.round(top + HLf - 0.3), C('#4a1a1a'), lay); }
         if (eq && s.mane) { mClear(); limb(hx - 0.5, top - 0.5, hx + 0.6, top + 2.8 * K, 2, 1); paint(maneT, 2, { lay }); }
-        if (o.saddle && eq) { const rnC = C(o.rein || '#3a2410'); for (let x = -fw + 0.5; x <= fw - 0.5; x++) dotIf(hx + x, Math.round(top + 1.6 * K), o.orn === 'prata' && (x | 0) % 2 ? C('#e8e8f0') : o.orn === 'fitas' ? C(['#e03030', '#30a040', '#2050c0', '#f0d020'][((x + 9) | 0) % 4]) : rnC); for (let x = -mw - 0.5; x <= mw + 0.5; x++) dotIf(hx + x, Math.round(top + HLf * 0.66), rnC); dotIf(hx - mw - 0.5, top + HLf * 0.8, C('#c8c8d0')); dotIf(hx + mw + 0.5, top + HLf * 0.8, C('#c8c8d0')); }
+        if (o.saddle && eq) { const rnC = C(o.rein || '#3a2410'); for (let x = -fw + 0.5; x <= fw - 0.5; x++) dotIf(hx + x, Math.round(top + 1.6 * K), o.orn === 'prata' && (x | 0) % 2 ? C('#e8e8f0') : o.orn === 'fitas' ? C(['#e03030', '#30a040', '#2050c0', '#f0d020'][((x + 9) | 0) % 4]) : o.cab === 'enf' && (x | 0) % 2 ? C(['#e03030', '#f0d020', '#2050c0'][((x + 9) | 0) % 3]) : rnC); for (let x = -mw - 0.5; x <= mw + 0.5; x++) dotIf(hx + x, Math.round(top + HLf * 0.66), rnC); dotIf(hx - mw - 0.5, top + HLf * 0.8, C('#c8c8d0')); dotIf(hx + mw + 0.5, top + HLf * 0.8, C('#c8c8d0')); }
       } else if (back && eq && s.mane) { mClear(); limb(hx, top + HLf * 0.25, hx, top + HLf * 1.15, 2, 2); paint(maneT, 2, { lay }); }
     }
     // cauda
@@ -3803,10 +3805,12 @@ const RIG = (() => {
     // arreio (de cima)
     function saddle(lay) {
       if (!o.saddle || !eq || lie) return; const sc0 = C(o.saddle.c || '#7a4a22');
-      const y0 = gy - H + by - dz * 0.55; mClear(); poly([[cx - D * 0.6, y0 - 2], [cx + D * 0.6, y0 - 2], [cx + D * 0.62, y0 + D * 0.42], [cx - D * 0.62, y0 + D * 0.42]].map(p => [p[0] + sway, p[1]])); paint(T(o.pad || '#a83a2a'), 1, { lay });
+      const y0 = gy - H + by - dz * 0.55; mClear(); poly([[cx - D * 0.6, y0 - 2], [cx + D * 0.6, y0 - 2], [cx + D * 0.62, y0 + D * 0.42], [cx - D * 0.62, y0 + D * 0.42]].map(p => [p[0] + sway, p[1]])); paint(T(o.pad || '#a83a2a'), 1, { lay, fn: (x, y, c) => o.bord && (Math.round(x) + Math.round(y)) % 3 === 0 ? C('#e8c050') : c });
       mClear(); ell(cx + sway, y0, D * 0.42, 2.6 * K); paint(T(sc0), 1, { lay });
+      if (o.pel) { const pd = C(PEL_D[o.pel] || o.pel); mClear(); ell(cx + sway, y0 - 0.6, D * 0.36, 2.2 * K); paint(tn(o.pel), 1, { lay, fn: (x, y, c) => hsh(x, y, 4) < 0.32 ? pd : c }); }
       mClear(); for (const sd of [-1, 1]) { cap(cx + sd * D * 0.55 + sway, y0 + 1, cx + sd * D * 0.62 + sway, y0 + D * 0.55, 0.5, 0.5); } paint(tn('#3a2410'), 0, { lay });
       for (const sd of [-1, 1]) { mClear(); ell(cx + sd * D * 0.64 + sway, y0 + D * 0.62, 1, 0.8); paint(tn('#a0a0a8'), 3, { lay }); }
+      if (o.guiz) for (const sd of [-1, 0, 1]) { dot(Math.round(cx + sway + sd * D * 0.3), Math.round(y0 + D * 0.5 + (sd ? 0 : 1)), C('#f0d060'), lay); dot(Math.round(cx + sway + sd * D * 0.3), Math.round(y0 + D * 0.5 + (sd ? 1 : 2)), C('#a8801c'), lay); }
     }
     let seat;
     if (!back) {
@@ -6793,10 +6797,11 @@ A.invite = () => {
 };
 /* ---------- CUSTOS FIXOS: ITR (imposto da terra, todo agosto) e manutenção mensal da fazenda ---------- */
 function terraValor() { let v = 60000; for (const k in PARCELS) if (S.land && S.land[k]) v += PARCELS[k].p; if (S.exp.norte) v += EXP.norte.p; if (S.exp.sul) v += EXP.sul.p; return v; }
-const itrValor = () => Math.max(150, Math.round(terraValor() * 0.004));
+const itrValor = () => Math.max(300, Math.round(terraValor() * 0.012)); // 1,2% do valor da terra (ajustado pela simulação de um ano)
 function manutItens() {
   const obras = Object.values(S.lots || {}).filter(l => l && l.done).length, casa = S.house || 0, cav = myAnimals('cavalo').length;
   const L = [['Cercas e porteiras', 90 + GATES.length * 4], ['Obras da fazenda', obras * 35], ['Casa', 40 + casa * 45], ['Ferraduras e arreios', cav * 18], ['Carroça e carro de boi', 30]];
+  L.push(['Rebanho (sal, reparos e cercas rompidas)', myAnimals('boi').length * 10], ['Taxas e seguro rural', Math.round(patrimonio() * 0.0015)]);
   if (built('poco')) L.push(['Bomba do poço (energia)', 70]); if (built('bebedouro')) L.push(['Boias do bebedouro', 25]);
   return L.filter(x => x[1] > 0);
 }
@@ -6815,7 +6820,7 @@ function custosHTML() {
   const I = S.itr, c = calDate(), L = manutItens();
   let h = `<div class="card"><b>🔧 Custos fixos da fazenda</b><p class="mut">Todo dia 1º a manutenção é debitada da conta: ${L.map(x => x[0] + ' ' + fmt(x[1])).join(' · ')}. <b>Total: ${fmt(manutTotal())}/mês.</b></p>`;
   if (I && !I.paid) h += `<div class="row sp"><span>📄 ITR ${I.y}${I.late ? ' <b style="color:#b02020">ATRASADO</b>' : ' · vence dia ' + I.due}</span><b>${fmt(I.v)}</b></div><div class="row">${btn('Pagar ITR', 'itrPay')}</div>`;
-  else h += `<p class="mut">📄 ITR (imposto da terra): ${I && I.paid ? 'o do Ano ' + I.y + ' já está pago. ' : ''}O próximo boleto chega em 1º de agosto, estimado em ${fmt(itrValor())} (0,4% do valor da terra).</p>`;
+  else h += `<p class="mut">📄 ITR (imposto da terra): ${I && I.paid ? 'o do Ano ' + I.y + ' já está pago. ' : ''}O próximo boleto chega em 1º de agosto, estimado em ${fmt(itrValor())} (1,2% do valor da terra).</p>`;
   return h + '</div>';
 }
 function bankRemote() {
@@ -8552,7 +8557,7 @@ const CONQ = [
 ];
 function histDone() { return S && S.hist ? Object.values(S.hist).filter(h => h && h.done).length : 0; }
 function conqTick() {
-  if (!S) return; if (!S.conq) { S.conq = {}; if (S.day > 3) for (const c of CONQ) { let ok = false; try { ok = c[4](); } catch (e) { } if (ok) S.conq[c[0]] = -1; } return; } // save antigo: já ganha calado
+  if (!S) return; if (!S.conq) { S.conq = {}; if (S.day > 3) { for (const c of CONQ) { let ok = false; try { ok = c[4](); } catch (e) { } if (ok) S.conq[c[0]] = -1; } return; } } // save antigo: já ganha calado
   for (const c of CONQ) { if (S.conq[c[0]]) continue; let ok = false; try { ok = !!c[4](); } catch (e) { } if (ok) { S.conq[c[0]] = S.day; toast('🏅 Conquista: ' + c[2] + ' — ' + c[3]); SFX.fanfare(false); break; } }
 }
 const conqN = () => S.conq ? Object.keys(S.conq).length : 0;
@@ -8702,22 +8707,30 @@ function amorCard(id) {
     return `<div class="card">💐 <b>Pedir ${d.n} em namoro</b><br><span class="mut">Precisa de um buquê de flores do mato (Mercadinho). Tem: ${S.inv.buque || 0}.</span><div class="row">${btn('Pedir em namoro', 'amorPede', id, !has('buque'))}</div></div>`; }
   if (A0.st === 1) { const ok = hs >= 10 && S.day - A0.d >= 7; return `<div class="card">❤ <b>Namorando ${d.n}</b> desde o dia ${A0.d}<br><span class="mut">${ok ? 'Já dá para pedir em casamento (precisa das alianças, no Mercadinho).' : 'Para pedir em casamento: 10 corações e uma semana de namoro.'}</span><div class="row">${btn('Pedir em casamento', 'amorCasa', id, !ok || !has('aliancas'))}</div></div>`; }
   if (A0.st === 2) return `<div class="card">💍 <b>Noivado!</b> O casamento é no domingo, dia ${A0.wd}, às 10h, na igreja de Itarantim.</div>`;
-  return `<div class="card">💞 <b>${A0.id === id ? 'Seu amor' : ''}</b> · casados desde o dia ${A0.cd}.</div>`;
+  return `<div class="card">💞 <b>${A0.id === id ? 'Seu amor' : ''}</b> · casados desde o dia ${A0.cd}. Mora com você na Boa Esperança: café na varanda das 6h30 às 8h e de volta no fim da tarde.</div>`;
 }
 A.amorPede = id => { if (!useInv('buque', 1)) return; S.amor = { id, st: 1, d: S.day }; addFr(id, 80); remember(id, 'começamos a namorar'); M.txt = ['Eu… eu estava esperando você perguntar. Sim!', 'Oxente, demorou! Claro que sim!', 'Só se for para ver o pôr do sol todo dia na porteira da sua fazenda.'][S.day % 3]; SFX.fanfare(true); toast('❤ Você e ' + NPCDEF[id].n + ' estão namorando!'); renderModal(); };
 const nextSunday = () => { let d = S.day + 1; while (d % 7 !== 0) d++; return d; };
 A.amorCasa = id => { if (!useInv('aliancas', 1)) return; S.amor.st = 2; S.amor.wd = nextSunday(); addFr(id, 100); remember(id, 'ficamos noivos'); M.txt = 'Sim! Mil vezes sim! Domingo, na igreja, às 10h. Vou avisar a cidade inteira!'; SFX.fanfare(true); toast('💍 Noivado! O casamento é domingo, dia ' + S.amor.wd + ', às 10h na igreja de Itarantim.'); renderModal(); };
+/* ---------- figurantes das cenas: gente a pé e cavaleiros ---------- */
+const CS_BR = ['nordestino', 'mm', 'crioulo', 'campolina', 'qm', 'mangalarga'];
+function csPovo(n, skip) { return Object.keys(NPCDEF).filter(id => NPCDEF[id].ap && !(skip || []).includes(id)).slice(0, n).map(id => NPCDEF[id].ap); }
+function csHorse(i) { const h = mkAnimal('cavalo', CS_BR[i % CS_BR.length], { age: 50 }); h.saddle = 'nord'; h.cust = Object.assign(defCust(), { pad: PADS[i % PADS.length][0], orn: i % 3 === 0 ? 'fitas' : 'none', peit: i % 2 === 0 }); return h; }
+function csRider(ap, h, x, y, dir) { return cineActor({ ap, h, x, y, dir, an: 'idle', fr: 0 }); }
 function csCasamento() {
   const A0 = S.amor, d = NPCDEF[A0.id]; A0.st = 3; A0.cd = S.day;
   const fim = () => { const ex = trajeFesta() ? 400 : 0; receive(800 + ex, 'Presentes do casamento'); S.stats.earned -= 800 + ex; if (ex) toast('🤵 Todo mundo elogiou o traje de festa: mais presentes!'); toast('💞 Casados! ' + d.n + ' agora vive com você na Boa Esperança.'); SFX.fanfare(true); };
   if (!cenasOn()) { say('Os sinos da igreja tocam: você e ' + d.n + ' estão casados!', 6000); return fim(); }
   if (AU.sfxBell) AU.sfxBell();
+  const pa = NPCDEF.padre && NPCDEF.padre.ap; let noivos = [], convid = [];
+  const setup = () => { CINE.actors.length = 0; if (pa) cineActor({ ap: pa, x: 84 * TS, y: 42.8 * TS, dir: 0 }); noivos = [cineActor({ ap: S.cf.ap, x: 83.4 * TS, y: 43.6 * TS, dir: 1 }), cineActor({ ap: d.ap, x: 84.6 * TS, y: 43.6 * TS, dir: 1 })]; convid = csPovo(8, [A0.id, 'padre']).map((ap, i) => cineActor({ ap, x: (81.6 + (i % 4) * 1.6) * TS, y: (46.8 + Math.floor(i / 4) * 1.2) * TS, dir: 1 })); };
   cutscene([
-    { fade: 0, mus: 'festa', cam: [84, 41], snap: 1, z: 1.5, grade: 'aurora', txt: '⛪ Domingo, 10h. A igreja de Itarantim está cheia de flores do mato.', d: 4, fn: () => { try { SFX.bell(); } catch (e) { } } },
-    { cam: [84, 43], z: 1.8, spd: 1, txt: 'Diante do padre, ' + S.cf.name + ' e ' + d.n + ' dizem “sim”.', d: 4 },
-    { cam: [88, 46], z: 1.3, spd: 1, txt: 'Arroz, sanfona e forró na praça até o fim da tarde. O sertão inteiro veio celebrar.', d: 4.4 },
+    { fade: 0, mus: 'festa', cam: [84, 44], snap: 1, z: 1.6, grade: 'aurora', txt: '⛪ Domingo, 10h. A igreja de Itarantim está cheia de flores do mato.', d: 4, fn: () => { setup(); try { SFX.bell(); } catch (e) { } } },
+    { cam: [84, 43.6], z: 2.2, spd: 1, txt: 'Diante do padre, ' + S.cf.name + ' e ' + d.n + ' dizem “sim”.', d: 4, upd: (dt, u) => { if (u > 0.55) { noivos[0].dir = 3; noivos[1].dir = 2; } } },
+    { cam: [84, 47.5], z: 1.5, spd: 1, txt: 'Arroz, sanfona e forró na praça até o fim da tarde. O sertão inteiro veio celebrar.', d: 4.4, fn: () => { noivos.forEach(n => { n.dir = 0; n.pose = 'walk'; }); convid.forEach(c => { c.pose = 'wave'; c.dir = 0; }); },
+      upd: dt => { noivos.forEach(n => { n.y += dt * 16; n.fr = Math.floor(drawT * 8) % 8; }); convid.forEach(c => { c.fr = Math.floor(drawT * 3) % 2; }); if (Math.random() < dt * 16) part(84 * TS + rnd(-26, 26), noivos[0].y - rnd(12, 30), 'spark', { vx: rnd(-12, 12), vy: rnd(-24, -6), m: 1, c: '#ffffff' }); } },
     { clr: 1, d: 0.1 }
-  ], fim);
+  ], () => { csClear(); fim(); });
 }
 function amorTick() {
   const A0 = S.amor; if (!A0 || A0.st !== 2 || mode !== 'play' || M.open || P._act) return;
@@ -8725,6 +8738,14 @@ function amorTick() {
   if (S.day === A0.wd && hour() >= 9.5 && hour() < 14 && P.x > 68 * TS) csCasamento();
   else if (S.day === A0.wd && hour() >= 7 && !A0.av) { A0.av = 1; toast('💍 Hoje é o casamento! 10h na igreja de Itarantim.'); }
 }
+// casados: o cônjuge dorme na casa sede, toma café na varanda e trabalha na cidade durante o dia
+const schedFor0 = schedFor;
+schedFor = function (e) {
+  const A0 = S && S.amor; if (A0 && A0.st === 3 && e.id === A0.id && SPOTS.fazenda_varanda) { const h = hour(); e._fast = true;
+    if (h < 6.5 || h >= 21) return { spot: 'fazenda_varanda', act: 'home' };
+    if (h < 8 || h >= 18.5) return { spot: 'fazenda_varanda', act: 'chat' }; }
+  return schedFor0(e);
+};
 function histDaily() { // todo amanhecer
   if (!S) return;
   if (S.flags.paoBia) { addInv('cafe', 1, true); P.fo = cl(P.fo + 15, 0, 100); }
@@ -9194,7 +9215,7 @@ A.machGo = src => { let fk = 1; if (src === 'dep') { if (S.dep.milho < 20) retur
 A.machGet = () => { if (machState() !== 'done') return; if (depKg() + S.mach.out > depCap()) return say('Depósito cheio!'); S.dep.racao += S.mach.out; toast('🌽 +' + S.mach.out + ' kg de ração no depósito'); AU.pickup(); S.mach = null; renderModal(); };
 function cleanCurral(k) { if ((S.dirt[k] || 0) < 5) return say('Está limpo.'); act('sweep', 3.2, { x: P.x + 10, y: P.y }, () => { const ek = Math.round((S.dirt[k] || 0) * 1.5); S.dep.esterco = (S.dep.esterco || 0) + ek; S.dirt[k] = 0; P.en = Math.max(0, P.en - 5); toast('🧹 ' + AREAS[k].n + ' limpo! +' + ek + ' kg de esterco no depósito.'); AU.chime(); }, { int: 1 }); }
 /* ---------- ajuda e opções ---------- */
-function showHelp() { showModal('❓ Como jogar', null, null, () => `<p><b>Andar:</b> joystick (ou WASD/setas). Segure <b>Correr/Galope</b> (Shift) para ir mais rápido.</p><p><b>Toque no mapa:</b> toque em um <b>animal</b> para abrir a ficha dele com as ações. Toque em pessoas, porteiras, cochos, portas e objetos para o vaqueiro ir até lá e interagir.</p><p><b>Zoom:</b> use dois dedos (pinça) na tela ou a rodinha do mouse.</p><p><b>Ação</b> (E/Espaço): o botão amarelo mostra a interação mais próxima.</p><p><b>Aboio</b> (Q): o gado e os cavalos próximos seguem você. <b>Laço</b> (F): laça o animal mais próximo. <b>Montar</b> (R): sela e monta; longe do cavalo, assobia para ele vir.</p><p><b>Vender:</b> animais no Curral Principal, no Açougue ou pela ficha do animal.</p><p><b>Pastagens:</b> o capim acaba e rebrota; faça rodízio entre os piquetes.</p><p><b>Dia:</b> ~${SET.dia || 12} minutos reais (ajuste em Configurações › Tempo). Durma na Casa Sede após as 18h.</p><p><b>Primeira vez?</b> Siga o 🎓 Tutorial e depois a 📜 Jornada no canto da tela.</p><p><b>Controle de videogame:</b> analógico anda · A ação · B/RT correr · X aboio · Y montar · LB laço · RB cães · LT arma · Select mochila · Start menu · analógico direito faz zoom. Com janela aberta: B fecha, direcional rola.</p><p class="mut">Teclado: I mochila · M menu · Esc fecha. Troque as teclas em Configurações › Teclado.</p>`, 'scroll'); }
+function showHelp() { showModal('❓ Como jogar', null, null, () => `<p><b>Andar:</b> joystick (ou WASD/setas). Segure <b>Correr/Galope</b> (Shift) para ir mais rápido.</p><p><b>Toque no mapa:</b> toque em um <b>animal</b> para abrir a ficha dele com as ações. Toque em pessoas, porteiras, cochos, portas e objetos para o vaqueiro ir até lá e interagir.</p><p><b>Zoom:</b> use dois dedos (pinça) na tela ou a rodinha do mouse.</p><p><b>Ação</b> (E/Espaço): o botão amarelo mostra a interação mais próxima.</p><p><b>Aboio</b> (Q): o gado e os cavalos próximos seguem você. <b>Laço</b> (F): laça o animal mais próximo. <b>Montar</b> (R): sela e monta; longe do cavalo, assobia para ele vir.</p><p><b>Vender:</b> animais no Curral Principal, no Açougue ou pela ficha do animal.</p><p><b>Pastagens:</b> o capim acaba e rebrota; faça rodízio entre os piquetes.</p><p><b>Dia:</b> ~${SET.dia || 12} minutos reais (ajuste em Configurações › Tempo). Durma na Casa Sede após as 18h.</p><p><b>Primeira vez?</b> Siga o 🎓 Tutorial e depois a 📜 Jornada no canto da tela.</p><p><b>Controle de videogame:</b> analógico anda · A ação · B/RT correr · X aboio · Y montar · LB laço · RB cães · LT arma · Select mochila · Start menu (e pula cenas) · analógico direito faz zoom. Nos menus, na tela inicial e na criação do vaqueiro: direcional escolhe, A confirma, B volta, analógico direito rola.</p><p class="mut">Teclado: I mochila · M menu · Esc fecha. Troque as teclas em Configurações › Teclado.</p>`, 'scroll'); }
 function showCredits() { closeModal(); OP.credits(); }
 function showOptions() { showModal('Configurações', null, null, () => cfgHTML(false), 'gear'); }
 
@@ -9421,31 +9442,38 @@ function missaHTML() {
   const y = calDate().y; if (S.flags.missaY === y) return '<p class="mut">Você já assistiu à Missa do Vaqueiro este ano. Que a bênção acompanhe a lida!</p>';
   return `<div class="card"><b>⛪ Assistir à missa</b><p class="mut">O padre abençoa o gado e os vaqueiros. ${P.mnt ? 'Você está montado: a sua montaria também recebe a bênção.' : 'Dica: venha montado para a montaria receber a bênção.'} ${S.cf.ap.hat ? '' : ''}</p>${btn('Assistir', 'missaGo')}</div>`;
 }
+let missaCav = [], missaPadre = null;
+function missaSetup() { CINE.actors.length = 0; const pa = NPCDEF.padre && NPCDEF.padre.ap; missaPadre = pa ? cineActor({ ap: pa, x: 84 * TS, y: 43.4 * TS, dir: 0 }) : null; const mt = P.mnt && byId(P.mnt); const L = [S.cf.ap, ...csPovo(5, ['padre'])];
+  missaCav = L.map((ap, i) => { const c = csRider(ap, i === 0 && mt ? mt : csHorse(i), (80.6 + i * 1.4) * TS, (52 + (i % 2) * 0.9) * TS, 1); c.ty = (46.6 + (i % 2) * 0.9) * TS; return c; }); }
 A.missaGo = () => {
   closeModal(); const y = calDate().y; S.flags.missaY = y;
   const fim = () => { S.flags.missaVaq = S.flags.missaVaq || S.day; for (const a of S.animals) if (a.own === 'player') a.hap = cl((a.hap || 50) + 8, 0, 100); const mt = P.mnt && byId(P.mnt); if (mt) { mt.hap = cl((mt.hap || 50) + 15, 0, 100); } for (const e of npcs) if (!e.hidden) addFr(e.id, 6); if (trajeGibao()) { for (const e of npcs) if (!e.hidden) addFr(e.id, 4); toast('⛪ O padre abençoa o seu gibão de couro na frente de todos.'); } P.en = cl(P.en + 10, 0, 100); toast('⛪ Bênção recebida: o gado ficou mais feliz' + (mt ? ' e ' + mt.n + ' também' : '') + '. Amizade com quem foi à missa aumentou.'); SFX.fanfare(false); };
   if (!cenasOn()) return fim();
   cutscene([
-    { fade: 0, mus: 'cena', cam: [84, 44], snap: 1, z: 1.4, grade: 'aurora', txt: '⛪ Terceiro domingo de julho. Vaqueiros de gibão e chapéu de couro chegam a cavalo à matriz.', d: 4.2, fn: () => { try { SFX.bell(); } catch (e) { } } },
-    { cam: [84, 47], z: 1.7, spd: 1, txt: 'O padre ergue a mão: “Abençoai, Senhor, o vaqueiro, o cavalo e a boiada.”', d: 4.2 },
-    { cam: [86, 50], z: 1.3, spd: 1, txt: 'Um aboio longo ecoa na praça: “Ê boi, ê boiada…” Ninguém fala. Só o sertão responde.', d: 4.4 },
+    { fade: 0, mus: 'cena', cam: [84, 45.5], snap: 1, z: 1.4, grade: 'aurora', txt: '⛪ Terceiro domingo de julho. Vaqueiros de gibão e chapéu de couro chegam a cavalo à matriz.', d: 4.2, fn: () => { missaSetup(); try { SFX.bell(); } catch (e) { } }, upd: dt => missaCav.forEach((c, i) => { if (c.y > c.ty) { c.y -= dt * 22; c.an = 'walk'; c.fr = Math.floor(drawT * 8 + i) % 8; } else { c.an = 'idle'; c.fr = 0; } }) },
+    { cam: [84, 45], z: 1.8, spd: 1, txt: 'O padre ergue a mão: “Abençoai, Senhor, o vaqueiro, o cavalo e a boiada.”', d: 4.2, fn: () => { if (missaPadre) missaPadre.pose = 'wave'; }, upd: () => { if (missaPadre) missaPadre.fr = Math.floor(drawT * 2) % 2; } },
+    { cam: [84, 47.5], z: 1.4, spd: 1, txt: 'Um aboio longo ecoa na praça: “Ê boi, ê boiada…” Ninguém fala. Só o sertão responde.', d: 4.4 },
     { clr: 1, d: 0.1 }
-  ], fim);
+  ], () => { csClear(); fim(); });
 };
 function cavalgadaHTML() {
   const k = calDate().y * 100 + calDate().m; if (S.flags.cavM === k) return '<p class="mut">Você já foi à cavalgada deste mês. A próxima sai no dia 15 do mês que vem.</p>';
   return `<div class="card"><b>🏇 Sair na cavalgada</b><p class="mut">${P.mnt ? 'Pronto: montado e de chapéu. Os cavaleiros esperam o seu sinal.' : 'Precisa estar montado no seu cavalo para sair na cavalgada.'}</p>${btn('Sair na cavalgada', 'cavGo', '', !P.mnt)}</div>`;
 }
+let cavL = [];
+function cavSetup() { CINE.actors.length = 0; const mt = byId(P.mnt); cavL = [S.cf.ap, ...csPovo(7)].map((ap, i) => csRider(ap, i === 0 && mt ? mt : csHorse(i + 1), 0, 0, 3)); }
+function cavPos(x0, y0, dir, parado) { cavL.forEach((c, i) => { c.dir = dir; if (parado) { c.x = (x0 + (i % 4) * 1.6) * TS; c.y = (y0 + Math.floor(i / 4) * 1.4) * TS; c.an = 'idle'; c.fr = 0; } else { c.x = (x0 - i * 1.6) * TS; c.y = (y0 + (i % 2) * 0.8) * TS; c.an = 'walk'; } }); }
+function cavMove(dt, vx, vy) { cavL.forEach((c, i) => { c.x += dt * 34 * vx; c.y += dt * 34 * vy; c.fr = Math.floor(drawT * 8 + i * 3) % 8; }); }
 A.cavGo = () => {
   if (!P.mnt) return; closeModal(); S.flags.cavM = calDate().y * 100 + calDate().m;
   const fim = () => { S.flags.cavalgada = S.flags.cavalgada || S.day; const mt = byId(P.mnt); if (mt) mt.hap = cl((mt.hap || 50) + 10, 0, 100); for (const e of npcs) if (!e.hidden) addFr(e.id, 5); P.en = Math.max(0, P.en - 10); receive(120 + (trajeGibao() ? 60 : 0), 'Sorteio da cavalgada' + (trajeGibao() ? ' (+ prêmio de traje de vaqueiro)' : ''), 'cash'); toast('🏇 Cavalgada feita! Amizade com a cidade aumentou e você ganhou R$ 120 no sorteio dos cavaleiros.'); SFX.fanfare(false); };
   if (!cenasOn()) return fim();
   cutscene([
-    { fade: 0, mus: 'festa', cam: [84, 50], snap: 1, z: 1.3, txt: '🏇 Sete da manhã: dezenas de cavaleiros se juntam na praça de Itarantim.', d: 3.8 },
-    { cam: [96, 46], z: 1.1, spd: 0.8, txt: 'Fitas no cabresto, sanfona na carroceria, criança na garupa: a cavalgada atravessa a avenida.', d: 4.2 },
-    { cam: [88, 72], z: 1.1, spd: 0.8, txt: 'No parque de vaquejada, tem café, cuscuz e o sorteio dos cavaleiros.', d: 4 },
+    { fade: 0, mus: 'festa', cam: [84, 50], snap: 1, z: 1.3, txt: '🏇 Sete da manhã: dezenas de cavaleiros se juntam na praça de Itarantim.', d: 3.8, fn: () => { cavSetup(); cavPos(81, 50.2, 3); }, upd: dt => cavMove(dt, 1, 0) },
+    { cam: [96, 45.6], snap: 1, z: 1.15, txt: 'Fitas no cabresto, sanfona na carroceria, criança na garupa: a cavalgada atravessa a avenida.', d: 4.2, fn: () => cavPos(94, 45.4, 3), upd: dt => cavMove(dt, 1, 0) },
+    { cam: [88, 73.5], snap: 1, z: 1.2, txt: 'No parque de vaquejada, tem café, cuscuz e o sorteio dos cavaleiros.', d: 4, fn: () => cavPos(86, 72.6, 0, true) },
     { clr: 1, d: 0.1 }
-  ], fim);
+  ], () => { csClear(); fim(); });
 };
 
 /* ============ REGIÃO: FAZENDAS VIZINHAS, PROPRIETÁRIOS, NEGOCIAÇÃO E MISSÕES ============ */
@@ -11375,7 +11403,7 @@ const CINE = {
 function cineActor(o) { const a = Object.assign({ x: 0, y: 0, dir: 0, fr: 0, pose: 'idle', alpha: 1 }, o); CINE.actors.push(a); return a; }
 function cineDrawActors(add, inV) {
   for (const a of CINE.actors) { if (a.alpha <= 0.01 || !inV(a.x, a.y, 40)) continue;
-    add(a.y, () => { X.globalAlpha = a.alpha; drawPerson(a.ap, Math.round(a.x), Math.round(a.y), a.dir, a.fr, a.pose); X.globalAlpha = 1; }, a.x, { w: 90, h: 100 }); }
+    add(a.y, () => { X.globalAlpha = a.alpha; if (a.h) drawMounted(a.h, a.ap, Math.round(a.x), Math.round(a.y), a.dir, a.an || 'idle', a.fr); else drawPerson(a.ap, Math.round(a.x), Math.round(a.y), a.dir, a.fr, a.pose); X.globalAlpha = 1; }, a.x, { w: a.h ? 130 : 90, h: a.h ? 120 : 100 }); }
 }
 /* diálogo de cutscene: retrato grande, nome, texto letra a letra com som e seta de continuar */
 const VOICE = { felipe: 150, me: 210, chico: 120, bene: 105, dorival: 135, padre: 125 };
@@ -12108,21 +12136,55 @@ const PAD = {
     const dz = v => Math.abs(v) < 0.22 ? 0 : (v - Math.sign(v) * 0.22) / 0.78;
     let x = dz(g.axes[0] || 0), y = dz(g.axes[1] || 0); if (b(14)) x = -1; if (b(15)) x = 1; if (b(12)) y = -1; if (b(13)) y = 1;
     this.ax = [x, y];
-    if (M.open || SH.a) { // janelas abertas: B/Start fecha, direcional rola, A clica no botão em foco
-      const mn = $('mn'); if (M.open && mn && y) mn.scrollTop += y * 14;
-      if ((b(1) && !was(1)) || (b(9) && !was(9))) { if (M.open) closeModal(); else closeSheet(); }
-      if (b(0) && !was(0)) { const f = document.activeElement; if (f && f.tagName === 'BUTTON') f.click(); }
-      if (M.open && Math.abs(x) > 0.6 && !this.scrT) { this.focusMove(x > 0 ? 1 : -1); this.scrT = 0.22; }
+    if (padLayer()) { padNav(g, dt); // janelas e telas abertas: direcional escolhe, A confirma, B volta
     } else {
+      if (mode === 'cs') { if (b(9) && !was(9)) { const sk = $('skip'); if (sk && sk.offsetParent) sk.click(); } } else
       for (const i in this.map) { const k = this.map[i]; if (b(i) && !was(i)) this.key(k, true); else if (!b(i) && was(i)) this.key(k, false); }
       const zy = dz(g.axes[3] || 0); if (zy && mode === 'play') zoomAt(cam.uz * (1 - zy * dt * 1.2), W / 2, H / 2);
     }
     if (this.scrT) this.scrT = Math.max(0, this.scrT - dt);
-    this.prev = g.buttons.map((_, i) => b(i)); this.gal = b(7) || b(1);
+    this.prev = g.buttons.map((_, i) => b(i)); PNAV.prev = this.prev.slice(); this.gal = b(7) || b(1);
     return true;
   },
   focusMove(d) { const L = [...document.querySelectorAll('#mn button, #ap button')].filter(e => e.offsetParent); if (!L.length) return; let i = L.indexOf(document.activeElement); i = i < 0 ? 0 : (i + d + L.length) % L.length; L[i].focus(); L[i].scrollIntoView({ block: 'nearest' }); }
 };
+/* ---------- CONTROLE DE VIDEOGAME NOS MENUS: direcional move o destaque, A confirma, B volta ---------- */
+const PNAV = { prev: [], rep: 0, dirP: '' };
+function padLayer() {
+  const q = $('quad'); if (q && q.style.display === 'flex') return null; // a quadrilha cuida do próprio controle
+  if (M.open) return $('mn');
+  const ov = [...document.querySelectorAll('.ov.on')].pop(); if (ov) return ov;
+  const st = $('setup'); if (st && st.style.display !== 'none' && st.offsetParent !== null) return st;
+  if (SH.a) return $('ap');
+  if (mode === 'title') return $('title');
+  return null;
+}
+function padBtns(L) { return [...L.querySelectorAll('button, .sl[data-a]')].filter(b => !b.disabled && b.offsetParent !== null); }
+function padFocus(b) { document.querySelectorAll('.padf').forEach(e => e.classList.remove('padf')); if (!b) return; b.classList.add('padf'); try { b.focus({ preventScroll: true }); } catch (e) { } b.scrollIntoView({ block: 'nearest' }); }
+function padMove(L, dx, dy) {
+  const B = padBtns(L); if (!B.length) return; const cur = document.querySelector('.padf'); if (!cur || !B.includes(cur)) return padFocus(B[0]);
+  const r0 = cur.getBoundingClientRect(), x0 = r0.left + r0.width / 2, y0 = r0.top + r0.height / 2; let best = null, bs = 1e9;
+  for (const b of B) { if (b === cur) continue; const r = b.getBoundingClientRect(), vx = r.left + r.width / 2 - x0, vy = r.top + r.height / 2 - y0, along = dx ? vx * dx : vy * dy; if (along <= 4) continue; const sc = along + (dx ? Math.abs(vy) : Math.abs(vx)) * 2.2; if (sc < bs) { bs = sc; best = b; } }
+  if (best) padFocus(best); else { const i = B.indexOf(cur), st = dx || dy; padFocus(B[(i + (st > 0 ? 1 : -1) + B.length) % B.length]); }
+}
+function padBack(L) {
+  if (M.open) return closeModal();
+  if (L && L.classList.contains('ov')) { const b = L.querySelector('.back'); if (b) b.click(); return; }
+  if (L && L.id === 'setup') { const b = L.querySelector('[data-s="prev"]') || L.querySelector('[data-s="back"]'); if (b) b.click(); return; }
+  if (SH.a) return closeSheet();
+}
+function padNav(g, dt) {
+  const L = padLayer(); if (!L) return false;
+  const b = i => !!(g.buttons[i] && (g.buttons[i].pressed || g.buttons[i].value > 0.5)), was = i => !!PNAV.prev[i], ax = g.axes || [];
+  const d = b(12) || ax[1] < -0.55 ? 'u' : b(13) || ax[1] > 0.55 ? 'd' : b(14) || ax[0] < -0.55 ? 'l' : b(15) || ax[0] > 0.55 ? 'r' : '';
+  if (d) { if (d !== PNAV.dirP || (PNAV.rep -= dt) <= 0) { PNAV.rep = d === PNAV.dirP ? 0.12 : 0.35; padMove(L, d === 'l' ? -1 : d === 'r' ? 1 : 0, d === 'u' ? -1 : d === 'd' ? 1 : 0); AU.click && AU.click(); } } PNAV.dirP = d;
+  if (b(0) && !was(0)) { const f = document.querySelector('.padf'); if (f && padBtns(L).includes(f)) f.click(); else padMove(L, 0, 1); }
+  if ((b(1) && !was(1)) || (b(9) && !was(9) && M.open)) padBack(L);
+  const ry = ax[3] || 0; if (Math.abs(ry) > 0.25) { const sc = L.id === 'mn' || L.id === 'setup' || L.id === 'ap' ? L : (L.querySelector('.ovb') || L); sc.scrollTop += ry * dt * 900; }
+  return true;
+}
+let padMT = performance.now();
+function padMenu() { const t = performance.now(), dt = Math.min(0.1, (t - padMT) / 1000); padMT = t; const g = PAD.get(); if (!g) return; if (!PAD.on) { PAD.on = true; toast('🎮 Controle conectado: direcional escolhe, A confirma, B volta.'); } padNav(g, dt); PNAV.prev = g.buttons.map(x => x.pressed || x.value > 0.5); }
 let padLast = performance.now();
 function padInput() { const t = performance.now(), dt = Math.min(0.1, (t - padLast) / 1000); padLast = t; if (!PAD.poll(dt)) return; const [x, y] = PAD.ax; if (x || y) { input.x = x; input.y = y; } if (PAD.gal) input.gal = true; }
 addEventListener('gamepadconnected', () => { });
@@ -12315,7 +12377,7 @@ function loop(ts) {
   let dt = (ts - lastT) / 1000; lastT = ts; if (!(dt > 0)) dt = 0; if (dt > 0.25) dt = 0.25;
   acc += dt; let n = 0;
   try {
-    if (mode === 'play' || mode === 'cs') keyInput();
+    if (mode === 'play' || mode === 'cs') keyInput(); else padMenu();
     const t0 = performance.now(); while (acc >= STEP && n < 6) { if (S && P) snapshot(); tick(STEP); acc -= STEP; n++; } const t1 = performance.now();
     if (n >= 6) acc = 0;
     ALPHA = cl(acc / STEP, 0, 1);
