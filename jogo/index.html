@@ -6817,7 +6817,7 @@ function custosDay() {
   if (c.d === 1 && S.day > 1) { // dia 1º: manutenção
     const v = manutTotal(); S.acct -= v; ledger('Manutenção da fazenda (' + MESES[c.m] + ')', -v, 'cc'); toast('🔧 Manutenção do mês: ' + fmt(v) + ' debitados da conta (cercas, obras, casa e arreios).');
   }
-  if (c.m === 7 && c.d === 1 && (!S.itr || S.itr.y !== c.y)) { S.itr = { y: c.y, v: itrValor(), due: S.day + 27, paid: 0 }; toast('📄 Chegou o boleto do ITR ' + c.y + ': ' + fmt(S.itr.v) + '. Vence no fim de agosto (Menu › Banco).'); }
+  if (c.m === 7 && c.d === 1 && (!S.itr || S.itr.y !== c.y)) { const old = S.itr && !S.itr.paid ? S.itr.v : 0; S.itr = { y: c.y, v: itrValor() + old, due: S.day + 27, paid: 0 }; if (old) toast('📄 O ITR do ano passado não foi pago e entrou no boleto novo.'); toast('📄 Chegou o boleto do ITR ' + c.y + ': ' + fmt(S.itr.v) + '. Vence no fim de agosto (Menu › Banco).'); }
   const I = S.itr; if (I && !I.paid && !I.late && S.day > I.due) { I.late = 1; I.v = Math.round(I.v * 1.2); S.score = cl((S.score || 600) - 30, 300, 950); toast('⚠️ ITR atrasado: multa de 20% e score do banco caiu. Pague em Menu › Banco.'); }
   if (I && !I.paid && S.day === I.due - 5) toast('📄 O ITR vence em 5 dias: ' + fmt(I.v) + '.');
 }
@@ -8554,7 +8554,7 @@ function introTick(dt) {
     return;
   }
   if (S.story.parto === 1) {
-    const m = estrela(); if (!m || !m.preg) { S.story.parto = 2; jornHUD(); return; }
+    const m = estrela(); if (!m || !m.preg) return introDone(m ? calfOf(m).slice(-1)[0] || null : null);
     m._st = 'idle'; m._t = 99; m._fx = { pose: 'lie', t0: drawT, until: drawT + 30 };
     if ((INTRO.mooT -= dt) <= 0) { INTRO.mooT = rnd(5, 9); AU.moo(m.x, m.y, 1.15); }
     if (hyp(P.x - m.x, P.y - m.y) < 2.4 * TS) csNasce(m);
@@ -8587,7 +8587,7 @@ function csArrive() {
 }
 function partoStart() {
   S.story.intro = 1; S.story.ride = 0; const m = estrela();
-  if (!m) { S.story.parto = 2; return introDone(null); }
+  if (!m) return introDone(null);
   S.story.parto = 1; m.preg = Math.max(1, Math.min(m.preg || 1, 3)); m.labor = 0;
   const open = (x0, y0) => !PROPS.some(q => TREES.has(q.t) && hyp(q.x - x0, q.y - y0) < 56) && !hitAt(x0, y0, 6) && !hitAt(x0 - 16, y0 + 3, 4) && !hitAt(x0 + 16, y0 + 3, 4);
   if (!open(m.x, m.y)) for (let i = 0; i < 60; i++) { const q = m.area && AREAS[m.area] ? randIn(m.area) : randIn('p1'); if (open(q[0], q[1])) { m.x = q[0]; m.y = q[1]; m._px = m.x; m._py = m.y; break; } }
@@ -8629,8 +8629,8 @@ function introSkipAll() { // usado pelos testes automáticos: pula a chegada int
 }
 /* fogueira da primeira noite: causos e o mistério do baú */
 function fogTick() {
-  if (!S || !S.story || S.story.intro !== 1 || S.story.parto !== 2 || S.story.fog || S.day > 4) return;
-  if (hour() < 18.4 || mode !== 'play' || M.open || CS.on || P._act || sleeping || (typeof IN !== 'undefined' && IN.on)) return;
+  if (!S || !S.story || S.story.intro !== 1 || S.story.fog) return; if (S.story.parto === undefined) S.story.parto = 2; /* save de antes da v7.1 */ if (S.story.parto !== 2) return;
+  if (hour() < 18.4 || hour() > 23.5 || mode !== 'play' || M.open || CS.on || P._act || sleeping || (IN.on && IN.seq)) return; if (IN.on) inExitNow();
   csFogueira();
 }
 function csFogueira() {
@@ -8923,8 +8923,8 @@ function csCasamento() {
 }
 function amorTick() {
   const A0 = S.amor; if (!A0 || A0.st !== 2 || mode !== 'play' || M.open || P._act) return;
-  if (S.day > A0.wd) { A0.wd = nextSunday(); toast('💍 Você faltou ao casamento! ' + NPCDEF[A0.id].n + ' remarcou para o domingo, dia ' + A0.wd + '.'); addFr(A0.id, -80); return; }
-  if (S.day === A0.wd && hour() >= 9.5 && hour() < 14 && P.x > 68 * TS) csCasamento();
+  if (S.day > A0.wd) { A0.wd = nextSunday(); A0.av = 0; toast('💍 Você faltou ao casamento! ' + NPCDEF[A0.id].n + ' remarcou para o domingo, dia ' + A0.wd + '.'); addFr(A0.id, -80); return; }
+  if (S.day === A0.wd && hour() >= 9.5 && hour() < 14 && P.x > 68 * TS && (!IN.on || IN.id === 'igreja')) { inExitNow(); csCasamento(); }
   else if (S.day === A0.wd && hour() >= 7 && !A0.av) { A0.av = 1; toast('💍 Hoje é o casamento! 10h na igreja de Itarantim.'); }
 }
 // casados: o cônjuge dorme na casa sede, toma café na varanda e trabalha na cidade durante o dia
@@ -9024,7 +9024,7 @@ function cobrir(a, sire, paid) {
   });
 }
 A.cobDo = id => { const a = SH.a, m = byId(+id); if (!a || !m) return; cobrir(a, m, false); };
-A.cobHaras = i => { const a = SH.a, g = HARAS_G[+i]; if (!a || !g) return; if (!pay(g.p * priceMul(), 'Cobertura no Haras Lagoa Seca: ' + g.n)) return; cobrir(a, Object.assign({ sp: 'cavalo' }, g), true); };
+A.cobHaras = i => { const a = SH.a, g = HARAS_G[+i]; if (!a || !g) return; if (P.mnt === a.id) { say('Desmonte da égua antes da cobertura.', 2200); AU.err(); return; } if (!pay(g.p * priceMul(), 'Cobertura no Haras Lagoa Seca: ' + g.n)) return; cobrir(a, Object.assign({ sp: 'cavalo' }, g), true); };
 A.cobBack = () => { SH.sub = null; renderSheet(); };
 /* ---------- ANDAMENTO: marcha picada, batida, esquipado e trote ---------- */
 const GAITS = { picada: ['Marcha picada', 'macia e rápida, quase sem sacolejo: você cansa bem menos'], batida: ['Marcha batida', 'firme e rápida, boa para estrada longa'], esquipado: ['Esquipado', 'o andamento lateral do sertão, o mais veloz sem galopar'], trote: ['Trote', 'andamento comum: treinado, poupa o fôlego'] };
@@ -9201,7 +9201,7 @@ function inPeople(r) {
 function cityCoffee(b) { const r = IROOM[b.id], own = r.own; const P0 = IN.people || []; if (!own || !P0.some(q => q.id === own)) return say('Não tem ninguém para passar o café agora.', 2400); const k = 'cafe_' + own; S.flags[k] = S.flags[k] || 0; if (S.flags[k] === S.day) return say(NPCDEF[own].n + ': “Já tomou o seu hoje! Volte amanhã.”', 2600);
   if (hearts(own) < 1) return say(NPCDEF[own].n + ' sorri sem graça: “Hoje não tem café coado, não.”', 2600);
   inAct('drink', 1.6, () => { S.flags[k] = S.day; P.en = Math.min(100, P.en + 12); addFr(own, 4); AU.gulp && AU.gulp(); toast('☕ Café com ' + NPCDEF[own].n + ': energia e amizade.'); }); }
-function sinuca() { if (!pay(10, 'Sinuca no Bar da Zefa')) return; inAct('reach', 1.6, () => { const w = Math.random() < 0.45 + skill('lid') * 0.03; if (w) { receive(25, 'Sinuca: ganhou a partida', 'cash'); S.stats.earned -= 25; toast('🎱 Encaçapou a bola oito! Ganhou R$ 25.'); } else toast('🎱 Errou a tacada final. Fica para a próxima.'); }); }
+function sinuca() { S.flags.sinD = S.flags.sinD === S.day ? S.day : (S.flags.sinN = 0, S.day); if ((S.flags.sinN || 0) >= 5) return say('A Dona Zefa fecha a mesa: “Cinco partidas por dia, que o pano é novo!”', 3200); if (!pay(10, 'Sinuca no Bar da Zefa')) return; S.flags.sinN = (S.flags.sinN || 0) + 1; inAct('reach', 1.6, () => { const w = Math.random() < 0.45 + skill('lid') * 0.03; if (w) { receive(25, 'Sinuca: ganhou a partida', 'cash'); S.stats.earned -= 25; toast('🎱 Encaçapou a bola oito! Ganhou R$ 25.'); } else toast('🎱 Errou a tacada final. Fica para a próxima.'); }); }
 // entrar: lojas fechadas e casas sem o dono não abrem
 function enterCity(b) {
   const r = IROOM[b.id]; const kind = cityKind(b);
@@ -10724,6 +10724,10 @@ function enterRoom(id, silent) {
   if (silent) return go();
   fadeTo(1); setTimeout(go, 280);
 }
+const SAVE_KEEP = /^_(pai[A-Z]?[a-z]*|cobD|trD|ia|fug)$/;
+function inExitNow() { // sai do prédio na hora (para cenas do mundo)
+  if (!IN.on) return; const b = BLD.find(q => q.id === IN.id); IN.on = false; IN.seq = null; IN.lie = false; IN.seat = null; document.body.classList.remove('inside'); if (b) { P.x = b.dp[0] * TS; P.y = b.dp[1] * TS + 10; } P.dir = 0; P._vx = P._vy = 0; cam.snap = true;
+}
 function leaveRoom() {
   if (!IN.on) return; const b = BLD.find(q => q.id === IN.id); fadeTo(1); AU.creak && AU.creak();
   setTimeout(() => { IN.on = false; IN.seq = null; IN.lie = false; IN.seat = null; document.body.classList.remove('inside'); if (b) { P.x = b.dp[0] * TS; P.y = b.dp[1] * TS + 10; } P.dir = 0; P._vx = P._vy = 0; cam.snap = true; fadeTo(0); }, 280);
@@ -11830,7 +11834,7 @@ const SAVE = {
     S.gates = GATES.map(g => g.open ? 1 : 0); S.p = P; S.time = Date.now();
     S.npcPos = {}; npcs.forEach(e => S.npcPos[e.id] = [Math.round(e.x), Math.round(e.y), e.spot]);
     const tool = S.cf.ap.tool; delete S.cf.ap.tool;
-    const out = JSON.stringify(S, (k, v) => (k[0] === '_' ? undefined : v)); if (tool) S.cf.ap.tool = tool; return out;
+    const out = JSON.stringify(S, (k, v) => (k[0] === '_' && !SAVE_KEEP.test(k) ? undefined : v)); /* campos com _ são temporários, menos os do pai da cria e limites do dia */ if (tool) S.cf.ap.tool = tool; return out;
   },
   key(kind, slot) { return 's' + (slot || this.slot) + '_' + kind; },
   async save(kind, quiet) {
@@ -11867,6 +11871,7 @@ const SAVE = {
     v = o.v || v || 1; while (v < SAVE_V && MIGR[v]) v = MIGR[v](o); o.v = SAVE_V;
     const base = newState(); for (const k in base) if (o[k] === undefined) o[k] = base[k];
     for (const k in base.dep) if (o.dep[k] === undefined) o.dep[k] = 0;
+    if (IN.on) { IN.on = false; IN.seq = null; IN.lie = false; IN.seat = null; document.body.classList.remove('inside'); }
     S = o; P = S.p; initVeh(S); initAgro(S); initAguas(S); if (FS.on) stopFishing(); AVES.length = 0; FISHV.length = 0; if (P.boat && gt(Math.floor(P.x / TS), Math.floor(P.y / TS)) !== G.WATER) P.boat = false; if (!S.caoV) { S.animals.forEach(a => { if (a.sp !== 'cao') return; if (!a.dc) a.dc = { col: '#8a4a1e', colT: 'couro', bnd: '' }; if (!a.xp) a.xp = { h: 0, g: 0, t: 0, o: 0 }; if (a.en === undefined) a.en = 100; const cs = (RIG.BR[a.br] || {}).coats; if (cs && !cs.includes(a.coat)) a.coat = cs[0]; }); S.caoV = 1; } if (!S.gadoV) { S.animals.forEach(a => { if (a.own === 'player' && a.sp === 'boi' && a.sex === 'M' && a.age >= 24) a.cast = 1; }); S.gadoV = 2; } lasso.t = null; parts = []; rings = []; if (S.cf && S.cf.ap) delete S.cf.ap.tool; if (!S.chest) S.chest = {}; if (!S.esc) S.esc = []; S.esc = []; S.animals.forEach(a => { if (!a.hist) a.hist = []; if (a._st === 'route') a._st = null; });
     genMap(); agroMap(); genCityDeco(); initGrass(); if (S.grass) { const u = new Uint8Array(MW * MH); decodeU8(S.grass, u); for (let i = 0; i < u.length; i++) if (ground[i] === G.PAST) grass[i] = u[i]; }
     GATES.forEach((g, i) => { g.open = !!S.gates[i]; g.anim = g.open ? 1 : 0; });
@@ -12666,7 +12671,7 @@ function tick(dt) {
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);
     updGrill(dt); updInst(dt); if ((ctxT -= dt) < 0) { ctxT = 0.12; computeCtx(); }
-    if (S.pend.length && !M.open && !P._act) { const p = S.pend.shift(); if (p.k === 'obraFim') { if (S.lots[p.lot] && S.lots[p.lot].b === 'roca') { if (cenasOn()) csTrator(p.lot); else toast('🚜 Roça do Lote ' + p.lot + ' pronta: 3 talhões para plantar.'); } else csObraFim(p.lot); } else if (p.k === 'praga') csPraga(p.id); else if (p.k === 'truckIn') csTruckIn(p.ids); else if (p.k === 'theft') csTheft(p); else if (p.k === 'escape') csEscape(byId(p.id)); }
+    if (S.pend.length && !M.open && !P._act && !IN.on) { const p = S.pend.shift(); if (p.k === 'obraFim') { if (S.lots[p.lot] && S.lots[p.lot].b === 'roca') { if (cenasOn()) csTrator(p.lot); else toast('🚜 Roça do Lote ' + p.lot + ' pronta: 3 talhões para plantar.'); } else csObraFim(p.lot); } else if (p.k === 'praga') csPraga(p.id); else if (p.k === 'truckIn') csTruckIn(p.ids); else if (p.k === 'theft') csTheft(p); else if (p.k === 'escape') csEscape(byId(p.id)); }
     if (S.mach && !S.mach.told && machState() === 'done') { S.mach.told = 1; S.mach.busy = false; toast('⚙️ A forrageira terminou: ração pronta!'); AU.chime(); }
     if ((saveT += dt) > 60) { saveT = 0; SAVE.save('auto', true); }
   } else if (mode === 'cs') { updCS(dt); updGates(dt); buildGrid(); for (const a of S.animals) updAnimal(a, dt, 0, []); for (const e of npcs) if (e.et > 0) e.et -= dt; }
