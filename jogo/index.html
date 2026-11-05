@@ -8543,13 +8543,14 @@ function introTick(dt) {
   if (S.bau && !S.bau.done) bauTick(dt);
   if (S.story.ride) {
     const g = GATES.find(g => Math.abs(g.x - 58) < 3 && Math.abs(g.y - 44) < 3);
-    if (!INTRO.closed && g && g.open && P.x < 55 * TS && Math.abs(P.y - 44 * TS) < 6 * TS) { INTRO.closed = 1; if (toggleGate(g, true)) toast('A porteira fecha atrás de você. Bem-vindo à Boa Esperança!'); }
+    if (!INTRO.closed && g && g.open && P.x < 55 * TS && Math.abs(P.y - 44 * TS) < 6 * TS && toggleGate(g, true)) { INTRO.closed = 1; toast('A porteira fecha atrás de você. Bem-vindo à Boa Esperança!'); } // tenta de novo se tiver bicho no vão
     const going = P.mnt && input.gal && Math.abs(input.x) + Math.abs(input.y) > 0.3;
     if (going) {
       INTRO.galT += dt; cam.taz = lerp(cam.taz || 1, 0.78, Math.min(1, dt * 1.4)); if (Math.random() < dt * 9) dust(P.x + rnd(-4, 4), P.y + 3, 1, '#c8a878');
       if (INTRO.galT > 0.7 && !S.story.gal1) { S.story.gal1 = 1; toast('🐎 Primeiro galope! Sinta o vento do sertão.'); if (MUS.unlocked) MUS.play('baiao', 1.2); myAnimals('cao').forEach((d, i) => setTimeout(() => AU.bark(d.x, d.y), 300 + i * 400)); }
     } else { INTRO.galT = 0; cam.taz = lerp(cam.taz || 1, 1, Math.min(1, dt * 1.4)); }
-    const f = felE(); if (!f || hyp(P.x - f.x, P.y - f.y) < 3.2 * TS) { cam.taz = 1; csArrive(); }
+    const f = felE(); if (f && (!f.cs || hyp(f.x - (11.5 * TS + 38), f.y - (35.6 * TS + 3)) > 2 * TS)) { f.cs = true; f.hidden = false; f.path = []; f.x = 11.5 * TS + 38; f.y = 35.6 * TS + 3; f.dir = 2; f.pose = 'idle'; } // o Seu Felipe espera no rancho mesmo se o dia virar
+    if (!f || hyp(P.x - f.x, P.y - f.y) < 3.2 * TS) { cam.taz = 1; csArrive(); }
     return;
   }
   if (S.story.parto === 1) {
