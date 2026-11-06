@@ -381,7 +381,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '7.8.0', SAVE_V = 9;
+const GAME_V = '7.9.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -918,7 +918,7 @@ const IT = {
   queijo: { i: '🧀', n: 'Queijo Coalho', kg: 0.5, p: 9, d: '+5 energia, +25 fome.', c: 'comida', en: 5, fo: 25 },
   cafe: { i: '☕', n: 'Garrafa de café', kg: 1, p: 7, d: '+22 energia.', c: 'comida', en: 22, fo: 2 },
   farinha: { i: '🥣', n: 'Farinha de mandioca', kg: 1, p: 8, d: '+16 fome.', c: 'comida', en: 2, fo: 16 },
-  ovo: { i: '🥚', n: 'Ovo caipira', kg: 0.06, p: 1.2, d: 'Venda no Mercadinho ou coma (+6 fome).', c: 'prod', en: 1, fo: 6 },
+  ovo: { i: '🥚', n: 'Ovo caipira', kg: 0.06, p: 1.6, d: 'Venda no Mercadinho ou coma (+6 fome).', c: 'prod', en: 1, fo: 6 },
   leite: { i: '🥛', n: 'Leite (litro)', kg: 1, p: 2.8, d: 'Venda no Mercadinho ou beba (+10 fome).', c: 'prod', en: 3, fo: 10 },
   picanha: { i: '🥩', n: 'Picanha (kg)', kg: 1, p: 79, d: 'Corte nobre para o churrasco.', c: 'carne' },
   maminha: { i: '🥩', n: 'Maminha (kg)', kg: 1, p: 52, d: 'Macia e saborosa.', c: 'carne' },
@@ -933,7 +933,7 @@ Object.assign(IT, { // frutos e achados da mata (v7.2)
   caja: { i: '', n: 'Cajá', kg: 0.05, p: 1.5, en: 4, fo: 6, d: 'Fruta azedinha da cajazeira da Mata Grande. Coma ou venda no Mercadinho.', c: 'prod' },
   umbu: { i: '', n: 'Umbu', kg: 0.05, p: 1.2, en: 3, fo: 6, d: 'A fruta do umbuzeiro, a árvore sagrada do sertão. Coma ou venda no Mercadinho.', c: 'prod' },
   jatoba: { i: '', n: 'Jatobá (fava)', kg: 0.1, p: 2, en: 5, fo: 10, d: 'Fava dura com uma farinha doce por dentro. Sustenta na lida.', c: 'prod' },
-  mel: { i: '', n: 'Mel da mata (pote)', kg: 0.5, p: 28, en: 20, fo: 8, d: 'Mel silvestre das colmeias da Mata Grande. Vale bem no Mercadinho.', c: 'prod' },
+  mel: { i: '', n: 'Mel da mata (pote)', kg: 0.5, p: 42, en: 20, fo: 8, d: 'Mel silvestre das colmeias da Mata Grande. Vale bem no Mercadinho.', c: 'prod' },
   erva: { i: '', n: 'Ervas do mato (maço)', kg: 0.1, p: 6, d: 'Boldo, erva-cidreira e alecrim do campo. O povo compra para chá e remédio caseiro.', c: 'prod' }
 });
 Object.assign(IT, { // apicultura (v7.7)
@@ -5079,7 +5079,7 @@ function layEggs() {
   const fi = trIdx('galin', 'racao'); let n = 0;
   for (const h of hens) { const fed = S.tr[fi] > 0.2; if (fed) S.tr[fi] = Math.max(0, S.tr[fi] - 0.15); const pr = (fed ? 0.85 : 0.25) * ((CHICKENS[h.br] || {}).egg || 1) * (h.hap / 100 + 0.3) * (built('galinheiro') ? 1.3 : 1) * (h.skills.includes('Poedeira') ? 1.2 : 1); if (Math.random() < pr) n++; }
   S.eggs = Math.min(60, S.eggs + n);
-  if (built('ordenha')) { const cows = S.animals.filter(a => a.sp === 'boi' && a.lact > 0 && a.own === 'player' && a.milkD !== S.day && !a.sick); let L = 0; cows.forEach(c => L += (CATTLE[c.br].milk || 0.4) * 6 * (c.hap / 100 + 0.2)); S.milk = Math.round(Math.min(200, S.milk + L)); }
+  if (built('ordenha')) { const cows = S.animals.filter(a => a.sp === 'boi' && a.lact > 0 && a.own === 'player' && a.milkD !== S.day && !a.sick); let L = 0; cows.forEach(c => L += (CATTLE[c.br].milk || 0.4) * 15 * (c.hap / 100 + 0.2)); S.milk = Math.round(Math.min(200, S.milk + L)); }
 }
 function deliveries() {
   const now = S.delivery.filter(d => d.day <= S.day); S.delivery = S.delivery.filter(d => d.day > S.day);
@@ -7471,7 +7471,7 @@ A.mnj = k => {
     case 'parto': if (cenasOn()) return doAnimal(a, 'calve', 1.0, () => { if (!a.labor) return; P.en = Math.max(0, P.en - 8); closeSheet(); csParto(a); }); return doAnimal(a, 'calve', 2.6, () => { if (a.labor) finishLabor(a, true); P.en = Math.max(0, P.en - 8); });
     case 'mama': return doAnimal(a, 'bottle', 2.2, () => { if (!useInv('leite', 2)) return; a.mamD = S.day; a.hp = cl(a.hp + 15, 0, 100); a.wt = (a.wt || 30) + 1.5; bond(a, 8); heart(a.x, a.y - 16); done('🍼 ' + a.n + ' mamou na mamadeira.'); });
     case 'iodo': return doAnimal(a, 'iodo', 1.4, () => { if (!useInv('iodo')) return; a.umb = 0; hist(a, 'Umbigo curado com iodo'); done('Umbigo de ' + a.n + ' curado.', false); });
-    case 'ordenha': return doAnimal(a, 'milk', 3.0, () => { const B = CATTLE[a.br] || {}, h = hour(), L = Math.max(1, Math.round((B.milk || 0.4) * 6 * (a.hap / 100 + 0.2) * (h >= 4 && h <= 10 ? 1 : 0.6))); if (!addInv('leite', L)) return; a.milkD = S.day; P.en = Math.max(0, P.en - 3); if ((S.dirt[a.area] || 0) > 60 && Math.random() < 0.12) sicken(a, 'mastite'); hist(a, 'Ordenhada à mão: ' + L + ' L'); done('🥛 +' + L + ' L de leite de ' + a.n + '.'); });
+    case 'ordenha': return doAnimal(a, 'milk', 3.0, () => { const B = CATTLE[a.br] || {}, h = hour(), L = Math.max(1, Math.round((B.milk || 0.4) * 15 * (a.hap / 100 + 0.2) * (h >= 4 && h <= 10 ? 1 : 0.6))); if (!addInv('leite', L)) return; a.milkD = S.day; P.en = Math.max(0, P.en - 3); if ((S.dirt[a.area] || 0) > 60 && Math.random() < 0.12) sicken(a, 'mastite'); hist(a, 'Ordenhada à mão: ' + L + ' L'); done('🥛 +' + L + ' L de leite de ' + a.n + '.'); });
     case 'ia': SH.sub = 'ia'; return renderSheet();
     case 'pouron': return doAnimal(a, 'pouron', 1.8, () => { if (!useInv('pouron')) return; a.carr = 0; a.mosca = 0; a.carrP = S.day + 10; hist(a, 'Pour-on carrapaticida'); done('Pour-on em ' + a.n + ': sem carrapato por 10 dias.', false); });
     case 'verm': return doAnimal(a, 'inject', 1.2, () => { if (!useInv('vermifugo')) return; a.verme = 0; a.vermP = S.day + 28; if (a.dz === 'verminose') cureDz(a); hist(a, 'Vermifugado'); done(a.n + ' vermifugado(a).'); }, { it: 'vermifugo' });
@@ -9284,12 +9284,12 @@ function varalSpot() { for (const [x, y] of [[19.4, 35.2], [12.4, 38.6], [10.6, 
 const freshCuts = () => ['picanha', 'maminha', 'fraldinha', 'costela', 'cupim'].filter(k => (S.inv[k] || 0) > 0);
 function openVaral() { showModal('🥩 Varal de carne de sol', null, null, () => {
   S.varal = S.varal || []; const ready = S.varal.filter(v => S.day - v.d >= 2).length;
-  let h = `<p class="mut">Pendure a carne fresca no sol e no vento do sertão: em 2 dias vira <b>carne de sol</b>, que vale mais e não estraga. Cabem ${VARAL_MAX} peças.</p><p>No varal: <b>${S.varal.length}/${VARAL_MAX}</b> peça(s) · prontas: <b>${ready}</b></p>`;
+  let h = `<p class="mut">Pendure a carne fresca no sol e no vento do sertão: em 2 dias vira <b>carne de sol</b>, que não estraga. A carne perde 30% do peso no sol: compensa com os cortes mais baratos (costela, fraldinha), não com picanha. Cabem ${VARAL_MAX} peças.</p><p>No varal: <b>${S.varal.length}/${VARAL_MAX}</b> peça(s) · prontas: <b>${ready}</b></p>`;
   h += S.varal.map(v => `<div class="mut">• ${IT[v.k].n.split(' (')[0]} — ${S.day - v.d >= 2 ? '✅ pronta' : 'falta ' + (2 - (S.day - v.d)) + ' dia(s)'}</div>`).join('');
   const fc = freshCuts(); h += `<div class="row" style="margin-top:6px">${fc.map(k => btn('Pendurar ' + IT[k].n.split(' (')[0].toLowerCase() + ' (' + S.inv[k] + ')', 'varPut', k, S.varal.length >= VARAL_MAX)).join('') || '<span class="mut">Compre carne no Açougue do Seu Tonho para pendurar.</span>'}</div>`;
   h += `<div class="row">${btn('Recolher carne de sol (' + ready + ')', 'varGet', '', !ready)}</div>`; return h; }, 'farm'); }
 A.varPut = k => { S.varal = S.varal || []; if (S.varal.length >= VARAL_MAX || !useInv(k)) return; S.varal.push({ k, d: S.day }); toast('🥩 Carne no varal. Em 2 dias vira carne de sol.'); renderModal(); };
-A.varGet = () => { const R0 = (S.varal || []).filter(v => S.day - v.d >= 2); if (!R0.length) return; if (!addInv('carnesol', R0.length)) return; S.varal = S.varal.filter(v => S.day - v.d < 2); toast('🥩 ' + R0.length + ' kg de carne de sol!'); renderModal(); };
+A.varGet = () => { const R0 = (S.varal || []).filter(v => S.day - v.d >= 2); if (!R0.length) return; const tot = R0.length * 0.7 + (S.varalF || 0), n = Math.floor(tot + 1e-6); if (n && !addInv('carnesol', n)) return; S.varalF = +(tot - n).toFixed(2); S.varal = S.varal.filter(v => S.day - v.d < 2); toast('🥩 ' + R0.length + ' kg de carne fresca viraram ' + n + ' kg de carne de sol (a carne perde água no sol).'); renderModal(); };
 // ---- cata-vento: pás girando (desenhadas a cada quadro por cima do sprite da obra)
 function drawCataBlades(cx, cy) { const a = drawT * (isRain() ? 3.5 : 2.2); X.save(); X.translate(cx, cy); X.fillStyle = '#c03a2a'; X.fillRect(2, -2, 12, 4); X.rotate(a); for (let k = 0; k < 8; k++) { X.rotate(Math.PI / 4); X.fillStyle = k % 2 ? '#c8ccd0' : '#eef2f6'; X.fillRect(2, -1, 12, 3); X.fillStyle = '#7a7e84'; X.fillRect(13, -1, 1, 3); } X.restore(); X.fillStyle = '#4a4e52'; X.fillRect(Math.round(cx - 2), Math.round(cy - 2), 4, 4); }
 // ---- borboletas de dia e vaga-lumes à noite, sempre perto de onde a câmera está
@@ -9338,6 +9338,8 @@ function iniHTML() {
   const card = (icn, big, small, tab) => `<div class="icard"${tab ? ` data-a="tab" data-v="${tab}"` : ''}>${ic(icn, 28)}<b>${big}</b><small>${small}</small></div>`;
   let h = `<div class="dlg" style="align-items:center"><div class="bust">${bustImg(S.cf.ap, S.cf.ap.mood || '', 3)}</div><div style="flex:1"><b style="font-size:calc(17px*var(--fs))">${esc(S.cf.name)}</b><br><span class="mut">${dateStr(S.day, true)} · ${clock()}${typeof lendaTitle === 'function' && lendaTitle() ? ' · ' + lendaTitle() : ''}</span></div></div>`;
   h += `<div class="igrid">${card('coin', fmt(S.cash), 'no bolso', 'ban')}${card('bank', fmt(S.acct), 'no banco', 'ban')}${card('cow', bois, bois === 1 ? 'cabeça de gado' : 'cabeças de gado', 'gad')}${card('horse', eq, 'montarias', 'ani')}${card('worker', (S.workers || []).length, 'peões', 'peo')}${card('chest', Math.round(depKg()) + ' kg', 'no depósito', 'faz')}</div>`;
+  if (S.fam && S.fam.nomear) h += `<div class="card ialert" data-a="famNomearA">${ic('heart', 22)}<div><b>Um bebê nasceu e ainda não tem nome!</b><br><span class="mut">Toque aqui para dar o nome.</span></div></div>`;
+  if (S.amor && S.amor.st === 3) h += famCard(); else if (S.fam && S.fam.kids && S.fam.kids.length) h += '<div class="card"><b>Filhos</b>' + S.fam.kids.map((k, i) => '<div class="row" style="align-items:center">' + bustImg(kidAp(k), '', 2) + ' <b>' + esc(k.n) + '</b> <span class="mut">' + kidAge(k) + ' ano(s)</span> ' + btn('Ver', 'famVer', i) + '</div>').join('') + '</div>';
   const al = iniAlerts();
   h += `<h3>Precisa de atenção</h3>` + (al.length ? al.map(([icn, t, d, tab]) => `<div class="card ialert"${tab ? ` data-a="tab" data-v="${tab}"` : ''}>${ic(icn, 22)}<div><b>${t}</b><br><span class="mut">${d}</span></div></div>`).join('') : '<div class="card"><b style="color:#2a7a2a">✓</b> Tudo em ordem na fazenda.</div>');
   if (nx) h += `<h3>Próximo passo</h3><div class="card ialert" data-a="tab" data-v="jor">${ic('scroll', 22)}<div><b>${nx[1]}</b><br><span class="mut">${nx[3] || C.n}</span></div></div>`;
@@ -9415,7 +9417,7 @@ const desProg = (D, k) => { const d = DESAFIOS.find(x => x[0] === k); return Mat
 function desTick() {
   if (!S || !S.stats) return; const D = desState();
   for (const k of D.list) { if (D.done[k]) continue; const d = DESAFIOS.find(x => x[0] === k); if (desProg(D, k) < d[3]) continue;
-    D.done[k] = S.day; S.prest = (S.prest || 0) + 1; const pr = 1500 + 500 * Math.min(6, D.y);
+    D.done[k] = S.day; S.prest = (S.prest || 0) + 1; const pr = Math.round((2500 + 1500 * Math.min(6, D.y) + Math.min(15000, myAnimals('boi').length * 250)) / 100) * 100;
     receive(pr, 'Desafio do ano: ' + d[1]); toast('🏆 Desafio do ano cumprido: ' + d[1] + '! +' + fmt(pr) + ' e +1 de fama.'); if (typeof SFX !== 'undefined' && SFX.fanfare) SFX.fanfare(true);
     if (D.list.every(q => D.done[q])) setTimeout(() => toast('⭐ Todos os desafios do ano ' + D.y + ' cumpridos! O povo de Itarantim só fala de você.'), 1500); }
   rankCheck();
@@ -9443,7 +9445,160 @@ function rankHTML() {
   const L = rankList(); return `<div class="card"><b>📊 Ranking dos criadores da região</b><p class="mut">Patrimônio de cada fazenda: terra, rebanho e dinheiro. Chegar ao 1º lugar dá +2 de fama.</p><table class="t"><tr><th>#</th><th>Fazenda</th><th>Patrimônio</th></tr>${L.map((x, i) => `<tr${x.k === 'me' ? ' style="background:#f0c04a55;font-weight:700"' : ''}><td>${i + 1}º</td><td>${esc(x.n)}<br><span class="mut">${esc(x.who)}</span></td><td>${fmt(x.v)}</td></tr>`).join('')}</table></div>`;
 }
 let desAcc = 0;
-function v78Tick(dt) { tipTick(dt); if ((desAcc += dt) >= 2) { desAcc = 0; try { desTick(); } catch (e) { } } }
+function v78Tick(dt) { tipTick(dt); try { famTick(dt); } catch (e) { } if ((desAcc += dt) >= 2) { desAcc = 0; try { desTick(); } catch (e) { } } }
+
+/* ============ v7.9: FILHOS E HERANÇA ============
+   Casados podem ter filhos. A criança nasce, ganha nome, cresce na fazenda (bebê, criança, jovem, adulto),
+   aprende a lida com você e ajuda nas tarefas. Adulto e com laço forte, pode herdar a Boa Esperança:
+   a história que começou com Tiãozinho passa para a próxima geração. */
+const FAM_ANO = 10, FAM_GEST = 9, FAM_MAX = 3; // dias de jogo por ano de idade; dias de gestação; filhos no máximo
+const ENSINA = { mon: ['Montar a cavalo', 'mon'], lac: ['Laçar', 'lac'], lid: ['Aboio e lida com o gado', 'lid'], pec: ['Cuidar dos animais', 'pec'], hor: ['Mexer na horta', null] };
+const TALENTO = { mon: 'Vaqueir@ de pista', lac: 'Laçador@', lid: 'Aboiador@', pec: 'Criador@ de gado', hor: 'Agricultor@' };
+const FTAREFA = { nada: ['Só brincar e estudar', 0], ovos: ['Recolher os ovos do galinheiro', 3], leite: ['Recolher o leite do tanque', 10], horta: ['Regar a horta', 6], cocho: ['Encher o cocho d’água do Piquete 1', 10], ronda: ['Fazer a ronda da noite', 16] };
+const fam = () => (S.fam = S.fam || { kids: [] });
+const kidAge = k => Math.floor((S.day - k.born) / FAM_ANO);
+const kidStage = k => { const a = kidAge(k); return a < 3 ? 'bebe' : a < 10 ? 'crianca' : a < 16 ? 'jovem' : 'adulto'; };
+const STAGE_N = { bebe: 'Bebê', crianca: 'Criança', jovem: 'Jovem', adulto: 'Adulto' };
+const genero = (k, t) => t.replace('@', k.sex === 'F' ? 'a' : '');
+function kidAp(k) { // roupa conforme a idade: criança sem chapéu de couro, jovem e adulto com a roupa da lida
+  const st = kidStage(k), a = Object.assign({}, k.ap), none = HATS.findIndex(h => h.id === 'none');
+  if (st === 'bebe' || st === 'crianca') { a.hat = k.ap.hat === none ? none : HATS.findIndex(h => h.id === 'palha'); a.beard = 0; a.acc = 0; a.tool = ''; a.gear = 0; }
+  if (st !== 'adulto') a.beard = 0; a.mood = k._mood || ''; return a;
+}
+function kidMakeAp(sex) {
+  const pa = S.cf.ap, ma = S.amor && NPCDEF[S.amor.id] ? NPCDEF[S.amor.id].ap : pa, r = () => Math.random() < 0.5;
+  return { sex, skin: (r() ? pa : ma).skin, hair: sex === 'F' ? pick([2, 4, 5, 6, 7]) : pick([0, 1, 2, 3]), hairC: (r() ? pa : ma).hairC, eyeC: (r() ? pa : ma).eyeC || 0, eyeS: 0, brow: 0, mark: Math.random() < 0.3 ? 1 : 0, beard: 0,
+    hat: pa.hat, shirt: pick([0, 1, 3]), shirtC: rint(0, SHIRTC.length - 1), pants: sex === 'F' && r() ? 4 : pick([0, 1]), pantsC: rint(0, PANTSC.length - 1), boots: pa.boots, acc: 0, scarfC: pa.scarfC, orn: pa.orn };
+}
+// ---------- gravidez e nascimento ----------
+function famCard() {
+  const A0 = S.amor; if (!A0 || A0.st !== 3) return ''; const F = fam(), d = NPCDEF[A0.id];
+  let h = `<div class="card"><b>👨‍👩‍👧 Família</b>`;
+  if (F.grav) h += `<br>🤰 ${d.n} está esperando um bebê! Nasce em <b>${Math.max(1, F.grav + FAM_GEST - S.day)} dia(s)</b>.`;
+  else if (F.kids.length >= FAM_MAX) h += '<br><span class="mut">A casa já está cheia de menino correndo!</span>';
+  else { const ok = S.day - A0.cd >= 3; h += `<br><span class="mut">${F.kids.length ? 'Que tal mais um filho?' : 'Vocês podem formar uma família na Boa Esperança.'}</span><div class="row">${btn('Conversar sobre ter um filho', 'famQuer', '', !ok)}</div>${ok ? '' : '<span class="mut">Espere uns dias depois do casamento.</span>'}`; }
+  if (F.kids.length) h += '<div style="margin-top:6px">' + F.kids.map((k, i) => `<div class="row" style="align-items:center">${bustImg(kidAp(k), '', 2)} <b>${esc(k.n)}</b> <span class="mut">${kidAge(k)} ano(s) · ${STAGE_N[kidStage(k)]}</span> ${btn('Ver', 'famVer', i)}</div>`).join('') + '</div>';
+  return h + '</div>';
+}
+A.famQuer = () => { const F = fam(), d = NPCDEF[S.amor.id]; if (F.grav || F.kids.length >= FAM_MAX) return; F.grav = S.day; M.txt = pick(['Eu também quero! Um bebê aqui na Boa Esperança… seu avô ia ficar tão feliz.', 'Oxente, eu já estava pensando nisso! Vamos encher essa casa de alegria.', 'Uma criança correndo atrás das galinhas na varanda… sim, eu quero.']); addFr(S.amor.id, 20); SFX.fanfare(true); toast('🤰 ' + d.n + ' está grávida! O bebê nasce em ' + FAM_GEST + ' dias.'); renderModal(); };
+function famDay() {
+  if (!S || !S.fam) return; const F = S.fam;
+  if (F.grav && S.day >= F.grav + FAM_GEST) { F.grav = 0; const sex = Math.random() < 0.5 ? 'F' : 'M', k = { id: (F.nid = (F.nid || 0) + 1), n: sex === 'F' ? 'Bebê' : 'Bebê', sex, born: S.day, ap: kidMakeAp(sex), laco: 20, ens: {}, task: 'nada', tD: 0 };
+    F.kids.push(k); F.nomear = k.id; toast('👶 Nasceu! ' + (sex === 'F' ? 'Uma menina' : 'Um menino') + ' na Boa Esperança. Dê um nome.'); setTimeout(() => { if (mode === 'play' && !M.open) famNomear(); }, 1200); S.stats.filhos = (S.stats.filhos || 0) + 1; }
+  for (const k of F.kids) { // tarefas do dia e saudade de quem não brinca
+    const st = kidStage(k); k.tD = 0; if (k.dB !== S.day - 1 && k.laco > 15) k.laco = Math.max(15, k.laco - 1);
+    const age = kidAge(k), T = FTAREFA[k.task]; if (!T || k.task === 'nada' || age < T[1]) continue; let feito = '';
+    if (k.task === 'ovos' && S.eggs > 0) { const n = S.eggs; if (addInv('ovo', n, true)) { S.eggs = 0; S.stats.eggs += n; feito = 'recolheu ' + n + ' ovo(s)'; } }
+    if (k.task === 'leite' && S.milk > 0) { const n = Math.min(S.milk, 40); if (addInv('leite', n, true)) { S.milk -= n; feito = 'recolheu ' + n + ' L de leite'; } }
+    if (k.task === 'horta' && S.agro && S.agro.plots) { let n = 0; for (const id in S.agro.plots) { const p = S.agro.plots[id]; if (id[0] === 'h' && (p.st === 'plant' || p.st === 'pronto') && p.w !== S.day) { p.w = S.day; n++; } } if (n) feito = 'regou ' + n + ' canteiro(s)'; }
+    if (k.task === 'cocho') { let n = 0; TROUGHS.forEach((t, i) => { if (t.a === 'p1' && t.k === 'agua' && S.res > 3) { const add = Math.min(trCap(i) - S.tr[i], 300); if (add > 0) { S.tr[i] += add; S.res = Math.max(0, S.res - add / 60); n++; } } }); if (n) feito = 'encheu o cocho d’água do Piquete 1'; }
+    if (k.task === 'ronda') { S.ronda = S.day; feito = 'fez a ronda da noite'; }
+    if (feito) { k.tD = 1; F.log = (F.log || []).slice(-5).concat([k.n + ' ' + feito]); }
+  }
+  if (F.log && F.log.length) { toast('🧒 Ajuda dos filhos: ' + F.log.join(' · ')); F.log = []; }
+}
+function famNomear() {
+  const F = fam(), k = F.kids.find(q => q.id === F.nomear); if (!k) return;
+  const sug = k.sex === 'F' ? ['Tiana', 'Maria Flor', 'Luzia', 'Esperança', 'Jandira', 'Rosinha'] : ['Tiãozinho Neto', 'Joãozinho', 'Severino', 'Antônio', 'Chiquinho', 'Benedito'];
+  showModal('👶 Nome do bebê', null, null, () => `<div class="dlg">${bustImg(kidAp(k), '', 5)}<div><p>${k.sex === 'F' ? 'É uma menina!' : 'É um menino!'} Que nome vai ter?</p><input id="famNm" maxlength="20" value="${esc(k.n === 'Bebê' ? sug[0] : k.n)}" style="width:100%;font-size:16px;padding:6px"><div class="row" style="margin-top:6px">${sug.map(s => btn(s, 'famSug', s)).join('')}</div><div class="row">${btn('Dar o nome', 'famNmOk', '')}</div></div></div>`);
+}
+A.famNomearA = () => famNomear();
+A.famSug = v => { const i = $('famNm'); if (i) i.value = v; };
+A.famNmOk = () => { const F = fam(), k = F.kids.find(q => q.id === F.nomear), i = $('famNm'); if (!k) return closeModal(); const n = (i && i.value || '').replace(/[<>]/g, '').trim().slice(0, 20); k.n = n || (k.sex === 'F' ? 'Tiana' : 'Tiãozinho Neto'); F.nomear = 0; closeModal(); toast('👶 ' + k.n + ' chegou para alegrar a Boa Esperança!'); if (S.amor) addFr(S.amor.id, 30); };
+// ---------- convivência: conversar, brincar, ensinar, dar tarefa ----------
+function openFilho(i) {
+  const F = fam(), k = F.kids[i]; if (!k) return; M.kid = i;
+  showModal('', null, null, () => {
+    const st = kidStage(k), age = kidAge(k), tal = kidTal(k); const nx = st === 'bebe' ? 3 : st === 'crianca' ? 10 : st === 'jovem' ? 16 : 0;
+    let h = `<div class="dlg"><div class="bust">${bustImg(kidAp(k), k.laco >= 60 ? 'feliz' : k.laco < 30 ? 'triste' : '', 4)}</div><div style="flex:1"><b style="font-size:calc(17px*var(--fs))">${esc(k.n)}</b><br><span class="mut">${k.sex === 'F' ? 'Filha' : 'Filho'} · ${age} ano(s) · ${STAGE_N[st]}${nx ? ' (cresce para ' + STAGE_N[st === 'bebe' ? 'crianca' : st === 'crianca' ? 'jovem' : 'adulto'].toLowerCase() + ' com ' + nx + ' anos)' : ''}</span><br>Laço com você: ${bar(k.laco)} ${Math.round(k.laco)}${tal ? '<br>Jeito para: <b>' + genero(k, TALENTO[tal]) + '</b>' : ''}<div class="txt" style="margin-top:6px">${esc(kidFala(k))}</div></div></div>`;
+    h += `<div class="row">${btn(st === 'bebe' ? '🍼 Pegar no colo' : st === 'crianca' ? '⚽ Brincar' : '💬 Prosear', 'famBrinca', i, k.dB === S.day)}${btn('🎁 Dar um agrado (rapadura)', 'famAgrado', i, !has('rapadura') || k.dA === S.day)}</div>`;
+    if (st !== 'bebe') { h += `<h3>Ensinar a lida</h3><p class="mut">Uma lição por dia. O que mais aprender vira o talento de ${esc(k.n)}.</p><div class="row">` + Object.entries(ENSINA).map(([key, [n]]) => btn(n + ' (' + (k.ens[key] || 0) + '/5)', 'famEnsina', i + '|' + key, k.dE === S.day || (k.ens[key] || 0) >= 5)).join('') + '</div>'; }
+    if (age >= 3) { h += `<h3>Ajuda na fazenda</h3><p class="mut">Toda manhã ${esc(k.n)} faz a tarefa escolhida.</p><div class="row">` + Object.entries(FTAREFA).map(([key, [n, min]]) => btn((k.task === key ? '✓ ' : '') + n + (age < min ? ' (com ' + min + ' anos)' : ''), 'famTarefa', i + '|' + key, age < min)).join('') + '</div>'; }
+    h += herancaCard(i);
+    return h; });
+}
+A.famVer = v => openFilho(+v);
+function kidTal(k) { let b = null, n = 0; for (const key in k.ens) if (k.ens[key] > n) { n = k.ens[key]; b = key; } return n >= 2 ? b : null; }
+function kidFala(k) {
+  const st = kidStage(k), avo = 'Tiãozinho';
+  if (st === 'bebe') return pick(['(o bebê ri e segura o seu dedo)', '(dorme tranquilo no balanço da rede)', '(olha o cachorro e dá um gritinho)']);
+  if (st === 'crianca') return pick(['Quando eu crescer vou ter um cavalo igual ao seu!', 'Eu dei nome pra uma galinha. Ela se chama Pipoca.', 'Me conta da época do bisavô ' + avo + '?', 'Posso ir com você ver o gado?']);
+  if (st === 'jovem') return pick(['Hoje eu aboiei e os bois vieram! Quer dizer… quase todos.', 'Na escola perguntaram o que eu quero ser. Eu disse: vaqueiro' + (k.sex === 'F' ? 'a' : '') + ', igual a você.', 'Tô juntando dinheiro pra comprar uma sela.']);
+  return pick(['A Boa Esperança tá bonita. O bisavô ' + avo + ' ia gostar de ver.', 'Se um dia você quiser descansar, eu cuido de tudo aqui.', 'Aprendi com você a respeitar o gado e a terra.']);
+}
+A.famBrinca = v => { const k = fam().kids[+v]; if (!k || k.dB === S.day) return; k.dB = S.day; k.laco = cl(k.laco + 6, 0, 100); P.en = cl(P.en + 6, 0, 100); k._mood = 'feliz'; toast('😊 ' + k.n + ' adorou o tempo com você.'); renderModal(); };
+A.famAgrado = v => { const k = fam().kids[+v]; if (!k || k.dA === S.day || !useInv('rapadura')) return; k.dA = S.day; k.laco = cl(k.laco + 4, 0, 100); toast('🍬 ' + k.n + ' ganhou rapadura e ficou todo sorridente.'); renderModal(); };
+A.famEnsina = v => { const [i, key] = v.split('|'), k = fam().kids[+i]; if (!k || k.dE === S.day) return; k.dE = S.day; k.ens[key] = Math.min(5, (k.ens[key] || 0) + 1); k.laco = cl(k.laco + 3, 0, 100); P.en = Math.max(0, P.en - 5);
+  toast('📚 ' + k.n + ' aprendeu um pouco de: ' + ENSINA[key][0].toLowerCase() + ' (' + k.ens[key] + '/5).'); renderModal(); };
+A.famTarefa = v => { const [i, key] = v.split('|'), k = fam().kids[+i]; if (!k) return; k.task = key; toast('🧒 ' + k.n + ': ' + FTAREFA[key][0].toLowerCase() + '.'); renderModal(); };
+// ---------- herança: a próxima geração ----------
+function herancaOk(k) { return kidStage(k) === 'adulto' && k.laco >= 70 && Object.values(k.ens).reduce((s, n) => s + n, 0) >= 8; }
+function herancaCard(i) {
+  const k = fam().kids[i]; if (kidStage(k) !== 'adulto') return ''; const ens = Object.values(k.ens).reduce((s, n) => s + n, 0), ok = herancaOk(k);
+  return `<div class="card"><b>🏡 Passar a fazenda</b><p class="mut">Quando ${esc(k.n)} estiver pront${k.sex === 'F' ? 'a' : 'o'}, você pode passar a Boa Esperança e o chapéu da família. Você continua jogando como ${esc(k.n)}, com a fazenda, o gado e o dinheiro; você e ${S.amor && NPCDEF[S.amor.id] ? NPCDEF[S.amor.id].n : 'seu amor'} ficam na varanda dando conselho.</p>
+    <div><span class="jk ${k.laco >= 70 ? 'ok' : 'no'}"></span>Laço com você de 70 ou mais (${Math.round(k.laco)})</div><div><span class="jk ${ens >= 8 ? 'ok' : 'no'}"></span>8 lições da lida (${ens})</div>${S.flags.modelo ? '<div><span class="jk ok"></span>Fazenda Modelo do Sertão: a herança vem com bênção da Associação (+R$ 20.000)</div>' : ''}
+    <div class="row">${btn('Passar a fazenda para ' + esc(k.n), 'herancaPede', i, !ok)}</div></div>`;
+}
+A.herancaPede = v => { const k = fam().kids[+v]; if (!k || !herancaOk(k)) return; showModal('🏡 Passar a fazenda?', null, null, () => `<p>A Boa Esperança passa para <b>${esc(k.n)}</b>. Você passa a jogar como ${esc(k.n)}. Não dá para voltar atrás.</p><div class="row">${btn('Sim, é a hora', 'herancaSim', v)}${btn('Ainda não', 'famVer', v)}</div>`); };
+A.herancaSim = v => { const k = fam().kids[+v]; if (!k) return; closeModal(); herancaCena(k); };
+function herancaCena(k) {
+  const old = { n: S.cf.name, ap: Object.assign({}, S.cf.ap, { mood: '' }), sex: S.cf.ap.sex }, avoHat = HATS.findIndex(h => h.id === 'avo');
+  const fim = () => {
+    const F = fam(); F.velho = { n: old.n, ap: Object.assign({}, old.ap, { hairC: 5, mark: 3 }) }; F.conj = S.amor ? S.amor.id : F.conj; S.amor = null;
+    F.kids = F.kids.filter(q => q !== k); F.ger = (F.ger || 1) + 1;
+    const ap = Object.assign({}, k.ap); if (avoHat >= 0 && S.bau && S.bau.done) ap.hat = avoHat; else ap.hat = old.ap.hat; ap.shirt = old.ap.shirt; ap.gear = old.ap.gear || 0; ap.mood = '';
+    S.cf.name = k.n; S.cf.ap = ap; const tal = kidTal(k), sk = tal && ENSINA[tal][1]; if (sk) S.cf.sk[sk] = (S.cf.sk[sk] || 0) + 1;
+    S.prest = (S.prest || 0) + 3; if (S.flags.modelo) receive(20000, 'Bênção da Associação dos Criadores à nova geração');
+    toast('🏡 ' + k.n + ' agora comanda a Boa Esperança! ' + F.ger + 'ª geração da família no sertão.' + (sk ? ' Talento de ' + genero(k, TALENTO[tal]).toLowerCase() + ': +1 de habilidade.' : '')); SFX.fanfare(true);
+  };
+  if (!cenasOn()) { say('O chapéu da família passa de mão: ' + k.n + ' agora comanda a Boa Esperança.', 6000); return fim(); }
+  let a1, a2;
+  cutscene([
+    { fade: 0, mus: 'cena', cam: [11.5, 31.6], snap: 1, z: 2.1, grade: 'aurora', txt: 'Fim de tarde na varanda da Boa Esperança. O sol se põe atrás do curral que Tiãozinho levantou.', d: 4.4, fn: () => { CINE.actors.length = 0; a1 = cineActor({ ap: old.ap, x: 11 * TS, y: 31.4 * TS, dir: 3 }); a2 = cineActor({ ap: kidAp(k), x: 12.4 * TS, y: 31.4 * TS, dir: 2 }); } },
+    { cam: [11.7, 31.2], z: 2.6, spd: 1, txt: old.n + ': “Esse chapéu era do seu bisavô. Agora é seu. A terra, o gado e o povo de Itarantim contam com você.”', d: 5, fn: () => { a1.pose = 'wave'; } },
+    { cam: [11.7, 31.2], z: 2.6, spd: 1, txt: k.n + ': “Vou cuidar de tudo do jeito que você me ensinou.”', d: 4, fn: () => { a1.pose = 'idle'; a2.pose = 'wave'; } },
+    { cam: [11.5, 33], z: 1.6, spd: 1, txt: '🏡 A Boa Esperança chega à ' + ((fam().ger || 1) + 1) + 'ª geração.', d: 3.6 },
+    { clr: 1, d: 0.1 }
+  ], () => { csClear(); fim(); });
+}
+// ---------- na fazenda: crianças brincando no terreiro, os velhos na varanda ----------
+function famSpots(k, i) {
+  const st = kidStage(k), h = hour(); if (h < 6.5 || h >= 19.5) return null;
+  if (st === 'bebe') return { x: (12.6 + i * 0.5) * TS, y: 30.9 * TS, still: 1 };
+  if (k.tD && h < 10 && k.task === 'ovos') return { x: 8.5 * TS, y: 35 * TS };
+  return { x: (9 + (i * 3.1) % 9) * TS, y: (33 + (i * 1.7) % 4) * TS, wander: st === 'crianca' ? 90 : 60 };
+}
+function famTick(dt) {
+  if (!S || !S.fam || !S.fam.kids.length) return;
+  S.fam.kids.forEach((k, i) => { const sp = famSpots(k, i); if (!sp) { k._x = null; return; }
+    if (k._x == null) { k._x = sp.x; k._y = sp.y; k._tx = sp.x; k._ty = sp.y; }
+    if (sp.still) { k._x = sp.x; k._y = sp.y; return; }
+    if (!k._t || (k._t -= dt) <= 0) { k._t = 2 + Math.random() * 4; k._tx = sp.x + rnd(-sp.wander, sp.wander); k._ty = sp.y + rnd(-sp.wander * 0.4, sp.wander * 0.4); const tx = Math.floor(k._tx / TS), ty = Math.floor(k._ty / TS); if (obj[gi(tx, ty)]) { k._tx = k._x; k._ty = k._y; } }
+    const dx = k._tx - k._x, dy = k._ty - k._y, d = hyp(dx, dy), sp0 = kidStage(k) === 'crianca' ? 34 : 26;
+    if (d > 2) { const m = Math.min(d, sp0 * dt); k._x += dx / d * m; k._y += dy / d * m; k._dir = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 2 : 3) : (dy < 0 ? 1 : 0); k._dist = (k._dist || 0) + m; k._mv = 1; } else k._mv = 0; });
+}
+function famCollect(add, inV) {
+  if (!S || !S.fam || IN.on) return; const F = S.fam, h = hour();
+  F.kids.forEach((k, i) => { if (k._x == null || !inV(k._x, k._y, 40)) return; const st = kidStage(k), sc = st === 'crianca' ? 0.62 : st === 'jovem' ? 0.84 : 1;
+    add(k._y, () => { if (st === 'bebe') { drawRede(k._x, k._y); return; } const fr = k._mv ? Math.floor((k._dist || 0) / 14 * 8) % 8 : 0, d = k._dir || 0; shadowE(k._x, k._y, 6 * sc); drawSpr(charSpr(kidAp(k), d, fr, k._mv ? 'walk' : 'idle'), k._x - 12 * sc, k._y - 30 * sc, d === 2, sc); }, k._x, { w: 40, h: 44 }); });
+  if (F.velho && h >= 7 && h < 19 && inV(10.4 * TS, 30.9 * TS, 40)) add(30.9 * TS, () => drawPerson(F.velho.ap, 10.4 * TS, 30.9 * TS, 0, 0, 'sit'), 10.4 * TS, { w: 30, h: 40 });
+}
+function drawRede(x, y) { // rede de dormir na varanda com o bebê
+  X.fillStyle = '#5a3a1e'; X.fillRect(Math.round(x - 11), Math.round(y - 14), 2, 14); X.fillRect(Math.round(x + 9), Math.round(y - 14), 2, 14);
+  const sw = Math.sin(drawT * 1.6) * 1.5; X.fillStyle = '#c0392b'; X.beginPath(); X.moveTo(x - 9, y - 12); X.quadraticCurveTo(x + sw, y - 2, x + 9, y - 12); X.lineTo(x + 9, y - 10); X.quadraticCurveTo(x + sw, y, x - 9, y - 10); X.fill();
+  X.fillStyle = '#f0d040'; X.fillRect(Math.round(x - 6 + sw), Math.round(y - 8), 3, 1); X.fillRect(Math.round(x + 2 + sw), Math.round(y - 8), 3, 1);
+  X.fillStyle = '#e8c8a0'; X.fillRect(Math.round(x - 2 + sw), Math.round(y - 10), 4, 3);
+}
+function famInteractables(add) {
+  if (!S || !S.fam) return; const F = S.fam;
+  F.kids.forEach((k, i) => { if (k._x == null || Math.abs(k._x - P.x) > 40 || Math.abs(k._y - P.y) > 40) return; add({ k: 'kid', label: (kidStage(k) === 'bebe' ? '👶 ' : '🧒 ') + k.n, x: k._x, y: k._y - 8, r: 22, prio: 1, hit: [k._x - 9, k._y - 24, k._x + 9, k._y + 2], fn: () => openFilho(i) }); });
+  if (F.velho && hour() >= 7 && hour() < 19 && Math.abs(10.4 * TS - P.x) < 40 && Math.abs(30.9 * TS - P.y) < 40) add({ k: 'velho', label: '👴 ' + F.velho.n, x: 10.4 * TS, y: 30.5 * TS, r: 22, prio: 1, hit: [10.4 * TS - 9, 30.9 * TS - 26, 10.4 * TS + 9, 30.9 * TS + 2], fn: conselhoVelho });
+}
+function conselhoVelho() {
+  const F = fam(), v = F.velho, dica = pick(['Na seca, guarde comida antes de faltar. Quem planta palma no inverno não chora no verão.', 'Gado bom se faz com paciência: vacina em dia e água limpa valem mais que ração cara.', 'Respeite o Barbatão, mas não tenha medo dele.', 'Não venda as vacas boas na pressa. Bezerro de vaca boa é o futuro da fazenda.', 'O povo de Itarantim ajuda quem ajuda. Faça os favores dos vizinhos.']);
+  if (F.velhoD !== S.day) { F.velhoD = S.day; P.en = cl(P.en + 10, 0, 100); }
+  showModal('', null, null, () => `<div class="dlg"><div class="bust">${bustImg(v.ap, 'feliz', 4)}</div><div style="flex:1"><b>${esc(v.n)}</b><br><span class="mut">Aposentad${v.ap.sex === 'F' ? 'a' : 'o'} da lida · na varanda</span><div class="txt" style="margin-top:6px">${esc(dica)}</div></div></div>`);
+}
 
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
@@ -9649,7 +9804,7 @@ function amorCard(id) {
     return `<div class="card">💐 <b>Pedir ${d.n} em namoro</b><br><span class="mut">Precisa de um buquê de flores do mato (Mercadinho). Tem: ${S.inv.buque || 0}.</span><div class="row">${btn('Pedir em namoro', 'amorPede', id, !has('buque'))}</div></div>`; }
   if (A0.st === 1) { const ok = hs >= 10 && S.day - A0.d >= 7; return `<div class="card">❤ <b>Namorando ${d.n}</b> desde o dia ${A0.d}<br><span class="mut">${ok ? 'Já dá para pedir em casamento (precisa das alianças, no Mercadinho).' : 'Para pedir em casamento: 10 corações e uma semana de namoro.'}</span><div class="row">${btn('Pedir em casamento', 'amorCasa', id, !ok || !has('aliancas'))}</div></div>`; }
   if (A0.st === 2) return `<div class="card">💍 <b>Noivado!</b> O casamento é no domingo, dia ${A0.wd}, às 10h, na igreja de Itarantim.</div>`;
-  return `<div class="card">💞 <b>${A0.id === id ? 'Seu amor' : ''}</b> · casados desde o dia ${A0.cd}. Mora com você na Boa Esperança: café na varanda das 6h30 às 8h e de volta no fim da tarde.</div>`;
+  return `<div class="card">💞 <b>${A0.id === id ? 'Seu amor' : ''}</b> · casados desde o dia ${A0.cd}. Mora com você na Boa Esperança: café na varanda das 6h30 às 8h e de volta no fim da tarde.</div>` + famCard();
 }
 A.amorPede = id => { if (!useInv('buque', 1)) return; S.amor = { id, st: 1, d: S.day }; addFr(id, 80); remember(id, 'começamos a namorar'); M.txt = ['Eu… eu estava esperando você perguntar. Sim!', 'Oxente, demorou! Claro que sim!', 'Só se for para ver o pôr do sol todo dia na porteira da sua fazenda.'][S.day % 3]; SFX.fanfare(true); toast('❤ Você e ' + NPCDEF[id].n + ' estão namorando!'); renderModal(); };
 const nextSunday = () => { let d = S.day + 1; while (d % 7 !== 0) d++; return d; };
@@ -9683,13 +9838,14 @@ function amorTick() {
 // casados: o cônjuge dorme na casa sede, toma café na varanda e trabalha na cidade durante o dia
 const schedFor0 = schedFor;
 schedFor = function (e) {
-  const A0 = S && S.amor; if (A0 && A0.st === 3 && e.id === A0.id && SPOTS.fazenda_varanda) { const h = hour(); e._fast = true;
+  const A0 = S && S.amor; if (((A0 && A0.st === 3 && e.id === A0.id) || (S && S.fam && S.fam.conj === e.id)) && SPOTS.fazenda_varanda) { const h = hour(); e._fast = true;
     if (h < 6.5 || h >= 21) return { spot: 'fazenda_varanda', act: 'home' };
     if (h < 8 || h >= 18.5) return { spot: 'fazenda_varanda', act: 'chat' }; }
   return schedFor0(e);
 };
 function histDaily() { // todo amanhecer
   if (!S) return;
+  try { famDay(); } catch (e) { console.error(e); }
   if (S.flags.paoBia) { addInv('cafe', 1, true); P.fo = cl(P.fo + 15, 0, 100); }
   if (S.flags.socioDede && S.day % 30 === 1) { receive(450, 'Sua parte do frete (caminhão do Dedé)'); }
   if (S.amor && S.amor.st === 3) { const d = NPCDEF[S.amor.id]; P.en = cl(P.en + 25, 0, 100); P.fo = cl(P.fo + 25, 0, 100); addFr(S.amor.id, 5);
@@ -11997,7 +12153,7 @@ function collectItems(tx0, tx1, ty0, ty1, vw, vh, se, vx0, vy0) {
   for (const w of S.workers) { if (w.x === undefined || !inV(w.x, w.y, 30)) continue; if (w._mnt) { const h = workerHorse(w); if (h) { add(w.y, () => { const sp = h._mv || 0, an = sp < 2 ? 'idle' : sp > 40 ? 'trot' : 'walk', cyc = RIG.cycleLen(rigBreed(h), an === 'idle' ? 'walk' : an, rigK(h)) || 20; drawMounted(h, w.ap, w.x, w.y, w.dir || 0, an, an === 'idle' ? 0 : Math.floor(((h._dist || 0) / cyc % 1) * 8) % 8); }, w.x, { w: 120, h: 120 }); continue; } } if (w._sleep) continue; add(iy(w), () => { const wx = ix(w), wy = iy(w); const pz = w._pose === 'walk' ? 'walk' : w._pose || 'idle'; drawPerson(w.ap, wx, wy, w.dir || 0, pz === 'walk' ? Math.floor((w._ph || 0) / 22 * 8 / 0.22) % 8 : Math.floor(drawT * 3) % 2, pz === 'carry' && w._pose === 'walk' ? 'carryW' : pz); if (w.task && w._pose !== 'walk' && !w._wait) { X.fillStyle = '#2b1608'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), 16, 3); X.fillStyle = '#7ad040'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), Math.round(16 * (w.task.prog || 0)), 3); } }, ix(w), { w: 90, h: 100 }); }
   for (const w of WILD) if (inV(w.x, w.y, 40)) add(WKIND[w.k].sky ? w.y + 200 : w.y, () => drawWild(w), w.x, { w: 110, h: 110, b: w.y });
   for (const v of vehs()) if (inV(v.x, v.y, 70)) { const a1 = v.hitch ? byId(v.hitch) : null, a2 = v.hitch2 ? byId(v.hitch2) : null; add(Math.max(iy(v), a1 ? iy(a1) : -1e9, a2 ? iy(a2) : -1e9), () => { const o = S.cart; S.cart = v; try { drawCart(); } finally { S.cart = o; } }, v.x, { w: 170, h: 110 }); }
-  add(iy(P) + 0.5, drawPlayer, ix(P), { w: 120, h: 120 });
+  add(iy(P) + 0.5, drawPlayer, ix(P), { w: 120, h: 120 }); famCollect(add, inV);
   return L;
 }
 const VIEW = { x0: 0, y0: 0, x1: 0, y1: 0 };
@@ -13392,7 +13548,7 @@ function interactables(forTap) {
   if (has('galaoV') || forTap) { const R0 = FARM.reservoir, [cx, cy] = fpx('cistern'); add({ k: 'res', label: '💧 Encher galões', x: R0.lbl[0] * TS, y: R0.lbl[1] * TS, r: 30, prio: 1, hit: R0.hit.map(v => v * TS), fn: () => has('galaoV') ? act('pickup', 0.9, { x: R0.stand[0] * TS, y: R0.stand[1] * TS }, fillGallons) : say('Você não tem galões vazios.') }); add({ k: 'cist', label: '💧 Cisterna: encher galões', x: cx, y: cy + 6, r: 22, prio: 2, hit: [cx - 14, cy - 26, cx + 14, cy + 4], fn: () => has('galaoV') ? act('pickup', 0.9, { x: cx + 12, y: cy + 4 }, fillGallons) : say('Você não tem galões vazios.') }); }
   if (foot) { const f = objPos('fogueira'), c = objPos('churrasqueira'); add({ k: 'fire', label: 'Fogueira', x: f.x, y: f.y, r: 24, prio: 2, hit: [f.x - 16, f.y - 22, f.x + 16, f.y + 10], fn: openFire }); add({ k: 'bbq', label: 'Churrasqueira', x: c.x + 0.5 * TS, y: c.y + 0.8 * TS, r: 22, prio: 2, hit: [c.x - TS, c.y - 2.2 * TS, c.x + 2 * TS, c.y + 0.4 * TS], fn: openChurras }); }
   farmInteractables(add); mataInteractables(add, foot);
-  colmeiaInteractables(add); { const q = PROPS.find(p => p.t === 'varalCarne'); if (q && foot) add({ k: 'varal', label: '🥩 Varal de carne de sol', x: q.x, y: q.y + 6, r: 24, prio: 2, hit: [q.x - 20, q.y - 26, q.x + 20, q.y + 4], fn: openVaral }); }
+  colmeiaInteractables(add); famInteractables(add); { const q = PROPS.find(p => p.t === 'varalCarne'); if (q && foot) add({ k: 'varal', label: '🥩 Varal de carne de sol', x: q.x, y: q.y + 6, r: 24, prio: 2, hit: [q.x - 20, q.y - 26, q.x + 20, q.y + 4], fn: openVaral }); }
   { const q = PROPS.find(p => p.t === 'bauBrete'); if (q) add({ k: 'bret', label: '🧰 Baú do brete', x: q.x, y: q.y + 8, r: 22, prio: 2, hit: [q.x - 10, q.y - 16, q.x + 10, q.y + 2], fn: () => act('reach', 0.3, { x: q.x, y: q.y }, openBret, { zoom: false }) }); }
   { const b = objPos('bau'); add({ k: 'chest', label: 'Baú', x: b.x, y: b.y + 0.5 * TS, r: 20, prio: 2, hit: [b.x - 9, b.y - 15, b.x + 9, b.y + 1], fn: () => act('reach', 0.3, { x: b.x, y: b.y }, openChest, { zoom: false }) }); }
   { const ev = eventNow(); if (ev === 'vaquejada') add({ k: 'vaq', label: 'Correr na vaquejada', x: 87.5 * TS, y: 74.5 * TS, r: 40, prio: 5, hit: [85 * TS, 72 * TS, 90 * TS, 77 * TS], fn: startVaquejada }); else if (ev && EVENTS[ev].place === 'praca') add({ k: 'evento', label: EVENTS[ev].n, x: 84 * TS, y: 50 * TS, r: 44, prio: 4, hit: [80 * TS, 46 * TS, 88 * TS, 57 * TS], fn: () => openEventDesk(ev) }); else if (ev === 'criadores') add({ k: 'evento', label: EVENTS[ev].n, x: 95 * TS, y: 59 * TS, r: 30, prio: 6, hit: [92 * TS, 57 * TS, 98 * TS, 60 * TS], fn: () => openEventDesk(ev) }); }
