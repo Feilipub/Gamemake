@@ -10,7 +10,7 @@ module.exports = { nome: 'Sprites e mecânicas: abelhas, varal, cata-vento, volu
   t.ok(await t.ate('(S.inv.mel || 0) >= 1'), 'depois de 3 dias a caixa dá mel');
   // varal de carne de sol
   await t.ev("S.inv.costela = 3; A.varPut('costela'); A.varPut('costela'); 0"); t.igual(await t.ev('S.varal.length'), 2, 'pendurou a carne no varal');
-  await t.ev('S.day += 2; S.inv.carnesol = 0; A.varGet(); 0'); t.igual(await t.ev('S.inv.carnesol'), 2, 'em 2 dias vira carne de sol');
+  await t.ev('S.day += 2; S.inv.carnesol = 0; S.varalF = 0; A.varGet(); 0'); t.igual(await t.ev('S.inv.carnesol'), 1, 'em 2 dias vira carne de sol (2 kg frescos dão 1 kg; a carne perde água)'); t.ok(Math.abs((await t.ev('S.varalF')) - 0.4) < 0.01, 'a sobra fica guardada para a próxima vez');
   // cata-vento
   t.ok(await t.ev("!!BUILD.catavento"), 'o cata-vento aparece nas obras');
   await t.ev("S.lots.A = { b: 'catavento', done: true, prog: 1 }; S.res = 10; 0"); const d0 = await t.ev('S.day');
