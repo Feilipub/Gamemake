@@ -303,6 +303,14 @@ body.lan .sw2 .pvbox{position:sticky;top:0}
 .dlg .txt{flex:1;font-size:calc(14px*var(--fs));line-height:1.4;background:#fff4d0;border:3px solid var(--ink);padding:8px;min-height:60px}
 #toast{position:absolute;left:50%;transform:translateX(-50%);top:calc(60px + var(--sat));z-index:30;pointer-events:none;display:flex;flex-direction:column;gap:4px;align-items:center;width:92%;max-width:560px}
 body:has(#mn.on) #toast,body:has(#quad[style*=flex]) #toast{top:auto;bottom:calc(14px + var(--sab, 0px))}
+body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(96px + var(--sat))}
+#toast div.urg{border-color:#e05a3a;color:#ffd0b0}
+#br{position:relative}#br .nbad{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:#c0301a;color:#fff;font:700 11px/18px sans-serif;font-style:normal;text-align:center;border:2px solid #2b1608;padding:0 3px}
+.igrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}body.lan .igrid{grid-template-columns:repeat(6,1fr)}
+.icard{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;background:#fbefd2;border:3px solid var(--ink);box-shadow:inset 0 -3px 0 #d8c090;cursor:pointer;text-align:center}.icard b{font-size:calc(15px*var(--fs))}.icard small{font-size:calc(11px*var(--fs));opacity:.75}
+.ialert{display:flex;gap:8px;align-items:flex-start;cursor:pointer}.ialert img{flex:none;margin-top:2px}
+.bust{flex:none;padding:3px;background:radial-gradient(circle at 50% 40%,#7a5030,#2a160a);border:3px solid #c8924a;box-shadow:inset 0 0 0 2px #0006;line-height:0}.bust img{image-rendering:pixelated}
+#tipC{position:absolute;left:50%;transform:translate(-50%,-12px);top:calc(150px + var(--sat));width:min(92%,460px);z-index:40;background:#fff4d6;color:#2b1608;border:3px solid var(--ink);box-shadow:0 0 0 2px #f0c04a,0 6px 0 #0006;padding:8px 10px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}#tipC.on{opacity:1;pointer-events:auto;transform:translate(-50%,0)}#tipC .tb{display:flex;gap:6px;align-items:center;margin-bottom:4px;color:#8a4a10}#tipC .tt{font-size:calc(13px*var(--fs));line-height:1.35}#tipC .tr{display:flex;gap:6px;justify-content:flex-end;margin-top:6px}#tipC button{padding:4px 10px;font-size:calc(12px*var(--fs))}body.cs #tipC,body:has(#mn.on) #tipC{display:none}body:has(#tipC.on) #msg,body:has(#tipC.on) #jorn{opacity:0!important}body.lan #tipC{top:calc(70px + var(--sat))}
 #toast div{background:#2b1608;color:#ffe08a;border:2px solid var(--gold);box-shadow:0 0 0 2px #110905;padding:3px 8px;font-size:calc(12px*var(--fs));animation:tf 2.8s forwards;text-align:center}
 @keyframes tf{0%{opacity:0;transform:translateY(6px)}8%{opacity:1;transform:none}82%{opacity:1}100%{opacity:0}}
 .slot{display:flex;gap:8px;align-items:center}
@@ -373,7 +381,7 @@ body:has(#mn.on) #toast,body:has(#quad[style*=flex]) #toast{top:auto;bottom:calc
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '7.7.0', SAVE_V = 9;
+const GAME_V = '7.8.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -2872,7 +2880,7 @@ function drawChar(g, ap, dir, fr, pose) {
   };
   function headFront() {
     const y = by; p(7, 9 + y, 2, 1, skD);
-    const md = ap.mood || '', mouthM = c => { if (Q.arms === 'eat' || Q.run || !md) return p(7, 7 + y, 2, 1, c); if (md === 'feliz') { p(6, 7 + y, 1, 1, c); p(7, 8 + y, 2, 1, c); p(9, 7 + y, 1, 1, c); } else if (md === 'fome') { p(7, 7 + y, 2, 1, c); p(6, 8 + y, 1, 1, c); p(9, 8 + y, 1, 1, c); p(5, 4 + y, 1, 1, '#9ad0f0'); } else { p(7, 7 + y, 2, 2, c); if (!Q.blink) { p(6, 5 + y, 1, 1, shade(sk, -.3)); p(9, 5 + y, 1, 1, shade(sk, -.3)); } } }; // feliz: sorriso · fome: boca triste e uma gota de suor · cansado: olhos pesados e boca aberta
+    const md = ap.mood || '', mouthM = c => { if (Q.arms === 'eat' || Q.run || !md) return p(7, 7 + y, 2, 1, c); if (md === 'feliz') { p(6, 7 + y, 1, 1, c); p(7, 8 + y, 2, 1, c); p(9, 7 + y, 1, 1, c); } else if (md === 'fome') { p(7, 7 + y, 2, 1, c); p(6, 8 + y, 1, 1, c); p(9, 8 + y, 1, 1, c); p(5, 4 + y, 1, 1, '#9ad0f0'); } else if (md === 'bravo') { p(6, 7 + y, 4, 1, c); p(5, 3 + y, 1, 1, hD); p(10, 3 + y, 1, 1, hD); p(6, 4 + y, 1, 1, hD); p(9, 4 + y, 1, 1, hD); } else if (md === 'triste') { p(7, 7 + y, 2, 1, c); p(6, 8 + y, 1, 1, c); p(9, 8 + y, 1, 1, c); p(6, 3 + y, 1, 1, hD); p(9, 3 + y, 1, 1, hD); p(5, 4 + y, 1, 1, hD); p(10, 4 + y, 1, 1, hD); } else { p(7, 7 + y, 2, 2, c); if (!Q.blink) { p(6, 5 + y, 1, 1, shade(sk, -.3)); p(9, 5 + y, 1, 1, shade(sk, -.3)); } } }; // feliz: sorriso · fome: boca triste e uma gota de suor · cansado: olhos pesados e boca aberta
     if (ap.hair === 4 || ap.hair === 3) p(3, 4 + y, 10, ap.hair === 4 ? 9 : 3, hD);
     p(4, 2 + y, 8, 6, sk); p(5, 8 + y, 6, 1, sk); p(4, 7 + y, 1, 1, skD); p(11, 7 + y, 1, 1, skD); p(3, 5 + y, 1, 2, sk); p(12, 5 + y, 1, 2, sk);
     eyes(6, 9, 5 + y);
@@ -7004,9 +7012,10 @@ A.bagStore = v => { const q = S.inv[v] || 0; if (!q) return; if (isVet(v)) { bre
 A.openDepB = () => { closeModal(); openDeposito(); };
 A.openBretB = () => { closeModal(); openBret(); };
 /* ---------- menu principal ---------- */
-const MTABS = [['jor', 'Jornada', 'scroll'], ['nat', 'Natureza', 'eye'], ['vaq', 'Vaqueiro', 'hat'], ['inv', 'Mochila', 'bag'], ['ani', 'Animais', 'cow'], ['gad', 'Gado', 'cow'], ['faz', 'Fazenda', 'farm'], ['map', 'Mapa', 'map'], ['ban', 'Banco', 'bank'], ['obr', 'Obras', 'build'], ['peo', 'Peões', 'worker'], ['rel', 'Relações', 'heart'], ['cq', 'Conquistas', 'ball'], ['cfg', 'Config.', 'gear']];
-function openMenu(tab) { showModal('', MTABS, tab || 'vaq', menuTab); }
+const MTABS = [['ini', 'Início', 'farm'], ['jor', 'Jornada', 'scroll'], ['nat', 'Natureza', 'eye'], ['vaq', 'Vaqueiro', 'hat'], ['inv', 'Mochila', 'bag'], ['ani', 'Animais', 'cow'], ['gad', 'Gado', 'cow'], ['faz', 'Fazenda', 'farm'], ['map', 'Mapa', 'map'], ['ban', 'Banco', 'bank'], ['obr', 'Obras', 'build'], ['peo', 'Peões', 'worker'], ['rel', 'Relações', 'heart'], ['cq', 'Conquistas', 'ball'], ['cfg', 'Config.', 'gear']];
+function openMenu(tab) { showModal('', MTABS, tab || 'ini', menuTab); }
 function menuTab(t) {
+  if (t === 'ini') return iniHTML();
   if (t === 'vaq') {
     const st = STATES[S.cf.st];
     let h = `<div class="dlg"><div>${charImg(S.cf.ap, 4)}</div><div style="flex:1"><h2 style="margin:0">${esc(S.cf.name)}</h2><p>${S.cf.ap.sex === 'F' ? 'Vaqueira' : 'Vaqueiro'} de <b>${st[1]}</b> (${st[2]})</p><p class="mut">${st[7]}</p><p>Talento: <b>${PERKS[st[5]]}</b></p></div></div>`;
@@ -7393,7 +7402,7 @@ function openNpc(id, text) {
     if (M.sub === 'hist') return histView(M.hid);
     if (M.sub === 'prosa') return prosaHTML(id);
     if (M.sub === 'haggle') return haggleView();
-    let h = `<div class="dlg"><div>${charImg(d.ap, 4)}</div><div style="flex:1"><b style="font-size:calc(16px*var(--fs))">${d.n}</b><br><span class="mut">${d.role}</span><br>${hrt(hearts(id))}<div class="txt" style="margin-top:6px">${esc(M.txt)}</div></div></div><p class="mut">${d.pers}</p>`;
+    let h = `<div class="dlg"><div class="bust">${bustImg(d.ap, moodOf(id, M.txt), 4)}</div><div style="flex:1"><b style="font-size:calc(16px*var(--fs))">${d.n}</b><br><span class="mut">${d.role}</span><br>${hrt(hearts(id))}<div class="txt" style="margin-top:6px">${esc(M.txt)}</div></div></div><p class="mut">${d.pers}</p>`;
     if (s.quest) h += `<div class="card">📜 <b>Favor:</b> ${esc(s.quest.t)}<br><span class="mut">Prazo: dia ${s.quest.due}</span></div>`;
     h += '<div class="row">' + btn('💬 Conversar', 'npcTalk') + btn('🗨️ Prosear', 'npcProsa') + btn('🎁 Presentear', 'npcGift', '', s.gift === S.day) + btn(s.quest ? '📜 Entregar favor' : '📜 Pedir favor', 'npcQuest') + (d.sells ? btn('🤝 Negociar animais', 'npcTrade') : '') + '</div>';
     for (const m of (S.missions || []).filter(m => m.giver === id && (m.st === 'offer' || m.st === 'active'))) h += misHTML(m, true);
@@ -8619,10 +8628,10 @@ function applyDia() { GMPS = 1440 / ((SET.dia || 12) * 60); }
 // ---------- avisos: fila com no máximo 3 na tela, repetidos agrupados, histórico ----------
 const NOTIF = { q: [], vis: [], log: [], grp: null };
 function toastShow(o) {
-  const el = $('toast'); if (!el) return; const d = document.createElement('div'); d.textContent = o.t + (o.n > 1 ? ' (×' + o.n + ')' : ''); d.style.animationDuration = '3.4s'; o.el = d; el.appendChild(d); NOTIF.vis.push(o); if (typeof SFX !== 'undefined') SFX.blip();
-  setTimeout(() => { d.remove(); NOTIF.vis.splice(NOTIF.vis.indexOf(o), 1); toastPump(); }, 3400);
+  const el = $('toast'); if (!el) return; const d = document.createElement('div'); d.textContent = o.t + (o.n > 1 ? ' (×' + o.n + ')' : ''); const dur = NOTIF.q.length > 1 ? 2.2 : NOTIF.q.length ? 2.8 : 3.4; d.style.animationDuration = dur + 's'; if (o.u) d.className = 'urg'; o.el = d; el.appendChild(d); NOTIF.vis.push(o); if (typeof SFX !== 'undefined') SFX.blip();
+  setTimeout(() => { d.remove(); NOTIF.vis.splice(NOTIF.vis.indexOf(o), 1); toastPump(); }, dur * 1000);
 }
-function toastPump() { while (NOTIF.vis.length < 3 && NOTIF.q.length) toastShow(NOTIF.q.shift()); document.body.classList.toggle('tst', NOTIF.vis.length > 0); }
+function toastPump() { while (NOTIF.vis.length < toastMax() && NOTIF.q.length) toastShow(NOTIF.q.shift()); document.body.classList.toggle('tst', NOTIF.vis.length > 0); }
 function toast(t) {
   t = noEmo(String(t)).replace(/^\s*([!✓])?/, '$1'); if (!t.trim()) return;
   NOTIF.log.unshift({ t, d: S ? S.day : 0, c: S && typeof clock === 'function' ? clock() : '' }); if (NOTIF.log.length > 80) NOTIF.log.length = 80;
@@ -8631,7 +8640,7 @@ function toast(t) {
     NOTIF.grp.n++; NOTIF.grp.last = t; return; }
   toastPush(t);
 }
-function toastPush(t) { const same = NOTIF.vis.find(o => o.t === t) || NOTIF.q.find(o => o.t === t); if (same) { same.n = (same.n || 1) + 1; if (same.el) same.el.textContent = same.t + ' (×' + same.n + ')'; return; } if (NOTIF.q.length > 6) NOTIF.q.shift(); NOTIF.q.push({ t, n: 1 }); toastPump(); }
+function toastPush(t) { const same = NOTIF.vis.find(o => o.t === t) || NOTIF.q.find(o => o.t === t); if (same) { same.n = (same.n || 1) + 1; if (same.el) same.el.textContent = same.t + ' (×' + same.n + ')'; return; } const u = TOAST_URG.test(t); if (NOTIF.q.length >= 3) { const j = NOTIF.q.findIndex(o => !o.u); NOTIF.q.splice(j >= 0 ? j : 0, 1); NOTIF.unread++; toastBadge(); } const o = { t, n: 1, u }; if (u) { const j = NOTIF.q.findIndex(q => !q.u); NOTIF.q.splice(j < 0 ? NOTIF.q.length : j, 0, o); } else NOTIF.q.push(o); toastPump(); }
 // ---------- jornada do vaqueiro: capítulos com objetivos e recompensas ----------
 const npcMet = () => Object.keys(NPCDEF).filter(id => id !== 'felipe' && S.npcs && S.npcs[id] && S.npcs[id].met).length;
 const ownedLand = () => !!(S.land && (S.land.piquetes || S.land.leste || S.land.galinheiro) || (S.exp && (S.exp.norte || S.exp.sul)));
@@ -8680,7 +8689,7 @@ function jornHTML() {
   const J = jornState(); let h = bauHTML() + mataHTML() + `<div class="card"><b>📜 Jornada do vaqueiro</b><p class="mut">Capítulos com objetivos que ensinam a lida e dão recompensas. O painel no canto da tela mostra os próximos passos (toque nele para abrir aqui).</p><div class="ch">${btn(SET.jorn === false ? 'Mostrar painel na tela' : 'Esconder painel da tela', 'jornTog')}</div></div>`;
   JORNADA.forEach((C, i) => { const done = i < J.cap, cur = i === J.cap; if (i > J.cap + 1) return;
     h += `<div class="card" style="${done ? 'opacity:.7' : ''}"><b><span class="jk ${done ? 'ok' : cur ? 'cur' : 'no'}"></span>Capítulo ${i + 1}: ${C.n}${done ? ' (concluído)' : !cur ? ' (bloqueado)' : ''}</b> <span class="mut">${C.d}</span>` + (i <= J.cap ? C.o.map(([k, n, , tip]) => { const ok = done || J.ok[k]; return `<div style="margin:4px 0"><span class="jk ${ok ? 'ok' : 'no'}"></span><b>${n}</b>${!ok && tip ? `<br><span class="mut">${tip}</span>` : ''}</div>`; }).join('') : '<p class="mut">Termine o capítulo anterior.</p>') + `<p class="mut">Recompensa: R$ ${C.r.cash || 0}${C.r.it && Object.keys(C.r.it).some(k => C.r.it[k]) ? ' + ' + Object.keys(C.r.it).filter(k => C.r.it[k]).map(k => IT[k].n.split(' (')[0].toLowerCase()).join(', ') : ''}</p></div>`; });
-  h += climaHTML();
+  h += desafioHTML() + climaHTML() + tipsSeenHTML(); toastRead();
   h += `<h3>Avisos recentes</h3><div class="card" style="max-height:260px;overflow:auto">${NOTIF.log.length ? NOTIF.log.map(n => `<div style="margin:2px 0"><span class="mut">Dia ${n.d} ${n.c}</span> · ${esc(n.t)}</div>`).join('') : '<span class="mut">Nenhum aviso ainda.</span>'}</div>`;
   return h;
 }
@@ -9264,7 +9273,7 @@ A.instColm = () => { closeModal(); instalarColmeia(); };
 function colmeiaMel(c) { const dd = S.day - c.last; if (dd < MEL_DIAS) return 0; const flor = PROPS.some(q => (q.mata || ['umbu', 'ipe', 'manga', 'caju', 'juazeiro'].includes(q.t)) && hyp(q.x - c.x, q.y - c.y) < 7 * TS); return Math.min(4, Math.floor(dd / MEL_DIAS) * (season() ? 1 : 2) + (flor ? 1 : 0)); }
 function colherColmeia(k) {
   const c = S.colm[k], n = colmeiaMel(c); if (!n) return say('Ainda não tem mel. Volta em ' + (MEL_DIAS - (S.day - c.last)) + ' dia(s).', 2000);
-  act('reach', 1.4, { x: c.x, y: c.y - 6 }, () => { if (!addInv('mel', n)) return; c.last = S.day; const fum = has('fumigador');
+  act('reach', 1.4, { x: c.x, y: c.y - 6 }, () => { if (!addInv('mel', n)) return; c.last = S.day; S.stats.mel = (S.stats.mel || 0) + n; const fum = has('fumigador');
     if (!fum && Math.random() < 0.4) playerHurt(5, { x: c.x, y: c.y }, 'Levou umas ferroadas! Com o fumigador as abelhas ficam calmas.'); else toast('🍯 ' + n + ' pote(s) de mel' + (fum ? ' — o fumigador acalmou as abelhas.' : '.'));
     for (let j = 0; j < 8; j++) part(c.x + rnd(-8, 8), c.y - rnd(6, 18), 'spark', { vx: rnd(-16, 16), vy: rnd(-18, -4), m: 1.2, c: '#f0c020' }); }, { zoom: false });
 }
@@ -9301,6 +9310,141 @@ function critDraw(toScreen, g) {
     if (c.k === 'v') { const on = Math.sin(c.ph) > 0.2; if (!on) continue; G0.fillStyle = 'rgba(200,255,120,0.28)'; G0.fillRect(Math.round(x - 2 * s), Math.round(y - 2 * s), 5 * s, 5 * s); G0.fillStyle = '#e8ff90'; G0.fillRect(Math.round(x), Math.round(y), s, s); }
     else { const up = Math.sin(c.ph) > 0; G0.fillStyle = c.c; if (up) { G0.fillRect(Math.round(x - s), Math.round(y - s), s, s); G0.fillRect(Math.round(x + s), Math.round(y - s), s, s); } else { G0.fillRect(Math.round(x - 2 * s), Math.round(y), 2 * s, s); G0.fillRect(Math.round(x + s), Math.round(y), 2 * s, s); } G0.fillStyle = '#2a1a0a'; G0.fillRect(Math.round(x), Math.round(y), s, s); } }
 }
+/* ============ v7.8: INTERFACE MAIS LIMPA E OBJETIVOS DE LONGO PRAZO ============
+   Avisos um por vez (os urgentes passam na frente), painel Início no menu, dicas na hora certa,
+   retratos grandes com expressão nos diálogos, Desafios do ano e Ranking dos criadores da região. */
+// ---------- avisos: urgência e contador do que ficou só na central ----------
+const TOAST_URG = /onça|ladr|roub|morr|doen|adoec|picad|cobra|fogo|incênd|perig|fugiu|ataca|venc|dívida|atras/i;
+NOTIF.unread = 0;
+function toastMax() { return (typeof W === 'number' && W > 900 && !document.body.classList.contains('por')) ? 2 : 1; }
+function toastBadge() { const b = $('br'); if (!b) return; let s = b.querySelector('.nbad'); if (!NOTIF.unread) { if (s) s.remove(); return; } if (!s) { s = document.createElement('i'); s.className = 'nbad'; b.appendChild(s); } s.textContent = NOTIF.unread > 9 ? '9+' : NOTIF.unread; }
+function toastRead() { NOTIF.unread = 0; toastBadge(); }
+// ---------- painel Início do menu ----------
+function iniAlerts() {
+  const L = [], mine = S.animals.filter(a => a.own === 'player' && !a._hid);
+  const sick = mine.filter(a => a.sick), fome = mine.filter(a => a.sp !== 'cao' && a.food < 25), sede = mine.filter(a => a.sp !== 'cao' && a.water < 25);
+  if (sick.length) L.push(['heart', sick.length + ' animal(is) doente(s): ' + sick.slice(0, 3).map(a => esc(a.n)).join(', '), 'Leve ao brete e trate (o remédio fica no Baú do brete) ou mande um peão curar.', 'ani']);
+  if (fome.length) L.push(['feed', fome.length + ' animal(is) com fome', 'Ponha no pasto bom, encha o cocho de trato ou escolha um plano de trato no menu Gado.', 'gad']);
+  if (sede.length) L.push(['water', sede.length + ' animal(is) com sede', 'Encha os cochos d’água (galão no reservatório ao lado da casa).', 'faz']);
+  if (typeof colmeiaMel === 'function') { const n = (S.colm || []).filter(c => colmeiaMel(c) > 0).length; if (n) L.push(['coin', n + ' caixa(s) de abelha com mel pronto', 'Vá até a caixa e colha. Com o fumigador as abelhas não ferroam.', null]); }
+  const vr = (S.varal || []).filter(v => S.day - v.d >= 2).length; if (vr) L.push(['chest', vr + ' peça(s) de carne de sol pronta(s) no varal', 'Recolha no varal ao lado da churrasqueira.', null]);
+  const idle = (S.workers || []).filter(w => !w.task && w.off !== S.day).length; if (idle) L.push(['worker', idle + ' peão(ões) sem ordem', 'Dê uma ordem no menu Peões para eles não ficarem parados.', 'peo']);
+  if (S.cash + S.acct < 300) L.push(['coin', 'Dinheiro curto', 'Venda leite, ovos e verduras no Mercadinho, peixe no Porto, ou peça um empréstimo no banco.', 'ban']);
+  return L;
+}
+function iniHTML() {
+  toastRead(); const c = calDate(), J = jornState(), C = JORNADA[J.cap], nx = C ? C.o.find(o => !J.ok[o[0]]) : null;
+  const bois = myAnimals('boi').length, eq = myAnimals().filter(a => ['cavalo', 'burro', 'jumento'].includes(a.sp)).length;
+  const card = (icn, big, small, tab) => `<div class="icard"${tab ? ` data-a="tab" data-v="${tab}"` : ''}>${ic(icn, 28)}<b>${big}</b><small>${small}</small></div>`;
+  let h = `<div class="dlg" style="align-items:center"><div class="bust">${bustImg(S.cf.ap, S.cf.ap.mood || '', 3)}</div><div style="flex:1"><b style="font-size:calc(17px*var(--fs))">${esc(S.cf.name)}</b><br><span class="mut">${dateStr(S.day, true)} · ${clock()}${typeof lendaTitle === 'function' && lendaTitle() ? ' · ' + lendaTitle() : ''}</span></div></div>`;
+  h += `<div class="igrid">${card('coin', fmt(S.cash), 'no bolso', 'ban')}${card('bank', fmt(S.acct), 'no banco', 'ban')}${card('cow', bois, bois === 1 ? 'cabeça de gado' : 'cabeças de gado', 'gad')}${card('horse', eq, 'montarias', 'ani')}${card('worker', (S.workers || []).length, 'peões', 'peo')}${card('chest', Math.round(depKg()) + ' kg', 'no depósito', 'faz')}</div>`;
+  const al = iniAlerts();
+  h += `<h3>Precisa de atenção</h3>` + (al.length ? al.map(([icn, t, d, tab]) => `<div class="card ialert"${tab ? ` data-a="tab" data-v="${tab}"` : ''}>${ic(icn, 22)}<div><b>${t}</b><br><span class="mut">${d}</span></div></div>`).join('') : '<div class="card"><b style="color:#2a7a2a">✓</b> Tudo em ordem na fazenda.</div>');
+  if (nx) h += `<h3>Próximo passo</h3><div class="card ialert" data-a="tab" data-v="jor">${ic('scroll', 22)}<div><b>${nx[1]}</b><br><span class="mut">${nx[3] || C.n}</span></div></div>`;
+  const ev = []; for (let d = 0; d < 7 && ev.length < 3; d++) for (const k of eventsOnDay(S.day + d)) if (k !== 'feira' && k !== 'forro' && ev.length < 3) ev.push([d, k]);
+  if (ev.length) h += `<h3>Na agenda</h3><div class="card">${ev.map(([d, k]) => `<div style="margin:2px 0">${ic('scroll', 16)} <b>${d === 0 ? 'Hoje' : d === 1 ? 'Amanhã' : dateStr(S.day + d)}</b> · ${EVENTS[k].n} <span class="mut">(${EVENTS[k].h[0]}h)</span></div>`).join('')}</div>`;
+  h += desafioMini();
+  return h;
+}
+// ---------- dicas na hora certa ----------
+const TIPS = [
+  ['seca', () => season(), 'A seca chegou. O capim para de crescer: guarde comida no depósito, mantenha os cochos d’água cheios e escolha um plano de trato no menu Gado.', 'gad'],
+  ['doente', () => S.animals.some(a => a.own === 'player' && a.sick), 'Tem animal doente. Leve ao brete e trate: remédios e vacinas que você compra na Casa do Agro ficam no Baú do brete.', 'ani'],
+  ['fome', () => S.animals.some(a => a.own === 'player' && a.sp === 'boi' && a.food < 25), 'Gado com fome perde peso. Veja na ficha do animal o motivo (pasto, cocho ou plano de trato).', 'gad'],
+  ['noite', () => hour() >= 19 && S.day >= 2, 'Anoiteceu. De noite a onça e os ladrões rondam: cães e a ronda dos peões ajudam. Dormir na casa passa para o dia seguinte.', null],
+  ['chuva', () => isRain(), 'Chuva no sertão! Ela enche os cochos, faz o capim rebrotar e a horta agradece.', null],
+  ['abate', () => typeof prontoAbate === 'function' && myAnimals('boi').some(a => { try { return prontoAbate(a); } catch (e) { return false; } }), 'Tem boi no ponto de abate. Na ficha de engorda você vê as arrobas e o ganho por dia. Boi precoce vale mais no frigorífico.', 'gad'],
+  ['prenha', () => myAnimals('boi').some(a => a.preg > 0), 'Tem vaca prenha. Deixe ela bem alimentada e com água; perto do parto, leve para perto da casa.', 'ani'],
+  ['peao', () => (S.workers || []).length > 0, 'Você tem peão! Dê ordens no menu Peões. Agrado e folga levantam o ânimo; peão animado trabalha melhor.', 'peo'],
+  ['agenda', () => eventsOnDay(S.day).some(k => k === 'vaquejada' || k === 'agro' || k === 'leilao'), 'Hoje tem evento na região! Veja a agenda no painel Início do Menu.', 'ini'],
+  ['desafio', () => S.day >= 4, 'Todo ano tem Desafios do ano, que dão prêmio e fama. E você pode subir no Ranking dos criadores da região. Veja no menu Jornada.', 'jor'],
+  ['pobre', () => S.cash + S.acct < 300 && S.day >= 2, 'Dinheiro curto: leite, ovos e verduras vendem no Mercadinho; peixe no Porto; e o banco faz empréstimo.', 'ban']
+];
+let tipAcc = 0, tipLast = -99;
+function tipTick(dt) {
+  if (!S || !S.flags || mode !== 'play' || M.open || IN.on || SET.tips === false || (tipAcc += dt) < 3) return; tipAcc = 0;
+  if (drawT - tipLast < 50 || (P && P._act) || (typeof introActive === 'function' && introActive())) return;
+  for (const [k, cond, t, tab] of TIPS) { if (S.flags['tip_' + k]) continue; let ok = false; try { ok = cond(); } catch (e) { } if (!ok) continue; S.flags['tip_' + k] = S.day; tipLast = drawT; showTip(t, tab); return; }
+}
+function showTip(t, tab) {
+  let el = $('tipC'); if (!el) { el = document.createElement('div'); el.id = 'tipC'; document.getElementById('app').appendChild(el); }
+  el.innerHTML = `<div class="tb">${ic('eye', 20)}<b>Dica</b></div><div class="tt">${esc(t)}</div><div class="tr"><button class="btn" data-tip="ok">Entendi</button>${tab ? '<button class="btn" data-tip="ver">Ver agora</button>' : ''}</div>`;
+  el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 14000); if (typeof SFX !== 'undefined' && SFX.blip) SFX.blip();
+  el.onclick = e => { const b = e.target.closest('[data-tip]'); if (!b) return; el.classList.remove('on'); if (b.dataset.tip === 'ver' && mode === 'play') openMenu(tab); };
+}
+function tipsSeenHTML() { const L = TIPS.filter(x => S.flags['tip_' + x[0]]); return L.length ? `<h3>Dicas que você já viu</h3><div class="card" style="max-height:200px;overflow:auto">${L.map(x => `<div style="margin:3px 0">💡 ${esc(x[2])}</div>`).join('')}</div>` : ''; }
+// ---------- retratos grandes com expressão ----------
+function bustCanvas(ap, mood) {
+  const a = Object.assign({}, ap, { mood: mood || '' }), c = charSpr(a, 0, 0, 'idle');
+  return cached('bust|' + apKey(a), 24, 21, g => { g.drawImage(c, 0, 0, 24, 21, 0, 0, 24, 21); });
+}
+function bustImg(ap, mood, sc) { const c = bustCanvas(ap, mood); return sprHTML(c, sc || 4, 'bust|' + apKey(Object.assign({}, ap, { mood: mood || '' })) + '|' + (sc || 4)); }
+function moodOf(id, txt) {
+  const t = String(txt || '');
+  if (/saudade|morreu|faleceu|chor|triste|pena|perdi|perdeu|sozinh|doente|seca braba|difícil/i.test(t)) return 'triste';
+  if (/raiva|absurdo|safad|não quero|some daqui|cuidado|ladr|roub|danad|desaforo|vergonha/i.test(t)) return 'bravo';
+  if (/obrigad|que bom|alegr|festa|bem-vind|ótimo|parabéns|massa|arretado|bonito|feliz|valeu/i.test(t)) return 'feliz';
+  if (id && id !== 'me' && typeof hearts === 'function' && NPCDEF[id]) { const h = hearts(id); if (h >= 4) return 'feliz'; }
+  const hr = hour(); if (hr >= 21 || hr < 5.5) return 'cansado'; return '';
+}
+// ---------- desafios do ano ----------
+const DESAFIOS = [
+  ['ganho', 'Faturar R$ 20.000 no ano', () => (S.stats.earned || 0), 20000, 'money'],
+  ['crias', 'Ver nascer 4 crias', () => (S.stats.born || 0), 4],
+  ['vaq', 'Vencer 2 vaquejadas', () => (S.stats.vaq || 0), 2],
+  ['peixe', 'Pescar 15 peixes', () => (S.stats.peixes || 0), 15],
+  ['colh', 'Fazer 12 colheitas', () => (S.stats.colheitas || 0), 12],
+  ['ovos', 'Juntar 60 ovos', () => (S.stats.eggs || 0), 60],
+  ['venda', 'Vender 8 animais', () => (S.stats.sold || 0), 8],
+  ['premio', 'Ganhar prêmio no concurso da feira agropecuária', () => (S.stats.premios || 0), 1],
+  ['rebanho', 'Chegar a 20 cabeças de gado', () => myAnimals('boi').length, 20, 'abs'],
+  ['mel', 'Colher 10 potes de mel', () => (S.stats.mel || 0), 10]
+];
+function desState() {
+  const y = calDate().y; let D = S.des;
+  if (!D || D.y !== y) {
+    if (D && D.y < y) { const ok = D.list.filter(k => D.done[k]).length; if (ok) toast('📅 Fim do ano ' + D.y + ': você cumpriu ' + ok + ' de ' + D.list.length + ' desafios.'); }
+    const pool = DESAFIOS.map(d => d[0]), list = []; let s = (y * 7919 + (S.seed || 1)) >>> 0;
+    while (list.length < 4 && pool.length) { s = (s * 1103515245 + 12345) >>> 0; list.push(pool.splice(s % pool.length, 1)[0]); }
+    const base = {}; for (const k of list) { const d = DESAFIOS.find(x => x[0] === k); base[k] = d[4] === 'abs' ? 0 : d[2](); }
+    D = S.des = { y, list, base, done: {} };
+  }
+  return D;
+}
+const desProg = (D, k) => { const d = DESAFIOS.find(x => x[0] === k); return Math.max(0, d[2]() - (D.base[k] || 0)); };
+function desTick() {
+  if (!S || !S.stats) return; const D = desState();
+  for (const k of D.list) { if (D.done[k]) continue; const d = DESAFIOS.find(x => x[0] === k); if (desProg(D, k) < d[3]) continue;
+    D.done[k] = S.day; S.prest = (S.prest || 0) + 1; const pr = 1500 + 500 * Math.min(6, D.y);
+    receive(pr, 'Desafio do ano: ' + d[1]); toast('🏆 Desafio do ano cumprido: ' + d[1] + '! +' + fmt(pr) + ' e +1 de fama.'); if (typeof SFX !== 'undefined' && SFX.fanfare) SFX.fanfare(true);
+    if (D.list.every(q => D.done[q])) setTimeout(() => toast('⭐ Todos os desafios do ano ' + D.y + ' cumpridos! O povo de Itarantim só fala de você.'), 1500); }
+  rankCheck();
+}
+const LENDA = [[0, ''], [3, 'Vaqueiro de fama'], [6, 'Lenda do Sertão'], [10, 'Lenda viva do Sertão'], [15, 'Patrono de Itarantim']];
+function lendaTitle() { let t = ''; for (const [n, s] of LENDA) if ((S.prest || 0) >= n) t = s; return t; }
+function desafioMini() { const D = desState(), n = D.list.filter(k => D.done[k]).length; return `<h3>Desafios do ano ${D.y}</h3><div class="card" data-a="tab" data-v="jor" style="cursor:pointer">${D.list.map(k => { const d = DESAFIOS.find(x => x[0] === k), p = Math.min(d[3], desProg(D, k)); return `<div style="margin:3px 0"><span class="jk ${D.done[k] ? 'ok' : 'no'}"></span>${d[1]} <span class="mut">${d[4] === 'money' ? fmt(p) + ' / ' + fmt(d[3]) : Math.floor(p) + '/' + d[3]}</span></div>`; }).join('')}<span class="mut">${n}/${D.list.length} cumpridos · Fama: ${S.prest || 0}${lendaTitle() ? ' · ' + lendaTitle() : ''}</span></div>`; }
+function desafioHTML() {
+  const D = desState(); let h = `<div class="card"><b>📅 Desafios do ano ${D.y}</b><p class="mut">Quatro desafios novos a cada ano. Cada um cumprido dá dinheiro e 1 ponto de fama. A fama dá títulos: ${LENDA.slice(1).map(x => x[1] + ' (' + x[0] + ')').join(', ')}.</p>`;
+  for (const k of D.list) { const d = DESAFIOS.find(x => x[0] === k), p = Math.min(d[3], desProg(D, k)); h += `<div style="margin:6px 0"><span class="jk ${D.done[k] ? 'ok' : 'no'}"></span><b>${d[1]}</b>${D.done[k] ? ' <span class="mut">(cumprido no dia ' + D.done[k] + ')</span>' : ''}<br>${bar(p / d[3] * 100)} <span class="mut">${d[4] === 'money' ? fmt(p) + ' de ' + fmt(d[3]) : Math.floor(p) + ' de ' + d[3]}</span></div>`; }
+  h += `<p>Fama: <b>${S.prest || 0}</b>${lendaTitle() ? ' · Título: <b>' + lendaTitle() + '</b>' : ''}</p></div>`;
+  return h + rankHTML();
+}
+// ---------- ranking dos criadores da região ----------
+function rankList() {
+  regionInit(); const V = { boi: 3200, cavalo: 7000, burro: 2600, jumento: 1800, cabra: 400, galinha: 40 };
+  const L = Object.keys(FARMS).map(k => { const F = FARMS[k], st = S.region.farms[k], hd = farmHerd(k); let v = st.money; for (const sp in hd) v += (V[sp] || 300) * hd[sp]; return { k, n: F.n, who: NPCDEF[F.own] ? NPCDEF[F.own].n : '', v: Math.round(v) }; });
+  L.push({ k: 'me', n: 'Fazenda Boa Esperança', who: S.cf.name, v: patrimonio() }); return L.sort((a, b) => b.v - a.v);
+}
+function rankCheck() {
+  const L = rankList(), pos = L.findIndex(x => x.k === 'me') + 1; if (!pos) return; const best = S.rankBest || 99;
+  if (pos < best) { S.rankBest = pos; if (best !== 99) { toast(pos === 1 ? '🥇 A Boa Esperança é a maior fazenda da região!' : '📈 A Boa Esperança subiu para o ' + pos + 'º lugar no ranking dos criadores.'); if (pos === 1) { S.prest = (S.prest || 0) + 2; } } }
+}
+function rankHTML() {
+  const L = rankList(); return `<div class="card"><b>📊 Ranking dos criadores da região</b><p class="mut">Patrimônio de cada fazenda: terra, rebanho e dinheiro. Chegar ao 1º lugar dá +2 de fama.</p><table class="t"><tr><th>#</th><th>Fazenda</th><th>Patrimônio</th></tr>${L.map((x, i) => `<tr${x.k === 'me' ? ' style="background:#f0c04a55;font-weight:700"' : ''}><td>${i + 1}º</td><td>${esc(x.n)}<br><span class="mut">${esc(x.who)}</span></td><td>${fmt(x.v)}</td></tr>`).join('')}</table></div>`;
+}
+let desAcc = 0;
+function v78Tick(dt) { tipTick(dt); if ((desAcc += dt) >= 2) { desAcc = 0; try { desTick(); } catch (e) { } } }
+
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
@@ -10307,7 +10451,7 @@ function openEventDesk(ev) {
     return h;
   }, 'calendar');
 }
-A.contest = v => { const a = byId(+v); if (!a) return; S.agroDay = S.day; const sc = score(a) + rnd(-8, 8), place = sc > 78 ? 1 : sc > 64 ? 2 : sc > 52 ? 3 : 0; const prize = [0, 2500, 1200, 600][place]; if (place) { receive(prize, 'Concurso da feira: ' + place + 'º lugar com ' + a.n); hist(a, place + 'º lugar na feira agropecuária'); toast(a.n + ' ficou em ' + place + 'º lugar! Prêmio ' + fmt(prize)); a.hap = cl(a.hap + 10, 0, 100); } else toast(a.n + ' não ficou entre os três primeiros desta vez.'); renderModal(); checkRank(); };
+A.contest = v => { const a = byId(+v); if (!a) return; S.agroDay = S.day; const sc = score(a) + rnd(-8, 8), place = sc > 78 ? 1 : sc > 64 ? 2 : sc > 52 ? 3 : 0; const prize = [0, 2500, 1200, 600][place]; if (place) { S.stats.premios = (S.stats.premios || 0) + 1; receive(prize, 'Concurso da feira: ' + place + 'º lugar com ' + a.n); hist(a, place + 'º lugar na feira agropecuária'); toast(a.n + ' ficou em ' + place + 'º lugar! Prêmio ' + fmt(prize)); a.hap = cl(a.hap + 10, 0, 100); } else toast(a.n + ' não ficou entre os três primeiros desta vez.'); renderModal(); checkRank(); };
 A.breedSell = v => { const a = byId(+v); if (!a) return; const val = Math.round(animalValue(a) * (1.2 + stars(a) * 0.08)); S.animals.splice(S.animals.indexOf(a), 1); receive(val, 'Reprodutor vendido no encontro: ' + a.n); toast('Vendeu ' + a.n + ' por ' + fmt(val)); renderModal(); checkRank(); };
 A.evAuction = () => { closeModal(); openAgro && openAgro(); };
 A.evDance = () => { closeModal(); act('wave', 2.4, null, () => { let n = 0; for (const e of npcs) if (!e.hidden && hyp(e.x - P.x, e.y - P.y) < 120) { addFr(e.id, 4); n++; e.emote = '♥'; e.et = 2; } P.en = Math.max(0, P.en - 6); toast(n ? 'Dançou com ' + n + ' morador(es)! Amizade aumentou.' : 'Dançou sozinho… chame o povo!'); }, { zoom: false }); };
@@ -12141,7 +12285,7 @@ function w2s(wx, wy) { if (HD.on && !HD.susp && HD.M) { const v = M4.xf(HD.M.VP,
 /* ============ CUTSCENES ============ */
 const CS = { on: false, steps: [], i: 0, t: 0, end: null };
 function sub(t) { const s = $('sub'); s.classList.remove('dl'); s.innerHTML = t; s.style.display = 'block'; }
-function talkShow(who) { const s = $('sub'), me = who === 'me'; const ap = me ? S.cf.ap : NPCDEF[who].ap, nm = me ? esc(S.cf.name) : NPCDEF[who].n; s.classList.add('dl'); s.classList.remove('done'); s.innerHTML = `<div class="pt">${charImg(ap, 4)}</div><div class="bx"><b class="nm">${nm}</b><span class="tx"></span></div>`; s.style.display = 'flex'; }
+function talkShow(who, txt) { const s = $('sub'), me = who === 'me'; const ap = me ? S.cf.ap : NPCDEF[who].ap, nm = me ? esc(S.cf.name) : NPCDEF[who].n; s.classList.add('dl'); s.classList.remove('done'); s.innerHTML = `<div class="pt">${txt !== undefined ? bustImg(ap, moodOf(who, txt), 4) : charImg(ap, 4)}</div><div class="bx"><b class="nm">${nm}</b><span class="tx"></span></div>`; s.style.display = 'flex'; }
 function csTitle(a, b) { const el = $('cstitle'); if (a === null) { CINE.titleT = 0; return; } el.querySelector('.t1').textContent = a; el.querySelector('.t2').textContent = b || ''; el.classList.add('on'); CINE.titleT = 1; }
 function hideSub() { $('sub').style.display = 'none'; }
 function cutscene(steps, end) { closeModal(); CS.on = true; CS.steps = steps; CS.i = 0; CS.t = 0; CS.end = end; CS.warm = []; mode = 'cs'; document.body.classList.add('cs'); CINE.reset(); CINE.phiT = 44; CINE.dofT = 0.35; CINE.driftT = 0.5; CINE.grainT = 0.025; $('skip').style.display = 'block'; input.x = input.y = 0; input.gal = false; startStep(); }
@@ -12319,7 +12463,7 @@ function csSay(who, txt, extra) {
   extra = extra || {}; let shown = 0;
   return Object.assign({}, extra, {
     d: Math.max(3.4, txt.length * 0.058 + 1.9),
-    fn() { talkShow(who); shown = 0; extra.fn && extra.fn(); const e = npcs.find(n => n.id === who); if (e && extra.look !== false) { cam.fx = e.x; cam.fy = e.y - 10; } },
+    fn() { talkShow(who, txt); shown = 0; extra.fn && extra.fn(); const e = npcs.find(n => n.id === who); if (e && extra.look !== false) { cam.fx = e.x; cam.fy = e.y - 10; } },
     upd(dt, u) {
       const n = Math.min(txt.length, Math.ceil(CS.t * 34)), el = document.querySelector('#sub .tx');
       if (el) el.textContent = txt.slice(0, n);
@@ -13306,7 +13450,7 @@ function loop(ts) {
     if (n >= 6) acc = 0;
     ALPHA = cl(acc / STEP, 0, 1);
     if (OPMODES[mode]) { if (HD.on) hdSuspend(); OP.render(); } else { camUpdate(dt); render(dt); } CINE.update(dt); if (!HD.on && !OPMODES[mode]) CINE.post2D(X, W, H); PERF.frame(dt, t1 - t0, performance.now() - t1);
-    if (mode === 'play' || mode === 'cs') { hud(dt); updSheet(dt); AU.ambient(dt); tutFrame(); introTick(dt); mataFrame(dt); critTick(dt); guizFrame(dt); }
+    if (mode === 'play' || mode === 'cs') { hud(dt); updSheet(dt); AU.ambient(dt); tutFrame(); introTick(dt); mataFrame(dt); critTick(dt); guizFrame(dt); v78Tick(dt); }
     MUS.update(dt);
     if ($('setup').style.display !== 'none') drawPreview(dt);
   } catch (err) { console.error(err); }
