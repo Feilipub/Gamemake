@@ -1,0 +1,15 @@
+{
+  "name": "lida-no-sertao-android",
+  "private": true,
+  "version": "7.9.0",
+  "description": "App Android do Lida no Sertão (Capacitor). O jogo vem de ../jogo.",
+  "scripts": {
+    "copiar": "node copiar-jogo.js",
+    "sync": "node copiar-jogo.js && npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.6.10",
+    "@capacitor/cli": "^7.6.10",
+    "@capacitor/core": "^7.6.10"
+  }
+}
