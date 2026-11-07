@@ -381,7 +381,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '7.9.0', SAVE_V = 9;
+const GAME_V = '7.9.1', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -11047,7 +11047,7 @@ function truckSpr(col) { return cached('truck|' + col, 70, 40, g => { const p = 
   p(20, 4, 46, 25, '#7a5430'); for (let x = 20; x < 66; x += 5) p(x, 4, 2, 25, '#5a3a20'); for (let y = 7; y < 28; y += 6) p(20, y, 46, 2, '#9a7048'); p(20, 4, 46, 2, '#b08858');
   [[26, 10, '#e8e0d0'], [37, 9, '#9a4a24'], [48, 11, '#c9984e'], [57, 9, '#eae4d8']].forEach(([x, y, c]) => { p(x, y, 6, 4, c); p(x - 1, y - 2, 1, 2, '#e8dcc0'); p(x + 6, y - 2, 1, 2, '#e8dcc0'); p(x + 2, y + 2, 2, 1, '#2a1a10'); });
   for (const wx of [10, 30, 56]) { p(wx - 4, 28, 9, 9, '#1a1a1e'); p(wx - 2, 30, 5, 5, '#5a5a62'); p(wx - 1, 31, 3, 3, '#9a9aa2'); } }); }
-function drawCSX(add) { for (const t of CSX) add(t.y, () => { const c = truckSpr(t.col); X.save(); if (t.f > 0) { X.translate(Math.round(t.x), 0); X.scale(-1, 1); X.drawImage(c, -35, Math.round(t.y) - 38); } else X.drawImage(c, Math.round(t.x) - 35, Math.round(t.y) - 38); X.restore(); if (t.mv && Math.random() < 0.3) dust(t.x + 30 * (t.f > 0 ? -1 : 1), t.y, 1); }, t.x, { w: 170, h: 110 }); }
+function drawCSX(add) { for (const t of CSX) if (t.v2) add(t.y - 12, () => drawTruck2(t), t.x - (t.f > 0 ? -1 : 1) * TRK_W / 2, { w: 220, h: 130 }); else add(t.y, () => { const c = truckSpr(t.col); X.save(); if (t.f > 0) { X.translate(Math.round(t.x), 0); X.scale(-1, 1); X.drawImage(c, -35, Math.round(t.y) - 38); } else X.drawImage(c, Math.round(t.x) - 35, Math.round(t.y) - 38); X.restore(); if (t.mv && Math.random() < 0.3) dust(t.x + 30 * (t.f > 0 ? -1 : 1), t.y, 1); }, t.x, { w: 170, h: 110 }); }
 /* ============ CENAS CURTAS DA LIDA: caminhão boiadeiro, parto, brete, ladrão, fujão, carro de boi ============ */
 const CSA = []; // figurantes animais das cenas (cópias desenhadas com o rig)
 const cenasOn = () => SET.cenas !== false;
@@ -11059,27 +11059,119 @@ const T2 = (x, y) => [x * TS, y * TS];
 const RAMP = () => FARM.embarque.p, ROADY = 44.7;
 // caminhão: chega pela estrada (leste) e para com a traseira na rampa do embarcadouro
 function truckAt(t, x) { t.x = x; }
-/* ---------- entrega da feira/leilão: o caminhão chega e o gado desce para o Recebimento ---------- */
+/* ---------- caminhão boiadeiro 2.0: rodas girando, balanço da carroceria, fumaça, porta e porteira-rampa ----------
+   t = { v2: 1, x: traseira (onde fica a porteira), y: chão, f: -1 cabine à esquerda / 1 à direita, col, cargo: [cores],
+         wd: distância andada (gira as rodas), mv, brake, door 0..1, gate 0..1 (0 fechada, 1 rampa no chão), drv: motorista na cabine } */
+const TRK_W = 104;
+const easeOut = u => 1 - Math.pow(1 - cl(u, 0, 1), 2), easeIn = u => Math.pow(cl(u, 0, 1), 2.2);
+function drawTruck2(t) {
+  const g = X, x0 = Math.round(t.x), y0 = Math.round(t.y), sx = t.f > 0 ? -1 : 1; // desenha em coordenadas locais: cabine à esquerda, traseira em 0
+  const bob = t.mv ? Math.round(Math.sin((t.wd || 0) * 0.35) * 0.6) : 0;
+  g.save(); g.translate(x0, y0); g.scale(sx, 1);
+  const p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x - TRK_W, y - 54, w, h); }; // origem local: canto esquerdo do caminhão, topo em -54
+  g.fillStyle = 'rgba(20,12,4,0.32)'; g.beginPath(); g.ellipse(-TRK_W / 2, 0, TRK_W / 2 + 4, 5, 0, 0, 7); g.fill();
+  // chassi
+  p(6, 44, 94, 4, '#26262a'); p(2, 41, 9, 4, '#9a9aa2'); p(2, 41, 9, 1, '#d8d8e0');
+  // carroceria de madeira com o gado aparecendo entre as tábuas
+  const cy = 6 + bob, cargo = t.cargo || [];
+  p(30, cy, 70, 38, '#3a2414');
+  cargo.slice(0, 4).forEach((c, i) => { // bois de lado, cabeça para a cabine, aparecendo entre as tábuas
+    const bx = 33 + i * 16, hb = Math.round(Math.sin(drawT * 2 + i * 1.7) * 0.7), hy = cy + 12 + hb, dk = shade(c, -0.22), lt = shade(c, 0.18);
+    p(bx + 3, hy + 2, 15, 10, c); p(bx + 4, hy + 1, 13, 2, lt); p(bx + 3, hy + 10, 15, 2, dk); p(bx + 14, hy + 1, 4, 3, c);
+    p(bx - 1, hy - 2 + (i % 2), 6, 6, c); p(bx - 1, hy - 2 + (i % 2), 6, 1, lt); p(bx - 2, hy + 1 + (i % 2), 2, 3, shade(c, -0.1)); p(bx - 2, hy + 3 + (i % 2), 1, 1, '#1a1008');
+    p(bx + 1, hy - 4 + (i % 2), 1, 2, '#e8dcc0'); p(bx + 4, hy - 4 + (i % 2), 1, 2, '#e8dcc0'); p(bx + 2, hy + 1 + (i % 2), 1, 1, '#1a1008'); p(bx + 5, hy - 1 + (i % 2), 2, 1, dk); });
+  for (let yy = cy + 1; yy < cy + 37; yy += 7) { p(30, yy, 70, 3, '#8a5c30'); p(30, yy, 70, 1, '#b08452'); }
+  for (let xx = 30; xx <= 98; xx += 10) { p(xx, cy, 3, 38, '#5a3a1c'); p(xx, cy, 1, 38, '#7a5430'); }
+  p(29, cy - 1, 72, 3, '#a87a48'); p(29, cy - 1, 72, 1, '#d0a46a'); p(29, cy + 36, 72, 3, '#4a2e14');
+  // cabine
+  const by = 15 + bob, col = t.col || '#c83a2a';
+  p(5, by + 4, 23, 26, col); p(9, by, 19, 6, col); p(9, by, 19, 1, shade(col, 0.3)); p(5, by + 4, 4, 1, shade(col, 0.3));
+  p(5, by + 4, 23, 2, shade(col, 0.2)); p(5, by + 22, 23, 2, shade(col, -0.25)); p(5, by + 24, 23, 2, '#e8e0c8'); // faixa
+  p(6, by + 6, 6, 9, '#7ab4d4'); p(6, by + 6, 6, 2, '#cfeaf8'); // para-brisa
+  p(14, by + 6, 11, 8, '#6aa4c4'); p(14, by + 6, 11, 2, '#c6e4f4'); // janela da porta
+  if (t.drv) { p(18, by + 9, 4, 5, '#c08a5a'); p(17, by + 7, 6, 2, '#2e5a9a'); }
+  p(3, by + 18, 3, 4, '#ffe890'); p(3, by + 18, 3, 1, '#fff8d0'); p(4, by + 23, 3, 3, '#5a5a62'); // farol e grade
+  p(26, by - 6, 2, 30, '#6a6a72'); p(26, by - 7, 3, 2, '#3a3a40'); // escapamento
+  p(26, by + 8, 3, 2, '#2a2a2e'); // retrovisor
+  // porta (abre para fora)
+  const dr = t.door || 0;
+  if (dr > 0.05) { p(13, by + 5, 13, 18, '#1a1410'); const w = Math.max(2, Math.round(13 * (1 - dr * 0.75))); p(13 - (13 - w), by + 6 + Math.round(dr * 2), w, 18, shade(col, 0.12)); p(13 - (13 - w), by + 6 + Math.round(dr * 2), w, 1, shade(col, 0.35)); }
+  else { p(13, by + 5, 1, 19, shade(col, -0.35)); p(25, by + 5, 1, 19, shade(col, -0.35)); p(22, by + 15, 2, 1, '#2a2a2e'); }
+  // lanterna traseira (acende ao frear)
+  p(99, 40, 3, 3, t.brake ? '#ff4a3a' : '#8a1a12'); if (t.brake) { g.fillStyle = 'rgba(255,60,40,0.25)'; g.fillRect(99 - TRK_W - 2, 40 - 54 - 2, 7, 7); }
+  // rodas (raios girando)
+  const rot = (t.wd || 0) / 6;
+  for (const wx of [17, 70, 84]) { const cx = wx - TRK_W, cyw = 47 - 54; g.fillStyle = '#141416'; g.beginPath(); g.arc(cx, cyw, 6.5, 0, 7); g.fill(); g.fillStyle = '#4a4a52'; g.beginPath(); g.arc(cx, cyw, 3.6, 0, 7); g.fill(); g.fillStyle = '#b8b8c0';
+    for (let k = 0; k < 4; k++) { const a = rot + k * Math.PI / 2; g.fillRect(Math.round(cx + Math.cos(a) * 2.4) - 0.5, Math.round(cyw + Math.sin(a) * 2.4) - 0.5, 1.5, 1.5); } g.fillStyle = '#d8d8e0'; g.fillRect(cx - 1, cyw - 1, 2, 2); }
+  // porteira traseira que vira rampa
+  const ga = (t.gate || 0) * 1.84; g.save(); g.translate(100 - TRK_W, 44 - 54); g.rotate(ga);
+  g.fillStyle = '#5a3a1c'; g.fillRect(0, -36, 4, 37); g.fillStyle = '#9a6a3a'; for (let yy = -34; yy < 0; yy += 6) g.fillRect(0, yy, 4, 3); g.fillStyle = '#c09060'; g.fillRect(0, -36, 1, 37);
+  g.restore();
+  g.restore();
+}
+// fumaça do escapamento e poeira das rodas
+function truckFx(t, dt, acc) {
+  const sx = t.f > 0 ? -1 : 1, ex = t.x + sx * (27 - TRK_W), ey = t.y - 61;
+  if (Math.random() < dt * (acc ? 14 : t.mv ? 6 : 1.5)) part(ex, ey, 'dust', { vx: rnd(-6, 6) - sx * (t.mv ? 10 : 0), vy: rnd(-22, -12), m: rnd(1.2, 2), c: acc ? '#5a5a5a' : '#8a8a8a' });
+  if (t.mv && Math.random() < dt * 10) dust(t.x + sx * (rnd(-90, -10)), t.y, 1);
+}
+const DRIVER_AP = { sex: 'M', skin: 3, hair: 0, hairC: 0, hat: 5, shirt: 1, shirtC: 1, pants: 0, pantsC: 0, boots: 0, acc: 0, scarfC: 0, orn: 'none', beard: 2 };
+function actorWalk(a, x1, y1, u, x0, y0) { const k = cl(u, 0, 1), nx = lerp(x0, x1, k), ny = lerp(y0, y1, k), dx = nx - a.x; if (Math.abs(nx - a.x) + Math.abs(ny - a.y) > 0.05) { a.pose = 'walk'; a.fr = Math.floor(drawT * 9) % 8; a.dir = Math.abs(dx) > Math.abs(ny - a.y) ? (dx < 0 ? 2 : 3) : (ny < a.y ? 1 : 0); } else { a.pose = 'idle'; a.fr = 0; } a.x = nx; a.y = ny; }
+/* ---------- entrega da feira/leilão (2.0): o caminhão chega, o motorista desce e abre a porteira, o gado desce para o Recebimento ---------- */
 function csTruckIn(ids) {
   const L = ids.map(byId).filter(Boolean); if (!L.length) return;
-  const [rx] = RAMP(), stopX = rx * TS - 26, y = ROADY * TS, t = { x: stopX + 360, y, f: -1, col: pick(['#c83a2a', '#2a5a9a', '#e0b030', '#3a7a3a']), mv: 1 };
+  const gy = ROADY * TS, rear = 55.4 * TS, start = rear + 520, ramp = { x0: rear - 4, y0: gy - 10, x1: rear + 31, y1: gy };
+  const t = { v2: 1, x: start, y: gy, f: -1, col: pick(['#c83a2a', '#2a5a9a', '#e0b030', '#3a7a3a']), mv: 1, wd: 0, gate: 0, door: 0, drv: 1, cargo: L.slice(0, 8).map(a => (CATTLE[a.br] || {}).c || '#c9984e') };
   const finals = L.map(a => [a.x, a.y]); L.forEach(a => { a._hid = true; });
-  const C = L.slice(0, 8).map(a => { const c = csClone(a); c.x = stopX + 26; c.y = y - 6; return c; });
-  const steps = [{ fade: 0, cam: [rx - 2, 42.5], snap: 1, z: 1.6, txt: '🚚 O caminhão boiadeiro chegou com ' + (L.length === 1 ? L[0].n : L.length + ' animais') + '!', d: 2.4, fn: () => { CSX.push(t); }, upd: (dt, u) => { t.x = lerp(stopX + 360, stopX, Math.min(1, u * 1.15)); t.mv = u < 0.87 ? 1 : 0; if (Math.random() < dt * 3) AU.cartRattle(); } }];
-  steps.push({ txt: 'O motorista abaixa a rampa e o gado desce para o curral de Recebimento.', d: 1.2 + C.length * 0.6, upd: (dt, u) => { C.forEach((c, i) => { const s0 = i / (C.length + 1), k = cl((u - s0) / 0.45, 0, 1); const gate = T2(54.5, 42.6), inside = finals[i]; csWalk(c, [[stopX + 26, y - 6], [gate[0] + 10, y - 14], gate, inside], k, dt); if (k > 0 && k < 1 && Math.random() < dt * 0.8 && c.sp === 'boi') AU.moo(c.x, c.y, c.age < 12 ? 1.5 : 1); }); } });
-  steps.push({ txt: L.length > C.length ? '…e mais ' + (L.length - C.length) + '. Todos no Recebimento.' : 'Entregue! Deixe os novos uns dias na quarentena antes de juntar com o rebanho.', d: 2.2, upd: (dt, u) => { t.x = stopX - u * 380; t.mv = 1; C.forEach(c => { c._pose = 'idle'; c._mv = 0; }); } });
+  const C = L.slice(0, 6).map(a => { const c = csClone(a); c.x = rear - 6; c.y = gy - 10; c._csHide = 1; c.f = 1; return c; });
+  const emb = T2(57.6, 42.6), dentro = T2(57.0, 41.2), cabX = rear - TRK_W + 18, drvY = gy + 6;
+  let drv = null, x0 = start;
+  const pAt = [58.7 * TS, 44.5 * TS];
+  const steps = [
+    { fade: 0, cam: [54.6, 43.2], snap: 1, z: 1.5, txt: '🚚 Lá vem o caminhão boiadeiro pela estrada do leste…', d: 4.2, fn: () => { CSX.push(t); P.mnt = null; P.cart = false; P.x = pAt[0]; P.y = pAt[1]; P.dir = 2; P._act = null; },
+      upd: (dt, u) => { const k = easeOut(u / 0.92), nx = lerp(start, rear, k); t.wd += Math.abs(nx - t.x); t.x = nx; t.mv = u < 0.9; t.brake = u > 0.55 && u < 0.95; truckFx(t, dt, false); if (Math.random() < dt * 2.5 && t.mv) AU.cartRattle(); if (u > 0.88 && !t._psh) { t._psh = 1; AU.nz(0.5, 0.05, 'highpass', 2500, 0.7); } } },
+    { txt: 'O motorista desce da cabine.', d: 2.2, fn: () => { t.brake = 0; drv = cineActor({ ap: DRIVER_AP, x: cabX, y: drvY, dir: 3, alpha: 0 }); },
+      upd: (dt, u) => { truckFx(t, dt, false); t.door = cl(u * 3, 0, 1) * (u < 0.75 ? 1 : cl((1 - u) * 4, 0, 1)); if (u > 0.25) { t.drv = 0; drv.alpha = 1; actorWalk(drv, rear + 4, drvY + 12, (u - 0.3) / 0.65, cabX, drvY); } if (u > 0.2 && !t._dsnd) { t._dsnd = 1; AU.nz(0.12, 0.05, 'bandpass', 900, 2); } } },
+    { txt: 'Ele solta a trava e abaixa a porteira, que vira rampa.', d: 1.8, fn: () => { drv.dir = 2; drv.pose = 'wave'; },
+      upd: (dt, u) => { drv.fr = Math.floor(drawT * 3) % 2; const k = easeIn(cl((u - 0.15) / 0.75, 0, 1)); t.gate = k; if (Math.random() < dt * 6 && k > 0 && k < 1) AU.nz(0.06, 0.03, 'bandpass', 380 + k * 300, 4); if (k >= 1 && !t._land) { t._land = 1; dust(ramp.x1, ramp.y1, 6); AU.nz(0.18, 0.08, 'lowpass', 220, 1); } } }
+  ];
+  const per = 1.05, dDesce = 0.9 + C.length * per + 1.6;
+  steps.push({ txt: 'O gado desce a rampa e sobe pelo embarcadouro para o curral de Recebimento.', d: dDesce, fn: () => { drv.pose = 'idle'; drv.dir = 0; },
+    upd: (dt, u) => { const T = u * dDesce;
+      C.forEach((c, i) => { const s0 = 0.5 + i * per, k = (T - s0) / 2.6; if (k < 0) return; if (c._csHide) { c._csHide = 0; t.cargo = t.cargo.slice(1); AU.moo(c.x, c.y, c.age < 12 ? 1.5 : 1); }
+        const pts = [[ramp.x0 - 6, ramp.y0], [ramp.x1 + 4, ramp.y1 + 2], [emb[0], emb[1] + 6], dentro, finals[i]]; csWalk(c, pts, cl(k, 0, 1), dt);
+        if (k < 0.25) c.y -= Math.abs(Math.sin(k * 40)) * 2; // pulinho na rampa
+        if (k > 0 && k < 1 && Math.random() < dt * 6) dust(c.x, c.y, 1); });
+      if (C.length < L.length) t.cargo = u > 0.9 ? [] : t.cargo;
+      drv.pose = Math.floor(drawT * 1.5) % 3 === 0 ? 'wave' : 'idle'; drv.fr = Math.floor(drawT * 3) % 2;
+      cam.fx = lerp(55 * TS, 55.6 * TS, u); cam.fy = lerp(43.2 * TS, 41.8 * TS, u); } });
+  if (L.length > C.length) steps.push({ txt: '…e mais ' + (L.length - C.length) + ' animal(is) descem atrás.', d: 1.8, upd: (dt) => { if (Math.random() < dt * 2) AU.moo(emb[0], emb[1], 0.9); if (Math.random() < dt * 8) dust(ramp.x1, ramp.y1, 1); } });
+  steps.push({ cam: [57.4, 43.3], z: 1.9, spd: 1.2, txt: 'O motorista entrega a GTA e a nota: “Tudo conferido, patrão. Gado bom, viu?”', d: 3.2, fn: () => { C.forEach(c => { c._pose = 'idle'; c._mv = 0; }); },
+    upd: (dt, u) => { actorWalk(drv, pAt[0] - 16, pAt[1], u / 0.45, rear + 4, drvY + 12); if (u > 0.45) { drv.dir = 3; drv.pose = 'feed'; drv.fr = 0; P.dir = 2; P._act = u < 0.8 ? { k: 'reach', t: (u - 0.45) / 0.35, dur: 1, a: { x: drv.x, y: drv.y - 10 }, opt: {} } : null; } } });
+  steps.push({ cam: [55.5, 43.6], z: 1.5, spd: 1, txt: 'Porteira fechada, buzina e poeira na estrada.', d: 3.6, fn: () => { P._act = null; },
+    upd: (dt, u) => { if (u < 0.35) { t.gate = 1 - easeOut(u / 0.3); actorWalk(drv, cabX, drvY, u / 0.35, pAt[0] - 16, pAt[1]); }
+      else if (u < 0.45) { drv.alpha = 0; t.drv = 1; t.door = u < 0.4 ? 1 : 0; if (!t._horn) { t._horn = 1; AU.osc('square', 330, 330, 0.18, 0.05); AU.osc('square', 392, 392, 0.18, 0.04, { delay: 0.22 }); } }
+      else { const k = easeIn((u - 0.45) / 0.55), nx = lerp(rear, rear - 640, k); t.wd += Math.abs(nx - t.x); t.x = nx; t.mv = 1; truckFx(t, dt, true); } } });
+  steps.push({ cam: [55, 39.5], z: 1.4, spd: 1, txt: L.length === 1 ? esc(L[0].n) + ' já está no Recebimento. Deixe uns dias na quarentena antes de juntar com o rebanho.' : 'Os ' + L.length + ' novos estão no Recebimento. Deixe uns dias na quarentena antes de juntar com o rebanho.', d: 3, fn: () => { CSX.length = 0; } });
   steps.push({ clr: 1, d: 0.1 });
-  cutscene(steps, () => { L.forEach(a => { a._hid = false; }); csClear(); });
+  cutscene(steps, () => { L.forEach(a => { a._hid = false; }); P._act = null; csClear(); });
 }
-/* ---------- venda: o caminhão vem buscar no embarcadouro ---------- */
+
+/* ---------- venda (2.0): o caminhão do frigorífico encosta, o gado sobe a rampa e ele parte ---------- */
 function csTruckOut(clones, total, label) {
-  const [rx] = RAMP(), stopX = rx * TS - 26, y = ROADY * TS, t = { x: stopX + 360, y, f: -1, col: '#7a7a82', mv: 1 };
-  const C = clones.slice(0, 8); C.forEach(c => CSA.push(c));
-  const gate = T2(44.5, 42.7);
+  const gy = ROADY * TS, rear = 55.4 * TS, start = rear + 520, ramp = { x0: rear - 4, y0: gy - 10, x1: rear + 31, y1: gy };
+  const t = { v2: 1, x: start, y: gy, f: -1, col: '#7a7a82', mv: 1, wd: 0, gate: 0, door: 0, drv: 1, cargo: [] };
+  const C = clones.slice(0, 6); C.forEach(c => { CSA.push(c); c._csHide = 0; }); const emb = T2(57.6, 42.6), dentro = T2(57.0, 41.2);
+  const dSobe = 0.8 + C.length * 0.95 + 1.8;
   cutscene([
-    { fade: 0, cam: [rx - 5, 42.5], snap: 1, z: 1.5, txt: '🚛 O caminhão do frigorífico encosta no embarcadouro.', d: 2.2, fn: () => CSX.push(t), upd: (dt, u) => { t.x = lerp(stopX + 360, stopX, Math.min(1, u * 1.15)); t.mv = u < 0.87 ? 1 : 0; } },
-    { txt: 'O gado sobe a rampa…', d: 1.2 + C.length * 0.55, upd: (dt, u) => { C.forEach((c, i) => { const s0 = i / (C.length + 1), k = cl((u - s0) / 0.5, 0, 1); csWalk(c, [[c._sx, c._sy], gate, [gate[0], y - 12], [stopX + 22, y - 12], [stopX + 6, y - 6]], k, dt); c._csHide = k >= 1; }); } },
-    { txt: label + ' Pagamento: <b>' + fmt(total) + '</b> na conta.', d: 2.4, fn: () => { C.forEach(c => { c._csHide = 1; }); AU.coin && AU.coin(); }, upd: (dt, u) => { t.x = stopX - u * 380; t.mv = 1; } },
+    { fade: 0, cam: [54.6, 43], snap: 1, z: 1.5, txt: '🚛 O caminhão do frigorífico encosta no embarcadouro.', d: 3.6, fn: () => CSX.push(t),
+      upd: (dt, u) => { const nx = lerp(start, rear, easeOut(u / 0.92)); t.wd += Math.abs(nx - t.x); t.x = nx; t.mv = u < 0.9; t.brake = u > 0.55 && u < 0.95; truckFx(t, dt, false); if (u > 0.88 && !t._psh) { t._psh = 1; AU.nz(0.5, 0.05, 'highpass', 2500, 0.7); } } },
+    { txt: 'A porteira desce e vira rampa.', d: 1.4, fn: () => { t.brake = 0; }, upd: (dt, u) => { t.gate = easeIn(u / 0.85); if (t.gate >= 1 && !t._land) { t._land = 1; dust(ramp.x1, ramp.y1, 6); AU.nz(0.18, 0.08, 'lowpass', 220, 1); } } },
+    { txt: 'O gado sai do curral pelo embarcadouro e sobe a rampa…', d: dSobe, upd: (dt, u) => { const T = u * dSobe;
+      C.forEach((c, i) => { const k = (T - 0.4 - i * 0.95) / 2.4; if (k < 0 || c._csHide) return; csWalk(c, [[c._sx, c._sy], dentro, [emb[0], emb[1] + 6], [ramp.x1 + 4, ramp.y1 + 2], [ramp.x0 - 6, ramp.y0]], cl(k, 0, 1), dt);
+        if (k > 0.8) c.y -= Math.abs(Math.sin(k * 40)) * 2; if (k >= 1) { c._csHide = 1; t.cargo = t.cargo.concat([(CATTLE[c.br] || {}).c || '#c9984e']); AU.moo(c.x, c.y, 0.9); } if (Math.random() < dt * 6) dust(c.x, c.y, 1); }); } },
+    { txt: label + ' Pagamento: <b>' + fmt(total) + '</b> na conta.', d: 3, fn: () => { C.forEach(c => { c._csHide = 1; }); AU.coin && AU.coin(); },
+      upd: (dt, u) => { if (u < 0.3) t.gate = 1 - easeOut(u / 0.28); else { const nx = lerp(rear, rear - 640, easeIn((u - 0.3) / 0.7)); t.wd += Math.abs(nx - t.x); t.x = nx; t.mv = 1; truckFx(t, dt, true); } } },
     { clr: 1, d: 0.1 }
   ], () => csClear());
 }
