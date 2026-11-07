@@ -311,6 +311,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 .ialert{display:flex;gap:8px;align-items:flex-start;cursor:pointer}.ialert img{flex:none;margin-top:2px}
 .bust{flex:none;padding:3px;background:radial-gradient(circle at 50% 40%,#7a5030,#2a160a);border:3px solid #c8924a;box-shadow:inset 0 0 0 2px #0006;line-height:0}.bust img{image-rendering:pixelated}
 #tipC{position:absolute;left:50%;transform:translate(-50%,-12px);top:calc(150px + var(--sat));width:min(92%,460px);z-index:40;background:#fff4d6;color:#2b1608;border:3px solid var(--ink);box-shadow:0 0 0 2px #f0c04a,0 6px 0 #0006;padding:8px 10px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}#tipC.on{opacity:1;pointer-events:auto;transform:translate(-50%,0)}#tipC .tb{display:flex;gap:6px;align-items:center;margin-bottom:4px;color:#8a4a10}#tipC .tt{font-size:calc(13px*var(--fs));line-height:1.35}#tipC .tr{display:flex;gap:6px;justify-content:flex-end;margin-top:6px}#tipC button{padding:4px 10px;font-size:calc(12px*var(--fs))}body.cs #tipC,body:has(#mn.on) #tipC{display:none}body:has(#tipC.on) #msg,body:has(#tipC.on) #jorn{opacity:0!important}body.lan #tipC{top:calc(70px + var(--sat))}
+#bg{position:relative}#bg .stb{position:absolute;left:5%;bottom:3px;height:4px;border-radius:2px;pointer-events:none;box-shadow:0 0 0 1px #0006}
 #toast div{background:#2b1608;color:#ffe08a;border:2px solid var(--gold);box-shadow:0 0 0 2px #110905;padding:3px 8px;font-size:calc(12px*var(--fs));animation:tf 2.8s forwards;text-align:center}
 @keyframes tf{0%{opacity:0;transform:translateY(6px)}8%{opacity:1;transform:none}82%{opacity:1}100%{opacity:0}}
 .slot{display:flex;gap:8px;align-items:center}
@@ -381,7 +382,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '7.9.2', SAVE_V = 9;
+const GAME_V = '7.9.3', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -5446,13 +5447,17 @@ function updPlayer(dt) {
   let maxV, acc, dec, hb, gallop = false, B = null;
   if (horse) {
     const st = horseStats(horse); B = st.B; const sd = st.sd; hb = HB.horse; if (horse._stam === undefined) horse._stam = 100;
-    gallop = galOn && horse._stam > 6 && mag > 0.35; if (gallop && horse.sp === 'jumento' && horse.temp === 'teimoso') { if (horse._balk === undefined || (horse._balkT -= dt) < 0) { horse._balkT = 4; horse._balk = Math.random() < 0.25; if (horse._balk) say(horse.n + ' empacou: jegue teimoso não quer correr agora!', 1800); } if (horse._balk) gallop = false; }
+    if (horse._winded && horse._stam >= 30) horse._winded = false; // esgotado: só volta a galopar com 30% de fôlego
+    gallop = galOn && !horse._winded && horse._stam > 0.5 && mag > 0.35; if (gallop && horse.sp === 'jumento' && horse.temp === 'teimoso') { if (horse._balk === undefined || (horse._balkT -= dt) < 0) { horse._balkT = 4; horse._balk = Math.random() < 0.25; if (horse._balk) say(horse.n + ' empacou: jegue teimoso não quer correr agora!', 1800); } if (horse._balk) gallop = false; }
     const stim = S.cf.aj, perkM = perk() === 'pantano' ? 0.7 : 1, trav = horse.travel ? 0.7 : 1;
-    maxV = gallop ? B.v[2] * 0.95 * sd.ac * (stim === 0 ? 1.1 : 1) * (1 + skill('mon') * 0.03) * (0.85 + horse.cond / 650) : B.v[0] * 1.05;
+    maxV = gallop ? B.v[2] * 0.95 * sd.ac * (stim === 0 ? 1.1 : 1) * (1 + skill('mon') * 0.03) * (0.85 + horse.cond / 650) * (horse._stam < 25 ? 0.72 + horse._stam / 25 * 0.28 : 1) : B.v[0] * 1.05; // com pouco fôlego vai perdendo velocidade aos poucos
     acc = gallop ? 70 * (B.ac || 2) * sd.ac : 220; dec = gallop ? 170 : 300; maxV *= 1 - mudAt(P.x, P.y) * (B.wade ? 0.07 : 0.22); { const wd = waterDepthAt(P.x, P.y); if (wd > 0.05) maxV *= 1 - wd * (B.wade ? 0.22 : 0.5); }
     const sp = hyp(P._vx, P._vy);
-    if (sp > B.v[0] * 1.3) horse._stam -= dt * B.cost * 0.75 * sd.cost * (stim === 0 ? 1.25 : stim === 2 ? 0.8 : 1) * perkM * trav; else horse._stam = Math.min(100, horse._stam + dt * B.rec * 0.45 * sd.rec);
-    if (horse._stam < 15 && gallop) tip('stam', 'O fôlego do cavalo está acabando. Solte o Galope para ele recuperar.');
+    // fôlego: só o galope gasta (Mangalarga ~40 s de galope, Crioulo ~55 s, Puro-Sangue ~25 s); recupera andando e mais rápido parado
+    if (gallop && sp > B.v[0] * 1.3) { horse._stam = Math.max(0, horse._stam - dt * B.cost * 0.16 * sd.cost * (stim === 0 ? 1.25 : stim === 2 ? 0.8 : 1) * perkM * trav * (horse.cond < 40 ? 1.2 : 1)); if (horse._stam <= 0.5) { horse._winded = true; say(horse.n + ' está sem fôlego! Deixe ele andar um pouco para recuperar.', 2600); AU.neigh && AU.neigh(P.x, P.y); } }
+    else horse._stam = Math.min(100, horse._stam + dt * B.rec * (sp < 4 ? 0.22 : sp < B.v[0] * 1.3 ? 0.13 : 0.06) * sd.rec);
+    if (horse._stam < 20 && gallop) tip('stam', 'O fôlego do cavalo está acabando: ele já vai perdendo velocidade. Solte o Galope ou pare um pouco para ele recuperar.');
+    if (gallop && horse._stam < 18 && Math.random() < dt * 0.8) part(P.x + (P.dir === 2 ? -14 : 14), P.y - 26, 'dust', { vx: rnd(-6, 6), vy: rnd(-10, -4), m: 0.8, c: '#e8e8e8' }); // bufando
   } else {
     const run = galOn && P.en > 4 && mag > 0.5; maxV = (run ? 58 : 36) * (1 - mudAt(P.x, P.y) * 0.3); if (P.en < 5) maxV *= 0.65; { const wd = waterDepthAt(P.x, P.y); if (wd > 0.05) { maxV *= 1 - wd * 0.6; if (wd > 0.82) P.en = Math.max(0, P.en - dt * 0.3); } } acc = run ? 520 : 620; dec = 760; hb = HB.foot;
     if (run && hyp(P._vx, P._vy) > 40) P.en = Math.max(0, P.en - dt * 0.25 * (perk() === 'resistente' ? 0.8 : 1));
@@ -12359,7 +12364,7 @@ function hud(dt) {
   $('hEn').style.width = P.en + '%'; $('hFo').style.width = P.fo + '%';
   const h = P.mnt ? byId(P.mnt) : null;
   $('bm').innerHTML = (P.mnt ? '' : ic('mount', 14)) + (P.cart ? 'Descer' : P.mnt ? 'Desmontar' : 'Montar'); $('bl').innerHTML = ic('lasso', 14) + (lasso.t ? 'Soltar' : 'Laço'); $('ba').innerHTML = ic('note', 14) + 'Aboio';
-  $('bg').innerHTML = ic(h ? 'horse' : 'boot', 14) + (h ? Math.round(h._stam || 0) + '%' : P.cart ? '—' : 'Correr');
+  { const st = h ? h._stam || 0 : 0, col = h && h._winded ? '#c0392b' : st < 25 ? '#e0702a' : st < 55 ? '#e0c040' : '#4caf50'; $('bg').innerHTML = ic(h ? 'horse' : 'boot', 14) + (h ? (h._winded ? 'Cansado' : Math.round(st) + '%') : P.cart ? '—' : 'Correr') + (h ? `<i class="stb" style="width:${Math.max(2, st * 0.9)}%;background:${col}"></i>` : ''); }
   const c = P._ctx; const bx = $('bx'); bx.textContent = c ? noEmo(c.label) : (P._auto ? 'Indo…' : 'Ação'); bx.classList.toggle('off', !c);
 }
 
