@@ -26,12 +26,12 @@ module.exports = { nome: 'Mata Grande: lugares, coleta, caderneta e o Barbatão'
   const id = await t.ev('S.barb && S.barb.id'); t.ok(!!id, 'o Barbatão aparece na Grota depois do causo da fogueira');
   await t.ev(`const b = byId(${id}); window.__dogs = myAnimals('cao'); S.animals = S.animals.filter(a => a.sp !== 'cao'); byId(${id})._acu = 0; P.mnt = mainHorse().id; P.x = b.x - 4 * TS; P.y = b.y; 0`);
   await t.espera(1500); t.ok(await t.ev(`hyp(byId(${id}).x - MG.grota[0] * TS, byId(${id}).y - MG.grota[1] * TS) > 4`), 'ele foge quando o vaqueiro chega perto');
-  await t.ev(`const b = byId(${id}); b._acu = 0; P.x = b.x - 20; P.y = b.y; lasso.t = null; doLasso(); 0`);
-  t.ok(await t.ev('lasso.t === null'), 'sem acuar, o laço não pega o Barbatão');
+  await t.ev(`const b = byId(${id}); b._acu = 0; P.x = b.x - 20; P.y = b.y; lasso.t = null; lasso.aim = null; doLasso(); if (lasso.aim) { lasso.aim.t0 = drawT - (1.5 * Math.PI) / lasso.aim.spd; doLasso(); } 0`); await t.ate('!lasso.fly', 3000);
+  t.ok(await t.ev('lasso.t === null'), 'sem acuar, o laço não pega o Barbatão (nem com a mira certa)');
   await t.ev(`const b = byId(${id}); for (const d of window.__dogs) S.animals.push(d); const d = window.__dogs[0]; d.x = b.x + 12; d.y = b.y; 0`);
   t.ok(await t.ate(`byId(${id})._acu > 0`), 'os cães acuam o Barbatão');
-  await t.ev(`const b = byId(${id}); P.x = b.x - 20; P.y = b.y; doLasso(); 0`);
-  t.ok(await t.ev(`lasso.t && lasso.t.id === ${id}`), 'acuado, ele é laçado');
+  await t.ev(`const b = byId(${id}); P.x = b.x - 20; P.y = b.y; lasso.aim = null; doLasso(); lasso.aim.t0 = drawT - (1.5 * Math.PI) / lasso.aim.spd; doLasso(); 0`); await t.ate('!lasso.fly', 3000);
+  t.ok(await t.ev(`lasso.t && lasso.t.id === ${id}`), 'acuado, ele é laçado (mira no anel verde)');
   await t.ev(`const b = byId(${id}); const r = AREAS.p1.r; b.x = (r[0] + 3) * TS; b.y = (r[1] + 3) * TS; P.x = b.x + 20; P.y = b.y; 0`);
   t.ok(await t.ate('S.barb.caught > 0'), 'levado ao pasto da fazenda, o Barbatão é seu');
   t.igual(await t.ev(`byId(${id}).own`), 'player', 'o Barbatão agora é do jogador');

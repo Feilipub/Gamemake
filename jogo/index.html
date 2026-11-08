@@ -9847,7 +9847,7 @@ doLasso = function () {
 function lassoThrow() {
   const A0 = lasso.aim; lasso.aim = null; if (!A0 || !A0.t) return; const t = A0.t, ring = lassoRing(A0);
   const q = ring.green ? 1 : ring.u < A0.win + 0.18 ? 0.35 : 0; // perto do verde ainda tem uma chance
-  const ok = Math.random() < q && !(t.barb === 1 && !(t._acu > 0) && Math.random() < 0.7);
+  const ok = Math.random() < q && !(t.barb === 1 && !(t._acu > 0)); // o Barbatão só cai no laço acuado pelos cães
   lasso.fly = { x0: P.x, y0: P.y - (P.mnt ? 30 : 20), t: 0, d: 0.32, tg: t, ok, perfect: ring.u < A0.win * 0.4 };
   AU.lasso && AU.lasso(); P.en = Math.max(0, P.en - 1.5);
 }

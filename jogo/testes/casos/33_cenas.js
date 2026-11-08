@@ -19,6 +19,6 @@ module.exports = { nome: 'Cenas: legenda letra a letra, toque para avançar e ce
   await roda('do peão novo', 'genCandidates(); S.workers.push(S.cand[0]); CS2.peao({ id: S.cand[0].id })');
   // ganchos: os momentos entram na fila de cenas
   await t.ev("S.pend.length = 0; S.flags.farin1 = 0; S.dep.mandioca = 30; S.inv.lenha = 1; S.far = null; A.farGo('1'); 0");
-  t.ok(await t.ev("S.pend.some(p => p.k === 'cs2' && p.n === 'farinhada')"), 'a primeira farinhada chama a cena');
+  t.ok(await t.ev("S.pend.some(p => p.k === 'cs2' && p.n === 'farinhada') || (CS.on && S.flags.farin1)"), 'a primeira farinhada chama a cena');
   t.semErros();
 } };

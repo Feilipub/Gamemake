@@ -11,7 +11,7 @@ module.exports = { nome: 'Auditoria: pai da cria no save, ITR, sinuca, fogueira 
   const v = await t.ev("S.itr = { y: -1, v: 1000, due: 1, paid: 0, late: 1 }; let d = S.day; while (!(calDate(d).m === 7 && calDate(d).d === 1)) d++; S.day = d; custosDay(); S.itr.v");
   t.ok(v > 1000, 'o ITR atrasado não some quando chega o boleto novo (' + v + ')');
   // sinuca tem limite diário
-  await t.ev("S.cash += 500; window.__n = 0; for (let i = 0; i < 8; i++) { const c0 = S.cash; sinuca(); if (S.cash < c0) window.__n++; P._act = null; } 0");
+  await t.ev("S.cash += 500; window.__n = 0; for (let i = 0; i < 8; i++) { const c0 = S.cash; sinuca(); if (S.cash < c0) window.__n++; P._act = null; SN.on = false; closeModal(); } 0");
   t.igual(await t.ev('window.__n'), 5, 'a sinuca aceita só 5 partidas valendo por dia');
   // save antigo (sem parto) ganha a fogueira e o baú
   await t.ev("S.story = { intro: 1, mem: {}, seen: {} }; delete S.bau; S.min = 19 * 60; 0");
