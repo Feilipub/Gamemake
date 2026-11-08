@@ -8760,7 +8760,7 @@ function csChuva() {
   cutscene([
     { fade: 1, d: 0.4 },
     { fade: 0, cam: [px, py], snap: 1, z: 1.4, pitch: 38, dof: 0.3, txt: 'Um trovão rola longe, lá pras bandas da serra…', d: 3.2, fn: () => { S.weather = 'nublado'; if (S.wx) S.wx.ci = 0.9; AU.thunder && AU.thunder(); } },
-    { cam: [px + 4, py - 2], spd: 0.7, txt: '🌧 <b>Chegou a chuva!</b> O cheiro de terra molhada toma conta do sertão.', d: 4.2, fn: () => { S.weather = 'chuva'; if (S.wx) { S.wx.ri = 0.85; S.wx.ci = 0.95; } AU.thunder && setTimeout(() => AU.thunder(), 900); } },
+    { cam: [px + 4, py - 2], spd: 0.7, txt: '🌧 <b>Chegou a chuva!</b> O cheiro de terra molhada toma conta do sertão.', d: 4.2, fn: () => { S.weather = 'chuva'; if (S.wx) { S.wx.ri = 0.85; S.wx.ci = 0.95; S.wx.plan = [[0, 'chuva']]; } AU.thunder && setTimeout(() => AU.thunder(), 900); } },
     { cam: [px + 8, py - 4], spd: 0.6, txt: 'O gado levanta a cabeça para a chuva. Em poucos dias o pasto vai verdejar.', d: 4, fn: () => { myAnimals('boi').slice(0, 3).forEach((b, i) => setTimeout(() => AU.moo(b.x, b.y, 1 + i * 0.05), 400 + i * 700)); } },
     { cam: [px + 10, py - 8], z: 1.1, spd: 0.6, txt: 'E a <b>asa-branca</b>, que tinha ido embora na seca, voltou.', d: 4.2, fn: () => { for (let j = 0; j < 7; j++) AVES.push({ id: aveId++, k: 'asaBranca', x: (px - 8) * TS - j * 10, y: (py - 10) * TS + rnd(-10, 10), z: rnd(40, 60), st: 'pass', vx: 48, vy: 14, f: 1, gid: 998, ph: Math.random() * 4 }); setTimeout(() => birdCall('asaBranca', (px + 8) * TS, (py - 6) * TS), 1200); } },
     { clr: 1, d: 0.1 }
