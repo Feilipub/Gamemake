@@ -382,7 +382,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '7.9.3', SAVE_V = 9;
+const GAME_V = '7.9.4', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -535,6 +535,7 @@ function itemIconURL(id) {
     case 'rapadura': p(2, 3, 8, 6, '#8a4a1a'); p(2, 3, 8, 1, '#b06a2a'); p(3, 5, 6, 1, '#6a3410'); break;
     case 'queijo': p(1, 5, 10, 5, '#f0d860'); p(2, 3, 8, 2, '#f8e880'); p(4, 6, 2, 2, '#d0b040'); p(8, 7, 1, 1, '#d0b040'); p(1, 9, 10, 1, '#c8a030'); break;
     case 'cafe': p(3, 1, 6, 10, '#5a3a2a'); p(4, 0, 4, 1, '#3a2a1a'); p(4, 4, 4, 3, '#e8d8b0'); break;
+    case 'beiju': p(1, 5, 10, 5, '#f4ecd8'); p(2, 4, 8, 1, '#fffaf0'); p(3, 6, 2, 1, '#e0c890'); p(7, 7, 2, 1, '#e0c890'); p(1, 9, 10, 1, '#d8c8a8'); break;
     case 'farinha': p(1, 6, 10, 5, '#a86a34'); p(2, 4, 8, 3, '#f4ecd8'); p(1, 6, 10, 1, '#c88a48'); break;
     case 'ovo': p(4, 2, 4, 1, '#f8f0e0'); p(3, 3, 6, 7, '#f8f0e0'); p(4, 10, 4, 1, '#e8d8c0'); p(4, 4, 1, 2, '#ffffff'); break;
     case 'leite': p(4, 0, 4, 2, '#3a7ac0'); p(3, 2, 6, 9, '#f4f4f0'); p(3, 6, 6, 2, '#3a7ac0'); break;
@@ -2531,6 +2532,20 @@ function drawCons(g, type, stage) {
     case 'estrebaria': { const b = { id: 'es', art: 'estabulo', r: [0, 0, 6, 4], door: 3.5, wall: '#9a6a3a', roof: '#b0502a' }; const [c2, g2] = mkC(120, 110); drawBld(g2, b, 112, 80, 6, false); g.drawImage(c2, 0, 26); break; }
     case 'galinheiro': { p(6, 40, 60, 44, '#9a6a3a'); for (let x = 6; x < 66; x += 4) p(x, 40, 1, 44, '#7a4a22'); p(2, 30, 68, 12, '#b0502a'); for (let y = 32; y < 42; y += 3) p(2, y, 68, 1, '#8a3a1a'); p(30, 64, 10, 20, '#3a2210'); p(68, 44, 40, 40, 'rgba(200,200,200,0.35)'); for (let x = 68; x < 108; x += 4) p(x, 44, 1, 40, '#c8c8c8'); for (let y = 44; y < 84; y += 4) p(68, y, 40, 1, '#c8c8c8'); p(106, 44, 2, 40, '#7a4a22'); p(68, 44, 40, 2, '#7a4a22'); break; }
     case 'ordenha': { const b = { id: 'or', art: 'casa', r: [0, 0, 5, 4], door: 3, wall: '#f4f4f0', trim: '#2a5aa0', roof: '#8e9498' }; const [c2, g2] = mkC(120, 110); drawBld(g2, b, 96, 80, 6, false); g.drawImage(c2, 0, 26); p(4, 76, 92, 4, '#2a5aa0'); p(88, 40, 20, 40, '#d8dce0'); p(88, 40, 4, 40, '#f4f8fc'); blob(p, 98, 40, 10, '#e8ecf0'); break; }
+    case 'farinha': { // casa de farinha: taipa, alpendre com forno de lenha, roda de ralar, prensa e sacos de mandioca
+      p(2, 80, 108, 6, '#a88a5a'); p(6, 36, 64, 46, '#c89060'); for (let y = 40; y < 82; y += 6) p(6, y, 64, 1, '#a87040'); for (let k = 0; k < 9; k++) p(8 + k * 7, 44 + (k * 13) % 30, 3, 2, '#b07848');
+      p(2, 26, 72, 12, '#a85a28'); for (let x = 2; x < 74; x += 4) p(x, 26, 2, 12, '#c06a30'); p(2, 36, 72, 2, '#7a3a18'); p(28, 56, 13, 26, '#3a2410'); p(29, 57, 11, 1, '#5a3a20'); p(50, 46, 11, 9, '#2a1a10'); p(50, 46, 11, 1, '#e8d8b0'); p(55, 46, 1, 9, '#8a5a2a');
+      p(72, 40, 3, 42, '#6a4220'); p(105, 40, 3, 42, '#6a4220'); p(68, 32, 42, 8, '#8a4a20'); for (let x = 68; x < 110; x += 4) p(x, 32, 2, 8, '#a05a28');
+      p(78, 62, 26, 20, '#b06a3a'); p(78, 62, 26, 2, '#c88050'); p(76, 58, 30, 5, '#4a4a52'); p(76, 58, 30, 1, '#8a8a92'); p(86, 70, 10, 10, '#1a0c06'); p(97, 2, 6, 32, '#9a5a2a'); p(96, 2, 8, 3, '#7a4420');
+      for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; p(Math.round(18 + Math.cos(a) * 7), Math.round(70 + Math.sin(a) * 7), 2, 2, '#7a4a22'); } p(17, 69, 3, 3, '#5a3a1c'); p(10, 76, 16, 3, '#6a4220');
+      p(58, 62, 3, 20, '#6a4220'); p(66, 62, 3, 20, '#6a4220'); p(57, 62, 13, 3, '#8a5a2a'); p(60, 72, 6, 6, '#e8dcc0'); for (const [x, y] of [[44, 74], [48, 77], [40, 77]]) { p(x, y, 8, 6, '#c8a878'); p(x + 1, y - 1, 6, 2, '#a88858'); } break; }
+    case 'tanque': { // resfriador de inox debaixo de um telheiro, painel e latões
+      p(4, 74, 104, 10, '#a8a49c'); p(4, 74, 104, 2, '#c8c4bc'); p(8, 34, 3, 42, '#6a6a72'); p(100, 34, 3, 42, '#6a6a72'); p(2, 26, 108, 9, '#8e9498'); for (let x = 2; x < 110; x += 6) p(x, 26, 3, 9, '#a8aeb4');
+      p(18, 44, 66, 28, '#c8ccd4'); p(18, 46, 66, 4, '#eef0f4'); p(18, 66, 66, 6, '#9a9ea8'); for (let y = -13; y <= 13; y++) { const w = Math.round(Math.sqrt(169 - y * y) * 0.45); p(18 - w, 58 + y, w, 1, '#d8dce2'); p(84, 58 + y, w, 1, '#b8bcc4'); }
+      p(46, 40, 12, 5, '#9a9ea8'); p(48, 38, 8, 2, '#7a7e86'); p(24, 72, 3, 6, '#7a7e86'); p(74, 72, 3, 6, '#7a7e86'); p(30, 54, 40, 7, '#2a6ab0'); p(30, 54, 40, 1, '#5a9ae0');
+      p(88, 44, 12, 18, '#4a4e56'); p(90, 46, 8, 4, '#4ae04a'); p(90, 52, 3, 3, '#e04a4a'); p(95, 52, 3, 3, '#e0c04a'); p(84, 62, 3, 8, '#7a7e86'); p(84, 68, 10, 2, '#5a5e66');
+      for (const x of [4, 98]) { p(x, 64, 8, 12, '#b8bcc4'); p(x, 64, 8, 2, '#e8ecf0'); p(x + 1, 62, 6, 2, '#9a9ea8'); }
+      g.fillStyle = '#ffffff'; g.font = 'bold 6px sans-serif'; g.fillText('LEITE', 38, 80); break; }
     case 'catavento': { p(50, 30, 4, 56, '#7a7e84'); p(62, 30, 4, 56, '#7a7e84'); for (let y = 34; y < 86; y += 8) { p(50, y, 16, 1, '#9a9ea4'); p(51 + ((y / 8) % 2) * 6, y + 2, 9, 1, '#8a8e94'); } p(46, 84, 24, 4, '#8a8680'); p(70, 70, 28, 16, '#a8a49c'); p(70, 70, 28, 2, '#c8c4bc'); p(73, 74, 22, 8, '#3a7aaa'); p(73, 74, 22, 1, '#7ab8e0'); p(57, 20, 2, 12, '#5a5e62'); break; }
     case 'cocho': { for (const x of [8, 52, 98]) p(x, 34, 4, 48, '#7a5030'); p(2, 24, 108, 14, '#a8482a'); for (let y = 26; y < 38; y += 3) p(2, y, 108, 1, '#8a3a1a'); p(8, 66, 96, 14, '#a8a49c'); p(10, 68, 92, 6, '#c8a050'); p(10, 68, 92, 1, '#e0c070'); break; }
   }
@@ -5063,6 +5078,7 @@ function hourTick(h) {
   // fogo
   if (h === 5) for (const a of S.animals) if (a.sp === 'galinha' && a.sex === 'M' && a.own === 'player') { AU.crow(a.x, a.y); break; }
   if (h === 6) { layEggs(); deliveries(); SAVE.save('auto', true); }
+  if (h === 7) { try { laticinio(); } catch (e) { console.error(e); } }
   if (S.event && S.event.day === S.day && h === 18) toast('🔥 Churrasco na fazenda começando!');
   // fome e energia do vaqueiro
   P.fo = cl(P.fo - 3.2, 0, 100); P.en = cl(P.en - (P.fo < 10 ? 4 : 1.2), 0, 100);
@@ -5080,7 +5096,8 @@ function layEggs() {
   const fi = trIdx('galin', 'racao'); let n = 0;
   for (const h of hens) { const fed = S.tr[fi] > 0.2; if (fed) S.tr[fi] = Math.max(0, S.tr[fi] - 0.15); const pr = (fed ? 0.85 : 0.25) * ((CHICKENS[h.br] || {}).egg || 1) * (h.hap / 100 + 0.3) * (built('galinheiro') ? 1.3 : 1) * (h.skills.includes('Poedeira') ? 1.2 : 1); if (Math.random() < pr) n++; }
   S.eggs = Math.min(60, S.eggs + n);
-  if (built('ordenha')) { const cows = S.animals.filter(a => a.sp === 'boi' && a.lact > 0 && a.own === 'player' && a.milkD !== S.day && !a.sick); let L = 0; cows.forEach(c => L += (CATTLE[c.br].milk || 0.4) * 15 * (c.hap / 100 + 0.2)); S.milk = Math.round(Math.min(200, S.milk + L)); }
+  try { milkDay(); } catch (e) { console.error(e); }
+  if (built('ordenha')) { const cows = S.animals.filter(a => a.sp === 'boi' && a.lact > 0 && a.own === 'player' && a.milkD !== S.day && !a.sick); let L = 0; cows.forEach(c => L += (CATTLE[c.br].milk || 0.4) * 15 * (c.hap / 100 + 0.2)); S.milk = Math.round(Math.min(built('tanque') ? 600 : 200, S.milk + L)); }
 }
 function deliveries() {
   const now = S.delivery.filter(d => d.day <= S.day); S.delivery = S.delivery.filter(d => d.day > S.day);
@@ -9605,6 +9622,64 @@ function conselhoVelho() {
   showModal('', null, null, () => `<div class="dlg"><div class="bust">${bustImg(v.ap, 'feliz', 4)}</div><div style="flex:1"><b>${esc(v.n)}</b><br><span class="mut">Aposentad${v.ap.sex === 'F' ? 'a' : 'o'} da lida · na varanda</span><div class="txt" style="margin-top:6px">${esc(dica)}</div></div></div>`);
 }
 
+/* ============ v7.9.4: CASA DE FARINHA E TANQUE DE LEITE ============
+   Casa de farinha: a mandioca da roça vira farinha e beiju numa farinhada (lenha no forno, umas horas de trabalho).
+   Tanque de leite: o leite da ordenha fica gelado e não azeda; o caminhão do laticínio busca às 7h e paga na conta. */
+Object.assign(BUILD, {
+  farinha: { n: 'Casa de Farinha', p: 8500, mat: { tijolo: 2, telha: 2, madeira: 2 }, days: 2, req: [], f: 'Forno de lenha, roda de ralar e prensa: a mandioca da roça vira farinha e beiju numa farinhada.' },
+  tanque: { n: 'Tanque de Leite (resfriador)', p: 9500, mat: { cimento: 8, telha: 1, arame: 1 }, days: 2, req: ['ordenha'], f: 'O leite da ordenha fica gelado (até 600 L) e não azeda. O caminhão do laticínio busca todo dia às 7h e paga na conta.' }
+});
+Object.assign(IT, { beiju: { i: '', n: 'Beiju', kg: 0.2, p: 6, d: 'Feito na chapa da casa de farinha. +12 fome.', c: 'comida', en: 4, fo: 12 } });
+const FAR_KG = 8, FAR_BEIJU = 3, LATIC_P = 2.5; // farinha (kg) e beijus por saco de 25 kg de mandioca; R$ por litro no laticínio
+const mandiocaKg = () => (S.dep.mandioca || 0) + (S.inv.mandioca || 0) * 25;
+const lenhaN = () => (S.inv.lenha || 0) + (S.dep.lenha || 0);
+function lenhaTake(n) { if (lenhaN() < n) return false; for (let i = 0; i < n; i++) { if ((S.inv.lenha || 0) > 0) useInv('lenha'); else S.dep.lenha--; } return true; }
+const farPronta = () => S.far && tnow() >= S.far.t0 + S.far.dur;
+function farinhaHTML() {
+  const F = S.far, mk = mandiocaKg(), ln = lenhaN();
+  let h = '<p class="mut">Na farinhada a mandioca é descascada, ralada na roda, prensada e torrada no forno de lenha. Cada saco de 25 kg rende ' + FAR_KG + ' kg de farinha e ' + FAR_BEIJU + ' beijus. A farinha vale mais que a mandioca crua e não estraga.</p>';
+  if (F) { const left = F.t0 + F.dur - tnow();
+    if (left > 0) h += `<div class="card">🔥 <b>Farinhada em andamento</b> (${F.n} saco[s])<br>${bar((1 - left / F.dur) * 100)} <span class="mut">pronta em ${Math.floor(left / 60)}h${String(Math.round(left % 60)).padStart(2, '0')}</span></div>`;
+    else h += `<div class="card">✅ <b>Farinha pronta!</b> ${F.n * FAR_KG} kg de farinha e ${F.n * FAR_BEIJU} beijus.<div class="row">${btn('Recolher farinha e beiju', 'farGet')}</div></div>`;
+    return h; }
+  h += `<p>Mandioca no depósito e na mochila: <b>${Math.round(mk)} kg</b> · Lenha: <b>${ln}</b> feixe(s)</p><div class="row">`;
+  for (const n of [1, 2, 4]) h += btn(`Fazer farinhada: ${n} saco${n > 1 ? 's' : ''} (${n * 25} kg, ${Math.ceil(n / 2)} lenha)`, 'farGo', n, mk < n * 25 || ln < Math.ceil(n / 2));
+  h += '</div>' + (mk < 25 ? '<p class="mut">Plante mandioca na roça (Obras › Roça) ou compre sacos na Casa do Agro.</p>' : '') + (ln < 1 ? '<p class="mut">Sem lenha: compre feixes no Mercadinho.</p>' : '');
+  return h;
+}
+A.farGo = v => { const n = +v; if (S.far || mandiocaKg() < n * 25 || !lenhaTake(Math.ceil(n / 2))) return; takeFeed('mandioca', n * 25); S.far = { n, t0: tnow(), dur: 90 + 45 * n }; S.stats.farinhadas = (S.stats.farinhadas || 0) + 1; toast('🔥 Farinhada começou! Fica pronta em ' + Math.round((90 + 45 * n) / 60 * 10) / 10 + ' horas.'); AU.click && AU.click(); renderModal(); };
+A.farGet = () => { const F = S.far; if (!F || !farPronta()) return; addInv('farinha', F.n * FAR_KG, true); addInv('beiju', F.n * FAR_BEIJU, true); toast('🥣 ' + F.n * FAR_KG + ' kg de farinha e ' + F.n * FAR_BEIJU + ' beijus quentinhos!'); S.far = null; renderModal(); };
+// ---------- tanque de leite ----------
+function milkDay() { // às 6h, antes de a ordenha encher o tanque de novo
+  if (!built('ordenha') || !S.milk) return;
+  if (!built('tanque')) { const lost = Math.round(S.milk * 0.4); if (lost > 0) { S.milk -= lost; toast('🥛 ' + lost + ' L de leite azedaram no tanque da ordenha. Recolha todo dia ou construa o Tanque de Leite (resfriador).'); } }
+}
+function laticinio() { // às 7h o caminhão do laticínio leva o leite gelado
+  if (!built('tanque') || S.tqAuto === false || S.milk < 1) return;
+  const cows = myAnimals('boi').filter(a => a.lact > 0), sick = cows.filter(a => a.sick).length, dirt = (S.dirt && S.dirt.curral) || 0;
+  const q = cl(1.08 - sick / Math.max(1, cows.length) * 0.5 - dirt / 400, 0.7, 1.08), L = Math.round(S.milk), v = Math.round(L * LATIC_P * q);
+  receive(v, 'Laticínio: ' + L + ' L de leite'); S.milk = 0; S.stats.leiteVend = (S.stats.leiteVend || 0) + L; S.milkTruck = S.day;
+  toast('🚚 O caminhão do laticínio levou ' + L + ' L de leite: ' + fmt(v) + (q >= 1 ? ' (leite de primeira!)' : q < 0.9 ? ' (desconto: vacas doentes ou curral sujo)' : '') + '.');
+}
+function tanqueHTML() {
+  return `<p>Leite gelado no tanque: <b>${Math.round(S.milk)} L</b> de 600 L. Não azeda.</p><p>Caminhão do laticínio: <b>${S.tqAuto === false ? 'desligado' : 'busca todo dia às 7h'}</b> · paga R$ ${LATIC_P.toFixed(2).replace('.', ',')} o litro (mais com vacas saudáveis e curral limpo).</p><div class="row">${btn(S.tqAuto === false ? 'Ligar a entrega para o laticínio' : 'Desligar (guardar o leite para mim)', 'tqTog')}${btn('Recolher leite para a mochila', 'milk', '', !S.milk)}</div>${S.stats.leiteVend ? '<p class="mut">Já vendido ao laticínio: ' + S.stats.leiteVend + ' L.</p>' : ''}`;
+}
+A.tqTog = () => { S.tqAuto = S.tqAuto === false; renderModal(); };
+// ---------- desenho: fumaça e farinheira na casa de farinha, caminhão do leite às 7h ----------
+const FARINHEIRA_AP = { sex: 'F', skin: 4, hair: 4, hairC: 0, hat: 7, shirt: 4, shirtC: 5, pants: 4, pantsC: 4, boots: 2, acc: 0, scarfC: 0, orn: 'none' };
+function farinhaLive(add, x0, y0, y1) {
+  if (!S.far || farPronta()) return;
+  const fx = x0 + 78, fy = y1 - 10;
+  add(y1 + 1, () => { drawPerson(FARINHEIRA_AP, fx - 18, fy + 2, 3, Math.floor(drawT * 2) % 2, 'feed'); const gl = 0.5 + Math.sin(drawT * 9) * 0.15; X.fillStyle = `rgba(255,140,40,${gl.toFixed(2)})`; X.fillRect(x0 + 86, y0 + 72, 10, 8); X.fillStyle = 'rgba(255,220,80,0.85)'; X.fillRect(x0 + 88, y0 + 76, 6, 3); X.fillStyle = 'rgba(255,120,30,0.18)'; X.fillRect(x0 + 82, y0 + 66, 18, 16); }, fx, { w: 60, h: 50 });
+  if (Math.random() < 0.4) part(x0 + 104 + rnd(-1, 1), y0 + 2, 'dust', { vx: rnd(-4, 4) + (S.weather === 'vento' ? 10 : 2), vy: rnd(-16, -9), m: rnd(1.6, 2.4), c: '#c8c8c8' });
+}
+function milkTruckDraw(add, inV) {
+  if (!built('tanque') || S.milkTruck !== S.day) return; const h = hour(); if (h < 7 || h > 7.4) return;
+  const x = 52 * TS, y = ROADY * TS; if (!inV(x - 50, y, 120)) return;
+  const t = { v2: 1, x, y, f: -1, col: '#e8ecf0', tank: 1, wd: 0, mv: 0, gate: 0, door: 0, drv: 1, cargo: [] };
+  add(y - 12, () => drawTruck2(t), x - TRK_W / 2, { w: 220, h: 130 });
+}
+
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
@@ -10185,7 +10260,7 @@ function openMercadinho() { showModal('🧺 Mercadinho Itarantim', [['com', 'Com
   if (t === 'com') h += ['rapadura', 'queijo', 'cafe', 'farinha'].map(id => shopRow(id)).join('');
   if (t === 'var') h += ['buque', 'aliancas', 'violao', 'viola', 'lampiao', 'galaoV'].map(id => shopRow(id)).join('');
   if (t === 'ven') h += '<h3>Peixe fresco (80% do preço do porto)</h3>' + fishSellRows(0.8);
-  if (t === 'ven') { const o = S.inv.ovo || 0, l = S.inv.leite || 0; h += `<div class="card">🥚 Ovos na mochila: <b>${o}</b> × ${fmt2(IT.ovo.p)} ${btn('Vender todos', 'sellP', 'ovo', !o)}</div><div class="card">🥛 Leite na mochila: <b>${l}</b> L × ${fmt2(IT.leite.p)} ${btn('Vender todo', 'sellP', 'leite', !l)}</div><p class="mut">Recolha ovos no galinheiro e leite na Sala de Ordenha.</p>`; h += '<h3>Da sua horta e da mata</h3>' + ['alface', 'couve', 'cheiro', 'tomate', 'pimenta', 'abobora', 'feijaoV', 'caja', 'umbu', 'jatoba', 'mel', 'erva'].map(k => `<div class="card">${iic(k, 18)} ${IT[k].n}: <b>${S.inv[k] || 0}</b> × ${fmt2(IT[k].p)} ${btn('Vender todos', 'sellP', k, !S.inv[k])}</div>`).join(''); }
+  if (t === 'ven') { const o = S.inv.ovo || 0, l = S.inv.leite || 0; h += `<div class="card">🥚 Ovos na mochila: <b>${o}</b> × ${fmt2(IT.ovo.p)} ${btn('Vender todos', 'sellP', 'ovo', !o)}</div><div class="card">🥛 Leite na mochila: <b>${l}</b> L × ${fmt2(IT.leite.p)} ${btn('Vender todo', 'sellP', 'leite', !l)}</div><p class="mut">Recolha ovos no galinheiro e leite na Sala de Ordenha.</p>`; h += '<h3>Da sua horta e da mata</h3>' + ['alface', 'couve', 'cheiro', 'tomate', 'pimenta', 'abobora', 'feijaoV', 'caja', 'umbu', 'jatoba', 'mel', 'erva', 'farinha', 'beiju'].map(k => `<div class="card">${iic(k, 18)} ${IT[k].n}: <b>${S.inv[k] || 0}</b> × ${fmt2(IT[k].p)} ${btn('Vender todos', 'sellP', k, !S.inv[k])}</div>`).join(''); }
   return h; }); }
 A.sellP = v => { const n = S.inv[v] || 0; if (!n) return; useInv(v, n); receive(n * IT[v].p, 'Venda de ' + n + 'x ' + IT[v].n, 'cash'); addFr('dito', 5); renderModal(); };
 function openBar() { showModal('🍺 Bar da Zefa', [['com', 'Refeições'], ['mur', 'Mural de peões'], ['pro', 'Quem está aqui']], 'com', t => {
@@ -10310,7 +10385,9 @@ function openLot(k) { showModal('Lote ' + k, null, null, () => {
   if (!l.done) return `<p>🚧 ${BUILD[l.b].n} em construção.</p><div class="row sp">${bar(l.prog * 100)}<span>${Math.round(l.prog * 100)}%</span></div><p class="mut">Os pedreiros trabalham das 7h às 17h.</p>`;
   let h = `<p><b>${BUILD[l.b].n}</b>: ${BUILD[l.b].f}</p>`;
   if (l.b === 'tronco') { const c = myAnimals('boi').filter(a => a.area === 'curral'); h += `<div class="row">${btn('🐂 Abrir o brete (manejo completo do lote)', 'brtOpen')}</div>`; h += `<p>No curral: ${c.length} cabeça(s), ${c.filter(a => a.sick).length} doente(s).</p><div class="row">${btn('💉 Vacinar todo o curral (' + c.length + ' doses)', 'tronVac', '', !has('vacina', c.length) || !c.length)}${btn('💊 Tratar doentes do curral', 'tronCure', '', !c.some(a => a.sick))}</div><p class="mut">Vacinas na mochila: ${S.inv.vacina || 0} · Remédios: ${S.inv.remedio || 0}</p>`; }
-  if (l.b === 'ordenha') h += `<p>Leite no tanque: <b>${S.milk} L</b> (vacas com bezerro produzem todo dia).</p>${btn('Recolher leite', 'milk', '', !S.milk)}`;
+  if (l.b === 'ordenha') h += built('tanque') ? '<p>O leite vai direto para o Tanque de Leite (resfriador).</p>' + tanqueHTML() : `<p>Leite no tanque: <b>${S.milk} L</b> (vacas com bezerro produzem todo dia). <span class="mut">Sem resfriador, o leite que sobra de um dia para o outro azeda.</span></p>${btn('Recolher leite', 'milk', '', !S.milk)}`;
+  if (l.b === 'farinha') h += farinhaHTML();
+  if (l.b === 'tanque') h += tanqueHTML();
   if (l.b === 'silo') h += `<p>Capacidade do depósito: ${depCap()} kg.</p>`;
   if (l.b === 'poco') h += `<p>Reservatório: ${Math.round(S.res)}% (sempre cheio).</p>`;
   if (l.b === 'casapeao') h += `<p>Vagas de funcionários: ${workerSlots()}.</p>`;
@@ -11079,6 +11156,8 @@ function drawTruck2(t) {
   p(6, 44, 94, 4, '#26262a'); p(2, 41, 9, 4, '#9a9aa2'); p(2, 41, 9, 1, '#d8d8e0');
   // carroceria de madeira com o gado aparecendo entre as tábuas
   const cy = 6 + bob, cargo = t.cargo || [];
+  if (t.tank) { p(28, cy + 6, 74, 32, '#c8ccd4'); p(28, cy + 6, 74, 5, '#eef0f4'); p(28, cy + 32, 74, 6, '#9a9ea8'); p(26, cy + 9, 3, 26, '#d8dce2'); p(101, cy + 9, 3, 26, '#b8bcc4'); p(30, cy + 18, 70, 7, '#2a6ab0'); p(30, cy + 18, 70, 1, '#5a9ae0'); p(56, cy + 2, 12, 5, '#9a9ea8'); for (let k = 0; k < 6; k++) p(36 + k * 11, cy + 20, 6, 3, '#ffffff'); }
+  else {
   p(30, cy, 70, 38, '#3a2414');
   cargo.slice(0, 4).forEach((c, i) => { // bois de lado, cabeça para a cabine, aparecendo entre as tábuas
     const bx = 33 + i * 16, hb = Math.round(Math.sin(drawT * 2 + i * 1.7) * 0.7), hy = cy + 12 + hb, dk = shade(c, -0.22), lt = shade(c, 0.18);
@@ -11088,6 +11167,7 @@ function drawTruck2(t) {
   for (let yy = cy + 1; yy < cy + 37; yy += 7) { p(30, yy, 70, 3, '#8a5c30'); p(30, yy, 70, 1, '#b08452'); }
   for (let xx = 30; xx <= 98; xx += 10) { p(xx, cy, 3, 38, '#5a3a1c'); p(xx, cy, 1, 38, '#7a5430'); }
   p(29, cy - 1, 72, 3, '#a87a48'); p(29, cy - 1, 72, 1, '#d0a46a'); p(29, cy + 36, 72, 3, '#4a2e14');
+  }
   // cabine
   const by = 15 + bob, col = t.col || '#c83a2a';
   p(5, by + 4, 23, 26, col); p(9, by, 19, 6, col); p(9, by, 19, 1, shade(col, 0.3)); p(5, by + 4, 4, 1, shade(col, 0.3));
@@ -11109,9 +11189,9 @@ function drawTruck2(t) {
   for (const wx of [17, 70, 84]) { const cx = wx - TRK_W, cyw = 47 - 54; g.fillStyle = '#141416'; g.beginPath(); g.arc(cx, cyw, 6.5, 0, 7); g.fill(); g.fillStyle = '#4a4a52'; g.beginPath(); g.arc(cx, cyw, 3.6, 0, 7); g.fill(); g.fillStyle = '#b8b8c0';
     for (let k = 0; k < 4; k++) { const a = rot + k * Math.PI / 2; g.fillRect(Math.round(cx + Math.cos(a) * 2.4) - 0.5, Math.round(cyw + Math.sin(a) * 2.4) - 0.5, 1.5, 1.5); } g.fillStyle = '#d8d8e0'; g.fillRect(cx - 1, cyw - 1, 2, 2); }
   // porteira traseira que vira rampa
-  const ga = (t.gate || 0) * 1.84; g.save(); g.translate(100 - TRK_W, 44 - 54); g.rotate(ga);
+  const ga = (t.gate || 0) * 1.84; if (t.tank) { p(99, 12, 4, 30, '#9a9ea8'); p(100, 30, 3, 10, '#5a5e66'); } else { g.save(); g.translate(100 - TRK_W, 44 - 54); g.rotate(ga);
   g.fillStyle = '#5a3a1c'; g.fillRect(0, -36, 4, 37); g.fillStyle = '#9a6a3a'; for (let yy = -34; yy < 0; yy += 6) g.fillRect(0, yy, 4, 3); g.fillStyle = '#c09060'; g.fillRect(0, -36, 1, 37);
-  g.restore();
+  g.restore(); }
   g.restore();
 }
 // fumaça do escapamento e poeira das rodas
@@ -12248,11 +12328,11 @@ function collectItems(tx0, tx1, ty0, ty1, vw, vh, se, vx0, vy0) {
     if (!lotOwned(k)) continue;
     if (!l) add(y0 + 4, () => { X.fillStyle = '#8a5a2a'; [[x0 + 2, y0 + 2], [x0 + 108, y0 + 2], [x0 + 2, y1 - 4], [x0 + 108, y1 - 4]].forEach(([x, y]) => { X.fillRect(x, y - 6, 2, 7); X.fillStyle = '#e04a2a'; X.fillRect(x - 1, y - 7, 4, 2); X.fillStyle = '#8a5a2a'; }); X.fillStyle = 'rgba(240,220,160,0.5)'; X.fillRect(x0 + 3, y0 + 1, 106, 1); X.fillRect(x0 + 3, y1 - 5, 106, 1); X.fillStyle = '#e8dcc0'; X.fillRect(x0 + 48, y1 - 14, 16, 9); X.fillStyle = '#6a4422'; X.fillRect(x0 + 55, y1 - 6, 2, 6); txt((x, y, w, h, c) => { X.fillStyle = c; X.fillRect(x, y, w, h); }, k, x0 + 54, y1 - 12, '#7a3a1a'); }, x0 + 56, { flat: 1 });
     else if (l.b === 'roca') { if (!l.done) add(y0 + 4, () => drawRocaPrep(x0, y0, r, l.prog), x0 + 56, { flat: 1 }); }
-    else { const stg = l.done ? 3 : l.prog < 0.3 ? 0 : l.prog < 0.65 ? 1 : 2; add(y1 - 4, () => { X.drawImage(consSpr(l.b, stg), x0 - 4, y0 - 20); if (l.b === 'catavento' && l.done) drawCataBlades(x0 + 59, y0 + 26); }, x0 + 56, { w: 150, h: 150, b: y1, fade: 1 });
+    else { const stg = l.done ? 3 : l.prog < 0.3 ? 0 : l.prog < 0.65 ? 1 : 2; add(y1 - 4, () => { X.drawImage(consSpr(l.b, stg), x0 - 4, y0 - 20); if (l.b === 'catavento' && l.done) drawCataBlades(x0 + 59, y0 + 26); }, x0 + 56, { w: 150, h: 150, b: y1, fade: 1 }); if (l.b === 'farinha' && l.done) farinhaLive(add, x0, y0, y1);
       if (!l.done && hour() >= 7 && hour() < 17 && !isRain()) BUILDER_AP.forEach((ap, i) => { const bx = x0 + 20 + i * 70, by = y1 + 4; add(by, () => drawPerson(ap, bx, by, i ? 2 : 3, Math.floor(drawT * 3 + i) % 2, 'hammer'), bx); if (Math.random() < 0.02) { AU.hammer(bx, by); dust(bx + (i ? -10 : 10), by - 6, 1, '#b8a888'); } }); } }
   TROUGHS.forEach((t, i) => { const x = t.x * TS, y = t.y * TS; if (!inV(x, y, 40)) return; add(y + 15, () => X.drawImage(troughSpr(t, S.tr[i] / trCap(i)), x - 2, y - 2), x + t.w * 8, { w: t.w * 16 + 16, h: 40, b: y + 16 }); });
   for (const a of S.animals) { if (a.id === P.mnt || a._wr || !inV(a.x, a.y, 40)) continue; add(iy(a), () => drawAnimal(a), ix(a), { w: 110, h: 100 }); }
-  aucDrawLot(add); drawCSX(add); drawCSA(add); drawAgro(add, inV); drawCityDeco(add, inV); drawTraffic(add, inV); drawBirds(add, inV); drawParkedBoat(add, inV); drawPipa(add, inV); eventCards(add, inV);
+  aucDrawLot(add); drawCSX(add); milkTruckDraw(add, inV); drawCSA(add); drawAgro(add, inV); drawCityDeco(add, inV); drawTraffic(add, inV); drawBirds(add, inV); drawParkedBoat(add, inV); drawPipa(add, inV); eventCards(add, inV);
   cineDrawActors(add, inV);
   for (const e of npcs) { if (e.hidden || !inV(e.x, e.y, 30)) continue; add(iy(e), () => { const [pz, fr] = npcPose(e); X.globalAlpha = e.alpha === undefined ? 1 : e.alpha; drawPerson(e.d.ap, ix(e), iy(e), e.dir, fr, pz); X.globalAlpha = 1; if (e.emote && e.et > 0) emote(ix(e), iy(e) - 34, e.emote); }, ix(e), { w: 90, h: 100 }); }
   for (const w of S.workers) { if (w.x === undefined || !inV(w.x, w.y, 30)) continue; if (w._mnt) { const h = workerHorse(w); if (h) { add(w.y, () => { const sp = h._mv || 0, an = sp < 2 ? 'idle' : sp > 40 ? 'trot' : 'walk', cyc = RIG.cycleLen(rigBreed(h), an === 'idle' ? 'walk' : an, rigK(h)) || 20; drawMounted(h, w.ap, w.x, w.y, w.dir || 0, an, an === 'idle' ? 0 : Math.floor(((h._dist || 0) / cyc % 1) * 8) % 8); }, w.x, { w: 120, h: 120 }); continue; } } if (w._sleep) continue; add(iy(w), () => { const wx = ix(w), wy = iy(w); const pz = w._pose === 'walk' ? 'walk' : w._pose || 'idle'; drawPerson(w.ap, wx, wy, w.dir || 0, pz === 'walk' ? Math.floor((w._ph || 0) / 22 * 8 / 0.22) % 8 : Math.floor(drawT * 3) % 2, pz === 'carry' && w._pose === 'walk' ? 'carryW' : pz); if (w.task && w._pose !== 'walk' && !w._wait) { X.fillStyle = '#2b1608'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), 16, 3); X.fillStyle = '#7ad040'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), Math.round(16 * (w.task.prog || 0)), 3); } }, ix(w), { w: 90, h: 100 }); }
