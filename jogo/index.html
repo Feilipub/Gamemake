@@ -382,7 +382,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '8.0.0', SAVE_V = 9;
+const GAME_V = '8.1.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -7493,7 +7493,7 @@ A.mnj = k => {
     case 'parto': if (cenasOn()) return doAnimal(a, 'calve', 1.0, () => { if (!a.labor) return; P.en = Math.max(0, P.en - 8); closeSheet(); csParto(a); }); return doAnimal(a, 'calve', 2.6, () => { if (a.labor) finishLabor(a, true); P.en = Math.max(0, P.en - 8); });
     case 'mama': return doAnimal(a, 'bottle', 2.2, () => { if (!useInv('leite', 2)) return; a.mamD = S.day; a.hp = cl(a.hp + 15, 0, 100); a.wt = (a.wt || 30) + 1.5; bond(a, 8); heart(a.x, a.y - 16); done('🍼 ' + a.n + ' mamou na mamadeira.'); });
     case 'iodo': return doAnimal(a, 'iodo', 1.4, () => { if (!useInv('iodo')) return; a.umb = 0; hist(a, 'Umbigo curado com iodo'); done('Umbigo de ' + a.n + ' curado.', false); });
-    case 'ordenha': return doAnimal(a, 'milk', 3.0, () => { const B = CATTLE[a.br] || {}, h = hour(), L = Math.max(1, Math.round((B.milk || 0.4) * 15 * (a.hap / 100 + 0.2) * (h >= 4 && h <= 10 ? 1 : 0.6))); if (!addInv('leite', L)) return; a.milkD = S.day; P.en = Math.max(0, P.en - 3); if ((S.dirt[a.area] || 0) > 60 && Math.random() < 0.12) sicken(a, 'mastite'); hist(a, 'Ordenhada à mão: ' + L + ' L'); done('🥛 +' + L + ' L de leite de ' + a.n + '.'); });
+    case 'ordenha': return doAnimal(a, 'milk', 0.8, () => ordenhaStart(a)); // ordenha no ritmo (v8.1)
     case 'ia': SH.sub = 'ia'; return renderSheet();
     case 'pouron': return doAnimal(a, 'pouron', 1.8, () => { if (!useInv('pouron')) return; a.carr = 0; a.mosca = 0; a.carrP = S.day + 10; hist(a, 'Pour-on carrapaticida'); done('Pour-on em ' + a.n + ': sem carrapato por 10 dias.', false); });
     case 'verm': return doAnimal(a, 'inject', 1.2, () => { if (!useInv('vermifugo')) return; a.verme = 0; a.vermP = S.day + 28; if (a.dz === 'verminose') cureDz(a); hist(a, 'Vermifugado'); done(a.n + ' vermifugado(a).'); }, { it: 'vermifugo' });
@@ -9467,7 +9467,7 @@ function rankHTML() {
   const L = rankList(); return `<div class="card"><b>📊 Ranking dos criadores da região</b><p class="mut">Patrimônio de cada fazenda: terra, rebanho e dinheiro. Chegar ao 1º lugar dá +2 de fama.</p><table class="t"><tr><th>#</th><th>Fazenda</th><th>Patrimônio</th></tr>${L.map((x, i) => `<tr${x.k === 'me' ? ' style="background:#f0c04a55;font-weight:700"' : ''}><td>${i + 1}º</td><td>${esc(x.n)}<br><span class="mut">${esc(x.who)}</span></td><td>${fmt(x.v)}</td></tr>`).join('')}</table></div>`;
 }
 let desAcc = 0;
-function v78Tick(dt) { tipTick(dt); try { famTick(dt); } catch (e) { } if ((desAcc += dt) >= 2) { desAcc = 0; try { desTick(); } catch (e) { } } }
+function v78Tick(dt) { tipTick(dt); try { lassoTick(dt); } catch (e) { } try { famTick(dt); } catch (e) { } if ((desAcc += dt) >= 2) { desAcc = 0; try { desTick(); } catch (e) { } } }
 
 /* ============ v7.9: FILHOS E HERANÇA ============
    Casados podem ter filhos. A criança nasce, ganha nome, cresce na fazenda (bebê, criança, jovem, adulto),
@@ -9818,6 +9818,142 @@ CS2.peao = p => { // peão novo chegando pela estrada com a trouxa
   ], () => { P._csHide = 0; csClear(); });
 };
 function cs2Queue(k, extra) { if (!cenasOn() || !S) return false; S.pend.push(Object.assign({ k: 'cs2', n: k }, extra || {})); return true; }
+
+/* ============ v8.1: MECÂNICAS DE VERDADE — LAÇO COM MIRA, ORDENHA NO RITMO E SINUCA COM FÍSICA ============ */
+// ---------- LAÇO 2.0: gira a corda, espera o anel fechar no animal e arremessa ----------
+// 1º toque: escolhe o animal e começa a girar o laço. O anel em cima do animal abre e fecha; toque de novo quando
+// ele estiver pequeno e verde. Animal correndo, nervoso ou longe deixa o anel mais rápido e a janela menor.
+function lassoDiff(t) {
+  const h = P.mnt ? byId(P.mnt) : null, d = hyp(t.x - P.x, t.y - P.y), mv = t._mv || 0;
+  let spd = 2.6 + Math.min(2.2, mv / 25) + (t.temp === 'nervoso' || t.temp === 'arisco' ? 0.8 : 0) + d / 90; // velocidade do anel
+  let win = 0.34 - (mv > 20 ? 0.06 : 0) - d / 900 + skill('lac') * 0.03 + (perk() === 'laco' ? 0.06 : 0) + (h ? 0.04 : 0); // fração do ciclo em que o anel está "verde"
+  if (t.barb === 1) { spd += 1.6; win -= 0.12; }
+  return { spd, win: cl(win, 0.08, 0.5) };
+}
+function lassoRing(aim) { const u = (Math.sin((drawT - aim.t0) * aim.spd) + 1) / 2; return { u, r: 5 + u * 16, green: u <= aim.win }; } // u=0: anel fechado no animal
+const lassoDoLegacy = doLasso;
+doLasso = function () {
+  if (mode !== 'play' || P._act) return;
+  if (lasso.fly) return;
+  if (lasso.t) return lassoDoLegacy(); // já laçado: soltar a corda
+  if (lasso.aim) return lassoThrow();
+  const h = P.mnt ? byId(P.mnt) : null, sd = h ? horseStats(h).sd : SADDLES[0];
+  const R = 80 * (h ? sd.lr : 0.8) * (1 + skill('lac') * 0.08) * (perk() === 'laco' ? 1.25 : 1);
+  let t = null, bd = R; for (const a of S.animals) { if (a.id === P.mnt || a.sp === 'galinha' || a.sp === 'cao' || isHitched(a.id) || a._hid) continue; const d = hyp(a.x - P.x, a.y - P.y); if (d < bd && (a.own === 'player' || String(a.own).startsWith('quest') || a.barb === 1)) { bd = d; t = a; } }
+  if (!t) return say('Nenhum animal ao alcance do laço (' + Math.round(R / TS) + ' m).', 1800);
+  const df = lassoDiff(t); lasso.aim = { t, t0: drawT, spd: df.spd, win: df.win, R: R * 1.25 }; AU.lasso && AU.lasso();
+  if (!S.flags.lacoTip) { S.flags.lacoTip = 1; say('Girando o laço! Toque de novo quando o anel ficar pequeno e VERDE em cima de ' + t.n + '.', 3600); }
+};
+function lassoThrow() {
+  const A0 = lasso.aim; lasso.aim = null; if (!A0 || !A0.t) return; const t = A0.t, ring = lassoRing(A0);
+  const q = ring.green ? 1 : ring.u < A0.win + 0.18 ? 0.35 : 0; // perto do verde ainda tem uma chance
+  const ok = Math.random() < q && !(t.barb === 1 && !(t._acu > 0) && Math.random() < 0.7);
+  lasso.fly = { x0: P.x, y0: P.y - (P.mnt ? 30 : 20), t: 0, d: 0.32, tg: t, ok, perfect: ring.u < A0.win * 0.4 };
+  AU.lasso && AU.lasso(); P.en = Math.max(0, P.en - 1.5);
+}
+function lassoTick(dt) {
+  const A0 = lasso.aim;
+  if (A0) { const t = A0.t; if (!t || t._hid || hyp(t.x - P.x, t.y - P.y) > A0.R || P._act) { lasso.aim = null; say('O animal saiu do alcance do laço.', 1600); }
+    else if (drawT - A0.t0 > 5) lassoThrow(); }
+  const F = lasso.fly; if (!F) return; F.t += dt; if (F.t < F.d) return; lasso.fly = null; const t = F.tg; if (!t) return;
+  if (F.ok) { lasso.t = t; t._st = 'lasso'; t.tie = null; bond(t, -2); if (P.lead === t.id) P.lead = null; S.stats.lacos = (S.stats.lacos || 0) + 1;
+    say((F.perfect ? '🎯 Laço perfeito! ' : 'Laçou ') + t.n + '! Leve até onde quiser.', 2500); buzz(20); dust(t.x, t.y, 4); if (F.perfect) for (let i = 0; i < 6; i++) part(t.x + rnd(-8, 8), t.y - 20, 'spark', { vx: rnd(-16, 16), vy: rnd(-24, -8), m: 0.8, c: '#ffe060' }); }
+  else { say(t.barb === 1 ? 'O laço passou raspando! O Barbatão é ligeiro: acue com os cães ou canse ele na carreira.' : 'Errou o laço! A corda caiu no chão. Gire de novo.', 2400); dust(t.x + rnd(-10, 10), t.y + 4, 3);
+    if (typeof emoteA === 'function') emoteA(t, '!'); }
+}
+function lassoDraw() {
+  const A0 = lasso.aim, F = lasso.fly, px = ix(P), py = iy(P) - (P.mnt ? 34 : 24);
+  if (A0 && A0.t) { const a = drawT * 9; X.strokeStyle = '#e8d8a8'; X.lineWidth = 1; X.beginPath(); X.ellipse(px + Math.cos(a) * 3, py - 8, 9, 3.5, 0, 0, 7); X.stroke(); X.beginPath(); X.moveTo(px, py + 4); X.lineTo(px + Math.cos(a) * 9, py - 8 + Math.sin(a) * 3.5); X.stroke();
+    const t = A0.t, ring = lassoRing(A0), tx = ix(t), ty = iy(t) - 12; X.lineWidth = 2; X.strokeStyle = ring.green ? 'rgba(80,230,90,0.95)' : ring.u < A0.win + 0.18 ? 'rgba(240,210,60,0.9)' : 'rgba(240,90,60,0.85)';
+    X.beginPath(); X.ellipse(tx, ty, ring.r * 1.3, ring.r * 0.6, 0, 0, 7); X.stroke(); X.strokeStyle = 'rgba(80,230,90,0.35)'; X.lineWidth = 1; X.beginPath(); X.ellipse(tx, ty, (5 + A0.win * 16) * 1.3, (5 + A0.win * 16) * 0.6, 0, 0, 7); X.stroke(); }
+  if (F && F.tg) { const u = F.t / F.d, tx = ix(F.tg) + (F.ok ? 0 : 14), ty = iy(F.tg) - (F.ok ? 14 : 2), x = lerp(px, tx, u), y = lerp(py, ty, u) - Math.sin(u * Math.PI) * 18;
+    X.strokeStyle = '#e8d8a8'; X.lineWidth = 1; X.beginPath(); X.moveTo(px, py + 4); X.quadraticCurveTo((px + x) / 2, (py + y) / 2 - 10, x, y); X.stroke(); X.beginPath(); X.ellipse(x, y, 8 - u * 3, 3.5 - u, 0, 0, 7); X.stroke(); }
+}
+// ---------- ORDENHA NO RITMO: puxe as tetas alternando esquerda e direita ----------
+const ORD = { on: false };
+function ordenhaStart(a, done) {
+  ORD.on = true; ORD.a = a; ORD.done = done; ORD.t = 7; ORD.ok = 0; ORD.bad = 0; ORD.last = null; ORD.lt = 0; ORD.L = 0;
+  const B = CATTLE[a.br] || {}, h = hour(); ORD.base = Math.max(1, (B.milk || 0.4) * 15 * (a.hap / 100 + 0.2) * (h >= 4 && h <= 10 ? 1 : 0.6));
+  showModal('🥛 Ordenha de ' + a.n, null, null, () => `<p class="mut">Puxe as tetas <b>alternando</b> esquerda e direita, num ritmo firme. Repetir o mesmo lado ou ir rápido demais incomoda a vaca.</p>
+    <div style="display:flex;align-items:flex-end;gap:14px;justify-content:center;margin:8px 0"><div style="width:70px;height:90px;border:4px solid #7a7e86;border-top:0;background:#2a2a30;position:relative;border-radius:0 0 10px 10px"><div id="ordLeite" style="position:absolute;left:0;right:0;bottom:0;height:0;background:#f8f6ee"></div></div><div><b id="ordL" style="font-size:22px">0,0 L</b><br><span class="mut" id="ordT">7 s</span><br><span id="ordMsg" class="mut">&nbsp;</span></div></div>
+    <div class="row" style="justify-content:center"><button class="btn" id="ordE" style="font-size:20px;padding:18px 26px">◀ Esquerda</button><button class="btn" id="ordD" style="font-size:20px;padding:18px 26px">Direita ▶</button></div>`);
+  setTimeout(() => { const e = $('ordE'), d = $('ordD'); if (e) e.onpointerdown = ev => { ev.preventDefault(); ordenhaTap('E'); }; if (d) d.onpointerdown = ev => { ev.preventDefault(); ordenhaTap('D'); }; }, 0);
+  const t0 = performance.now(); clearInterval(ORD.iv); ORD.iv = setInterval(() => { ORD.t = 7 - (performance.now() - t0) / 1000; const el = $('ordT'); if (el) el.textContent = Math.max(0, Math.ceil(ORD.t)) + ' s'; if (ORD.t <= 0 || !M.open) ordenhaEnd(); }, 100);
+}
+function ordenhaTap(side) {
+  if (!ORD.on) return; const now = performance.now(), gap = (now - ORD.lt) / 1000; ORD.lt = now; let msg = '';
+  if (side === ORD.last) { ORD.bad++; msg = 'Mesmo lado! A vaca mexe a perna.'; }
+  else if (gap < 0.13) { ORD.bad++; msg = 'Calma, devagar…'; }
+  else { ORD.ok++; ORD.L += ORD.base / 22; AU.nz && AU.nz(0.05, 0.03, 'highpass', 3000, 1); }
+  ORD.last = side; if (ORD.bad >= 6 && ORD.on) { msg = 'A vaca deu um coice no balde!'; ORD.L *= 0.5; ordenhaEnd(); }
+  const l = $('ordL'), b = $('ordLeite'), m = $('ordMsg'); if (l) l.textContent = ORD.L.toFixed(1).replace('.', ',') + ' L'; if (b) b.style.height = Math.min(100, ORD.L / (ORD.base * 1.4) * 100) + '%'; if (m) m.textContent = msg || ' ';
+}
+function ordenhaEnd() {
+  if (!ORD.on) return; ORD.on = false; clearInterval(ORD.iv); const L = Math.max(1, Math.round(Math.min(ORD.L, ORD.base * 1.4))), a = ORD.a;
+  if (M.open) closeModal(); if (!addInv('leite', L, true)) return; a.milkD = S.day; P.en = Math.max(0, P.en - 3); if (ORD.bad < 2 && ORD.ok > 14) bond(a, 2);
+  if ((S.dirt[a.area] || 0) > 60 && Math.random() < 0.12) sicken(a, 'mastite'); hist(a, 'Ordenhada à mão: ' + L + ' L');
+  toast('🥛 +' + L + ' L de leite de ' + a.n + (ORD.ok > 18 && ORD.bad < 2 ? ' — ordenha caprichada!' : ORD.bad >= 6 ? ' (metade derramou)' : '') + '.');
+}
+// ---------- SINUCA DE VERDADE: mesa, taco e física ----------
+// Desafio da Zefa: encaçapar 3 bolas coloridas em até 6 tacadas. Encaçapar a bola 8 antes perde; a branca na caçapa gasta a tacada.
+const SN = { on: false };
+const SNW = 300, SNH = 160, SNR = 5.5, SNP = [[8, 8], [150, 4], [292, 8], [8, 152], [150, 156], [292, 152]];
+function sinucaStart() {
+  SN.on = true; SN.shots = 6; SN.pot = 0; SN.state = 'aim'; SN.msg = 'Puxe para trás a partir da bola branca e solte para dar a tacada.';
+  const B = [{ c: '#f8f6ee', x: 75, y: 80, cue: 1 }]; const cols = ['#e8c020', '#2a5ad0', '#d02a2a', '#7a2ab0', '#e07020', '#2a9a4a']; let k = 0;
+  for (let row = 0; row < 4; row++) for (let i = 0; i <= row; i++) { const x = 200 + row * SNR * 1.8, y = 80 + (i - row / 2) * SNR * 2.1; B.push(row === 2 && i === 1 ? { c: '#111', x, y, eight: 1 } : { c: cols[k++ % cols.length], x, y }); }
+  B.forEach(b => { b.vx = 0; b.vy = 0; b.in = 0; }); SN.B = B;
+  showModal('🎱 Sinuca no Bar da Zefa', null, null, () => `<p class="mut">Desafio da Zefa: encaçape <b>3 bolas coloridas</b> em até <b>6 tacadas</b>. Bola 8 antes da hora perde; branca na caçapa gasta a tacada.</p>
+    <canvas id="snC" width="${SNW * 2}" height="${SNH * 2}" style="width:100%;max-width:600px;display:block;margin:0 auto;touch-action:none;image-rendering:pixelated;border:6px solid #5a3418;border-radius:6px;background:#1f7a3a"></canvas>
+    <p style="text-align:center;margin:6px 0"><b id="snInfo"></b><br><span class="mut" id="snMsg"></span></p>`);
+  setTimeout(sinucaBind, 0); cancelAnimationFrame(SN.raf); let last = performance.now();
+  const loop = now => { if (!SN.on) return; const dt = Math.min(0.05, (now - last) / 1000); last = now; if (!M.open || !$('snC')) { SN.on = false; return; } sinucaStep(dt); sinucaDraw(); SN.raf = requestAnimationFrame(loop); }; SN.raf = requestAnimationFrame(loop);
+}
+function sinucaBind() {
+  const c = $('snC'); if (!c) return; const pt = e => { const r = c.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * SNW, (e.clientY - r.top) / r.height * SNH]; };
+  c.onpointerdown = e => { if (SN.state !== 'aim') return; const cue = SN.B[0]; const [x, y] = pt(e); if (hyp(x - cue.x, y - cue.y) > 40) { SN.drag = { x0: cue.x, y0: cue.y, x, y }; } else SN.drag = { x0: cue.x, y0: cue.y, x, y }; c.setPointerCapture(e.pointerId); };
+  c.onpointermove = e => { if (!SN.drag) return; const [x, y] = pt(e); SN.drag.x = x; SN.drag.y = y; };
+  c.onpointerup = () => { const d = SN.drag; SN.drag = null; if (!d || SN.state !== 'aim') return; const dx = d.x0 - d.x, dy = d.y0 - d.y, L = hyp(dx, dy); if (L < 4) return; sinucaShoot(Math.atan2(dy, dx), Math.min(1, L / 90)); };
+}
+function sinucaShoot(ang, pow) { const cue = SN.B[0]; cue.vx = Math.cos(ang) * pow * 420; cue.vy = Math.sin(ang) * pow * 420; SN.state = 'roll'; SN.shots--; SN.potNow = []; AU.nz && AU.nz(0.05, 0.08, 'bandpass', 1800, 3); }
+function sinucaStep(dt) {
+  if (SN.state !== 'roll') return; const B = SN.B.filter(b => !b.in); const n = 6, h = dt / n;
+  for (let s = 0; s < n; s++) {
+    for (const b of B) { b.x += b.vx * h; b.y += b.vy * h; const f = Math.pow(0.62, h); b.vx *= f; b.vy *= f; if (hyp(b.vx, b.vy) < 4) { b.vx = b.vy = 0; }
+      if (b.x < SNR) { b.x = SNR; b.vx = Math.abs(b.vx) * 0.8; } if (b.x > SNW - SNR) { b.x = SNW - SNR; b.vx = -Math.abs(b.vx) * 0.8; } if (b.y < SNR) { b.y = SNR; b.vy = Math.abs(b.vy) * 0.8; } if (b.y > SNH - SNR) { b.y = SNH - SNR; b.vy = -Math.abs(b.vy) * 0.8; }
+      for (const [px, py] of SNP) if (hyp(b.x - px, b.y - py) < 10) { b.in = 1; b.vx = b.vy = 0; SN.potNow.push(b); AU.nz && AU.nz(0.08, 0.06, 'lowpass', 300, 1); break; } }
+    for (let i = 0; i < B.length; i++) for (let j = i + 1; j < B.length; j++) { const a = B[i], b = B[j]; if (a.in || b.in) continue; const dx = b.x - a.x, dy = b.y - a.y, d = hyp(dx, dy); if (d > 0 && d < SNR * 2) {
+      const nx = dx / d, ny = dy / d, ov = SNR * 2 - d; a.x -= nx * ov / 2; a.y -= ny * ov / 2; b.x += nx * ov / 2; b.y += ny * ov / 2;
+      const rv = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny; if (rv > 0) { a.vx -= rv * nx; a.vy -= rv * ny; b.vx += rv * nx; b.vy += rv * ny; if (rv > 30 && AU.nz) AU.nz(0.02, Math.min(0.08, rv / 3000), 'highpass', 2500, 1); } } }
+  }
+  if (SN.B.every(b => b.in || (b.vx === 0 && b.vy === 0))) sinucaSettle();
+}
+function sinucaSettle() {
+  const pots = SN.potNow || [], cue = SN.B[0]; let msg = '';
+  const cols = pots.filter(b => !b.cue && !b.eight).length; SN.pot += cols; if (cols) msg = cols === 1 ? 'Boa! Uma colorida na caçapa.' : 'Que tacada! ' + cols + ' coloridas de uma vez.';
+  if (pots.some(b => b.eight)) { if (SN.pot >= 3) return sinucaEnd(true, 'Fechou com a bola 8 de bônus!'); return sinucaEnd(false, 'A bola 8 caiu antes da hora!'); }
+  if (cue.in) { cue.in = 0; cue.x = 75; cue.y = 80; msg = 'A branca caiu! Volta para o começo da mesa.'; }
+  if (SN.pot >= 3) return sinucaEnd(true, msg);
+  if (SN.shots <= 0) return sinucaEnd(false, 'Acabaram as tacadas.');
+  SN.state = 'aim'; SN.msg = msg || 'Sua vez.';
+}
+function sinucaEnd(win, msg) {
+  SN.state = 'end'; S.stats.sinuca = (S.stats.sinuca || 0) + (win ? 1 : 0);
+  if (win) { receive(25, 'Sinuca: desafio da Zefa', 'cash'); S.stats.earned -= 25; addFr && addFr('zefa', 4); SN.msg = '🏆 ' + msg + ' Ganhou R$ 25!'; AU.chime && AU.chime(); }
+  else SN.msg = '😅 ' + msg + ' Fica para a próxima.';
+  setTimeout(() => { if (SN.state === 'end' && M.open && $('snC')) { SN.on = false; closeModal(); toast('🎱 ' + SN.msg); } }, 2600);
+}
+function sinucaDraw() {
+  const c = $('snC'); if (!c) return; const g = c.getContext('2d'); g.setTransform(2, 0, 0, 2, 0, 0); g.fillStyle = '#1f7a3a'; g.fillRect(0, 0, SNW, SNH);
+  g.fillStyle = 'rgba(255,255,255,0.05)'; for (let y = 0; y < SNH; y += 4) g.fillRect(0, y, SNW, 1); g.fillStyle = '#0c0c0c'; for (const [x, y] of SNP) { g.beginPath(); g.arc(x, y, 8.5, 0, 7); g.fill(); }
+  g.strokeStyle = 'rgba(255,255,255,0.18)'; g.beginPath(); g.moveTo(75, 6); g.lineTo(75, SNH - 6); g.stroke();
+  for (const b of SN.B) { if (b.in) continue; g.fillStyle = 'rgba(0,0,0,0.3)'; g.beginPath(); g.arc(b.x + 1, b.y + 1.5, SNR, 0, 7); g.fill(); g.fillStyle = b.c; g.beginPath(); g.arc(b.x, b.y, SNR, 0, 7); g.fill(); g.fillStyle = 'rgba(255,255,255,0.55)'; g.beginPath(); g.arc(b.x - 1.6, b.y - 1.8, 1.6, 0, 7); g.fill(); if (b.eight) { g.fillStyle = '#fff'; g.font = 'bold 5px sans-serif'; g.textAlign = 'center'; g.fillText('8', b.x, b.y + 1.8); } }
+  const d = SN.drag, cue = SN.B[0]; if (d && SN.state === 'aim') { const dx = d.x0 - d.x, dy = d.y0 - d.y, L = Math.min(90, hyp(dx, dy)), a = Math.atan2(dy, dx);
+    g.strokeStyle = 'rgba(255,255,255,0.6)'; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(cue.x, cue.y); g.lineTo(cue.x + Math.cos(a) * 120, cue.y + Math.sin(a) * 120); g.stroke(); g.setLineDash([]);
+    g.strokeStyle = '#c8a060'; g.lineWidth = 3; g.beginPath(); g.moveTo(cue.x - Math.cos(a) * (8 + L * 0.6), cue.y - Math.sin(a) * (8 + L * 0.6)); g.lineTo(cue.x - Math.cos(a) * (90 + L * 0.6), cue.y - Math.sin(a) * (90 + L * 0.6)); g.stroke(); g.lineWidth = 1;
+    g.fillStyle = L > 70 ? '#e04a2a' : L > 35 ? '#e0c040' : '#4ae04a'; g.fillRect(8, SNH - 10, L / 90 * 80, 4); }
+  const info = $('snInfo'), msg = $('snMsg'); if (info) info.textContent = 'Coloridas: ' + SN.pot + '/3 · Tacadas: ' + SN.shots; if (msg) msg.textContent = SN.msg;
+}
 
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
@@ -10334,7 +10470,7 @@ function inPeople(r) {
 function cityCoffee(b) { const r = IROOM[b.id], own = r.own; const P0 = IN.people || []; if (!own || !P0.some(q => q.id === own)) return say('Não tem ninguém para passar o café agora.', 2400); const k = 'cafe_' + own; S.flags[k] = S.flags[k] || 0; if (S.flags[k] === S.day) return say(NPCDEF[own].n + ': “Já tomou o seu hoje! Volte amanhã.”', 2600);
   if (hearts(own) < 1) return say(NPCDEF[own].n + ' sorri sem graça: “Hoje não tem café coado, não.”', 2600);
   inAct('drink', 1.6, () => { S.flags[k] = S.day; P.en = Math.min(100, P.en + 12); addFr(own, 4); AU.gulp && AU.gulp(); toast('☕ Café com ' + NPCDEF[own].n + ': energia e amizade.'); }); }
-function sinuca() { S.flags.sinD = S.flags.sinD === S.day ? S.day : (S.flags.sinN = 0, S.day); if ((S.flags.sinN || 0) >= 5) return say('A Dona Zefa fecha a mesa: “Cinco partidas por dia, que o pano é novo!”', 3200); if (!pay(10, 'Sinuca no Bar da Zefa')) return; S.flags.sinN = (S.flags.sinN || 0) + 1; inAct('reach', 1.6, () => { const w = Math.random() < 0.45 + skill('lid') * 0.03; if (w) { receive(25, 'Sinuca: ganhou a partida', 'cash'); S.stats.earned -= 25; toast('🎱 Encaçapou a bola oito! Ganhou R$ 25.'); } else toast('🎱 Errou a tacada final. Fica para a próxima.'); }); }
+function sinuca() { S.flags.sinD = S.flags.sinD === S.day ? S.day : (S.flags.sinN = 0, S.day); if ((S.flags.sinN || 0) >= 5) return say('A Dona Zefa fecha a mesa: “Cinco partidas por dia, que o pano é novo!”', 3200); if (!pay(10, 'Sinuca no Bar da Zefa')) return; S.flags.sinN = (S.flags.sinN || 0) + 1; sinucaStart(); }
 // entrar: lojas fechadas e casas sem o dono não abrem
 function enterCity(b) {
   const r = IROOM[b.id]; const kind = cityKind(b);
@@ -12501,6 +12637,7 @@ function worldFx(dt) {
   const px = ix(P), py = iy(P);
   if (lasso.t) { const a = lasso.t, hx = px + (P.mnt ? 4 : 0), hy = py - (P.mnt ? 26 : 16), ax = ix(a), ay = iy(a) - 14; X.strokeStyle = '#e8d8a8'; X.lineWidth = 1; X.beginPath(); X.moveTo(hx, hy); const d = hyp(ax - hx, ay - hy); X.quadraticCurveTo((hx + ax) / 2, (hy + ay) / 2 + Math.max(0, 34 - d) * 0.4 + 4, ax, ay); X.stroke(); }
   if (lasso.anim > 0) { lasso.anim -= dt; X.strokeStyle = '#e8d8a8'; X.beginPath(); X.ellipse(px, py - 40, 10, 4, 0, 0, 7); X.stroke(); }
+  if (lasso.aim || lasso.fly) lassoDraw();
   if (P.lead) { const a = byId(P.lead); if (a) { X.strokeStyle = '#a07040'; X.beginPath(); X.moveTo(px, py - 14); X.lineTo(ix(a) + a.f * 12, iy(a) - 16); X.stroke(); } }
   for (const p of parts) { const al = 1 - p.l / p.m;
     if (p.k === 'icon') { X.globalAlpha = al; X.fillStyle = '#2b1608'; X.font = 'bold 9px sans-serif'; X.fillText(p.t, p.x + 1, p.y + 1); X.fillStyle = p.c; X.fillText(p.t, p.x, p.y); X.globalAlpha = 1; }
@@ -12583,7 +12720,7 @@ function hud(dt) {
   $('hEnC').firstElementChild.title = 'Energia'; if (!$('hEnC').dataset.i) { $('hEnC').insertAdjacentHTML('afterbegin', ic('bolt', 12)); $('hEnC').dataset.i = 1; $('hFoC').insertAdjacentHTML('afterbegin', ic('meat', 12)); $('hFoC').dataset.i = 1; }
   $('hEn').style.width = P.en + '%'; $('hFo').style.width = P.fo + '%';
   const h = P.mnt ? byId(P.mnt) : null;
-  $('bm').innerHTML = (P.mnt ? '' : ic('mount', 14)) + (P.cart ? 'Descer' : P.mnt ? 'Desmontar' : 'Montar'); $('bl').innerHTML = ic('lasso', 14) + (lasso.t ? 'Soltar' : 'Laço'); $('ba').innerHTML = ic('note', 14) + 'Aboio';
+  $('bm').innerHTML = (P.mnt ? '' : ic('mount', 14)) + (P.cart ? 'Descer' : P.mnt ? 'Desmontar' : 'Montar'); $('bl').innerHTML = ic('lasso', 14) + (lasso.t ? 'Soltar' : lasso.aim ? 'Jogar!' : 'Laço'); $('ba').innerHTML = ic('note', 14) + 'Aboio';
   { const st = h ? h._stam || 0 : 0, col = h && h._winded ? '#c0392b' : st < 25 ? '#e0702a' : st < 55 ? '#e0c040' : '#4caf50'; $('bg').innerHTML = ic(h ? 'horse' : 'boot', 14) + (h ? (h._winded ? 'Cansado' : Math.round(st) + '%') : P.cart ? '—' : 'Correr') + (h ? `<i class="stb" style="width:${Math.max(2, st * 0.9)}%;background:${col}"></i>` : ''); }
   const c = P._ctx; const bx = $('bx'); bx.textContent = c ? noEmo(c.label) : (P._auto ? 'Indo…' : 'Ação'); bx.classList.toggle('off', !c);
 }
