@@ -382,7 +382,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '9.2.0', SAVE_V = 9;
+const GAME_V = '9.3.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -2679,6 +2679,27 @@ function charSpr(ap, dir, fr, pose) {
   const c = cached('C' + apKey(ap) + '|' + d + '|' + fr + '|' + pose, 24, 34, g => drawChar(g, ap, d, fr, pose));
   if (!c._lk) { c._lk = 1; charLook(c); } return c; // luz, sombra e contorno colorido
 }
+function charHi(c) { // v9.3: versão em alta (2x) do boneco: cantos arredondados (Scale2x), sombra da aba no rosto e brilho
+  if (c._hi !== undefined) return c._hi; if (SET.q === 'baixa' || SET.look === false) return (c._hi = null);
+  const W = c.width, H = c.height, d = c.getContext('2d').getImageData(0, 0, W, H).data, [o, g] = mkC(W * 2, H * 2), im = g.createImageData(W * 2, H * 2), q = im.data;
+  const px = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? 0 : ((d[(y * W + x) * 4] << 24) | (d[(y * W + x) * 4 + 1] << 16) | (d[(y * W + x) * 4 + 2] << 8) | d[(y * W + x) * 4 + 3]) >>> 0;
+  const put = (x, y, v) => { const i = (y * W * 2 + x) * 4; q[i] = v >>> 24; q[i + 1] = (v >>> 16) & 255; q[i + 2] = (v >>> 8) & 255; q[i + 3] = v & 255; };
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const P0 = px(x, y), A = px(x, y - 1), B = px(x + 1, y), C2 = px(x - 1, y), D = px(x, y + 1);
+    put(x * 2, y * 2, C2 === A && C2 !== D && A !== B ? A : P0); put(x * 2 + 1, y * 2, A === B && A !== C2 && B !== D ? B : P0);
+    put(x * 2, y * 2 + 1, D === C2 && D !== B && C2 !== A ? C2 : P0); put(x * 2 + 1, y * 2 + 1, B === D && B !== A && D !== C2 ? D : P0); }
+  // luz: meio pixel mais claro na borda de cima/esquerda de cada peça e mais escuro embaixo/à direita (volume)
+  const W2 = W * 2, H2 = H * 2, r = new Uint8ClampedArray(q), A2 = (x, y) => (x < 0 || y < 0 || x >= W2 || y >= H2) ? 0 : q[(y * W2 + x) * 4 + 3];
+  const lum = i => q[i] * 0.3 + q[i + 1] * 0.59 + q[i + 2] * 0.11, same = (i, j) => Math.abs(lum(i) - lum(j)) < 26;
+  for (let y = 0; y < H2; y++) for (let x = 0; x < W2; x++) { const i = (y * W2 + x) * 4; if (q[i + 3] < 200 || lum(i) < 50) continue;
+    const up = (y > 0 ? (y - 1) * W2 + x : -1) * 4, dn = (y < H2 - 1 ? (y + 1) * W2 + x : -1) * 4, lf = (x > 0 ? y * W2 + x - 1 : -1) * 4, rt = (x < W2 - 1 ? y * W2 + x + 1 : -1) * 4;
+    let k = 1; if (up < 0 || A2(x, y - 1) < 200 || !same(i, up) || lf < 0 || A2(x - 1, y) < 200 || !same(i, lf)) k = 1.09; else if (dn < 0 || A2(x, y + 1) < 200 || !same(i, dn) || rt < 0 || A2(x + 1, y) < 200 || !same(i, rt)) k = 0.92;
+    if (k !== 1) { r[i] = q[i] * k; r[i + 1] = q[i + 1] * k; r[i + 2] = q[i + 2] * k; } }
+  // sombra da aba do chapéu no rosto: pele logo abaixo de um pixel escuro do chapéu fica um tom mais escura
+  const skin = SKINS.map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
+  const isSkin = i => skin.some(([a, b2, cc]) => Math.abs(q[i] - a) < 30 && Math.abs(q[i + 1] - b2) < 30 && Math.abs(q[i + 2] - cc) < 30);
+  for (let y = 2; y < H2 * 0.45; y++) for (let x = 0; x < W2; x++) { const i = (y * W2 + x) * 4; if (q[i + 3] < 200 || !isSkin(i)) continue; let hat = 0; for (let k2 = 1; k2 <= 3; k2++) { const j = ((y - k2) * W2 + x) * 4; if (q[j + 3] > 200 && !isSkin(j) && lum(j) < 110) { hat = k2; break; } } if (hat) { const f = hat === 1 ? 0.8 : hat === 2 ? 0.87 : 0.94; r[i] *= f; r[i + 1] *= f * 0.97; r[i + 2] *= f * 0.95; } }
+  im.data.set(r); g.putImageData(im, 0, 0); return (c._hi = o);
+}
 // parâmetros corporais de cada pose/quadro
 function poseQ(pose, fr) {
   const Q = { by: 0, lean: 0, legs: 'stand', lL: 0, lR: 0, sN: 0, sF: 0, liftN: 0, liftF: 0, aL: 0, aR: 0, arms: 'swing', hatLag: 0, flap: 0, sway: 0, blink: false, run: false, mv: false };
@@ -2731,7 +2752,9 @@ function drawChar(g, ap, dir, fr, pose) {
   /* ---------- pernas ---------- */
   function bootF(x, y, lift) { // bota vista de frente/costas
     if (ap.boots === 2) { p(x + 1, y - lift, 3, 2, sk); p(x, y + 1 - lift, 4, 1, bc); p(x + 1, y - lift, 3, 1, bc); p(x, y + 2 - lift, 4, 1, bD); return; }
-    const t = ap.boots === 1 ? 3 : 0; p(x, y - t - lift, 4, 3 + t, bc); p(x, y + 2 - lift, 4, 1, bD); if (t) p(x, y - t - lift, 4, 1, bL); if (ap.boots === 3) p(x + 1, y - lift, 1, 1, '#c8904a');
+    const t = ap.boots === 1 ? 3 : 0, xx = x >= 8 ? x + 1 : x; // v9.3: botas separadas (dá pra ver as duas pernas), cano com brilho de couro
+    p(xx, y - t - lift, 3, 3 + t, bc); p(xx - (x >= 8 ? 0 : 0), y + 2 - lift, 4, 1, bD); p(xx + 2, y - t - lift, 1, 2 + t, bD); p(xx, y - t - lift + 1, 1, 1 + t, bL);
+    if (t) { p(xx, y - t - lift, 3, 1, shade(bc, 0.3)); p(xx, y - lift, 3, 1, bD); } if (ap.boots === 3) p(xx + 1, y - lift, 1, 1, '#c8904a');
   }
   function legsFB() {
     if (Q.legs === 'moto') { // de frente/costas: joelhos juntos no tanque, botas na pedaleira
@@ -12645,8 +12668,9 @@ function shadowE(x, y, w) { const s = sunDX(), night = isNight(); X.fillStyle = 
 let SPK = 1; // quantos pixels de tela cabem num pixel do mundo: os bonecos encaixam no pixel da tela, não no do mundo (sem tremer ao andar)
 function drawSpr(c, x, y, flip, sc) {
   sc = sc || 1; x = Math.round(x * SPK) / SPK; y = Math.round(y * SPK) / SPK;
-  if (flip) { X.save(); X.translate(x + c.width * sc, y); X.scale(-1, 1); X.drawImage(c, 0, 0, c.width * sc, c.height * sc); X.restore(); }
-  else X.drawImage(c, x, y, c.width * sc, c.height * sc);
+  const im = c._lk && SPK >= 2 ? (charHi(c) || c) : c; // boneco em alta quando cada pixel do mundo vira 2+ pixels
+  if (flip) { X.save(); X.translate(x + c.width * sc, y); X.scale(-1, 1); X.drawImage(im, 0, 0, c.width * sc, c.height * sc); X.restore(); }
+  else X.drawImage(im, x, y, c.width * sc, c.height * sc);
 }
 /* ---------- câmera ---------- */
 function clampCam(v, span, world) { return span >= world ? (world - span) / 2 : cl(v, 0, world - span); }
@@ -12857,11 +12881,11 @@ function collectItems(tx0, tx1, ty0, ty1, vw, vh, se, vx0, vy0) {
   for (const a of S.animals) { if (a.id === P.mnt || a._wr || !inV(a.x, a.y, 40)) continue; add(iy(a), () => drawAnimal(a), ix(a), { w: 110, h: 100 }); }
   aucDrawLot(add); drawCSX(add); milkTruckDraw(add, inV); drawCSA(add); drawAgro(add, inV); drawCityDeco(add, inV); drawLeste(add, inV); drawTraffic(add, inV); drawBirds(add, inV); drawParkedBoat(add, inV); drawPipa(add, inV); eventCards(add, inV);
   cineDrawActors(add, inV);
-  for (const e of npcs) { if (e.hidden || !inV(e.x, e.y, 30)) continue; add(iy(e), () => { const [pz, fr] = npcPose(e); X.globalAlpha = e.alpha === undefined ? 1 : e.alpha; drawPerson(e.d.ap, ix(e), iy(e), e.dir, fr, pz); X.globalAlpha = 1; if (e.emote && e.et > 0) emote(ix(e), iy(e) - 34, e.emote); }, ix(e), { w: 90, h: 100 }); }
+  for (const e of npcs) { if (e.hidden || !inV(e.x, e.y, 30)) continue; add(iy(e), () => { const [pz, fr] = npcPose(e); X.globalAlpha = e.alpha === undefined ? 1 : e.alpha; drawPerson(e.d.ap, ix(e), iy(e), e.dir, fr, pz); X.globalAlpha = 1; if (e.emote && e.et > 0) emote(ix(e), iy(e) - 34, e.emote); }, ix(e), { w: 90, h: 100, hi: 1 }); }
   for (const w of S.workers) { if (w.x === undefined || !inV(w.x, w.y, 30)) continue; if (w._mnt) { const h = workerHorse(w); if (h) { add(w.y, () => { const sp = h._mv || 0, an = sp < 2 ? 'idle' : sp > 40 ? 'trot' : 'walk', cyc = RIG.cycleLen(rigBreed(h), an === 'idle' ? 'walk' : an, rigK(h)) || 20; drawMounted(h, w.ap, w.x, w.y, w.dir || 0, an, an === 'idle' ? 0 : Math.floor(((h._dist || 0) / cyc % 1) * 8) % 8); }, w.x, { w: 120, h: 120 }); continue; } } if (w._sleep) continue; add(iy(w), () => { const wx = ix(w), wy = iy(w); const pz = w._pose === 'walk' ? 'walk' : w._pose || 'idle'; drawPerson(w.ap, wx, wy, w.dir || 0, pz === 'walk' ? Math.floor((w._ph || 0) / 22 * 8 / 0.22) % 8 : Math.floor(drawT * 3) % 2, pz === 'carry' && w._pose === 'walk' ? 'carryW' : pz); if (w.task && w._pose !== 'walk' && !w._wait) { X.fillStyle = '#2b1608'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), 16, 3); X.fillStyle = '#7ad040'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), Math.round(16 * (w.task.prog || 0)), 3); } }, ix(w), { w: 90, h: 100 }); }
   for (const w of WILD) if (inV(w.x, w.y, 40)) add(WKIND[w.k].sky ? w.y + 200 : w.y, () => drawWild(w), w.x, { w: 110, h: 110, b: w.y });
   for (const v of vehs()) if (inV(v.x, v.y, 70)) { const a1 = v.hitch ? byId(v.hitch) : null, a2 = v.hitch2 ? byId(v.hitch2) : null; add(Math.max(iy(v), a1 ? iy(a1) : -1e9, a2 ? iy(a2) : -1e9), () => { const o = S.cart; S.cart = v; try { drawCart(); } finally { S.cart = o; } }, v.x, { w: 170, h: 110 }); }
-  add(iy(P) + 0.5, drawPlayer, ix(P), { w: 120, h: 120 }); famCollect(add, inV);
+  add(iy(P) + 0.5, drawPlayer, ix(P), { w: 120, h: 120, hi: 1 }); famCollect(add, inV);
   return L;
 }
 const VIEW = { x0: 0, y0: 0, x1: 0, y1: 0 };
@@ -13056,7 +13080,7 @@ function hdResume() { HD.susp = false; HD.warm = 0; HD.ema = undefined; HD.win =
 let HUP = [0, Math.cos(50 * Math.PI / 180), -Math.sin(50 * Math.PI / 180)];
 function hdCamera() {
   const HPHI = CINE.phi * Math.PI / 180, HFOV = CINE.fov * Math.PI / 180; HUP = [0, Math.cos(HPHI), -Math.sin(HPHI)];
-  const [ddx, ddy] = mode === 'cs' ? CINE.driftXY() : [0, 0], vw = VW(), vh = VH(), asp = W / H, q = vw / W, snap = v => mode === 'cs' ? v : Math.round(v / q) * q, tx = snap(cam.x + vw / 2 + ddx), tz = snap(cam.y + vh * 0.5 + ddy);
+  const [ddx, ddy] = mode === 'cs' ? CINE.driftXY() : [0, 0], vw = VW(), vh = VH(), asp = W / H, q = vw / W, snap = v => v, tx = snap(cam.x + vw / 2 + ddx), tz = snap(cam.y + vh * 0.5 + ddy);
   const hfx = Math.atan(Math.tan(HFOV / 2) * asp), D = vw * 0.95 / (2 * Math.tan(hfx));
   const eye = [tx, D * Math.sin(HPHI), tz + D * Math.cos(HPHI)];
   const VP = M4.mul(M4.persp(HFOV, asp, Math.max(8, D * 0.1), D * 6), M4.look(eye, [tx, 0, tz], [0, 1, 0]));
@@ -13112,15 +13136,15 @@ function renderHD0(dt) {
   const gl = HD.gl; gl.pixelStorei(gl.UNPACK_ROW_LENGTH, HCW); gl.pixelStorei(gl.UNPACK_SKIP_PIXELS, 0); gl.pixelStorei(gl.UNPACK_SKIP_ROWS, 0);
   gl.bindTexture(gl.TEXTURE_2D, HD.tG); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gw, gh, 0, gl.RGBA, gl.UNSIGNED_BYTE, C);
   // 2) cartões em pé: cada objeto pintado numa vaga da prancheta
-  const cards = []; for (const it of items) { if (it.o && it.o.flat) continue; if (it.x === undefined) continue; const o = it.o || {}; cards.push({ y: it.y, x: it.x, b: o.b !== undefined ? o.b : it.y, w: Math.ceil(o.w || 96), h: Math.ceil(o.h || 96), f: it.f, fade: o.fade, sway: o.sway }); }
+  const cards = []; for (const it of items) { if (it.o && it.o.flat) continue; if (it.x === undefined) continue; const o = it.o || {}; const k = o.hi && SET.q !== 'baixa' ? 2 : 1, w = Math.ceil(o.w || 96), h = Math.ceil(o.h || 96); cards.push({ y: it.y, x: it.x, b: o.b !== undefined ? o.b : it.y, w, h, k, aw: w * k, ah: h * k, f: it.f, fade: o.fade, sway: o.sway }); }
   cards.sort((a, b) => a.y - b.y);
-  for (const e of npcs) if (!e.hidden && e.bt > 0 && e.bubble && e.x > F.x0 - 40 && e.x < F.x1 + 40 && e.y > F.y0 && e.y < F.y1 + 40) cards.push({ y: 1e9, x: ix(e), b: iy(e), w: 180, h: 64, f: () => drawBubble(e), top: 1 });
+  for (const e of npcs) if (!e.hidden && e.bt > 0 && e.bubble && e.x > F.x0 - 40 && e.x < F.x1 + 40 && e.y > F.y0 && e.y < F.y1 + 40) cards.push({ y: 1e9, x: ix(e), b: iy(e), w: 180, h: 64, k: 1, aw: 180, ah: 64, f: () => drawBubble(e), top: 1 });
   X.clearRect(0, HATY, HCW, HCH - HATY);
   let px = 0, py = HATY, rowH = 0;
   // empacota primeiro o que está mais perto da câmera (o jogador e o que está à frente); se faltar espaço, some só o que está lá no fundo
   const pack = cards.slice().sort((a, b) => (b.top ? 1e9 : b.y) - (a.top ? 1e9 : a.y));
-  for (const c of pack) { if (px + c.w > HCW) { px = 0; py += rowH + 1; rowH = 0; } if (py + c.h > HCH) { c.skip = 1; continue; } c.sx = px; c.sy = py; px += c.w + 1; rowH = Math.max(rowH, c.h);
-    X.save(); X.beginPath(); X.rect(c.sx, c.sy, c.w, c.h); X.clip(); X.setTransform(1, 0, 0, 1, c.sx + c.w / 2 - c.x, c.sy + c.h - HMARG - c.b); try { c.f(); } catch (e) { if (!HD.err) { HD.err = 1; console.error(e); } } X.restore(); }
+  for (const c of pack) { if (px + c.aw > HCW) { px = 0; py += rowH + 1; rowH = 0; } if (py + c.ah > HCH) { c.skip = 1; continue; } c.sx = px; c.sy = py; px += c.aw + 1; rowH = Math.max(rowH, c.ah);
+    X.save(); X.beginPath(); X.rect(c.sx, c.sy, c.aw, c.ah); X.clip(); const K2 = c.k; SPK = K2; X.setTransform(K2, 0, 0, K2, c.sx + c.aw / 2 - Math.round(c.x * K2), c.sy + c.ah - HMARG * K2 - Math.round(c.b * K2)); /* pinta na vaga em pixel inteiro; a fração vai na posição do cartão (sem tremer no 3D) */ try { c.f(); } catch (e) { if (!HD.err) { HD.err = 1; console.error(e); } } SPK = 1; X.restore(); }
   HD.nCards = cards.length; HD.nSkip = cards.filter(c => c.skip).length; HD.usedPx = (py - HATY) / (HCH - HATY);
   const usedH = Math.min(HCH - HATY, py + rowH + 1 - HATY);
   gl.pixelStorei(gl.UNPACK_SKIP_ROWS, HATY); gl.bindTexture(gl.TEXTURE_2D, HD.tA); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, HCW, Math.max(1, usedH), 0, gl.RGBA, gl.UNSIGNED_BYTE, C); gl.pixelStorei(gl.UNPACK_SKIP_ROWS, 0); gl.pixelStorei(gl.UNPACK_ROW_LENGTH, 0);
@@ -13129,10 +13153,10 @@ function renderHD0(dt) {
   const V = []; const quad = (p0, p1, p2, p3, u0, v0, u1, v1, s0, s1, a = 1, sw = 0) => V.push(...p0, u0, v1, s0, a, 0, ...p1, u1, v1, s0, a, 0, ...p2, u0, v0, s1, a, sw, ...p1, u1, v1, s0, a, 0, ...p3, u1, v0, s1, a, sw, ...p2, u0, v0, s1, a, sw);
   quad([F.x0, 0, F.y1], [F.x1, 0, F.y1], [F.x0, 0, F.y0], [F.x1, 0, F.y0], 0, 0, 1, 1, 1, 1); const nG = V.length / 8;
   const sh0 = V.length / 8; const live = cards.filter(c => !c.skip);
-  if (day) for (const c of live) { if (c.top || c.h < 30) continue; const u0 = c.sx / HCW, u1 = (c.sx + c.w) / HCW, v0 = (c.sy - HATY) / AH, v1 = (c.sy - HATY + c.h) / AH, hh = c.h - HMARG, k = 0.55, sx = -sdx * 0.07 * hh, sz = -k * hh;
-    quad([c.x - c.w / 2, 0.2, c.b], [c.x + c.w / 2, 0.2, c.b], [c.x - c.w / 2 + sx, 0.2, c.b + sz], [c.x + c.w / 2 + sx, 0.2, c.b + sz], u0, v0 + HMARG / AH * 0, u1, v1 - HMARG / AH, 1, 1); }
+  if (day) for (const c of live) { if (c.top || c.h < 30) continue; const u0 = c.sx / HCW, u1 = (c.sx + c.aw) / HCW, v0 = (c.sy - HATY) / AH, v1 = (c.sy - HATY + c.ah) / AH, hh = c.h - HMARG, k = 0.55, sx = -sdx * 0.07 * hh, sz = -k * hh;
+    quad([c.x - c.w / 2, 0.2, c.b], [c.x + c.w / 2, 0.2, c.b], [c.x - c.w / 2 + sx, 0.2, c.b + sz], [c.x + c.w / 2 + sx, 0.2, c.b + sz], u0, v0 + HMARG / AH * 0, u1, v1 - HMARG * c.k / AH, 1, 1); }
   const nS = V.length / 8 - sh0, cd0 = V.length / 8, px0 = ix(P), py0 = iy(P);
-  for (const c of live) { const u0 = c.sx / HCW, u1 = (c.sx + c.w) / HCW, v0 = (c.sy - HATY) / AH, v1 = (c.sy - HATY + c.h) / AH, lo = -HMARG, hi = c.h - HMARG;
+  for (const c of live) { const u0 = c.sx / HCW, u1 = (c.sx + c.aw) / HCW, v0 = (c.sy - HATY) / AH, v1 = (c.sy - HATY + c.ah) / AH, lo = -HMARG, hi = c.h - HMARG;
     const at = (dx, dy) => [c.x + dx, HUP[1] * dy + 0.4, c.b + HUP[2] * dy];
     const fade = c.fade && c.b > py0 + 2 && py0 > c.b - (c.h - HMARG) * 0.75 && Math.abs(px0 - c.x) < c.w / 2 - 6 ? 0.42 : 1;
     quad(at(-c.w / 2, lo), at(c.w / 2, lo), at(-c.w / 2, hi), at(c.w / 2, hi), u0, v0, u1, v1, c.top ? 1 : 0.86, 1.04, fade, c.sway ? 1.6 : 0); }
