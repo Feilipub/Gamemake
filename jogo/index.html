@@ -382,7 +382,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '7.9.4', SAVE_V = 9;
+const GAME_V = '8.0.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -8730,7 +8730,7 @@ function climaDay() {
   const c = clima(), cd = calDate(); if (c.choveu) c.sem = 0; else c.sem++; c.choveu = 0;
   if (cd.d === 1 && cd.m === 4) { // começa a seca: sorteia como vai ser o ano
     if (c.y === 1 && S.day < 5) c.seca = 'normal'; else { const r = Math.random(); c.seca = r < 0.45 ? 'normal' : r < 0.8 ? 'forte' : 'severa'; }
-    c.y = cd.y; c.secaD = S.day;
+    c.y = cd.y; c.secaD = S.day; if (S.day > 3) cs2Queue('seca');
     toast(c.seca === 'normal' ? '☀ Começou a seca. Ano de seca normal: guarde comida e água.' : c.seca === 'forte' ? '☀ Começou a seca, e vai ser FORTE. Ração e milho já subiram.' : '🔥 Começou a seca, e vai ser SEVERA! Os açudes vão secar. Guarde comida, encomende carro-pipa e não deixe o gado definhar.');
     setTimeout(() => say('Seu Felipe: ' + (c.seca === 'severa' ? '"Ano ruim, meu filho. Quem tiver gado demais vende cedo, quem tiver comida guardada compra barato."' : c.seca === 'forte' ? '"A seca vai apertar. Planta palma, faz silagem e enche o depósito enquanto dá."' : '"Seca de todo ano. Cuida da água e do sal que o gado aguenta."'), 6000), 3500); }
   if (cd.d === 1 && cd.m === 10) { // fim da seca: sorteia o inverno (as águas)
@@ -9506,7 +9506,7 @@ A.famQuer = () => { const F = fam(), d = NPCDEF[S.amor.id]; if (F.grav || F.kids
 function famDay() {
   if (!S || !S.fam) return; const F = S.fam;
   if (F.grav && S.day >= F.grav + FAM_GEST) { F.grav = 0; const sex = Math.random() < 0.5 ? 'F' : 'M', k = { id: (F.nid = (F.nid || 0) + 1), n: sex === 'F' ? 'Bebê' : 'Bebê', sex, born: S.day, ap: kidMakeAp(sex), laco: 20, ens: {}, task: 'nada', tD: 0 };
-    F.kids.push(k); F.nomear = k.id; toast('👶 Nasceu! ' + (sex === 'F' ? 'Uma menina' : 'Um menino') + ' na Boa Esperança. Dê um nome.'); setTimeout(() => { if (mode === 'play' && !M.open) famNomear(); }, 1200); S.stats.filhos = (S.stats.filhos || 0) + 1; }
+    F.kids.push(k); F.nomear = k.id; toast('👶 Nasceu! ' + (sex === 'F' ? 'Uma menina' : 'Um menino') + ' na Boa Esperança. Dê um nome.'); if (!cs2Queue('filho', { id: k.id })) setTimeout(() => { if (mode === 'play' && !M.open) famNomear(); }, 1200); S.stats.filhos = (S.stats.filhos || 0) + 1; }
   for (const k of F.kids) { // tarefas do dia e saudade de quem não brinca
     const st = kidStage(k); k.tD = 0; if (k.dB !== S.day - 1 && k.laco > 15) k.laco = Math.max(15, k.laco - 1);
     const age = kidAge(k), T = FTAREFA[k.task]; if (!T || k.task === 'nada' || age < T[1]) continue; let feito = '';
@@ -9647,7 +9647,7 @@ function farinhaHTML() {
   h += '</div>' + (mk < 25 ? '<p class="mut">Plante mandioca na roça (Obras › Roça) ou compre sacos na Casa do Agro.</p>' : '') + (ln < 1 ? '<p class="mut">Sem lenha: compre feixes no Mercadinho.</p>' : '');
   return h;
 }
-A.farGo = v => { const n = +v; if (S.far || mandiocaKg() < n * 25 || !lenhaTake(Math.ceil(n / 2))) return; takeFeed('mandioca', n * 25); S.far = { n, t0: tnow(), dur: 90 + 45 * n }; S.stats.farinhadas = (S.stats.farinhadas || 0) + 1; toast('🔥 Farinhada começou! Fica pronta em ' + Math.round((90 + 45 * n) / 60 * 10) / 10 + ' horas.'); AU.click && AU.click(); renderModal(); };
+A.farGo = v => { const n = +v; if (S.far || mandiocaKg() < n * 25 || !lenhaTake(Math.ceil(n / 2))) return; takeFeed('mandioca', n * 25); S.far = { n, t0: tnow(), dur: 90 + 45 * n }; S.stats.farinhadas = (S.stats.farinhadas || 0) + 1; if (!S.flags.farin1 && cs2Queue('farinhada')) { S.flags.farin1 = 1; closeModal(); } toast('🔥 Farinhada começou! Fica pronta em ' + Math.round((90 + 45 * n) / 60 * 10) / 10 + ' horas.'); AU.click && AU.click(); renderModal(); };
 A.farGet = () => { const F = S.far; if (!F || !farPronta()) return; addInv('farinha', F.n * FAR_KG, true); addInv('beiju', F.n * FAR_BEIJU, true); toast('🥣 ' + F.n * FAR_KG + ' kg de farinha e ' + F.n * FAR_BEIJU + ' beijus quentinhos!'); S.far = null; renderModal(); };
 // ---------- tanque de leite ----------
 function milkDay() { // às 6h, antes de a ordenha encher o tanque de novo
@@ -9679,6 +9679,145 @@ function milkTruckDraw(add, inV) {
   const t = { v2: 1, x, y, f: -1, col: '#e8ecf0', tank: 1, wd: 0, mv: 0, gate: 0, door: 0, drv: 1, cargo: [] };
   add(y - 12, () => drawTruck2(t), x - TRK_W / 2, { w: 220, h: 130 });
 }
+
+/* ============ v8.0: MEGA ATUALIZAÇÃO DAS CENAS ============
+   Para todas as cenas: legenda letra a letra (com tempo de leitura garantido) e toque na tela para avançar.
+   Cenas refeitas: início e inauguração de obra (pedreiros, fita vermelha cortada).
+   Cenas novas: nascimento do filho, primeira farinhada, chegada da seca, peão novo chegando na fazenda. */
+// ---------- legenda letra a letra ----------
+const TW = { html: '', n: 0, len: 0, on: false };
+const twPlain = h => String(h).replace(/<[^>]*>/g, '').replace(/&[a-z]+;/g, 'x');
+function twSlice(html, n) { let out = '', c = 0; for (let i = 0; i < html.length && c < n; i++) { const ch = html[i]; if (ch === '<') { const j = html.indexOf('>', i); if (j < 0) break; out += html.slice(i, j + 1); i = j; continue; } if (ch === '&') { const j = html.indexOf(';', i); if (j > i && j - i < 8) { out += html.slice(i, j + 1); i = j; c++; continue; } } out += ch; c++; }
+  const open = (out.match(/<b>/g) || []).length - (out.match(/<\/b>/g) || []).length; for (let k = 0; k < open; k++) out += '</b>'; return out; }
+function twStart(s) { if (typeof s.txt !== 'string' || !s.txt) { TW.on = false; return; } TW.html = s.txt; TW.len = twPlain(s.txt).length; TW.n = 0; TW.on = true; const need = TW.len / 42 + 1.5; if ((s.d || 0) < need && !s.keepD) s.d = need; $('sub').innerHTML = ''; }
+function twTick(dt) { if (!TW.on) return; const n0 = Math.floor(TW.n); TW.n = Math.min(TW.len, TW.n + dt * 42); const n = Math.floor(TW.n); if (n !== n0) { $('sub').innerHTML = twSlice(TW.html, n); if (n % 3 === 0 && AU.ok && AU.ok() && SET.csTyping !== false) AU.osc('square', 520 + (n % 5) * 30, 0, 0.02, 0.008); } if (TW.n >= TW.len) { TW.on = false; $('sub').innerHTML = TW.html; } }
+// ---------- toque na tela para avançar ----------
+function csTapAdvance() {
+  if (!CS.on || mode !== 'cs') return; const s = CS.steps[CS.i]; if (!s || CS.t < 0.35) return;
+  if (TW.on) { TW.n = TW.len; twTick(0); return; } // primeiro toque: mostra a frase inteira
+  const el = document.querySelector('#sub .tx'); if (el && s._say && el.textContent.length < s._say) { CS.t = Math.max(CS.t, s._say / 34 + 0.02); return; } // fala do personagem: completa a frase
+  if (s.noTap) return; if (s.upd) s.upd(0, 1); CS.t = s.d || 0; // pula para o fim do plano (o plano seguinte começa no próximo quadro)
+}
+addEventListener('pointerdown', e => { if (!CS.on || mode !== 'cs') return; if (e.target.closest && e.target.closest('#skip, #mn, button')) return; csTapAdvance(); }, true);
+addEventListener('keydown', e => { if (CS.on && mode === 'cs' && (e.code === 'Space' || e.code === 'Enter')) { csTapAdvance(); e.preventDefault(); } });
+// ---------- objetos de cena desenhados à parte (fita, carrinho de mão, rede, roda de ralar...) ----------
+function csProp(o) { o.v2 = 0; o.prop = 1; CSX.push(o); return o; }
+function drawRibbon(r) { // fita vermelha entre duas estacas; corta no meio e cai
+  const x0 = r.x - 30, x1 = r.x + 30, y = r.y - 14, cut = r.cut || 0;
+  X.fillStyle = '#6a4220'; X.fillRect(x0 - 1, y - 2, 3, 16); X.fillRect(x1 - 1, y - 2, 3, 16);
+  X.fillStyle = '#d02a2a';
+  if (cut <= 0) { X.fillRect(x0, y, 60, 3); X.fillStyle = '#f04a4a'; X.fillRect(x0, y, 60, 1); X.fillStyle = '#d02a2a'; X.fillRect(r.x - 4, y - 3, 8, 8); X.fillStyle = '#f06a6a'; X.fillRect(r.x - 2, y - 2, 4, 3); }
+  else { const dr = Math.min(1, cut) * 12; X.save(); X.translate(x0 + 1, y + 1); X.rotate(Math.min(1, cut) * 1.2); X.fillRect(0, -1, 28, 3); X.restore(); X.save(); X.translate(x1, y + 1); X.rotate(-Math.min(1, cut) * 1.2); X.fillRect(-28, -1, 28, 3); X.restore(); X.fillRect(r.x - 4, y - 3 + dr, 8, 8); }
+}
+function drawWheelbarrow(o) { const x = Math.round(o.x), y = Math.round(o.y), f = o.f || 1; X.save(); X.translate(x, y); X.scale(f, 1);
+  X.fillStyle = '#5a5e66'; X.fillRect(-10, -9, 14, 6); X.fillStyle = '#7a7e86'; X.fillRect(-10, -9, 14, 1); X.fillStyle = '#b8a888'; X.fillRect(-9, -11, 12, 3); X.fillStyle = '#3a2410'; X.fillRect(3, -6, 10, 2); X.fillRect(-12, -4, 3, 4);
+  X.fillStyle = '#1a1a1e'; X.fillRect(-14, -5, 5, 5); X.fillStyle = '#6a6a72'; X.fillRect(-13, -4, 3, 3); X.restore(); }
+function drawStakes(o) { // estacas e linha de marcação da obra
+  const k = Math.min(1, o.k || 0), pts = [[o.x0, o.y0], [o.x1, o.y0], [o.x1, o.y1], [o.x0, o.y1]], n = Math.ceil(k * 4);
+  X.fillStyle = '#8a5a2a'; for (let i = 0; i < n; i++) { const [x, y] = pts[i]; X.fillRect(x - 1, y - 7, 2, 7); X.fillStyle = '#e04a2a'; X.fillRect(x - 1, y - 8, 3, 2); X.fillStyle = '#8a5a2a'; }
+  X.strokeStyle = 'rgba(250,240,200,0.9)'; X.lineWidth = 0.8; X.beginPath(); X.moveTo(pts[0][0], pts[0][1] - 4); for (let i = 1; i <= 4; i++) { const seg = cl(k * 4 - (i - 1), 0, 1); if (seg <= 0) break; const a = pts[i - 1], b = pts[i % 4]; X.lineTo(lerp(a[0], b[0], seg), lerp(a[1], b[1], seg) - 4); } X.stroke(); }
+function drawBaby(o) { // bebê enrolado na manta, no colo
+  const x = Math.round(o.x), y = Math.round(o.y); X.fillStyle = '#f0e8d8'; X.fillRect(x - 4, y - 3, 9, 5); X.fillStyle = o.col || '#8ac0e8'; X.fillRect(x - 4, y - 1, 9, 3); X.fillStyle = '#e8c8a0'; X.fillRect(x + 2, y - 4, 4, 4); X.fillStyle = '#2a1a10'; X.fillRect(x + 3, y - 3, 1, 1); }
+function drawRedemoinho(o) { // redemoinho de poeira girando
+  const x = o.x, y = o.y; for (let i = 0; i < 9; i++) { const h = i * 8, w = 5 + i * 2.6, a = drawT * 7 + i * 0.8; X.fillStyle = i % 2 ? `rgba(150,110,64,${(0.7 - i * 0.04).toFixed(2)})` : `rgba(214,184,136,${(0.75 - i * 0.05).toFixed(2)})`; X.beginPath(); X.ellipse(x + Math.sin(a) * (2 + i * 0.6), y - h, w, 2.2 + i * 0.25, 0, 0, 7); X.fill(); }
+  X.fillStyle = 'rgba(120,90,50,0.6)'; for (let k = 0; k < 6; k++) { const a = drawT * 9 + k; X.fillRect(Math.round(x + Math.cos(a) * (6 + k * 2)), Math.round(y - 10 - k * 8 + Math.sin(a) * 2), 1, 1); } }
+function drawMandiocaPile(o) { const x = Math.round(o.x), y = Math.round(o.y); for (let i = 0; i < (o.n || 6); i++) { const dx = (i % 3) * 6 - 6, dy = -Math.floor(i / 3) * 3; X.fillStyle = '#8a5a3a'; X.fillRect(x + dx, y + dy - 3, 7, 3); X.fillStyle = '#f0e0c0'; X.fillRect(x + dx + 6, y + dy - 3, 1, 3); } }
+// ---------- cenas refeitas: obra começando e obra inaugurada ----------
+csObraStart = function (k) {
+  const c = lotCenter(k), b = BUILD[S.lots[k].b], r = LOTS[k].r, x0 = r[0] * TS + 6, x1 = (r[2] + 1) * TS - 6, y0 = r[1] * TS + 8, y1 = (r[3] + 1) * TS - 6;
+  const st = { draw: () => drawStakes(st), x: (x0 + x1) / 2, y: y1, x0, x1, y0, y1, k: 0, w: 140, h: 120 };
+  let chico, ped = [], wb;
+  cutscene([
+    { fade: 1, d: 0.4 },
+    { fade: 0, cam: [c[0], c[1] + 2.8], snap: 1, z: 1.5, pitch: 40, dof: 0.4, txt: '🧱 Segunda cedo: a turma do Mestre Chico chega para começar o <b>' + b.n + '</b>.', d: 3.4,
+      fn: () => { csProp(st); const sx = x1 + 70, sy = y1 + 26; chico = cineActor({ ap: NPCDEF.chico.ap, x: sx, y: sy, dir: 2 }); ped = BUILDER_AP.map((ap, i) => cineActor({ ap, x: sx + 24 + i * 18, y: sy + 6, dir: 2 })); wb = csProp({ draw: () => drawWheelbarrow(wb), x: sx + 10, y: sy + 8, f: -1, w: 40, h: 30 }); },
+      upd: (dt, u) => { const k = easeOut(u / 0.9); actorWalk(chico, x0 + 30, y1 + 22, k, x1 + 70, y1 + 26); ped.forEach((a, i) => actorWalk(a, x0 + 60 + i * 24, y1 + 18 + i * 4, k, x1 + 94 + i * 18, y1 + 32)); wb.x = ped[0] ? ped[0].x + 12 : wb.x; wb.y = ped[0] ? ped[0].y + 1 : wb.y; if (Math.random() < dt * 4) dust(wb.x, wb.y, 1); } },
+    Object.assign(csSay('chico', 'Fechado, patrão! Primeiro a gente marca o terreno: estaca nos cantos e linha esticada.', { look: false }), { upd: (dt, u) => { st.k = u; chico.pose = 'idle'; } }),
+    { txt: 'Os pedreiros trabalham das 7h às 17h. Prazo: cerca de <b>' + b.days + ' dia(s)</b>. Chuva atrasa a obra.', d: 3,
+      upd: (dt, u) => { st.k = 1; ped.forEach((a, i) => { a.pose = 'hammer'; a.fr = Math.floor(drawT * 3 + i) % 2; if (Math.random() < dt * 1.5) { AU.hammer && AU.hammer(a.x, a.y); dust(a.x + 8, a.y - 4, 1, '#b8a888'); } }); } },
+    { clr: 1, d: 0.1 }
+  ], () => csClear());
+};
+csObraFim = function (k) {
+  const c = lotCenter(k), b = BUILD[S.lots[k].b], r = LOTS[k].r, fx = (r[0] + r[2] + 1) / 2 * TS, fy = (r[3] + 1) * TS + 22;
+  const fita = { draw: () => drawRibbon(fita), x: fx, y: fy, cut: 0, w: 90, h: 40 };
+  let me, chico, ped = [];
+  cutscene([
+    { fade: 1, d: 0.4 },
+    { fade: 0, cam: [c[0], c[1] + 2.6], snap: 1, z: 1.45, pitch: 36, dof: 0.4, rays: 0.7, txt: '🎉 Obra concluída: <b>' + b.n + '</b>! A turma espera o patrão para a inauguração.', d: 3.2,
+      fn: () => { csProp(fita); chico = cineActor({ ap: NPCDEF.chico.ap, x: fx + 44, y: fy + 4, dir: 2 }); ped = BUILDER_AP.map((ap, i) => cineActor({ ap, x: fx + 66 + i * 18, y: fy + 8 - i * 4, dir: 2 })); me = cineActor({ ap: S.cf.ap, x: fx - 90, y: fy + 8, dir: 3 }); P._csHide = 1; },
+      upd: (dt, u) => { actorWalk(me, fx - 16, fy + 8, easeOut(u / 0.85), fx - 90, fy + 8); } },
+    Object.assign(csSay('chico', 'Tá entregue, patrão! Serviço caprichado. Corta a fita aí que é sua!', { look: false }), { upd: () => { me.dir = 3; } }),
+    { txt: '✂️ Você corta a fita vermelha…', d: 1.6, upd: (dt, u) => { me.pose = u < 0.5 ? 'wave' : 'idle'; me.fr = 0; if (u > 0.45 && !fita.cut) { fita.cut = 0.01; AU.chime && AU.chime(); } if (fita.cut) fita.cut = Math.min(1, fita.cut + dt * 2.2); } },
+    { txt: 'Viva! Palmas, foguete e confete. ' + b.f, d: 4,
+      fn: () => { SFX.fanfare && SFX.fanfare(true); for (let i = 0; i < 30; i++) part(fx + rnd(-60, 60), fy - rnd(20, 70), 'spark', { vx: rnd(-26, 26), vy: rnd(-50, -10), m: 1.4, c: pick(['#ffe060', '#ffffff', '#ff6040', '#40c0ff', '#60e060']) }); },
+      upd: (dt) => { fita.cut = 1; [me, chico, ...ped].forEach((a, i) => { a.pose = 'wave'; a.fr = Math.floor(drawT * 4 + i) % 2; }); if (Math.random() < dt * 6) part(fx + rnd(-70, 70), fy - rnd(40, 90), 'spark', { vx: rnd(-10, 10), vy: rnd(-6, 6), m: 1.2, c: pick(['#ffe060', '#ff6040', '#40c0ff']) }); } },
+    { clr: 1, d: 0.1 }
+  ], () => { P._csHide = 0; csClear(); addFr('chico', 20); SAVE.save('auto', true); });
+};
+// ---------- cenas novas ----------
+const CS2 = {};
+CS2.filho = p => { // nascimento do filho: varanda, o cônjuge com o bebê no colo
+  const k = S.fam && S.fam.kids.find(q => q.id === p.id); if (!k) return famNomear();
+  const conj = S.amor && NPCDEF[S.amor.id] ? NPCDEF[S.amor.id] : null, vx = 11.5 * TS, vy = 31.2 * TS;
+  let me, cj, baby;
+  cutscene([
+    { fade: 1, d: 0.5 },
+    { fade: 0, cam: [11.6, 31.4], snap: 1, z: 2.2, pitch: 40, dof: 0.55, grade: 'aurora', mus: 'cena', txt: 'Um chorinho forte ecoa pela varanda da Boa Esperança…', d: 3,
+      fn: () => { if (conj) cj = cineActor({ ap: conj.ap, x: vx + 10, y: vy, dir: 0 }); baby = csProp({ draw: () => drawBaby(baby), x: vx + 13, y: vy - 14, col: k.sex === 'F' ? '#f0a0c0' : '#8ac0e8', w: 20, h: 16 }); me = cineActor({ ap: S.cf.ap, x: vx - 70, y: vy + 30, dir: 3 }); P._csHide = 1; },
+      upd: (dt, u) => { actorWalk(me, vx - 8, vy + 2, easeOut(u / 0.9), vx - 70, vy + 30); if (Math.random() < dt * 2) heart(vx + 12, vy - 22); } },
+    { txt: (k.sex === 'F' ? '👶 É uma menina!' : '👶 É um menino!') + ' ' + (conj ? conj.n + ' entrega o bebê no seu colo.' : 'O bebê chega ao seu colo.'), d: 3.4,
+      fn: () => { if (cj) { cj.pose = 'wave'; cj.dir = 2; } me.dir = 3; AU.chime && AU.chime(); },
+      upd: (dt, u) => { baby.x = lerp(vx + 13, vx - 4, easeOut(u / 0.6)); baby.y = lerp(vy - 14, vy - 13, u); if (u > 0.6) { me.pose = 'feed'; me.fr = 0; } if (Math.random() < dt * 3) heart(baby.x, baby.y - 8); } },
+    { txt: 'O avô Tiãozinho ia ficar orgulhoso: mais uma geração na Boa Esperança.', d: 3.2, upd: (dt) => { if (Math.random() < dt * 2) heart(vx + rnd(-10, 10), vy - 26); } },
+    { clr: 1, d: 0.1 }
+  ], () => { P._csHide = 0; csClear(); setTimeout(() => { if (S.fam && S.fam.nomear) famNomear(); }, 300); });
+};
+CS2.farinhada = () => { // primeira farinhada: a tradição da casa de farinha
+  const k = Object.keys(S.lots).find(q => S.lots[q] && S.lots[q].b === 'farinha' && S.lots[q].done); if (!k) return;
+  const r = LOTS[k].r, x0 = r[0] * TS, y0 = r[1] * TS, y1 = (r[3] + 1) * TS, c = lotCenter(k);
+  let fa, me, pile;
+  cutscene([
+    { fade: 1, d: 0.4 },
+    { fade: 0, cam: [c[0] + 0.6, c[1] + 2], snap: 1, z: 1.8, pitch: 38, dof: 0.5, rays: 0.6, mus: 'baiao', txt: '🔥 Primeira farinhada na Boa Esperança! O forno de lenha já está estalando.', d: 3,
+      fn: () => { fa = cineActor({ ap: FARINHEIRA_AP, x: x0 + 40, y: y1 + 6, dir: 3 }); me = cineActor({ ap: S.cf.ap, x: x0 + 8, y: y1 + 10, dir: 3 }); pile = csProp({ draw: () => drawMandiocaPile(pile), x: x0 + 24, y: y1 + 12, n: 6, w: 30, h: 20 }); P._csHide = 1; },
+      upd: (dt) => { if (Math.random() < dt * 8) part(x0 + 104, y0 + 2, 'dust', { vx: rnd(-4, 4) + 3, vy: rnd(-16, -9), m: 2, c: '#c8c8c8' }); } },
+    { txt: 'Descasca a mandioca, rala na roda e espreme na prensa: a massa fica sequinha.', d: 3.4, fn: () => { fa.pose = 'feed'; me.pose = 'feed'; },
+      upd: (dt, u) => { fa.fr = Math.floor(drawT * 3) % 2; me.fr = Math.floor(drawT * 3 + 1) % 2; pile.n = Math.max(1, 6 - Math.floor(u * 5)); if (Math.random() < dt * 10) part(x0 + 26 + rnd(-6, 6), y1 + 4, 'drop', { vx: rnd(-14, 14), vy: rnd(-20, -6), m: 0.4, c: pick(['#f0e0c0', '#8a5a3a']) }); } },
+    { txt: 'No forno, a farinha é mexida sem parar até ficar torradinha. Na chapa, sai o beiju quentinho.', d: 3.6,
+      upd: (dt) => { actorWalk(fa, x0 + 78, y1 + 4, 1, x0 + 40, y1 + 6); fa.pose = 'feed'; fa.fr = Math.floor(drawT * 4) % 2; if (Math.random() < dt * 10) part(x0 + 90 + rnd(-8, 8), y0 + 68, 'spark', { vx: rnd(-6, 6), vy: rnd(-24, -8), m: 0.5, c: pick(['#ffd040', '#ff8a2a']) }); if (Math.random() < dt * 8) part(x0 + 104, y0 + 2, 'dust', { vx: rnd(-4, 4) + 3, vy: rnd(-16, -9), m: 2, c: '#c8c8c8' }); } },
+    { clr: 1, d: 0.1 }
+  ], () => { P._csHide = 0; csClear(); });
+};
+CS2.seca = () => { // chegada da seca
+  const c = clima(), cow = myAnimals('boi')[0], tx = cow ? cow.x / TS : 30, ty = cow ? cow.y / TS : 41; let me;
+  const rd = csProp({ draw: () => drawRedemoinho(rd), x: (tx + 7) * TS, y: (ty + 1.5) * TS, w: 60, h: 90 });
+  cutscene([
+    { fade: 1, d: 0.5 },
+    { fade: 0, cam: [tx, ty], snap: 1, z: 1.2, pitch: 46, grade: 'aurora', rays: 0.9, warm: 1, txt: '☀️ Maio no sertão. O céu fica limpo de nuvem e o sol aperta.', d: 3.2,
+      upd: (dt) => { if (Math.random() < dt * 4) part(tx * TS + rnd(-160, 160), ty * TS + rnd(-80, 80), 'dust', { vx: rnd(10, 26), vy: rnd(-6, 2), m: 1.6, c: '#d8c090' }); } },
+    { cam: [tx + 4, ty + 1], z: 1.5, spd: 0.8, txt: 'O capim vai secando, o pasto fica cor de palha e o redemoinho levanta poeira na estrada.', d: 3.6,
+      upd: (dt, u) => { rd.x = (tx + 7 - u * 5) * TS; rd.y = (ty + 1.5 + Math.sin(u * 6) * 0.4) * TS; if (Math.random() < dt * 12) dust(rd.x + rnd(-6, 6), rd.y, 1, '#c8a878'); } },
+    { fn: () => { me = cineActor({ ap: Object.assign({}, S.cf.ap, { mood: 'cansado' }), x: P.x, y: P.y, dir: 0 }); P._csHide = 1; }, cam: [P.x / TS, P.y / TS - 0.6], z: 2.4, spd: 1.2, dof: 0.5,
+      txt: c.seca === 'severa' ? '🔥 Vai ser seca <b>severa</b>. Guarde comida, cuide da água e não deixe o gado definhar.' : c.seca === 'forte' ? 'Vai ser seca <b>forte</b>: ração e milho já subiram. Silagem e palma salvam o rebanho.' : 'Seca de todo ano: guarde comida no depósito e mantenha os cochos d’água cheios.', d: 4,
+      upd: (dt, u) => { me.pose = u > 0.3 && u < 0.7 ? 'wave' : 'idle'; me.fr = 0; } },
+    { clr: 1, d: 0.1 }
+  ], () => { P._csHide = 0; csClear(); });
+};
+CS2.peao = p => { // peão novo chegando pela estrada com a trouxa
+  const w = (S.workers || []).find(q => q.id === p.id); if (!w || !w.ap) return; let a, me;
+  const gx = 57.5 * TS, gy = 44.6 * TS;
+  cutscene([
+    { fade: 1, d: 0.4 },
+    { fade: 0, cam: [55, 44], snap: 1, z: 1.7, pitch: 40, txt: '🤝 Pela estrada do leste chega ' + esc(w.n) + ', com a trouxa nas costas.', d: 3.4,
+      fn: () => { a = cineActor({ ap: w.ap, x: gx + 150, y: gy, dir: 2 }); me = cineActor({ ap: S.cf.ap, x: gx - 40, y: gy + 2, dir: 3 }); P._csHide = 1; },
+      upd: (dt, u) => { actorWalk(a, gx + 10, gy, easeOut(u / 0.9), gx + 150, gy); a.pose = a.pose === 'walk' ? 'carryW' : 'idle'; if (Math.random() < dt * 3) dust(a.x, a.y, 1); } },
+    { txt: '“Bom dia, patrão! ' + (w.tr && w.tr.length ? 'Dizem que sou ' + w.tr.map(t => (WTRAITS[t] || [t])[0]).join(' e ').toLowerCase() + '. ' : '') + 'Pode contar comigo na lida.”', d: 3.6, fn: () => { a.pose = 'wave'; me.pose = 'wave'; }, upd: () => { a.fr = Math.floor(drawT * 3) % 2; me.fr = a.fr; } },
+    { txt: 'Dê ordens no menu Peões. Agrado, folga e salário em dia levantam o ânimo.', d: 2.8, fn: () => { a.pose = 'idle'; me.pose = 'idle'; } },
+    { clr: 1, d: 0.1 }
+  ], () => { P._csHide = 0; csClear(); });
+};
+function cs2Queue(k, extra) { if (!cenasOn() || !S) return false; S.pend.push(Object.assign({ k: 'cs2', n: k }, extra || {})); return true; }
 
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
@@ -10270,7 +10409,7 @@ function openBar() { showModal('🍺 Bar da Zefa', [['com', 'Refeições'], ['mu
   if (t === 'pro') { const here = npcs.filter(e => !e.hidden && hyp(e.x - P.x, e.y - P.y) < 70); h += here.map(e => `<div class="card">${charImg(e.d.ap, 1)} <b>${e.d.n}</b> ${btn('Conversar', 'kTalk', e.id)}</div>`).join('') || '<p class="mut">Ninguém por perto agora.</p>'; }
   return h; }); }
 A.meal = v => { const m = MEALS[+v]; if (pay(m.p * priceMul(), m.n)) { P.fo = cl(P.fo + m.fo, 0, 100); P.en = cl(P.en + m.en, 0, 100); AU.munch(); addFr('zefa', 4); toast('😋 ' + m.n); } renderModal(); };
-A.hire = v => { const c = S.cand[+v]; if (!c || S.workers.length >= workerSlots()) return; c.hired = S.day; S.workers.push(c); S.cand.splice(+v, 1); toast('🤝 ' + c.n + ' contratado(a)! Dê ordens no menu Peões.'); renderModal(); };
+A.hire = v => { const c = S.cand[+v]; if (!c || S.workers.length >= workerSlots()) return; c.hired = S.day; S.workers.push(c); S.cand.splice(+v, 1); toast('🤝 ' + c.n + ' contratado(a)! Dê ordens no menu Peões.'); if (cs2Queue('peao', { id: c.id })) closeModal(); else renderModal(); };
 function openAcougue() { showModal('🥩 Açougue do Tonho', [['cor', 'Cortes'], ['aba', 'Vender boi gordo'], ['cot', 'Cotação']], 'cor', t => {
   let h = keeperBanner('acougue');
   if (t === 'cor') h += CUTS.map(id => shopRow(id)).join('');
@@ -11129,7 +11268,7 @@ function truckSpr(col) { return cached('truck|' + col, 70, 40, g => { const p = 
   p(20, 4, 46, 25, '#7a5430'); for (let x = 20; x < 66; x += 5) p(x, 4, 2, 25, '#5a3a20'); for (let y = 7; y < 28; y += 6) p(20, y, 46, 2, '#9a7048'); p(20, 4, 46, 2, '#b08858');
   [[26, 10, '#e8e0d0'], [37, 9, '#9a4a24'], [48, 11, '#c9984e'], [57, 9, '#eae4d8']].forEach(([x, y, c]) => { p(x, y, 6, 4, c); p(x - 1, y - 2, 1, 2, '#e8dcc0'); p(x + 6, y - 2, 1, 2, '#e8dcc0'); p(x + 2, y + 2, 2, 1, '#2a1a10'); });
   for (const wx of [10, 30, 56]) { p(wx - 4, 28, 9, 9, '#1a1a1e'); p(wx - 2, 30, 5, 5, '#5a5a62'); p(wx - 1, 31, 3, 3, '#9a9aa2'); } }); }
-function drawCSX(add) { for (const t of CSX) if (t.v2) add(t.y - 12, () => drawTruck2(t), t.x - (t.f > 0 ? -1 : 1) * TRK_W / 2, { w: 220, h: 130 }); else add(t.y, () => { const c = truckSpr(t.col); X.save(); if (t.f > 0) { X.translate(Math.round(t.x), 0); X.scale(-1, 1); X.drawImage(c, -35, Math.round(t.y) - 38); } else X.drawImage(c, Math.round(t.x) - 35, Math.round(t.y) - 38); X.restore(); if (t.mv && Math.random() < 0.3) dust(t.x + 30 * (t.f > 0 ? -1 : 1), t.y, 1); }, t.x, { w: 170, h: 110 }); }
+function drawCSX(add) { for (const t of CSX) if (t.prop) add(t.y, t.draw, t.x, { w: t.w || 60, h: t.h || 60 }); else if (t.v2) add(t.y - 12, () => drawTruck2(t), t.x - (t.f > 0 ? -1 : 1) * TRK_W / 2, { w: 220, h: 130 }); else add(t.y, () => { const c = truckSpr(t.col); X.save(); if (t.f > 0) { X.translate(Math.round(t.x), 0); X.scale(-1, 1); X.drawImage(c, -35, Math.round(t.y) - 38); } else X.drawImage(c, Math.round(t.x) - 35, Math.round(t.y) - 38); X.restore(); if (t.mv && Math.random() < 0.3) dust(t.x + 30 * (t.f > 0 ? -1 : 1), t.y, 1); }, t.x, { w: 170, h: 110 }); }
 /* ============ CENAS CURTAS DA LIDA: caminhão boiadeiro, parto, brete, ladrão, fujão, carro de boi ============ */
 const CSA = []; // figurantes animais das cenas (cópias desenhadas com o rig)
 const cenasOn = () => SET.cenas !== false;
@@ -12243,6 +12382,7 @@ function drawMounted(h, ap, x, y, dir, an, fr) {
 }
 function mountGait(h) { const spd = P._mv || 0; if (spd < 2.5) return ['idle', 0]; const an = spd > 56 ? 'gallop' : spd > 27 ? 'trot' : 'walk'; const cyc = RIG.cycleLen(rigBreed(h), an, rigK(h)) || 20; return [an, Math.floor(((P._dist || 0) / cyc % 1) * RIG.frames(an)) % RIG.frames(an)]; }
 function drawPlayer() {
+  if (P._csHide && mode === 'cs') return; // a cena usa um ator no lugar do jogador
   const ap = S.cf.ap, x = ix(P), y = iy(P);
   if (P.boat) return drawBoat(x, y, P.dir, true);
   if (P.mnt) { const h = byId(P.mnt); if (!h) { P.mnt = null; return; } let [an, fr] = mountGait(h); if (P._idleT > 0.4 && an === 'idle') { const t = drawT % 7; fr = t < 5.6 ? 0 : t < 6 ? 1 : t < 6.5 ? 3 : 0; } if (h._react && h._react.t > 0) { an = h._react.a; fr = h._react.f; } if (typeof waterDepthAt === 'function') { const wd = waterDepthAt(P.x, P.y); if (wd > 0.05) return drawMountedWading(h, ap, x, y, P.dir, an, fr, wd); } drawMounted(h, ap, x, y, P.dir, an, fr); return; }
@@ -12643,14 +12783,14 @@ function startStep() {
     cam.fx = nx; cam.fy = ny; cam.spd = s.spd || 1.4; if (s.snap || (s.snap === undefined && !s.pan && far > Math.max(VW(), VH()) * 1.1)) cam.snap = true; }
   if (s.z) cam.taz = s.z * csPortraitK() / (cam.uz || 1);
   if (!CS.warm) CS.warm = []; csWarmQueue(CS.steps[CS.i + 1]); csWarmQueue(CS.steps[CS.i + 2]);
-  if (s.txt) sub(s.txt); else if (s.clr) hideSub();
+  if (s.txt) { sub(s.txt); twStart(s); } else { TW.on = false; if (s.clr) hideSub(); }
   if (s.fade !== undefined) fadeTo(s.fade);
   CINE.step(s); if (typeof inCam === 'function') inCam(s); if (s.mus && MUS.unlocked && MUS.cur !== s.mus) MUS.play(s.mus, 2);
   if (s.fn) s.fn();
 }
-function updCS(dt) { const s = CS.steps[CS.i]; if (!s) return; CS.t += dt; csWarmTick(); if (s.upd) s.upd(dt, Math.min(1, CS.t / (s.d || 1))); if (CS.t >= (s.d || 0)) { CS.i++; startStep(); } }
+function updCS(dt) { const s = CS.steps[CS.i]; if (!s) return; CS.t += dt; csWarmTick(); twTick(dt); if (s.upd) s.upd(dt, Math.min(1, CS.t / (s.d || 1))); if (CS.t >= (s.d || 0)) { CS.i++; startStep(); } }
 function endCS() { if (IN.on) IN.camT = null; csTitle(null); CINE.reset(); $('sub').classList.remove('done'); MUS.setScene('game', 2.5); CS.on = false; cam.fx = cam.fy = null; cam.taz = 1; mode = 'play'; document.body.classList.remove('cs'); $('skip').style.display = 'none'; hideSub(); fadeTo(0); const e = CS.end; CS.end = null; if (e) e(); }
-function skipCS() { if (!CS.on) return; CINE.fade = CINE.fadeT = 0; for (let i = CS.i + 1; i < CS.steps.length; i++) { const s = CS.steps[i]; if (s.fn) s.fn(); if (s.upd) s.upd(0, 1); } const cur = CS.steps[CS.i]; if (cur && cur.upd) cur.upd(0, 1); CS.i = CS.steps.length; endCS(); }
+function skipCS() { if (!CS.on) return; TW.on = false; P._csHide = 0; CINE.fade = CINE.fadeT = 0; for (let i = CS.i + 1; i < CS.steps.length; i++) { const s = CS.steps[i]; if (s.fn) s.fn(); if (s.upd) s.upd(0, 1); } const cur = CS.steps[CS.i]; if (cur && cur.upd) cur.upd(0, 1); CS.i = CS.steps.length; endCS(); }
 $('skip').onclick = skipCS;
 function pathLerp(pts, u) { const segs = []; let tot = 0; for (let i = 1; i < pts.length; i++) { const l = hyp(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segs.push(l); tot += l; } let d = u * tot; for (let i = 0; i < segs.length; i++) { if (d <= segs[i]) { const k = d / segs[i]; return [lerp(pts[i][0], pts[i + 1][0], k), lerp(pts[i][1], pts[i + 1][1], k), pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]]; } d -= segs[i]; } const n = pts.length - 1; return [pts[n][0], pts[n][1], 0, 0]; }
 // abertura da história: a herança de Tiãozinho (feita no próprio jogo, com os sprites do mundo)
@@ -12805,7 +12945,7 @@ const VOICE = { felipe: 150, me: 210, chico: 120, bene: 105, dorival: 135, padre
 function csSay(who, txt, extra) {
   extra = extra || {}; let shown = 0;
   return Object.assign({}, extra, {
-    d: Math.max(3.4, txt.length * 0.058 + 1.9),
+    d: Math.max(3.4, txt.length * 0.058 + 1.9), _say: txt.length,
     fn() { talkShow(who, txt); shown = 0; extra.fn && extra.fn(); const e = npcs.find(n => n.id === who); if (e && extra.look !== false) { cam.fx = e.x; cam.fy = e.y - 10; } },
     upd(dt, u) {
       const n = Math.min(txt.length, Math.ceil(CS.t * 34)), el = document.querySelector('#sub .tx');
@@ -13775,7 +13915,7 @@ function tick(dt) {
     for (const e of npcs) { if (e.cs) continue; updNpc(e, dt); npcLife(e, dt); if (e.et > 0) e.et -= dt; else e.emote = null; }
     for (const w of S.workers) { updWorker(w, dt); workerMount(w); } updGates(dt); { const was = S.fires.fog; S.fires.fog = Math.max(0, S.fires.fog - gm * (S.fireOutReq ? 6 : 1)); if (was > 0 && S.fires.fog <= 0) { S.fireOffAt = S.day * 1440 + S.min; S.fireOutReq = 0; } } S.fires.churr = Math.max(0, S.fires.churr - gm);
     updGrill(dt); updInst(dt); if ((ctxT -= dt) < 0) { ctxT = 0.12; computeCtx(); }
-    if (S.pend.length && !M.open && !P._act && !IN.on) { const p = S.pend.shift(); if (p.k === 'obraFim') { if (S.lots[p.lot] && S.lots[p.lot].b === 'roca') { if (cenasOn()) csTrator(p.lot); else toast('🚜 Roça do Lote ' + p.lot + ' pronta: 3 talhões para plantar.'); } else csObraFim(p.lot); } else if (p.k === 'praga') csPraga(p.id); else if (p.k === 'truckIn') csTruckIn(p.ids); else if (p.k === 'theft') csTheft(p); else if (p.k === 'escape') csEscape(byId(p.id)); }
+    if (S.pend.length && !M.open && !P._act && !IN.on) { const p = S.pend.shift(); if (p.k === 'obraFim') { if (S.lots[p.lot] && S.lots[p.lot].b === 'roca') { if (cenasOn()) csTrator(p.lot); else toast('🚜 Roça do Lote ' + p.lot + ' pronta: 3 talhões para plantar.'); } else csObraFim(p.lot); } else if (p.k === 'praga') csPraga(p.id); else if (p.k === 'truckIn') csTruckIn(p.ids); else if (p.k === 'theft') csTheft(p); else if (p.k === 'escape') csEscape(byId(p.id)); else if (p.k === 'cs2' && CS2[p.n]) CS2[p.n](p); }
     if (S.mach && !S.mach.told && machState() === 'done') { S.mach.told = 1; S.mach.busy = false; toast('⚙️ A forrageira terminou: ração pronta!'); AU.chime(); }
     if ((saveT += dt) > 60) { saveT = 0; SAVE.save('auto', true); }
   } else if (mode === 'cs') { updCS(dt); updGates(dt); buildGrid(); for (const a of S.animals) updAnimal(a, dt, 0, []); for (const e of npcs) if (e.et > 0) e.et -= dt; }
