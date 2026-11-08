@@ -382,7 +382,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 192, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '8.1.0', SAVE_V = 9;
+const GAME_V = '8.2.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -9955,6 +9955,94 @@ function sinucaDraw() {
   const info = $('snInfo'), msg = $('snMsg'); if (info) info.textContent = 'Coloridas: ' + SN.pot + '/3 · Tacadas: ' + SN.shots; if (msg) msg.textContent = SN.msg;
 }
 
+/* ============ v8.2: ABOIO CANTADO E VAQUEJADA DE VERDADE ============ */
+// ---------- ABOIO: toque curto chama; segurar canta o aboio longo (mais longe, acalma e convence até o teimoso) ----------
+const ABH = { on: false, t0: 0 };
+function aboioPress() { if (mode !== 'play' || P._act || abCd > 0 || ABH.on) return; ABH.on = true; ABH.t0 = performance.now(); }
+function aboioRelease() {
+  if (!ABH.on) return; ABH.on = false; const dur = (performance.now() - ABH.t0) / 1000;
+  if (dur < 0.7) return doAboio();
+  aboioLongo(Math.min(2.5, dur));
+}
+function aboioLongo(dur) {
+  if (mode !== 'play' || P._act) return; if (S && S.flags) S.flags.aboio = (S.flags.aboio || 0) + 1; abCd = 5;
+  const k = 1.3 + dur * 0.25, R = 150 * k * (perk() === 'aboio' ? 1.4 : 1) * (1 + skill('lid') * 0.05);
+  rings.push({ x: P.x, y: P.y - 10, r: 6, l: 1, R }); setTimeout(() => rings.push({ x: P.x, y: P.y - 10, r: 6, l: 1, R: R * 0.7 }), 350); AU.aboio(); setTimeout(() => AU.aboio && AU.aboio(), 650);
+  P.en = Math.max(0, P.en - 3); buzz(25); for (let i = 0; i < 5; i++) setTimeout(() => part(P.x + rnd(-10, 10), P.y - 34, 'icon', { vx: rnd(-12, 12), vy: -20, m: 1.4, t: '♪', c: '#ffe08a' }), i * 180);
+  let n = 0; for (const a of S.animals) { if (a.own !== 'player' || a.id === P.mnt || a._st === 'tied' || a._st === 'route' || isHitched(a.id)) continue;
+    if ((a.sp === 'boi' || a.sp === 'cavalo' || a.sp === 'jumento' || a.sp === 'burro') && hyp(a.x - P.x, a.y - P.y) < R) { a._st = 'follow'; a._t = 22; a.hap = cl((a.hap || 50) + 2, 0, 100); bond(a, 1); n++; } }
+  say(n ? 'Êêêê boi… ôôôô… O aboio cantado ecoou longe: ' + n + ' animal(is) vieram mansos, até os teimosos.' : 'O aboio ecoou pela caatinga… nenhum animal por perto.', 3200);
+  if (!S.flags.aboioLongo) { S.flags.aboioLongo = 1; setTimeout(() => toast('🎵 Aboio cantado: segure o botão Aboio para cantar mais longe e acalmar o gado.'), 600); }
+}
+function aboioChargeDraw() { if (!ABH.on) return; const u = Math.min(1, (performance.now() - ABH.t0) / 1000 / 2.5), px = ix(P), py = iy(P);
+  X.strokeStyle = u > 0.28 ? 'rgba(255,224,138,0.8)' : 'rgba(255,255,255,0.5)'; X.lineWidth = 2; X.beginPath(); X.arc(px, py - 40, 6, -Math.PI / 2, -Math.PI / 2 + u * Math.PI * 2); X.stroke(); X.lineWidth = 1; }
+// ---------- VAQUEJADA 2.0: emparelhar, pegar o rabo e derrubar entre as faixas; 3 bois por disputa ----------
+const VQ_DUPLAS = [['Ryan e Tonho', 0.62], ['Os Irmãos Duarte', 0.58], ['Zé Branco e Neguinho', 0.5], ['Dupla de Itapetinga', 0.55], ['Chiquinho do Pardo', 0.45]];
+startVaquejada = function () {
+  if (!eventNow('vaquejada')) return say('A vaquejada só acontece no dia marcado (veja o calendário no Menu).');
+  if (!P.mnt) return say('Monte no seu cavalo para correr na vaquejada.');
+  if (S.vaqDay === S.day) return say('Você já correu seus bois hoje. Volte na próxima vaquejada!');
+  closeModal(); S.vaqDay = S.day; Object.assign(VQ, { on: true, round: 0, pts: 0, res: null, log: [] }); vqNext();
+};
+function vqNext() {
+  const h = byId(P.mnt); VQ.t = 0; VQ.ph = 'ready'; VQ.hold = false; VQ.miss = 0; VQ.res = null;
+  P.x = (VQ.x0 + 0.2) * TS; P.y = (VQ.y0 + 0.9) * TS; P.dir = 3; P._vx = P._vy = 0; P._mv = 0; VQ.pv = 0; if (h) { h.x = P.x; h.y = P.y; } cam.snap = true;
+  VQ.bull = { x: (VQ.x0 + 0.6) * TS, y: (VQ.y0 - 0.5) * TS, d: 0, v: 0, fall: 0, burst: 0, base: 64 + VQ.round * 6 + rnd(-4, 6) };
+  if (!VQ.estH) { VQ.estH = csHorse(2); VQ.estH.id = 99001; }
+  say('🐂 ' + (VQ.round + 1) + 'º boi! Emparelhe (acelere/segure no direcional), toque AÇÃO para pegar o rabo e AÇÃO de novo entre as faixas para derrubar.', 3600);
+}
+updVaquejada = function (dt) {
+  VQ.t += dt; const b = VQ.bull, h = byId(P.mnt), B = h ? horseStats(h).B : { v: [40, 50, 80], ac: 2 };
+  if (VQ.ph === 'ready') { if (VQ.t > 2.4) { VQ.ph = 'run'; AU.whistle && AU.whistle(); AU.moo(b.x, b.y, 0.85); } return; }
+  if (VQ.ph === 'run') {
+    // o boi corre com arrancadas; o vaqueiro acelera ou segura o cavalo para ficar emparelhado
+    if ((b.burst -= dt) < -1.2 && Math.random() < dt * 0.9) b.burst = 0.6; const tv = b.base + (b.burst > 0 ? 26 : 0) + Math.sin(VQ.t * 3.1) * 6;
+    b.v += (tv - b.v) * Math.min(1, dt * 3); b.x += b.v * dt; b.d += b.v * dt;
+    const ctl = cl((input.x || 0) + (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0), -1, 1), vmax = B.v[2] * 1.15;
+    const want = cl(b.v + ctl * 40, 0, vmax); VQ.pv += (want - VQ.pv) * Math.min(1, dt * (1.6 + (B.ac || 2) * 0.6)); const ox = P.x; P.x += VQ.pv * dt; P._mv = VQ.pv; P._dist = (P._dist || 0) + (P.x - ox); P._gal = 2; if (h) { h.x = P.x; h.y = P.y; h._stam = Math.max(0, (h._stam || 100) - dt * 2); }
+    const gap = P.x - (b.x - 6); VQ.gap = gap;
+    if (VQ.hold && Math.abs(gap) > 17) { VQ.hold = false; say('Perdeu o rabo do boi! Emparelhe e pegue de novo.', 1800); AU.err && AU.err(); }
+    if (Math.random() < dt * 8) dust(b.x - 8, b.y, 1);
+    if (b.x > (VQ.faixa[1] + 2.5) * TS) vqEndRun('zero', 'Zero! O boi passou da faixa sem cair.');
+    return;
+  }
+  if (VQ.ph === 'fall') { b.fall += dt; VQ.pv = Math.max(0, VQ.pv - dt * 80); P.x += VQ.pv * dt; P._mv = VQ.pv; P._dist += VQ.pv * dt; if (h) { h.x = P.x; h.y = P.y; } if (b.fall > 2.4) { VQ.ph = 'end'; VQ.t = 0; } return; }
+  if (VQ.ph === 'end') { VQ.pv = Math.max(0, VQ.pv - dt * 80); P._mv = VQ.pv; P.x += VQ.pv * dt; if (h) { h.x = P.x; h.y = P.y; } if (VQ.t > 1.8) { VQ.round++; if (VQ.round < 3) vqNext(); else vqFinal(); } }
+};
+function vqEndRun(res, msg) { VQ.ph = 'end'; VQ.res = res; VQ.t = 0; VQ.log.push(res); say(msg, 2600); }
+vaqAction = function () {
+  if (VQ.ph !== 'run') return; const b = VQ.bull, gap = Math.abs(VQ.gap || 99);
+  if (!VQ.hold) { if (gap < 9) { VQ.hold = true; say('Pegou o rabo! Agora derrube entre as faixas brancas.', 1800); AU.click && AU.click(); }
+    else { VQ.miss++; say(VQ.gap > 0 ? 'Passou da frente do boi! Segure o cavalo.' : 'Ficou atrás do boi! Acelere para emparelhar.', 1600); } return; }
+  const inF = b.x > VQ.faixa[0] * TS && b.x < VQ.faixa[1] * TS + 12;
+  if (inF) { VQ.ph = 'fall'; VQ.res = 'valeu'; VQ.log.push('valeu'); b.fall = 0; VQ.pts += 10; S.stats.vaq = (S.stats.vaq || 0) + 1; say('VALEU BOI! O boi rolou entre as faixas e levantou inteiro.', 3000); AU.jingle && AU.jingle(); for (let i = 0; i < 12; i++) part(b.x + rnd(-14, 14), b.y - 20, 'spark', { vx: rnd(-20, 20), vy: rnd(-30, -10), m: 1, c: pick(['#ffe060', '#ffffff']) }); }
+  else vqEndRun('zero', b.x < VQ.faixa[0] * TS ? 'Zero! Derrubou antes da faixa.' : 'Zero! Derrubou depois da faixa.');
+};
+function vqFinal() {
+  VQ.on = false; VQ.bull = null; P._gal = 0;
+  const mul = (1 + (S.rankI || 0) * 0.5) * (1 + skill('mon') * 0.1), rivals = VQ_DUPLAS.map(([n, p]) => ({ n, pts: [0, 1, 2].reduce(s => s + (Math.random() < p ? 10 : 0), 0) }));
+  const all = rivals.concat([{ n: S.cf.name + ' (você)', pts: VQ.pts, me: 1 }]).sort((a, b) => b.pts - a.pts || (a.me ? -1 : b.me ? 1 : 0));
+  const pos = all.findIndex(x => x.me) + 1, valeus = VQ.log.filter(x => x === 'valeu').length;
+  let prize = Math.round(valeus * 180 * mul); const pod = [0, 1400, 700, 350][pos] || 0; prize += Math.round(pod * mul) * (VQ.pts > 0 ? 1 : 0);
+  if (prize) receive(prize, 'Vaquejada: ' + valeus + ' valeu boi' + (pos <= 3 && VQ.pts ? ', ' + pos + 'º lugar' : ''));
+  if (pos === 1 && VQ.pts > 0) { S.stats.vaqWin = (S.stats.vaqWin || 0) + 1; addFr('ryan', 15); }
+  else if (valeus) addFr('ryan', 6);
+  showModal('🏇 Vaquejada na Fazenda Duarte', null, null, () => `<p>Seus bois: ${VQ.log.map(r => r === 'valeu' ? '<b style="color:#2a7a2a">VALEU BOI</b>' : '<b style="color:#b02020">ZERO</b>').join(' · ')}</p>
+    <table class="t"><tr><th>#</th><th>Dupla</th><th>Pontos</th></tr>${all.map((x, i) => `<tr${x.me ? ' style="background:#f0c04a55;font-weight:700"' : ''}><td>${i + 1}º</td><td>${esc(x.n)}</td><td>${x.pts}</td></tr>`).join('')}</table>
+    <p>${pos === 1 && VQ.pts ? '🏆 <b>Campeão da vaquejada!</b> ' : pos <= 3 && VQ.pts ? '🥈 Pódio! ' : ''}Prêmio: <b>${fmt(prize)}</b></p><p class="mut">Cada boi derrubado entre as faixas vale 10 pontos. O cavalo mais rápido e de arrancada forte ajuda a emparelhar.</p>`);
+}
+// desenho: esteireiro do outro lado do boi e o medidor de emparelhamento
+function vqDrawEst() { // o esteireiro corre do outro lado do boi, mantendo ele na reta
+  const b = VQ.bull; if (!b || !VQ.estH) return; const fr = Math.floor(b.d / 9) % 8;
+  try { drawMounted(VQ.estH, NPCDEF.ryan.ap, Math.round(b.x - 2), Math.round(b.y - 18), 3, VQ.ph === 'ready' || VQ.ph === 'end' ? 'idle' : 'gallop', fr); } catch (e) { }
+}
+function vqDrawMeter() {
+  const b = VQ.bull; if (!b || VQ.ph !== 'run') return; const g = cl(VQ.gap || 0, -30, 30), x = Math.round(ix(P)), y = Math.round(iy(P) + 9); // medidor logo abaixo do vaqueiro
+  X.fillStyle = 'rgba(20,10,4,0.75)'; X.fillRect(x - 32, y - 3, 64, 6); X.fillStyle = VQ.hold ? 'rgba(255,200,60,0.85)' : 'rgba(80,220,90,0.8)'; X.fillRect(x - 9, y - 2, 18, 4);
+  X.fillStyle = Math.abs(g) < 9 ? '#ffffff' : '#ff5a3a'; X.fillRect(x + Math.round(g) - 1, y - 4, 3, 8);
+  X.font = 'bold 6px sans-serif'; X.textAlign = 'center'; X.fillStyle = VQ.hold ? '#ffe08a' : Math.abs(g) < 9 ? '#a8f0a0' : '#ffd0b0'; X.fillText(VQ.hold ? 'RABO! DERRUBE NA FAIXA' : Math.abs(g) < 9 ? 'EMPARELHADO: PEGUE O RABO' : g < 0 ? 'ACELERE ▶' : '◀ SEGURE', x, y + 11); X.textAlign = 'left';
+}
+
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
@@ -10943,7 +11031,7 @@ function vaqAction() {
   else { VQ.ph = 'end'; VQ.res = 'zero'; VQ.t = 0; say(aligned ? 'Zero! Puxou fora das faixas.' : 'Zero! Você não estava emparelhado com o boi.', 2600); }
 }
 function drawVaqBull() {
-  const b = VQ.bull; if (!b) return; let an = 'gallop', fr = Math.floor(b.d / 7) % 8, r;
+  const b = VQ.bull; if (!b) return; vqDrawEst(); let an = 'gallop', fr = Math.floor(b.d / 7) % 8, r;
   if (VQ.ph === 'ready') { an = 'idle'; fr = 0; } if (VQ.ph === 'fall' && b.fall < 1.4) { an = 'lie'; fr = 0; }
   r = RIG.get('nelore', 'brancoBull', 'side', an, fr, { k: 1, seed: 9, sex: 'M', adult: 1 });
   shadowE(b.x, b.y, 12);
@@ -12588,7 +12676,7 @@ function grassChunk(cx, cy, se) {
 function collectItems(tx0, tx1, ty0, ty1, vw, vh, se, vx0, vy0) {
   const wind = S.weather === 'vento' ? 2 : 1;
   const L = []; const add = (y, f, x, o) => L.push({ y, f, x, o });
-  if (VQ.bull) add(VQ.bull.y, drawVaqBull, VQ.bull.x);
+  if (VQ.bull) { add(VQ.bull.y, drawVaqBull, VQ.bull.x, { w: 130, h: 110 }); add(iy(P) + 14, vqDrawMeter, ix(P), { w: 140, h: 70, b: iy(P) + 24 }); }
   for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) { const i = gi(tx, ty); if (obj[i] === 1) { const isF = (x, y) => x >= 0 && y >= 0 && x < MW && y < MH && (obj[gi(x, y)] === 1 || obj[gi(x, y)] === 2); const st = fenceStyleAt(tx, ty), h = H2(tx, ty, 21), cond = h < .07 ? 1 : h < .2 ? 2 : 0; const l = isF(tx - 1, ty) ? 1 : 0, r = isF(tx + 1, ty) ? 1 : 0, u = isF(tx, ty - 1) ? 1 : 0, dn = isF(tx, ty + 1) ? 1 : 0, straight = (l && r && !u && !dn) || (u && dn && !l && !r); const c = fenceSpr(st, l, r, u, dn, cond, !straight || (tx + ty) % 2 === 0); add(ty * TS + 15, () => X.drawImage(c, tx * TS, ty * TS - 12), tx * TS + 8, { w: 24, h: 40, b: ty * TS + 17 }); } }
   for (const g of GATES) { const gx = g.t[0][0], gy = g.t[g.h ? 0 : 1][1]; if (gx < tx0 - 2 || gx > tx1 + 2 || gy < ty0 || gy > ty1 + 2) continue; add(g.h ? gy * TS + 14 : (gy + 1) * TS - 1, () => drawGate(g, X), g.x * TS, { w: 72, h: 72 }); }
   const inV = (x, y, m) => x > vx0 - m && x < vx0 + vw + m && y > vy0 - 20 && y < vy0 + vh + m * 1.5;
@@ -12637,7 +12725,7 @@ function worldFx(dt) {
   const px = ix(P), py = iy(P);
   if (lasso.t) { const a = lasso.t, hx = px + (P.mnt ? 4 : 0), hy = py - (P.mnt ? 26 : 16), ax = ix(a), ay = iy(a) - 14; X.strokeStyle = '#e8d8a8'; X.lineWidth = 1; X.beginPath(); X.moveTo(hx, hy); const d = hyp(ax - hx, ay - hy); X.quadraticCurveTo((hx + ax) / 2, (hy + ay) / 2 + Math.max(0, 34 - d) * 0.4 + 4, ax, ay); X.stroke(); }
   if (lasso.anim > 0) { lasso.anim -= dt; X.strokeStyle = '#e8d8a8'; X.beginPath(); X.ellipse(px, py - 40, 10, 4, 0, 0, 7); X.stroke(); }
-  if (lasso.aim || lasso.fly) lassoDraw();
+  if (lasso.aim || lasso.fly) lassoDraw(); aboioChargeDraw();
   if (P.lead) { const a = byId(P.lead); if (a) { X.strokeStyle = '#a07040'; X.beginPath(); X.moveTo(px, py - 14); X.lineTo(ix(a) + a.f * 12, iy(a) - 16); X.stroke(); } }
   for (const p of parts) { const al = 1 - p.l / p.m;
     if (p.k === 'icon') { X.globalAlpha = al; X.fillStyle = '#2b1608'; X.font = 'bold 9px sans-serif'; X.fillText(p.t, p.x + 1, p.y + 1); X.fillStyle = p.c; X.fillText(p.t, p.x, p.y); X.globalAlpha = 1; }
@@ -13893,11 +13981,11 @@ addEventListener('keydown', e => {
   if (FS.on && mode === 'play' && !M.open && (ec === 'KeyE' || ec === 'Space' || ec === 'Enter')) { e.preventDefault(); if (!e.repeat) fishPress(true); return; }
   if (FS.on && ec === 'KeyB') { fishBait(); return; }
   if (ec === 'KeyE' || ec === 'Space' || ec === 'Enter') { e.preventDefault(); doAction(); }
-  if (!IN.on) { if (ec === 'KeyQ') doAboio(); if (ec === 'KeyF') doLasso(); if (ec === 'KeyR') mountToggle(); if (ec === 'KeyG') attack(); if (ec === 'KeyC' && mode === 'play' && !M.open) callDogs(); if (ec === 'KeyV' && !e.repeat) holdKey(); }
+  if (!IN.on) { if (ec === 'KeyQ') { if (!e.repeat) aboioPress(); } if (ec === 'KeyF') doLasso(); if (ec === 'KeyR') mountToggle(); if (ec === 'KeyG') attack(); if (ec === 'KeyC' && mode === 'play' && !M.open) callDogs(); if (ec === 'KeyV' && !e.repeat) holdKey(); }
   if (ec === 'KeyI') openBag(); if (ec === 'KeyM') openMenu();
   if (ec === 'Equal' || ec === 'NumpadAdd') zoomAt(cam.uz * 1.12, W / 2, H / 2); if (ec === 'Minus' || ec === 'NumpadSubtract') zoomAt(cam.uz / 1.12, W / 2, H / 2);
 });
-addEventListener('keyup', e => { const ec = KB.map(e.code, e.__pad); keys[ec] = false; if (FS.on && (ec === 'KeyE' || ec === 'Space' || ec === 'Enter')) fishPress(false); if (ec === 'KeyV') holdEnd('kb'); });
+addEventListener('keyup', e => { const ec = KB.map(e.code, e.__pad); keys[ec] = false; if (FS.on && (ec === 'KeyE' || ec === 'Space' || ec === 'Enter')) fishPress(false); if (ec === 'KeyV') holdEnd('kb'); if (ec === 'KeyQ') aboioRelease(); });
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; input.x = input.y = 0; input.gal = false; });
 function keyInput() {
   if (jid !== null) return; let x = 0, y = 0;
@@ -13914,7 +14002,7 @@ const je = e => { if (e.pointerId === jid) { jid = null; input.x = input.y = 0; 
 J.addEventListener('pointerup', je); J.addEventListener('pointercancel', je); J.addEventListener('lostpointercapture', je);
 $('bg').addEventListener('pointerdown', e => { AU.init(); galTouch = true; input.gal = true; $('bg').classList.add('on'); e.preventDefault(); });
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => $('bg').addEventListener(ev, () => { galTouch = false; input.gal = false; $('bg').classList.remove('on'); }));
-$('ba').onclick = () => { AU.init(); doAboio(); };
+$('ba').onpointerdown = e => { AU.init(); e.preventDefault(); aboioPress(); }; $('ba').onpointerup = () => aboioRelease(); $('ba').onpointerleave = () => aboioRelease(); // toque curto chama; segurar canta o aboio longo
 $('bl').onclick = () => { AU.init(); doLasso(); };
 $('bm').onclick = () => { AU.init(); mountToggle(); };
 $('bx').onclick = () => { AU.init(); doAction(); };
