@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fazenda da Live — Lida no Sertão</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Rye&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%;background:#0b0704;overflow:hidden;font-family:'Bree Serif',Georgia,serif}
+#tela{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);aspect-ratio:9/16;max-width:100vw;height:100vh}
+#cv{width:100%;height:100%;display:block;image-rendering:pixelated}
+#sim{position:fixed;right:8px;top:8px;width:300px;max-height:96vh;overflow:auto;background:rgba(30,18,10,.94);color:#fbe9c2;border:3px solid #110905;border-radius:8px;padding:10px;font-size:13px;display:none;z-index:9}
+#sim.on{display:block}#sim h3{margin:4px 0 8px;font-family:Rye,serif;color:#f4d58a;font-weight:400}
+#sim button{margin:3px 2px;padding:6px 8px;border:2px solid #110905;border-radius:5px;background:linear-gradient(#f0a84a,#c97a24);color:#2b1608;font-weight:700;cursor:pointer;font-family:inherit}
+#sim input{width:96%;padding:5px;margin:3px 0;border-radius:4px;border:2px solid #110905;font-family:inherit}
+#sim .mut{opacity:.7;font-size:12px}
+#st{position:fixed;left:8px;bottom:8px;color:#fbe9c2;font:12px sans-serif;opacity:.55;z-index:8}
+#comecar{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,.6);color:#fbe9c2;z-index:10;cursor:pointer;text-align:center;font-size:22px}
+#comecar b{font-family:Rye,serif;font-weight:400;font-size:40px;color:#f4d58a}
+</style>
+</head>
+<body>
+<div id="tela"><canvas id="cv" width="1080" height="1920"></canvas></div>
+<div id="comecar"><b>FAZENDA DA LIVE</b><p>Clique para começar (liga o som)</p><p style="font-size:15px;opacity:.75">Tecla <b style="font-family:inherit;font-size:15px">S</b> abre o simulador · teclas 1 a 0 disparam eventos</p></div>
+<div id="sim"><h3>Simulador da live</h3>
+  <div class="mut">Teste tudo sem estar ao vivo. Tecla S esconde.</div>
+  <input id="simNome" value="Zé do Gado" placeholder="nome do espectador">
+  <input id="simTxt" value="boi" placeholder="comentário (ex.: boi, chuva, aboio)"><button id="simCom">💬 Comentar</button>
+  <div><b>Presentes</b><br><button data-g="1">🌹 Rosa (1)</button><button data-g="5">🎩 5 💎</button><button data-g="30">🍩 30 💎</button><button data-g="100">🦁 100 💎</button><button data-g="500">🌌 500 💎</button></div>
+  <div><b>Outros</b><br><button data-o="like">❤️ 100 curtidas</button><button data-o="follow">➕ Seguir</button><button data-o="share">🔁 Compartilhar</button><button data-o="join">👋 Entrar</button></div>
+  <div><b>Eventos</b><br><button data-a="festa">🎉 Festa</button><button data-a="corrida">🫏 Corrida</button><button data-a="chuva">🌧 Chuva</button><button data-a="noite">🌙 Pular hora</button></div>
+  <div><b>Automático</b><br><button id="simDemo">▶️ Demonstração</button><button id="simZera">🗑 Zerar fazenda</button></div>
+  <div class="mut" id="simInfo"></div>
+</div>
+<div id="st"></div>
+<script src="config.js"></script>
+<script>
+(() => {
+'use strict';
+const C = window.LIVE_CONFIG || {};
+const cv = document.getElementById('cv'), g = cv.getContext('2d');
+const K = 4, LW = 270, LH = 480, FW = 1080, FH = 1920, SZ = 1.6; // SZ: tamanho dos bichos e do vaqueiro
+const rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)], cl = (v, a, b) => v < a ? a : v > b ? b : v, lerp = (a, b, t) => a + (b - a) * t;
+const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const mixC = (a, b, t) => { const A = hex(a), B = hex(b); return `rgb(${A.map((v, i) => Math.round(lerp(v, B[i], t))).join(',')})`; };
+const shade = (h, k) => { const A = hex(h); return `rgb(${A.map(v => Math.round(cl(v * (1 + k), 0, 255))).join(',')})`; };
+// ---------- estado ----------
+const PAST = { x0: 22, x1: 248, y0: 192, y1: 388 }, GATE = { x: 214, y: 192 }, FOGO = { x: 132, y: 300 }, ACUDE = { x: 206, y: 348, rx: 30, ry: 13 };
+const W = { t: 0, day: 0.32, grass: 0.55, rain: 0, rainT: 0, flash: 0, festa: 0, forro: 0, fogo: 0, rainbow: 0, likes: 0, likeGoal: C.curtidasParaFesta || 1500,
+  animals: [], parts: [], banners: [], feed: [], rank: {}, cool: {}, votos: [], queue: [], big: null, corridaT: 0, truck: null, bull: null, vaq: null, corr: null, nid: 1, live: { conectado: false, usuario: '' }, demo: false };
+const VQ = { x: 120, y: 320, tx: 120, ty: 320, dir: 1, act: null, actT: 0, horse: false, say: '', sayT: 0, wt: 0 };
+// ---------- som (WebAudio, tudo sintetizado) ----------
+const AU = { ctx: null, vol: C.volume === undefined ? 0.6 : C.volume,
+  init() { if (this.ctx) return; try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); this.out = this.ctx.createGain(); this.out.gain.value = this.vol; this.out.connect(this.ctx.destination); } catch (e) { } },
+  tone(f0, f1, dur, type, vol, when) { if (!this.ctx) return; const t = this.ctx.currentTime + (when || 0), o = this.ctx.createOscillator(), gn = this.ctx.createGain(); o.type = type || 'sine'; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur); gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(vol || 0.2, t + 0.03); gn.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(gn); gn.connect(this.out); o.start(t); o.stop(t + dur + 0.05); },
+  noise(dur, vol, freq, when) { if (!this.ctx) return; const t = this.ctx.currentTime + (when || 0), n = Math.floor(this.ctx.sampleRate * dur), b = this.ctx.createBuffer(1, n, this.ctx.sampleRate), d = b.getChannelData(0); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n); const s = this.ctx.createBufferSource(); s.buffer = b; const f = this.ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = freq || 1200; const gn = this.ctx.createGain(); gn.gain.value = vol || 0.2; s.connect(f); f.connect(gn); gn.connect(this.out); s.start(t); },
+  moo() { this.tone(160, 110, 0.9, 'sawtooth', 0.12); this.tone(165, 105, 0.9, 'triangle', 0.1); },
+  aboio() { this.tone(330, 392, 0.6, 'sine', 0.22); this.tone(392, 294, 0.9, 'sine', 0.22, 0.6); this.tone(294, 262, 1.1, 'sine', 0.2, 1.5); },
+  coin() { this.tone(988, 1318, 0.12, 'square', 0.08); this.tone(1318, 1760, 0.18, 'square', 0.08, 0.1); },
+  boom() { this.noise(0.6, 0.35, 500); this.tone(90, 40, 0.5, 'sine', 0.3); },
+  pop() { this.noise(0.15, 0.15, 3000); this.tone(1400, 600, 0.12, 'triangle', 0.08); },
+  horn() { this.tone(330, 320, 0.35, 'square', 0.1); this.tone(330, 320, 0.45, 'square', 0.1, 0.45); },
+  cheer() { this.noise(1.6, 0.18, 2200); for (let i = 0; i < 6; i++) this.tone(600 + Math.random() * 500, 500, 0.15, 'triangle', 0.04, i * 0.13); },
+  hee() { this.tone(900, 500, 0.25, 'sawtooth', 0.08); this.tone(500, 850, 0.3, 'sawtooth', 0.08, 0.25); },
+  festaLoop: 0,
+  forro(t) { if (!this.ctx) return; if (t - this.festaLoop < 0.5) return; this.festaLoop = t; const notes = [392, 440, 494, 523, 587, 523, 494, 440], b = Math.floor(t * 2) % 8; this.tone(98, 98, 0.18, 'sine', 0.25); this.noise(0.05, 0.1, 6000, 0.25); this.tone(notes[b], notes[b] * 0.99, 0.22, 'square', 0.05); this.tone(notes[(b + 2) % 8] * 1.5, notes[(b + 2) % 8] * 1.5, 0.18, 'triangle', 0.04, 0.25); }
+};
+// ---------- nomes ----------
+function limpa(n) { n = String(n || 'Alguém').replace(/[\u0000-\u001f<>]/g, '').trim(); for (const b of C.bloqueadas || []) n = n.replace(new RegExp(b, 'gi'), '***'); return n.length > 14 ? n.slice(0, 13) + '…' : n || 'Alguém'; }
+function pontos(ev, v) { const k = ev.user || ev.nome; if (!k) return; const r = W.rank[k] || (W.rank[k] = { n: limpa(ev.nome || ev.user), p: 0 }); r.n = limpa(ev.nome || ev.user); r.p += v; }
+function feed(t) { W.feed.unshift({ t, a: 1, born: performance.now() }); if (W.feed.length > 5) W.feed.length = 5; }
+function banner(t, sub, cor, dur) { W.banners.push({ t, sub: sub || '', c: cor || '#ffe08a', life: dur || 3.6, t0: dur || 3.6 }); if (W.banners.length > 3) W.banners.shift(); }
+// ---------- animais ----------
+const BREEDS = { boi: [['Nelore', '#efe9de', '#b8b0a2'], ['Gir', '#b8542c', '#8a3a1c'], ['Guzerá', '#9a9690', '#6a6660'], ['Holandesa', '#f4f2ee', '#1e1e22', 1], ['Caracu', '#c9862e', '#94601c'], ['Preto', '#2e2a28', '#1a1816']],
+  cavalo: [['Alazão', '#a8562a', '#6e3216'], ['Tordilho', '#cfcfd2', '#8a8a92'], ['Preto', '#2a2422', '#141010'], ['Baio', '#d2a868', '#8a6634']], jegue: [['Jegue', '#8a7e70', '#5a5046']], cao: [['Caramelo', '#c88a3a', '#8a5a1e'], ['Preto', '#2a2624', '#141210']], galinha: [['Galinha', '#f2ece0', '#c83a2a'], ['Galinha', '#b8642a', '#c83a2a']] };
+function addAnimal(k, nome, o) {
+  o = o || {}; const sp = k === 'vaca' || k === 'bezerro' ? 'boi' : k, br = pick(BREEDS[sp] || BREEDS.boi);
+  if (W.animals.filter(a => !a.bull).length >= (C.maxAnimais || 45)) { const old = W.animals.find(a => !a.bull && !a.keep); if (old) { old.leave = 1; feed('🚚 ' + old.name + ' foi pra feira'); } }
+  const a = { id: W.nid++, sp, k, name: limpa(nome), br, x: o.x !== undefined ? o.x : rnd(PAST.x0 + 10, PAST.x1 - 10), y: o.y !== undefined ? o.y : rnd(PAST.y0 + 14, PAST.y1 - 8), tx: 0, ty: 0, st: 'idle', t: rnd(0, 2), dir: Math.random() < 0.5 ? -1 : 1, fr: 0, small: k === 'bezerro' ? 1 : 0, grow: 0, born: performance.now(), mv: 0, fem: k === 'vaca' };
+  a.tx = a.x; a.ty = a.y; W.animals.push(a); return a;
+}
+function spawnFx(x, y, kind, n) { for (let i = 0; i < (n || 8); i++) W.parts.push({ x, y, vx: rnd(-25, 25), vy: rnd(-45, -10), life: rnd(0.8, 1.6), k: kind, c: kind === 'heart' ? '#ff5a7a' : kind === 'star' ? '#ffe08a' : kind === 'dust' ? '#c8a878' : pick(['#e03030', '#30a040', '#2050c0', '#f0d020', '#ffffff', '#ff7ab0']) }); }
+// ---------- ações ----------
+const ACOES = {
+  boi: ev => { const a = addAnimal('boi', ev.nome); spawnFx(a.x, a.y - 6, 'star', 10); AU.moo(); banner('🐂 ' + a.name, 'ganhou um boi na fazenda!', '#ffe08a', 2.6); },
+  vaca: ev => { const a = addAnimal('vaca', ev.nome); spawnFx(a.x, a.y - 6, 'star', 10); AU.moo(); banner('🐄 ' + a.name, 'ganhou uma vaca na fazenda!', '#ffe08a', 2.6); },
+  cavalo: ev => { const a = addAnimal('cavalo', ev.nome); spawnFx(a.x, a.y - 6, 'star', 10); AU.hee(); banner('🐎 ' + a.name, 'chegou a cavalo!', '#ffe08a', 2.6); },
+  jegue: ev => { const a = addAnimal('jegue', ev.nome); spawnFx(a.x, a.y - 6, 'star', 10); AU.hee(); banner('🫏 ' + a.name, 'ganhou um jegue teimoso!', '#ffe08a', 2.6); },
+  galinha: ev => { const a = addAnimal('galinha', ev.nome); spawnFx(a.x, a.y - 4, 'star', 6); AU.tone(900, 700, 0.15, 'square', 0.06); feed('🐔 ' + a.name + ' ganhou uma galinha'); },
+  cachorro: ev => { const a = addAnimal('cao', ev.nome); spawnFx(a.x, a.y - 4, 'star', 8); AU.tone(500, 300, 0.12, 'square', 0.08); AU.tone(520, 300, 0.12, 'square', 0.08, 0.18); banner('🐕 ' + a.name, 'ganhou um cachorro vaqueiro!', '#ffe08a', 2.6); },
+  bezerro: ev => { const mae = W.animals.filter(a => a.sp === 'boi' && !a.small && !a.bull); const m = pick(mae.length ? mae : [{ x: 135, y: 300 }]); const a = addAnimal('bezerro', ev.nome, { x: cl(m.x + 10, PAST.x0 + 6, PAST.x1 - 6), y: cl(m.y + 4, PAST.y0 + 10, PAST.y1 - 4) }); a.keep = 1; spawnFx(a.x, a.y - 8, 'heart', 14); AU.moo(); banner('🐮 Nasceu ' + a.name + '!', 'Bezerro com o nome de quem mandou o presente', '#ffd0e0', 3.4); },
+  aboio: ev => { VQ.act = 'aboio'; VQ.actT = 3.2; VQ.say = 'Êêê boi… ôôô!'; VQ.sayT = 3.2; AU.aboio(); for (const a of W.animals) if (!a.bull && a.sp !== 'galinha') { a.st = 'come'; a.t = 6; } feed('🎶 ' + limpa(ev.nome) + ' pediu um aboio'); },
+  laco: ev => { const L = W.animals.filter(a => a.sp === 'boi' && !a.bull); if (!L.length) return; const a = pick(L); VQ.act = 'laco'; VQ.actT = 2.6; VQ.lt = a; VQ.tx = a.x - 30; VQ.ty = a.y; VQ.say = 'Lá vai laço!'; VQ.sayT = 2; AU.tone(400, 1200, 0.5, 'sine', 0.08); feed('🤠 ' + limpa(ev.nome) + ': o vaqueiro laçou ' + a.name); },
+  votoChuva: ev => { const t = performance.now() / 1000; W.votos = W.votos.filter(v => t - v.t < 40 && v.u !== ev.user); W.votos.push({ t, u: ev.user }); const need = C.votosParaChover || 5;
+    if (W.rain <= 0.05 && W.votos.length >= need) { W.votos = []; ACOES.chuva({ nome: 'a live' }); } else if (W.rain <= 0.05) feed('🌧 ' + limpa(ev.nome) + ' quer chuva (' + W.votos.length + '/' + need + ')'); },
+  chuva: ev => { W.rainT = 45; W.rainbow = 0; AU.boom(); banner('🌧 CHOVEU NO SERTÃO!', 'Presente de ' + limpa(ev.nome), '#bfe4ff', 3.6); },
+  fogueira: ev => { W.fogo = 120; AU.noise(0.8, 0.1, 900); feed('🔥 ' + limpa(ev.nome) + ' acendeu a fogueira'); },
+  forro: ev => { W.forro = 14; banner('🪗 FORRÓ NA FAZENDA!', 'Pedido de ' + limpa(ev.nome), '#ffe08a', 2.8); },
+  festa: ev => fila({ k: 'festa', nome: ev.nome }),
+  caminhao: ev => fila({ k: 'caminhao', nome: ev.nome, n: ev.n || 3 }),
+  barbatao: ev => fila({ k: 'barbatao', nome: ev.nome }),
+  vaquejada: ev => fila({ k: 'vaquejada', nome: ev.nome }),
+  corrida: ev => fila({ k: 'corrida', nome: ev.nome }),
+  aposta1: ev => aposta(ev, 0), aposta2: ev => aposta(ev, 1), aposta3: ev => aposta(ev, 2),
+  noite: () => { W.day = (W.day + 0.25) % 1; }
+};
+function fila(e) { if (W.queue.length >= 8) return; W.queue.push(e); }
+function aposta(ev, i) { const R = W.corr; if (!R || R.ph !== 'vote') return; if (R.bets[ev.user] !== undefined) return; R.bets[ev.user] = i; R.names[ev.user] = limpa(ev.nome); R.cnt[i]++; }
+// ---------- entrada de eventos (servidor, simulador e teclado) ----------
+function evento(ev) {
+  if (!ev || !ev.tipo) return; ev.user = ev.user || ev.nome || 'live'; ev.nome = ev.nome || ev.user;
+  if (ev.tipo === 'status') { W.live = { conectado: !!ev.conectado, usuario: ev.usuario || '' }; return; }
+  if (ev.tipo === 'acao') { const f = ACOES[ev.acao]; if (f) { f(ev); pontos(ev, 2); } return; }
+  if (ev.tipo === 'chat') {
+    let w = String(ev.texto || '').trim().toLowerCase().replace(/^!/, '').split(/\s+/)[0] || ''; w = (C.apelidos || {})[w] || w; const cmd = (C.comandos || {})[w]; if (!cmd) return;
+    const key = ev.user + '|' + w, now = performance.now() / 1000; if (cmd.espera && W.cool[key] && now - W.cool[key] < cmd.espera) return; W.cool[key] = now;
+    const f = ACOES[cmd.acao]; if (f) { f(ev); pontos(ev, 1); } return; }
+  if (ev.tipo === 'gift') { const d = (+ev.diamantes || 1) * (+ev.qtd || 1); pontos(ev, d * 10); AU.coin(); const L = (C.presentes || []).slice().sort((a, b) => b.min - a.min), p = L.find(x => (+ev.diamantes || 1) >= x.min) || L[L.length - 1];
+    feed('🎁 ' + limpa(ev.nome) + ' mandou ' + (ev.qtd > 1 ? ev.qtd + 'x ' : '') + (ev.presente || 'presente'));
+    if (p) { const reps = p.acao === 'bezerro' ? Math.min(5, +ev.qtd || 1) : 1; for (let i = 0; i < reps; i++) setTimeout(() => ACOES[p.acao] && ACOES[p.acao](Object.assign({}, ev, { n: Math.min(8, 2 + Math.floor(d / 30)) })), i * 700); } return; }
+  if (ev.tipo === 'like') { const n = +ev.curtidas || 1; W.likes += n; pontos(ev, n * 0.1); if (W.likes >= W.likeGoal) { W.likes = 0; W.likeGoal = Math.round(W.likeGoal * 1.15); fila({ k: 'festa', nome: 'as curtidas da live' }); } return; }
+  if (ev.tipo === 'follow') { pontos(ev, 20); spawnFx(VQ.x, VQ.y - 20, 'conf', 30); AU.coin(); banner('➕ ' + limpa(ev.nome), 'agora é vaqueiro da fazenda!', '#c8ffb0', 3); return; }
+  if (ev.tipo === 'share') { pontos(ev, 15); feed('🔁 ' + limpa(ev.nome) + ' espalhou a notícia'); if (Math.random() < 0.35) fila({ k: 'caminhao', nome: ev.nome, n: 2 }); return; }
+  if (ev.tipo === 'join') { feed('👋 ' + limpa(ev.nome) + ' chegou na fazenda'); return; }
+}
+window.FAZENDA = { evento, W, ACOES };
+// ---------- eventos grandes (um por vez) ----------
+function bigStart(e) {
+  W.big = e; e.t = 0; const nm = limpa(e.nome);
+  if (e.k === 'festa') { e.dur = 32; banner('🎉 SÃO JOÃO NA FAZENDA!', 'Graças a ' + nm, '#ffe08a', 4.5); W.fogo = Math.max(W.fogo, 60); AU.cheer(); }
+  if (e.k === 'caminhao') { e.dur = 16; W.truck = { x: 300, y: 172, ph: 'in', n: e.n || 3, dropped: 0, nome: nm, t: 0 }; AU.horn(); banner('🚚 CHEGOU A BOIADA!', e.n + ' bois presentes de ' + nm, '#ffe08a', 3.6); }
+  if (e.k === 'barbatao') { e.dur = 18; W.bull = addAnimal('boi', 'Barbatão de ' + nm, { x: 250, y: 300 }); W.bull.bull = 1; W.bull.keep = 1; W.bull.br = ['Barbatão', '#1c1816', '#0e0c0a']; VQ.horse = true; AU.boom(); banner('🐂 O BARBATÃO INVADIU!', 'Boi bravo trazido por ' + nm, '#ff9a7a', 4); }
+  if (e.k === 'vaquejada') { e.dur = 26; W.vaq = { run: 0, ph: 'ready', t: 0, nome: nm, x: 40 }; VQ.horse = true; AU.cheer(); banner('🏆 GRANDE VAQUEJADA!', 'Oferecida por ' + nm, '#ffe08a', 4.5); }
+  if (e.k === 'corrida') { e.dur = 40; W.corr = { ph: 'vote', t: 0, bets: {}, names: {}, cnt: [0, 0, 0], x: [0, 0, 0], v: [0, 0, 0], stall: [0, 0, 0], win: -1, nm: ['Trovão', 'Faísca', 'Teimoso'] }; banner('🫏 CORRIDA DE JEGUE!', 'Comente 1, 2 ou 3 para apostar', '#ffe08a', 4); AU.horn(); }
+}
+function bigEnd() { const e = W.big; W.big = null; if (e.k === 'barbatao' && W.bull) { W.bull.bull = 0; W.bull.st = 'idle'; W.bull = null; VQ.horse = false; } if (e.k === 'vaquejada') { W.vaq = null; VQ.horse = false; } if (e.k === 'caminhao') W.truck = null; if (e.k === 'corrida') W.corr = null; }
+// ---------- atualização ----------
+let last = performance.now(), T = 0;
+function step(dt) {
+  T += dt; W.day = (W.day + dt / ((C.minutosPorDia || 12) * 60)) % 1;
+  // chuva e capim
+  if (W.rainT > 0) { W.rainT -= dt; W.rain = lerp(W.rain, 1, dt * 0.6); W.grass = Math.min(1, W.grass + dt * 0.012); if (Math.random() < dt * 0.06) { W.flash = 1; AU.boom(); } if (W.rainT <= 0) W.rainbow = 14; }
+  else { W.rain = lerp(W.rain, 0, dt * 0.5); W.grass = Math.max(0.25, W.grass - dt * 0.0012); }
+  W.flash = Math.max(0, W.flash - dt * 3); W.rainbow = Math.max(0, W.rainbow - dt); W.fogo = Math.max(0, W.fogo - dt); W.forro = Math.max(0, W.forro - dt);
+  // fila de eventos grandes
+  if (!W.big && W.queue.length) bigStart(W.queue.shift());
+  if (W.big) { W.big.t += dt; bigStep(dt); if (W.big && W.big.t >= W.big.dur) bigEnd(); }
+  W.corridaT += dt; if (C.corridaACada && W.corridaT > C.corridaACada * 60 && !W.big) { W.corridaT = 0; fila({ k: 'corrida', nome: 'a fazenda' }); }
+  // vaqueiro
+  VQ.actT = Math.max(0, VQ.actT - dt); VQ.sayT = Math.max(0, VQ.sayT - dt); if (VQ.actT <= 0 && VQ.act !== 'chase') VQ.act = null;
+  if (!VQ.act && !W.big) { VQ.wt -= dt; if (VQ.wt <= 0) { VQ.wt = rnd(3, 7); VQ.tx = rnd(PAST.x0 + 20, PAST.x1 - 30); VQ.ty = rnd(PAST.y0 + 30, PAST.y1 - 20); } }
+  { const dx = VQ.tx - VQ.x, dy = VQ.ty - VQ.y, d = Math.hypot(dx, dy), sp = VQ.horse ? 70 : 24; if (d > 1) { VQ.x += dx / d * Math.min(d, sp * dt); VQ.y += dy / d * Math.min(d, sp * dt); VQ.dir = dx < 0 ? -1 : 1; VQ.mv = 1; } else VQ.mv = 0; }
+  // bichos
+  const dance = W.forro > 0 || (W.big && W.big.k === 'festa');
+  for (const a of W.animals) { a.t -= dt; a.fr += dt * (a.mv ? 8 : 2); if (a.small) { a.grow += dt / 240; if (a.grow >= 1) a.small = 0; }
+    if (a.leave) { a.tx = GATE.x; a.ty = GATE.y - 20; }
+    else if (a.bull) continue;
+    else if (a.st === 'come') { a.tx = VQ.x + (a.id % 5 - 2) * 15; a.ty = VQ.y + 12 + (a.id % 3) * 9; if (a.t <= 0) a.st = 'idle'; }
+    else if (a.t <= 0) { a.t = rnd(2, 6); if (Math.random() < 0.6) { a.tx = cl(a.x + rnd(-40, 40), PAST.x0 + 6, PAST.x1 - 6); a.ty = cl(a.y + rnd(-30, 30), PAST.y0 + 10, PAST.y1 - 4); } }
+    const dx = a.tx - a.x, dy = a.ty - a.y, d = Math.hypot(dx, dy), sp = (a.sp === 'galinha' ? 14 : a.sp === 'cao' ? 30 : a.st === 'come' ? 26 : 10) * (a.leave ? 2 : 1);
+    if (d > 1.2) { a.x += dx / d * Math.min(d, sp * dt); a.y += dy / d * Math.min(d, sp * dt); a.dir = dx < 0 ? -1 : 1; a.mv = 1; } else a.mv = 0;
+    a.dance = dance ? Math.abs(Math.sin(T * 6 + a.id)) * 3 : 0; }
+  for (let i = W.animals.length - 1; i >= 0; i--) { const a = W.animals[i]; if (a.leave && Math.hypot(a.x - GATE.x, a.y - (GATE.y - 20)) < 4) W.animals.splice(i, 1); }
+  // partículas
+  for (let i = W.parts.length - 1; i >= 0; i--) { const p = W.parts[i]; p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt; if (p.k !== 'firework') p.vy += 40 * dt; if (p.life <= 0) W.parts.splice(i, 1); }
+  if (W.parts.length > 600) W.parts.splice(0, W.parts.length - 600);
+  for (let i = W.banners.length - 1; i >= 0; i--) { W.banners[i].life -= dt; if (W.banners[i].life <= 0) W.banners.splice(i, 1); }
+  if (dance && Math.random() < dt * 2) spawnFx(rnd(40, 230), rnd(200, 360), 'note', 1);
+  if (W.big && W.big.k === 'festa') { AU.forro(T); if (Math.random() < dt * 1.4) firework(); }
+  if (W.forro > 0) AU.forro(T);
+}
+function firework() { const x = rnd(40, 230), y = rnd(30, 110), c = pick(['#ff5a5a', '#ffe060', '#7ad0ff', '#9aff7a', '#ff9af0']); for (let i = 0; i < 26; i++) { const a = i / 26 * Math.PI * 2, s = rnd(30, 55); W.parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: rnd(0.9, 1.4), k: 'firework', c }); } AU.pop(); }
+function bigStep(dt) {
+  const e = W.big;
+  if (e.k === 'caminhao' && W.truck) { const tr = W.truck; tr.t += dt;
+    if (tr.ph === 'in') { tr.x -= 60 * dt; if (tr.x <= GATE.x + 6) { tr.x = GATE.x + 6; tr.ph = 'drop'; tr.t = 0; } }
+    else if (tr.ph === 'drop') { if (tr.t > 0.8 * (tr.dropped + 1) && tr.dropped < tr.n) { tr.dropped++; const a = addAnimal(pick(['boi', 'vaca']), tr.nome + (tr.n > 1 ? ' ' + tr.dropped : ''), { x: GATE.x, y: GATE.y + 4 }); a.tx = rnd(PAST.x0 + 20, PAST.x1 - 20); a.ty = rnd(PAST.y0 + 30, PAST.y1 - 10); a.t = 6; AU.moo(); spawnFx(a.x, a.y, 'dust', 6); }
+      if (tr.dropped >= tr.n && tr.t > 0.8 * (tr.n + 2)) { tr.ph = 'out'; AU.horn(); } }
+    else { tr.x += 70 * dt; if (tr.x > 320) e.t = e.dur; } }
+  if (e.k === 'barbatao' && W.bull) { const b = W.bull; b.t -= dt; if (b.t <= 0 && e.t < 14) { b.t = rnd(0.6, 1.4); b.tx = rnd(PAST.x0 + 8, PAST.x1 - 8); b.ty = rnd(PAST.y0 + 12, PAST.y1 - 6); }
+    const dx = b.tx - b.x, dy = b.ty - b.y, d = Math.hypot(dx, dy); if (e.t < 14 && d > 1) { b.x += dx / d * Math.min(d, 95 * dt); b.y += dy / d * Math.min(d, 95 * dt); b.dir = dx < 0 ? -1 : 1; b.mv = 1; if (Math.random() < 0.3) spawnFx(b.x, b.y, 'dust', 1); } else b.mv = 0;
+    VQ.tx = b.x - 26 * b.dir; VQ.ty = b.y + 2; VQ.act = 'chase';
+    if (e.t >= 14 && !e.got) { e.got = 1; VQ.act = 'laco'; VQ.actT = 3; VQ.lt = b; AU.cheer(); banner('🤠 BARBATÃO LAÇADO!', 'Valeu, ' + limpa(e.nome) + '!', '#ffe08a', 3.6); } }
+  if (e.k === 'vaquejada' && W.vaq) { const V = W.vaq; V.t += dt;
+    if (V.ph === 'ready' && V.t > 1.2) { V.ph = 'run'; V.t = 0; V.x = 30; V.bx = 30; }
+    if (V.ph === 'run') { V.bx += 85 * dt; V.x = V.bx - 24; VQ.x = V.x; VQ.y = 286; VQ.tx = VQ.x; VQ.ty = VQ.y; VQ.dir = 1; if (Math.random() < 0.5) spawnFx(V.bx, 300, 'dust', 1); if (V.bx > 180) { V.ph = 'fall'; V.t = 0; AU.boom(); AU.cheer(); banner('VALEU BOI!', 'Boi derrubado na faixa por ' + limpa(V.nome), '#ffe08a', 2.8); spawnFx(V.bx, 290, 'conf', 40); } }
+    if (V.ph === 'fall' && V.t > 3.2) { V.run++; if (V.run >= 3) { e.t = e.dur; } else { V.ph = 'ready'; V.t = 0; } } }
+  if (e.k === 'corrida' && W.corr) { const R = W.corr; R.t += dt;
+    if (R.ph === 'vote' && R.t > 20) { R.ph = 'go'; R.t = 0; AU.horn(); }
+    if (R.ph === 'go' && R.t > 1.6) { R.ph = 'run'; R.t = 0; }
+    if (R.ph === 'run') { for (let i = 0; i < 3; i++) { if (R.stall[i] > 0) { R.stall[i] -= dt; R.v[i] = 0; } else { R.v[i] = lerp(R.v[i], 34 + Math.sin(T * 3 + i * 2) * 8 + rnd(-4, 4), dt * 2); if (Math.random() < dt * 0.25) R.stall[i] = rnd(0.6, 1.6); } R.x[i] += R.v[i] * dt; if (R.x[i] >= 200 && R.win < 0) { R.win = i; R.ph = 'end'; R.t = 0; AU.cheer();
+        const ws = Object.keys(R.bets).filter(u => R.bets[u] === i); ws.forEach(u => { W.rank[u] = W.rank[u] || { n: R.names[u], p: 0 }; W.rank[u].p += 5; });
+        banner('🏁 ' + R.nm[i] + ' (' + (i + 1) + ') VENCEU!', ws.length ? ws.length + ' acertaram: ' + ws.slice(0, 3).map(u => R.names[u]).join(', ') + (ws.length > 3 ? '…' : '') : 'Ninguém acertou dessa vez', '#ffe08a', 5); } } }
+    if (R.ph === 'end' && R.t > 6) e.t = e.dur; }
+}
+// ---------- desenho: helpers em pixels lógicos ----------
+const P = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w, h); };
+function sky() {
+  const d = W.day, sunUp = d > 0.22 && d < 0.78, u = (d - 0.22) / 0.56, night = !sunUp, dusk = Math.abs(d - 0.78) < 0.05 || Math.abs(d - 0.22) < 0.05;
+  const top = night ? '#0a1028' : dusk ? '#3a4a8a' : mixC('#3a7ac8', '#6a8aa8', W.rain), bot = night ? '#1c2448' : dusk ? '#f09a5a' : mixC('#a8d4f0', '#9aa8b4', W.rain);
+  const gr = g.createLinearGradient(0, 0, 0, 150); gr.addColorStop(0, top); gr.addColorStop(1, bot); g.fillStyle = gr; g.fillRect(0, 0, LW, 152);
+  if (night) { for (let i = 0; i < 70; i++) { const x = (i * 97) % LW, y = (i * 53) % 120; if ((T * 2 + i) % 7 < 6) P(x, y, 1, 1, i % 9 ? '#cfd8ff' : '#ffffff'); } }
+  if (sunUp) { const a = Math.PI * (1 - u), sx = 135 + Math.cos(a) * 120, sy = 140 - Math.sin(a) * 110; g.fillStyle = 'rgba(255,240,180,0.25)'; g.beginPath(); g.arc(sx, sy, 16, 0, 7); g.fill(); P(sx - 6, sy - 6, 12, 12, '#fff2b0'); P(sx - 8, sy - 4, 16, 8, '#fff2b0'); P(sx - 4, sy - 8, 8, 16, '#fff2b0'); }
+  else { const v = d < 0.22 ? (d + 0.22) / 0.44 : (d - 0.78) / 0.44, a = Math.PI * (1 - v), mx = 135 + Math.cos(a) * 110, my = 140 - Math.sin(a) * 100; P(mx - 5, my - 5, 10, 10, '#eef0ff'); P(mx - 7, my - 3, 14, 6, '#eef0ff'); P(mx - 1, my - 3, 3, 3, '#c8ccdc'); }
+  if (W.rainbow > 0) { const al = Math.min(1, W.rainbow / 3) * 0.55; ['#ff4040', '#ff9a30', '#ffe040', '#40d060', '#4080ff', '#8a50d0'].forEach((c, i) => { g.strokeStyle = c; g.globalAlpha = al; g.lineWidth = 3; g.beginPath(); g.arc(135, 175, 120 - i * 3, Math.PI, 0); g.stroke(); }); g.globalAlpha = 1; }
+  // nuvens
+  for (let i = 0; i < 5; i++) { const x = ((i * 70 + T * (4 + i)) % (LW + 80)) - 60, y = 20 + i * 17, c = W.rain > 0.3 ? '#8a929c' : night ? '#3a4466' : '#f4f6fa'; g.globalAlpha = 0.85; P(x, y, 34, 6, c); P(x + 6, y - 4, 20, 5, c); P(x + 26, y - 2, 12, 5, c); g.globalAlpha = 1; }
+}
+function hills() {
+  const n = W.day < 0.2 || W.day > 0.8; const c1 = n ? '#1e2a30' : mixC('#7a8a6a', '#6a8a5a', W.grass), c2 = n ? '#14201e' : mixC('#9a8a5a', '#5a8a4a', W.grass);
+  for (let x = 0; x < LW; x++) { const h1 = 128 + Math.sin(x * 0.03) * 8 + Math.sin(x * 0.11) * 3; P(x, h1, 1, 160 - h1, c1); }
+  // Três Pontas ao fundo
+  for (const [px, ph] of [[60, 34], [86, 42], [112, 30]]) for (let y = 0; y < ph; y++) { const w = (1 - y / ph) * 13; P(px - w, 142 - y, w * 2, 1, n ? '#2a3038' : mixC('#9a9aa0', '#8a8a92', y / ph)); }
+  for (let x = 0; x < LW; x++) { const h2 = 142 + Math.sin(x * 0.05 + 2) * 5 + Math.sin(x * 0.17) * 2; P(x, h2, 1, 160 - h2, c2); }
+  for (const x of [12, 160, 190, 244]) { P(x, 132, 2, 12, '#3a6a2a'); P(x - 3, 136, 3, 2, '#3a6a2a'); P(x - 3, 133, 1, 4, '#3a6a2a'); P(x + 2, 135, 3, 2, '#3a6a2a'); P(x + 4, 131, 1, 5, '#3a6a2a'); }
+}
+const GDOTS = Array.from({ length: 900 }, (_, i) => [(i * 137.5) % LW, 150 + ((i * 71.3) % 330), i % 3]);
+function ground() {
+  const gc = mixC('#c9aa6a', '#6aa84a', W.grass), gd = mixC('#b0904e', '#4f8a38', W.grass), gl = mixC('#dcc080', '#8ac85a', W.grass);
+  P(0, 150, LW, LH - 150, gc); for (const [x, y, k] of GDOTS) P(x, y, k ? 1 : 2, 1, k === 1 ? gd : gl);
+  // estrada de terra e curral
+  P(0, 162, LW, 14, '#b88a52'); for (let x = 0; x < LW; x += 9) P(x, 168, 4, 1, '#a07440');
+  // açude
+  const k = 0.75 + W.grass * 0.35; g.fillStyle = '#d8c08a'; g.beginPath(); g.ellipse(ACUDE.x, ACUDE.y, ACUDE.rx * k + 4, ACUDE.ry * k + 3, 0, 0, 7); g.fill(); g.fillStyle = '#3a7ab0'; g.beginPath(); g.ellipse(ACUDE.x, ACUDE.y, ACUDE.rx * k, ACUDE.ry * k, 0, 0, 7); g.fill();
+  P(ACUDE.x - 10 + Math.sin(T) * 3, ACUDE.y - 3, 8, 1, '#9ad0f0'); P(ACUDE.x + 4 + Math.sin(T * 1.3) * 2, ACUDE.y + 3, 6, 1, '#9ad0f0');
+}
+function house() { // sede: casa de taipa com telha e varanda
+  const x = 22, y = 138, n = W.day < 0.22 || W.day > 0.78;
+  P(x, y + 14, 58, 26, '#efe2c0'); P(x, y + 38, 58, 3, '#b8a080');
+  for (let i = 0; i < 16; i++) P(x - 4 + i * 0.4, y + i, 66 - i * 0.8, 1, i < 2 ? '#7a2a14' : '#a8482a'); for (let xx = x - 2; xx < x + 62; xx += 3) P(xx, y + 2, 1, 13, '#8a3a1e');
+  P(x + 24, y + 22, 9, 17, '#6a3a1e'); for (const wx of [x + 6, x + 42]) { P(wx, y + 20, 10, 9, '#3a6a8a'); P(wx + 1, y + 21, 8, 7, n ? '#ffd27a' : '#2c3a48'); }
+  P(x + 46, y - 6, 5, 10, '#9a8a7a'); if (Math.floor(T * 2) % 3 === 0) P(x + 47, y - 10 - (T * 6) % 6, 3, 3, 'rgba(220,220,220,0.6)');
+}
+function fence() { const { x0, x1, y0, y1 } = PAST, c = '#7a4a22', cd = '#5a3416';
+  for (const y of [y0, y1]) { for (let x = x0; x <= x1; x += 2) { if (y === y0 && x > GATE.x - 8 && x < GATE.x + 8) continue; P(x, y - 5, 2, 1, c); P(x, y - 2, 2, 1, c); } for (let x = x0; x <= x1; x += 14) { if (y === y0 && x > GATE.x - 8 && x < GATE.x + 8) continue; P(x, y - 8, 2, 9, cd); } }
+  for (const x of [x0, x1]) { for (let y = y0; y <= y1; y += 2) P(x, y, 2, 1, c); for (let y = y0; y <= y1; y += 12) P(x - 1, y - 6, 3, 8, cd); }
+  P(GATE.x - 9, y0 - 10, 3, 11, cd); P(GATE.x + 7, y0 - 10, 3, 11, cd);
+}
+function tree(x, y, c) { P(x - 1, y - 14, 3, 14, '#6a4a2a'); for (const [dx, dy, r] of [[0, -20, 9], [-7, -16, 6], [7, -16, 6], [0, -26, 6]]) { g.fillStyle = c; g.beginPath(); g.arc(x + dx, y + dy, r, 0, 7); g.fill(); } g.fillStyle = 'rgba(255,255,255,0.12)'; g.beginPath(); g.arc(x - 3, y - 24, 4, 0, 7); g.fill(); }
+// ---------- bichos e gente ----------
+function drawAnimal(a) {
+  const s = a.small ? 0.65 + a.grow * 0.35 : 1, bob = a.dance ? -a.dance : 0, leg = a.mv ? Math.floor(a.fr) % 2 : 0;
+  g.save(); g.translate(Math.round(a.x), Math.round(a.y + bob)); if (a.dir < 0) g.scale(-1, 1); g.scale(s * SZ, s * SZ);
+  g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(0, 1, a.sp === 'galinha' ? 3 : 8, 2, 0, 0, 7); g.fill();
+  const [, c, cd, spot] = a.br;
+  if (a.sp === 'boi') { const big = a.bull ? 1.25 : 1; g.scale(big, big);
+    P(-7, -2 - leg, 2, 3 + leg, cd); P(4, -2 - (1 - leg), 2, 3 + (1 - leg), cd); P(-5, -2, 2, 3, cd); P(2, -2, 2, 3, cd);
+    P(-8, -9, 15, 7, c); P(-8, -9, 15, 1, shade(c.startsWith('#') ? c : '#888888', 0.15)); P(-8, -3, 15, 1, cd); if (spot) { P(-5, -8, 4, 3, cd); P(1, -6, 3, 2, cd); }
+    if (a.br[0] === 'Nelore' || a.br[0] === 'Guzerá' || a.br[0] === 'Gir') P(-6, -11, 4, 2, c); // cupim
+    P(6, -10, 5, 5, c); P(10, -8, 2, 2, cd); P(8, -12, 1, 2, '#e8e0c8'); P(10, -12, 1, 2, '#e8e0c8'); P(9, -9, 1, 1, '#120a06'); P(-9, -8, 1, 4, cd);
+    if (a.bull) { P(7, -13, 1, 3, '#f4ead0'); P(11, -13, 1, 3, '#f4ead0'); P(9, -8, 1, 1, '#ff3020'); } }
+  else if (a.sp === 'cavalo' || a.sp === 'jegue') { const j = a.sp === 'jegue';
+    P(-7, -3 - leg, 2, 5 + leg, cd); P(4, -3 - (1 - leg), 2, 5 + (1 - leg), cd); P(-5, -3, 2, 5, cd); P(2, -3, 2, 5, cd);
+    P(-8, -10, 15, 7, c); P(-8, -4, 15, 1, cd); P(5, -16, 4, 9, c); P(7, -18, 6, 4, c); P(11, -16, 3, 3, c); P(12, -14, 1, 1, '#120a06');
+    if (j) { P(7, -22, 1, 4, c); P(9, -22, 1, 4, c); P(12, -15, 2, 2, '#e8e0d0'); } else { P(4, -16, 2, 8, cd); P(-10, -9, 2, 6, cd); }
+    P(10, -17, 1, 1, '#120a06'); }
+  else if (a.sp === 'cao') { P(-5, -2 - leg, 2, 3, cd); P(3, -2, 2, 3, cd); P(-6, -6, 11, 4, c); P(4, -9, 4, 4, c); P(7, -7, 2, 2, cd); P(4, -10, 1, 2, cd); P(-7, -8, 1, 3, c); P(6, -8, 1, 1, '#120a06'); }
+  else { P(-2, -1, 1, 2, '#e8a020'); P(1, -1, 1, 2, '#e8a020'); P(-3, -6, 6, 5, c); P(2, -8, 3, 3, c); P(3, -10, 2, 2, cd); P(5, -7, 2, 1, '#e8a020'); P(-4, -6, 1, 3, shade(c, -0.2)); }
+  g.restore();
+}
+function drawVaqueiro() {
+  const x = Math.round(VQ.x), y = Math.round(VQ.y), leg = VQ.mv ? Math.floor(T * 8) % 2 : 0;
+  g.save(); g.translate(x, y); if (VQ.dir < 0) g.scale(-1, 1); g.scale(SZ, SZ);
+  g.fillStyle = 'rgba(0,0,0,0.25)'; g.beginPath(); g.ellipse(0, 1, VQ.horse ? 9 : 4, 2, 0, 0, 7); g.fill();
+  if (VQ.horse) { const c = '#a8562a', cd = '#6e3216'; P(-7, -3 - leg, 2, 5, cd); P(4, -3 - (1 - leg), 2, 5, cd); P(-5, -3, 2, 5, cd); P(2, -3, 2, 5, cd); P(-8, -10, 15, 7, c); P(5, -16, 4, 9, c); P(7, -18, 6, 4, c); P(11, -16, 3, 3, c); P(4, -16, 2, 8, cd); P(-10, -9, 2, 6, cd); P(-3, -12, 6, 3, '#5a2a14'); g.translate(0, -9); }
+  P(-2, -5 + (VQ.horse ? 0 : -leg), 2, 5, '#3a4a6a'); P(1, -5, 2, 5, '#3a4a6a'); P(-2, -1, 2, 2, '#4a2c16'); P(1, -1, 2, 2, '#4a2c16');
+  P(-3, -11, 7, 6, '#8a5226'); P(-3, -11, 7, 1, '#c08450'); P(-4, -9, 1, 4, '#8a5226'); P(4, -9, 1, 4, '#8a5226');
+  P(-2, -15, 5, 4, '#d6a078'); P(2, -13, 1, 1, '#24140c'); P(-5, -17, 11, 2, '#6a3a1a'); P(-3, -19, 7, 3, '#8a5226'); P(-1, -18, 3, 1, '#e8c050');
+  if (VQ.act === 'aboio') { P(3, -12, 2, 1, '#d6a078'); }
+  g.restore();
+  if (VQ.act === 'laco' && VQ.lt) { g.strokeStyle = '#d8b878'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + 5 * VQ.dir, y - (VQ.horse ? 32 : 19)); g.quadraticCurveTo((x + VQ.lt.x) / 2, Math.min(y, VQ.lt.y) - 22, VQ.lt.x, VQ.lt.y - 10); g.stroke(); }
+  if (VQ.act === 'aboio' || VQ.act === 'chase') { const r = (T * 40) % 40; g.strokeStyle = `rgba(255,224,138,${1 - r / 40})`; g.beginPath(); g.ellipse(x, y - 10, r * 1.3, r * 0.6, 0, 0, 7); g.stroke(); }
+}
+function drawTruck() { const tr = W.truck; if (!tr) return; const x = Math.round(tr.x), y = tr.y;
+  P(x - 2, y - 16, 34, 14, '#7a5a3a'); for (let i = 0; i < 34; i += 4) P(x - 2 + i, y - 16, 1, 14, '#5a3a1e'); P(x - 2, y - 17, 34, 1, '#a07a4a');
+  P(x - 14, y - 13, 12, 11, '#c83a2a'); P(x - 13, y - 12, 6, 5, '#9ad0f0'); P(x - 14, y - 3, 46, 2, '#2a2a30');
+  for (const wx of [x - 9, x + 6, x + 24]) { P(wx - 3, y - 2, 6, 5, '#141416'); P(wx - 1, y, 2, 1, '#8a8a92'); }
+  if (tr.ph !== 'drop') for (let i = 0; i < 2; i++) P(x + 34 + i * 4 + Math.random() * 2, y - 3 - Math.random() * 3, 3, 2, 'rgba(160,140,110,0.6)'); }
+function drawFogueira() { if (W.fogo <= 0 && !(W.big && W.big.k === 'festa')) return; const x = FOGO.x, y = FOGO.y;
+  P(x - 7, y - 2, 14, 3, '#5a3416'); P(x - 5, y - 4, 10, 2, '#6a4422'); const f = Math.sin(T * 14) * 1.5;
+  P(x - 4, y - 10 + f, 8, 8, '#ff7a20'); P(x - 2, y - 14 - f, 5, 6, '#ffb030'); P(x - 1, y - 16 + f, 2, 4, '#fff0a0');
+  g.fillStyle = `rgba(255,150,60,${0.12 + Math.sin(T * 9) * 0.04})`; g.beginPath(); g.arc(x, y - 8, 26, 0, 7); g.fill();
+  if (Math.random() < 0.3) W.parts.push({ x: x + rnd(-3, 3), y: y - 12, vx: rnd(-6, 6), vy: rnd(-30, -16), life: 0.8, k: 'spark', c: '#ffb030' }); }
+function drawBandeirolas() { if (!(W.big && W.big.k === 'festa')) return; const cols = ['#e03030', '#30a040', '#2050c0', '#f0d020', '#ffffff'];
+  for (const [x0, y0, x1, y1] of [[30, 205, 240, 205], [30, 205, 240, 250], [240, 205, 30, 250]]) for (let i = 0; i <= 24; i++) { const u = i / 24, x = lerp(x0, x1, u), y = lerp(y0, y1, u) + Math.sin(u * Math.PI) * 10; P(x, y, 1, 1, '#5a4a3a'); if (i % 2 === 0) { g.fillStyle = cols[(i / 2) % 5]; g.beginPath(); g.moveTo(x - 3, y); g.lineTo(x + 3, y); g.lineTo(x, y + 5 + Math.sin(T * 5 + i) * 0.6); g.fill(); } } }
+function drawVaquejadaFaixas() { if (!W.vaq) return; for (const x of [176, 196]) { P(x, 270, 2, 40, '#ffffff'); } g.fillStyle = 'rgba(0,0,0,0.12)'; g.fillRect(24, 268, 220, 44);
+  const V = W.vaq; if (V.ph !== 'ready') { const fall = V.ph === 'fall'; g.save(); g.translate(Math.round(V.bx), 292); if (fall) g.rotate(Math.min(1.4, V.t * 4)); const a = { br: ['Boi', '#efe9de', '#b8b0a2'], sp: 'boi', mv: !fall, fr: T * 10, dir: 1, x: 0, y: 0, small: 0, grow: 0, dance: 0 }; g.translate(-Math.round(V.bx), -292); a.x = V.bx; a.y = 292; drawAnimal(a); g.restore(); }
+  for (let i = 0; i < 12; i++) { const x = 30 + i * 18, b = Math.abs(Math.sin(T * 6 + i)) * (V.ph === 'fall' ? 3 : 1); P(x, 258 - b, 4, 6, pick(['#c83a2a', '#3a6aa0', '#e8c040', '#5a8a3a'])); P(x, 254 - b, 4, 4, '#d6a078'); } }
+// ---------- interface (alta resolução) ----------
+function txt(t, x, y, size, col, align, font, stroke) { g.font = `${size}px ${font || "'Bree Serif', Georgia, serif"}`; g.textAlign = align || 'center'; g.lineJoin = 'round'; g.lineWidth = stroke || Math.max(4, size * 0.16); g.strokeStyle = '#1a0f06'; g.strokeText(t, x, y); g.fillStyle = col || '#fff'; g.fillText(t, x, y); }
+function names() { for (const a of W.animals) { if (a.sp === 'galinha' && !a.bull) { if ((a.id + Math.floor(T / 4)) % 3) continue; } const sy = (a.y - (a.sp === 'boi' ? (a.bull ? 20 : 14) : a.sp === 'cavalo' || a.sp === 'jegue' ? 22 : 10) * SZ * (a.small ? 0.8 : 1)) * K; txt(a.name, a.x * K, sy, a.bull ? 30 : 22, a.bull ? '#ff9a7a' : '#fff4c8'); } }
+function hud() {
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  names();
+  if (VQ.sayT > 0) { const x = VQ.x * K, y = (VQ.y - (VQ.horse ? 34 : 26) * SZ) * K; g.font = "28px 'Bree Serif', serif"; const w = g.measureText(VQ.say).width + 30; g.fillStyle = 'rgba(255,248,230,0.95)'; g.strokeStyle = '#1a0f06'; g.lineWidth = 4; g.beginPath(); g.roundRect(x - w / 2, y - 44, w, 50, 14); g.fill(); g.stroke(); g.fillStyle = '#2b1608'; g.textAlign = 'center'; g.fillText(VQ.say, x, y - 10); }
+  // topo: título e barra da festa
+  g.fillStyle = 'rgba(20,10,4,0.55)'; g.fillRect(0, 0, FW, 250); g.fillStyle = 'rgba(244,213,138,0.9)'; g.fillRect(0, 248, FW, 4);
+  txt(C.titulo || 'FAZENDA DA LIVE', FW / 2, 92, 74, '#f4d58a', 'center', "Rye, 'Bree Serif', serif", 10);
+  txt(C.subtitulo || 'Lida no Sertão', FW / 2, 140, 34, '#fff4c8');
+  const lk = W.likes / W.likeGoal; g.fillStyle = '#1a0f06'; g.fillRect(140, 168, 800, 40); g.fillStyle = '#5a2a14'; g.fillRect(146, 174, 788, 28); const gr = g.createLinearGradient(146, 0, 934, 0); gr.addColorStop(0, '#ff5a7a'); gr.addColorStop(1, '#ffd060'); g.fillStyle = gr; g.fillRect(146, 174, 788 * cl(lk, 0, 1), 28);
+  txt('❤️ ' + Math.floor(W.likes) + ' / ' + W.likeGoal + ' curtidas = SÃO JOÃO!', FW / 2, 199, 26, '#fff');
+  const hh = Math.floor(W.day * 24), mm = Math.floor((W.day * 24 % 1) * 6) * 10; txt((W.day > 0.22 && W.day < 0.78 ? '☀️ ' : '🌙 ') + String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0'), 960, 70, 30, '#fff4c8');
+  txt('🐄 ' + W.animals.length, 110, 70, 30, '#fff4c8');
+  // instruções rotativas
+  const cmds = Object.keys(C.comandos || {}).filter(k => !/^\d$/.test(k)).map(k => k.toUpperCase()), ph = Math.floor(T / 9) % 3;
+  const linha = ph === 0 ? '💬 Comente: ' + cmds.slice(0, 6).join(' · ') : ph === 1 ? '💬 Comente: ' + cmds.slice(6).join(' · ') : '🎁 ' + (C.presentes || []).map(p => p.min + '💎 ' + p.txt.split(' ').slice(0, 3).join(' ')).slice(0, 3).join(' · ');
+  g.fillStyle = 'rgba(20,10,4,0.62)'; g.beginPath(); g.roundRect(40, 266, 1000, 56, 16); g.fill(); txt(linha, FW / 2, 305, 28, '#ffe9a8');
+  // ranking
+  const R = Object.values(W.rank).sort((a, b) => b.p - a.p).slice(0, 5);
+  if (R.length) { g.fillStyle = 'rgba(20,10,4,0.6)'; g.beginPath(); g.roundRect(24, 340, 330, 64 + R.length * 44, 18); g.fill(); txt('🏆 Vaqueiros da live', 189, 382, 28, '#f4d58a'); R.forEach((r, i) => txt(['🥇', '🥈', '🥉', '4º', '5º'][i] + ' ' + r.n + '  ' + Math.round(r.p), 46, 428 + i * 44, 26, '#fff4c8', 'left')); }
+  // feed (à direita)
+  W.feed.forEach((f, i) => { const al = cl(1 - (performance.now() - f.born) / 14000, 0, 1); if (al <= 0) return; g.globalAlpha = al; g.font = "24px 'Bree Serif', serif"; const w = Math.min(560, g.measureText(f.t).width + 30); g.fillStyle = 'rgba(20,10,4,0.6)'; g.beginPath(); g.roundRect(FW - 24 - w, 340 + i * 50, w, 42, 12); g.fill(); txt(f.t, FW - 24 - w / 2, 370 + i * 50, 24, '#fff'); g.globalAlpha = 1; });
+  // faixas de anúncio
+  W.banners.forEach((b, i) => { const u = 1 - b.life / b.t0, al = Math.min(1, b.life * 2, (b.t0 - b.life) * 4), sc = 1 + Math.max(0, 0.25 - u * 2); g.globalAlpha = al; const y = 640 + i * 150;
+    g.fillStyle = 'rgba(20,10,4,0.72)'; g.beginPath(); g.roundRect(60, y - 70, FW - 120, b.sub ? 130 : 100, 22); g.fill(); g.strokeStyle = b.c; g.lineWidth = 5; g.stroke();
+    g.save(); g.translate(FW / 2, y); g.scale(sc, sc); txt(b.t, 0, 0, 56, b.c); g.restore(); if (b.sub) txt(b.sub, FW / 2, y + 44, 30, '#fff4c8'); g.globalAlpha = 1; });
+  // corrida de jegue (por cima dos anúncios)
+  if (W.corr) drawCorrida();
+  // fila
+  if (W.queue.length) txt('Na fila: ' + W.queue.map(q => ({ festa: '🎉', caminhao: '🚚', barbatao: '🐂', vaquejada: '🏆', corrida: '🫏' }[q.k])).join(' '), FW / 2, 1290, 28, '#ffe9a8');
+  // chuva por voto
+  if (W.votos.length && W.rain < 0.05) { const t = performance.now() / 1000; W.votos = W.votos.filter(v => t - v.t < 40); if (W.votos.length) txt('🌧 Chuva: ' + W.votos.length + '/' + (C.votosParaChover || 5) + ' votos', 189, 1290, 28, '#bfe4ff'); }
+}
+function drawCorrida() { const R = W.corr, y0 = 900; g.fillStyle = 'rgba(20,10,4,0.75)'; g.beginPath(); g.roundRect(40, y0 - 70, FW - 80, 380, 24); g.fill(); g.strokeStyle = '#f4d58a'; g.lineWidth = 5; g.stroke();
+  txt(R.ph === 'vote' ? '🫏 APOSTE: comente 1, 2 ou 3  (' + Math.ceil(20 - R.t) + 's)' : R.ph === 'go' ? 'PREPARAR… JÁ!' : R.ph === 'end' ? '🏁 ' + R.nm[R.win] + ' VENCEU!' : '🫏 CORRIDA!', FW / 2, y0 - 22, 36, '#ffe08a');
+  g.fillStyle = '#c8a870'; g.fillRect(70, y0 + 10, FW - 140, 270); for (let i = 0; i < 3; i++) { g.fillStyle = 'rgba(0,0,0,0.12)'; g.fillRect(70, y0 + 10 + i * 90, FW - 140, 2); }
+  for (let y = y0 + 10; y < y0 + 280; y += 20) { g.fillStyle = ((y - y0) / 20) % 2 ? '#fff' : '#111'; g.fillRect(FW - 120, y, 14, 20); }
+  for (let i = 0; i < 3; i++) { const px = 90 + R.x[i] / 200 * (FW - 260), py = y0 + 80 + i * 90; g.save(); g.setTransform(K * 0.8, 0, 0, K * 0.8, px, py); const a = { br: BREEDS.jegue[0], sp: 'jegue', mv: R.v[i] > 5, fr: T * 12 + i, dir: 1, x: 0, y: 0, small: 0, grow: 0, dance: 0 }; drawAnimal(a); g.restore();
+    txt((i + 1) + ' ' + R.nm[i] + '  ' + R.cnt[i] + '🗳', px, py - 94, 26, i === R.win ? '#ffe08a' : '#fff'); if (R.stall[i] > 0) txt('empacou!', px + 50, py - 50, 22, '#ff8a7a'); } }
+// ---------- quadro ----------
+function render() {
+  g.setTransform(K, 0, 0, K, 0, 0); g.imageSmoothingEnabled = false;
+  sky(); hills(); ground(); house(); fence();
+  tree(60, 300, mixC('#8a8a4a', '#3a8a3a', W.grass)); tree(175, 236, mixC('#9a8a4a', '#4a9a3a', W.grass)); tree(236, 214, mixC('#8a7a40', '#3a7a30', W.grass));
+  drawVaquejadaFaixas(); drawBandeirolas();
+  const L = W.animals.map(a => ({ y: a.y, f: () => drawAnimal(a) })); L.push({ y: VQ.y, f: drawVaqueiro }); L.push({ y: FOGO.y, f: drawFogueira }); if (W.truck) L.push({ y: W.truck.y, f: drawTruck });
+  if (W.big && W.big.k === 'festa') for (let i = 0; i < 4; i++) { const x = FOGO.x + Math.cos(T * 0.8 + i * 1.57) * 30, y = FOGO.y + 8 + Math.sin(T * 0.8 + i * 1.57) * 12; L.push({ y, f: () => { const b = Math.abs(Math.sin(T * 7 + i)) * 2; P(x - 2, y - 5 - b, 4, 5, ['#c83a2a', '#3a6aa0', '#e8c040', '#8a3a8a'][i]); P(x - 2, y - 9 - b, 4, 4, '#d6a078'); P(x - 3, y - 11 - b, 6, 2, i % 2 ? '#e8c050' : '#3a2010'); } }); }
+  L.sort((a, b) => a.y - b.y).forEach(o => o.f());
+  // partículas
+  for (const p of W.parts) { g.globalAlpha = cl(p.life, 0, 1); if (p.k === 'heart') { P(p.x - 1, p.y, 1, 1, p.c); P(p.x + 1, p.y, 1, 1, p.c); P(p.x - 1, p.y + 1, 3, 1, p.c); P(p.x, p.y + 2, 1, 1, p.c); } else if (p.k === 'note') { P(p.x, p.y, 1, 4, '#ffe08a'); P(p.x - 2, p.y + 3, 2, 2, '#ffe08a'); } else P(p.x, p.y, p.k === 'conf' ? 2 : 1, p.k === 'conf' ? 1 : 1, p.c); } g.globalAlpha = 1;
+  // chuva, noite, relâmpago
+  if (W.rain > 0.02) { g.fillStyle = `rgba(40,50,70,${W.rain * 0.25})`; g.fillRect(0, 0, LW, LH); g.strokeStyle = `rgba(200,220,255,${0.55 * W.rain})`; g.lineWidth = 0.6; g.beginPath(); for (let i = 0; i < 160 * W.rain; i++) { const x = (i * 37 + T * 260) % LW, y = (i * 91 + T * 520) % LH; g.moveTo(x, y); g.lineTo(x - 2, y + 7); } g.stroke(); }
+  const d = W.day, dark = d < 0.2 || d > 0.8 ? 0.55 : d < 0.25 ? (0.25 - d) * 11 : d > 0.75 ? (d - 0.75) * 11 : 0; if (dark > 0) { g.fillStyle = `rgba(10,12,40,${cl(dark, 0, 0.55)})`; g.fillRect(0, 0, LW, LH); if (W.fogo > 0 || (W.big && W.big.k === 'festa')) { const gr = g.createRadialGradient(FOGO.x, FOGO.y - 8, 4, FOGO.x, FOGO.y - 8, 60); gr.addColorStop(0, `rgba(255,170,80,${0.35 * dark / 0.55})`); gr.addColorStop(1, 'rgba(255,170,80,0)'); g.fillStyle = gr; g.fillRect(0, 0, LW, LH); }
+    for (let i = 0; i < 10; i++) { const x = (i * 53 + Math.sin(T * 0.7 + i) * 20) % LW, y = 200 + (i * 37) % 180 + Math.sin(T + i) * 8; if (Math.sin(T * 3 + i * 2) > 0.2) P(x, y, 1, 1, '#e8ff90'); } }
+  if (W.flash > 0) { g.fillStyle = `rgba(255,255,255,${W.flash * 0.6})`; g.fillRect(0, 0, LW, LH); }
+  hud();
+}
+function frame(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; try { step(dt); render(); } catch (e) { console.error(e); } requestAnimationFrame(frame); }
+// ---------- salvar ----------
+function salvar() { try { localStorage.setItem('fazendaLive', JSON.stringify({ a: W.animals.filter(a => !a.bull && !a.leave).map(a => ({ k: a.k, n: a.name, br: a.br, s: a.small, gr: a.grow })), r: W.rank, l: W.likes, lg: W.likeGoal, gs: W.grass, d: W.day })); } catch (e) { } }
+function carregar() { try { const s = JSON.parse(localStorage.getItem('fazendaLive') || 'null'); if (!s) return false; for (const o of s.a || []) { const a = addAnimal(o.k, o.n); a.br = o.br || a.br; a.small = o.s || 0; a.grow = o.gr || 0; } W.rank = s.r || {}; W.likes = s.l || 0; W.likeGoal = s.lg || W.likeGoal; W.grass = s.gs || W.grass; W.day = s.d || W.day; return true; } catch (e) { return false; } }
+setInterval(salvar, 10000); addEventListener('beforeunload', salvar);
+if (!carregar()) { for (const [k, n] of [['boi', 'Mimoso'], ['vaca', 'Estrela'], ['vaca', 'Malhada'], ['boi', 'Trovão'], ['cavalo', 'Caramelo'], ['jegue', 'Teimoso'], ['cao', 'Piaba'], ['galinha', 'Carijó'], ['galinha', 'Pedrês']]) addAnimal(k, n).keep = 1; }
+// ---------- conexão com o servidor-ponte ----------
+let ws = null, wsT = 0;
+function conectar() { if (location.protocol === 'file:') { setSt('Aberto como arquivo: use o simulador (tecla S) ou rode o servidor.'); return; }
+  try { ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws'); } catch (e) { return; }
+  ws.onopen = () => setSt('Conectado ao servidor-ponte ✔'); ws.onmessage = m => { try { evento(JSON.parse(m.data)); } catch (e) { } };
+  ws.onclose = () => { setSt('Sem servidor-ponte (tentando de novo…). Simulador: tecla S.'); clearTimeout(wsT); wsT = setTimeout(conectar, 4000); }; }
+function setSt(t) { const s = document.getElementById('st'); if (s) s.textContent = t + (W.live.conectado ? ' · Live de @' + W.live.usuario + ' ao vivo' : ''); }
+conectar();
+// ---------- teclado (TikFinity/Streamer.bot podem apertar teclas) ----------
+addEventListener('keydown', e => { if (e.target && e.target.tagName === 'INPUT') return; AU.init(); if (e.code === 'KeyS') { document.getElementById('sim').classList.toggle('on'); return; }
+  const a = (C.teclas || {})[e.code]; if (a && ACOES[a]) { ACOES[a]({ user: 'live', nome: 'a live' }); } });
+// ---------- simulador ----------
+const $ = id => document.getElementById(id), sn = () => $('simNome').value || 'Zé do Gado', su = () => sn().toLowerCase().replace(/\W+/g, '') || 'ze';
+$('simCom').onclick = () => evento({ tipo: 'chat', user: su(), nome: sn(), texto: $('simTxt').value });
+document.querySelectorAll('#sim [data-g]').forEach(b => b.onclick = () => evento({ tipo: 'gift', user: su(), nome: sn(), presente: b.textContent.trim(), diamantes: +b.dataset.g, qtd: 1 }));
+document.querySelectorAll('#sim [data-o]').forEach(b => b.onclick = () => evento(b.dataset.o === 'like' ? { tipo: 'like', user: su(), nome: sn(), curtidas: 100 } : { tipo: b.dataset.o, user: su(), nome: sn() }));
+document.querySelectorAll('#sim [data-a]').forEach(b => b.onclick = () => ACOES[b.dataset.a]({ user: su(), nome: sn() }));
+let demoIv = null; $('simDemo').onclick = () => { if (demoIv) { clearInterval(demoIv); demoIv = null; $('simDemo').textContent = '▶️ Demonstração'; return; } $('simDemo').textContent = '⏸ Parar demonstração';
+  const NOMES = ['Zé do Gado', 'Maria Vaqueira', 'Tonho', 'Dona Cida', 'Biu', 'Neném', 'Juca', 'Lia', 'Seu Bené'], CMDS = ['boi', 'vaca', 'chuva', 'aboio', 'cavalo', 'jegue', 'galinha', 'laço', 'fogueira', 'forró', '1', '2', '3', 'oi'];
+  demoIv = setInterval(() => { const n = pick(NOMES), u = n.toLowerCase().replace(/\W+/g, ''), r = Math.random(); if (r < 0.62) evento({ tipo: 'chat', user: u, nome: n, texto: pick(CMDS) }); else if (r < 0.85) evento({ tipo: 'like', user: u, nome: n, curtidas: 10 + Math.floor(Math.random() * 60) }); else if (r < 0.95) evento({ tipo: 'gift', user: u, nome: n, presente: 'Rosa', diamantes: pick([1, 1, 1, 5, 30, 100]), qtd: 1 }); else evento({ tipo: 'follow', user: u, nome: n }); }, 1500); };
+$('simZera').onclick = () => { if (!confirm('Zerar a fazenda (animais e ranking)?')) return; localStorage.removeItem('fazendaLive'); location.reload(); };
+if (/[?&]sim=1/.test(location.search)) $('sim').classList.add('on');
+if (/[?&]demo=1/.test(location.search)) setTimeout(() => $('simDemo').click(), 500);
+// começar (o navegador só libera o som depois de um clique; no OBS libera sozinho)
+const comecar = () => { AU.init(); if (AU.ctx && AU.ctx.state === 'suspended') AU.ctx.resume(); $('comecar').style.display = 'none'; };
+$('comecar').onclick = comecar; if (/[?&](obs|auto)=1/.test(location.search) || navigator.userAgent.includes('OBS')) comecar(); else setTimeout(() => { if ($('comecar').style.display !== 'none') { AU.init(); $('comecar').style.display = 'none'; } }, 6000);
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
