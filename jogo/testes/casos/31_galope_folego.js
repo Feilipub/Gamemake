@@ -14,6 +14,6 @@ module.exports = { nome: 'Galope e fôlego do cavalo', async rodar(t) {
   t.ok(mm.slow < 0.95 && mm.slow > 0.6, 'com pouco fôlego a velocidade cai aos poucos (' + Math.round(mm.slow * 100) + '% da velocidade)');
   t.ok(mm.tr > 3 && mm.tr < 20, 'parado, recupera fôlego para galopar de novo em ' + mm.tr + ' s');
   await t.ev("const h = S.animals.find(a => a.own === 'player' && a.sp === 'cavalo'); P.mnt = h.id; hudT = 0; hud(0.016); 0");
-  t.ok(await t.ev("document.querySelector('#bg .stb') !== null"), 'o botão de galope mostra a barra de fôlego');
+  await t.ev('padTick(); 0'); t.ok(await t.ev("(() => { const b = document.getElementById('bg'); return b.style.getPropertyValue('--ro') === '1' && +b.style.getPropertyValue('--ring') >= 0; })()"), 'o botão de galope mostra o anel de fôlego');
   t.semErros();
 } };

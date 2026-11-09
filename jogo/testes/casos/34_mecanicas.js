@@ -2,7 +2,7 @@
 module.exports = { nome: 'Laço com mira, ordenha no ritmo e sinuca de verdade', async rodar(t) {
   await t.abrir({ ajustes: { view: '2d', cenas: false } }); await t.jogoNovo();
   // laço: primeiro toque gira, o segundo arremessa; acerto depende do anel
-  await t.ev("lasso.t = null; const a = myAnimals('boi')[0]; a._st = 'idle'; P.mnt = null; P.x = a.x - 30; P.y = a.y; window.__a = a; doLasso(); 0");
+  await t.ev("lasso.t = null; const a = myAnimals('boi')[0]; a._st = 'idle'; P.mnt = null; P._act = null; P.x = a.x - 30; P.y = a.y; S.animals.forEach(b => { if (b !== a && Math.hypot(b.x - P.x, b.y - P.y) < 140) b.x += 400; }); window.__a = a; doLasso(); 0");
   t.ok(await t.ev('!!lasso.aim && lasso.aim.t === window.__a && !lasso.t'), 'o primeiro toque começa a girar o laço mirando o animal');
   await t.ev('lasso.aim.t0 = drawT - (1.5 * Math.PI) / lasso.aim.spd; doLasso(); 0'); // anel fechado (verde)
   t.ok(await t.ev('!!lasso.fly && lasso.fly.ok'), 'tocando com o anel verde o laço vai certeiro');

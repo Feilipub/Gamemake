@@ -68,17 +68,35 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 /* controles */
 #joy{position:absolute;left:calc(12px + var(--sal));bottom:calc(74px + var(--sab));width:calc(108px*var(--ctl));height:calc(108px*var(--ctl));border-radius:50%;background:radial-gradient(circle,rgba(60,35,20,.62) 0%,rgba(20,10,5,.82) 100%);border:3px solid var(--gold);box-shadow:inset 0 0 10px rgba(0,0,0,.8),0 4px 10px rgba(0,0,0,.5);touch-action:none;z-index:5;opacity:.9}
 #knob{position:absolute;left:calc(50% - 21px);top:calc(50% - 21px);width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fbe9c2,#d97724 70%,#6e330a);border:2px solid var(--ink);box-shadow:0 4px 6px rgba(0,0,0,.6);pointer-events:none}
-.pad{position:absolute;right:calc(8px + var(--sar));bottom:calc(72px + var(--sab));display:grid;grid-template-columns:repeat(2,calc(66px*var(--ctl)));gap:5px;z-index:5;opacity:.95}
+.pad{position:absolute;right:calc(10px + var(--sar));bottom:calc(76px + var(--sab));width:calc(236px*var(--ctl));height:calc(214px*var(--ctl));z-index:5;pointer-events:none}
+.pad button{pointer-events:auto}
+/* v9.4: botões de ação redondos, de couro, com ícone, nome curto e anel de estado */
+.pad button.rb{position:absolute;width:calc(56px*var(--ctl));height:calc(56px*var(--ctl));padding:0!important;border-radius:50%!important;border:3px solid var(--ink)!important;background:radial-gradient(circle at 35% 28%,#d9844a 0,#a5552a 46%,#6e3317 100%)!important;color:#fbe9c2!important;box-shadow:0 3px 0 #1a0c05,inset 0 2px 0 rgba(255,220,170,.35),inset 0 -3px 4px rgba(0,0,0,.35);display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:calc(9.5px*var(--fs))!important;font-weight:800;letter-spacing:.02em;text-shadow:0 1px 0 #000!important;line-height:1;transition:transform .08s,filter .15s;touch-action:none;-webkit-tap-highlight-color:transparent}
+.pad button.rb .ic{width:calc(22px*var(--ctl));height:calc(22px*var(--ctl));image-rendering:pixelated;filter:drop-shadow(0 1px 0 #000)}
+.pad button.rb b{font-weight:800;max-width:92%;overflow:hidden;white-space:nowrap;text-overflow:clip}
+.pad button.rb::before{content:'';position:absolute;inset:-7px;border-radius:50%;background:conic-gradient(var(--rc,#ffd35a) calc(var(--ring,0)*1turn),rgba(0,0,0,0) 0);-webkit-mask:radial-gradient(circle,transparent 60%,#000 61%);mask:radial-gradient(circle,transparent 60%,#000 61%);opacity:var(--ro,0);transition:opacity .2s;pointer-events:none}
+.pad button.rb.pr,.pad button.rb:active{transform:scale(.9) translateY(2px);box-shadow:0 1px 0 #1a0c05,inset 0 3px 6px rgba(0,0,0,.45);filter:brightness(1.12)}
+.pad button.rb.on{background:radial-gradient(circle at 35% 28%,#ffe592 0,#e7b33a 50%,#a8741a 100%)!important;color:#2b1608!important;text-shadow:0 1px 0 #fff4c8!important}
+.pad button.rb.hot{animation:rbHot .7s ease-in-out infinite alternate}
+.pad button.rb.dim{filter:saturate(.35) brightness(.75)}
+@keyframes rbHot{from{box-shadow:0 3px 0 #1a0c05,0 0 0 0 rgba(255,214,90,.0)}to{box-shadow:0 3px 0 #1a0c05,0 0 0 7px rgba(255,214,90,.55)}}
+.pad #bx{position:absolute;right:0;bottom:0;width:calc(88px*var(--ctl));height:calc(88px*var(--ctl));border-radius:50%!important;padding:4px!important;border:4px solid var(--ink)!important;background:radial-gradient(circle at 36% 28%,#fff1b0 0,#f6c24a 42%,#c47f16 100%)!important;color:#2b1608!important;box-shadow:0 4px 0 #1a0c05,inset 0 3px 0 rgba(255,255,255,.45),inset 0 -4px 6px rgba(120,60,0,.4);display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:2px;overflow:hidden;white-space:normal!important;touch-action:none;transition:transform .08s}
+.pad #bx .bxI{font-size:calc(27px*var(--ctl));line-height:1;filter:drop-shadow(0 2px 0 rgba(90,40,0,.45))}
+.pad #bx .bxI .ic{width:calc(28px*var(--ctl));height:calc(28px*var(--ctl));image-rendering:pixelated}
+.pad #bx .bxT{font-size:calc(9.5px*var(--fs));font-weight:800;line-height:1.05;max-width:94%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-align:center;text-shadow:0 1px 0 #fff3c0}
+.pad #bx:active,.pad #bx.pr{transform:scale(.92) translateY(2px)}
+.pad #bx.ready{animation:bxRdy 1.1s ease-in-out infinite alternate}
+@keyframes bxRdy{from{box-shadow:0 4px 0 #1a0c05,0 0 0 0 rgba(255,226,120,0),inset 0 3px 0 rgba(255,255,255,.45)}to{box-shadow:0 4px 0 #1a0c05,0 0 0 8px rgba(255,226,120,.45),inset 0 3px 0 rgba(255,255,255,.45)}}
 body.tapmode #joy{display:none}
 button{font-family:inherit;cursor:pointer}
 .btn,#bar button,.pad button,#tm button,.tabs button,.cl,#inp button,.ch button,.mb button,#ap button,#setup button,.ov button,#auc button{border:3px solid var(--ink);border-radius:0;background:linear-gradient(#f0a84a 0 50%,#d98a2c 50%);color:#2b1608;font-weight:700;text-shadow:0 1px 0 rgba(255,235,170,.7);box-shadow:inset 0 3px 0 rgba(255,244,190,.7),inset 0 -3px 0 rgba(120,56,10,.5),0 3px 0 var(--ink);transition:transform .06s}
 .btn:active,#bar button:active,.pad button:active,#tm button:active,.tabs button:active,.cl:active,#inp button:active,.ch button:active,.mb button:active,#ap button:active,#setup button:active,.ov button:active{background:linear-gradient(#d98a2c 0 50%,#c0741c 50%);box-shadow:inset 0 3px 0 rgba(120,56,10,.5),0 1px 0 var(--ink);transform:translateY(2px)}
 button:disabled{opacity:.45;filter:grayscale(.7)}
-.pad button{height:calc(38px*var(--ctl));padding:2px;font-size:calc(11.5px*var(--fs));background:linear-gradient(#b9622a 0 50%,#9a4a1a 50%);color:#fbe9c2;text-shadow:0 2px 0 var(--ink);display:flex;align-items:center;justify-content:center;gap:3px}
+/* v9.4: estilo antigo dos botões fica só como base */ .pad button.old{height:calc(38px*var(--ctl));padding:2px;font-size:calc(11.5px*var(--fs));background:linear-gradient(#b9622a 0 50%,#9a4a1a 50%);color:#fbe9c2;text-shadow:0 2px 0 var(--ink);display:flex;align-items:center;justify-content:center;gap:3px}
 .pad button.on{background:linear-gradient(#e8c050 0 50%,#c89a20 50%);color:#2b1608;text-shadow:none}
-.pad #bx{grid-column:1 / span 2;height:calc(42px*var(--ctl));background:linear-gradient(#ffe08a 0 50%,#f0b440 50%);color:#2b1608;text-shadow:0 1px 0 #fff3c0;font-size:calc(12.5px*var(--fs));overflow:hidden;white-space:nowrap}
-.pad #bx.off{opacity:.42}
-.pad #bw{display:none}body.armed .pad #bw{display:flex}
+/* antigo */ .pad #bx.old{grid-column:1 / span 2;height:calc(42px*var(--ctl));background:linear-gradient(#ffe08a 0 50%,#f0b440 50%);color:#2b1608;text-shadow:0 1px 0 #fff3c0;font-size:calc(12.5px*var(--fs));overflow:hidden;white-space:nowrap}
+.pad #bx.off{filter:saturate(.7) brightness(.86);opacity:.8}
+.pad #bw{display:none!important}body.armed .pad #bw{display:flex!important}
 #bar{position:absolute;z-index:6;left:0;right:0;bottom:0;display:flex;gap:6px;padding:6px;padding-left:calc(6px + var(--sal));padding-right:calc(6px + var(--sar));background:linear-gradient(rgba(74,44,24,.96),rgba(42,22,11,.96));border-top:3px solid var(--ink);box-shadow:inset 0 3px 0 #7e4624;padding-bottom:calc(6px + var(--sab))}
 #bar button{flex:1;padding:6px 2px;font-size:calc(12px*var(--fs));display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1}
 /* paisagem: HUD compacto numa linha, barra vira coluna de ícones à direita */
@@ -311,7 +329,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 .ialert{display:flex;gap:8px;align-items:flex-start;cursor:pointer}.ialert img{flex:none;margin-top:2px}
 .bust{flex:none;padding:3px;background:radial-gradient(circle at 50% 40%,#7a5030,#2a160a);border:3px solid #c8924a;box-shadow:inset 0 0 0 2px #0006;line-height:0}.bust img{image-rendering:pixelated}
 #tipC{position:absolute;left:50%;transform:translate(-50%,-12px);top:calc(150px + var(--sat));width:min(92%,460px);z-index:40;background:#fff4d6;color:#2b1608;border:3px solid var(--ink);box-shadow:0 0 0 2px #f0c04a,0 6px 0 #0006;padding:8px 10px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}#tipC.on{opacity:1;pointer-events:auto;transform:translate(-50%,0)}#tipC .tb{display:flex;gap:6px;align-items:center;margin-bottom:4px;color:#8a4a10}#tipC .tt{font-size:calc(13px*var(--fs));line-height:1.35}#tipC .tr{display:flex;gap:6px;justify-content:flex-end;margin-top:6px}#tipC button{padding:4px 10px;font-size:calc(12px*var(--fs))}body.cs #tipC,body:has(#mn.on) #tipC{display:none}body:has(#tipC.on) #msg,body:has(#tipC.on) #jorn{opacity:0!important}body.lan #tipC{top:calc(70px + var(--sat))}
-#bg{position:relative}#bg .stb{position:absolute;left:5%;bottom:3px;height:4px;border-radius:2px;pointer-events:none;box-shadow:0 0 0 1px #0006}
+#bg .stb{position:absolute;left:5%;bottom:3px;height:4px;border-radius:2px;pointer-events:none;box-shadow:0 0 0 1px #0006}
 #toast div{background:#2b1608;color:#ffe08a;border:2px solid var(--gold);box-shadow:0 0 0 2px #110905;padding:3px 8px;font-size:calc(12px*var(--fs));animation:tf 2.8s forwards;text-align:center}
 @keyframes tf{0%{opacity:0;transform:translateY(6px)}8%{opacity:1;transform:none}82%{opacity:1}100%{opacity:0}}
 .slot{display:flex;gap:8px;align-items:center}
@@ -345,11 +363,11 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
   <div id="cstitle"><div class="t1"></div><div class="t2"></div></div>
   <div id="joy"><div id="knob"></div></div>
   <div class="pad">
-   <button id="bg">Correr</button>
-   <button id="ba">Aboio</button>
-   <button id="bl">Laço</button>
-   <button id="bm">Montar</button>
-   <button id="bw">Arma</button>
+   <button id="bg" class="rb">Correr</button>
+   <button id="ba" class="rb">Aboio</button>
+   <button id="bl" class="rb">Laço</button>
+   <button id="bm" class="rb">Montar</button>
+   <button id="bw" class="rb">Arma</button>
    <button id="bx" class="off">Ação</button>
   </div>
   <div id="ap" class="px"></div>
@@ -382,7 +400,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '9.3.0', SAVE_V = 9;
+const GAME_V = '9.4.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -446,6 +464,8 @@ function saveSet() { applyFont(); try { applyDia(); } catch (e) { } try { localS
 function buzz(ms) { if (SET.vib && navigator.vibrate) try { navigator.vibrate(ms || 8); } catch (e) { } }
 // ícones 10x10 desenhados à mão: paleta + linhas
 const ICONS = {
+  hand: ['a3a2010bf0c090cc89060', '...a.a.a..|..ababab.a|..abababab|.aabbbbbba|abababbbba|abbbbbbbba|.abbbbbbca|..abbbbca.|...abbca..|....aaa...'],
+  faca: ['a2a2a30bdcdfe6c7a4a22ed0a050', '........a.|.......aba|......abba|.....abba.|....abba..|...abba...|..aeea....|.acca.....|acca......|.aa.......'],
   pad: ['a3a2010b8a8e94c2a2a30de04040e40a040', '..........|..........|.aaaaaaaa.|abbbbbbbba|abcbbbbdba|abcccbebba|abbcbbbdba|abbbaabbba|.aaa..aaa.|..........'],
   hat: ['a3a2010b8a5226ce8c050de8b98ee2a1810fb05a40', '..........|...aaaa...|..abbbba..|.aabcbbaa.|aaaaaaaaaa|.adddddda.|.adeddeda.|.adddddda.|..adffda..|...aaaa...'],
   bag: ['a3a2010b9a6030cc88a48de8c050', '...aaaa...|..ab..ba..|.aaaaaaaa.|abbbbbbbba|abccccccba|abbbbbbbba|abbbddbbba|abbbddbbba|abbbbbbbba|.aaaaaaaa.'],
@@ -9501,7 +9521,31 @@ function rankHTML() {
   const L = rankList(); return `<div class="card"><b>📊 Ranking dos criadores da região</b><p class="mut">Patrimônio de cada fazenda: terra, rebanho e dinheiro. Chegar ao 1º lugar dá +2 de fama.</p><table class="t"><tr><th>#</th><th>Fazenda</th><th>Patrimônio</th></tr>${L.map((x, i) => `<tr${x.k === 'me' ? ' style="background:#f0c04a55;font-weight:700"' : ''}><td>${i + 1}º</td><td>${esc(x.n)}<br><span class="mut">${esc(x.who)}</span></td><td>${fmt(x.v)}</td></tr>`).join('')}</table></div>`;
 }
 let desAcc = 0;
-function v78Tick(dt) { tipTick(dt); try { lassoTick(dt); } catch (e) { } try { famTick(dt); } catch (e) { } try { lstTick(dt); } catch (e) { } if ((desAcc += dt) >= 2) { desAcc = 0; try { desTick(); } catch (e) { } } }
+// ---------- v9.4: botões de ação redondos em arco, com ícone, nome curto e anel de estado ----------
+const PADB = { last: {}, lay: '' };
+function padSet(id, icon, txt) { const k = icon + '|' + txt, b = $(id); if (PADB.last[id] === k) return; PADB.last[id] = k; b.innerHTML = ic(icon, 22) + '<b>' + txt + '</b>'; }
+function padUpdate(h) {
+  padSet('bm', 'mount', P.cart ? 'Descer' : P.mnt ? 'Apear' : 'Montar'); padSet('bl', 'lasso', lasso.t ? 'Soltar' : lasso.aim ? 'Jogar!' : 'Laço'); padSet('ba', 'note', 'Aboio'); padSet('bw', 'faca', 'Arma');
+  padSet('bg', h ? 'horse' : 'boot', h ? (h._winded ? 'Cansado' : 'Galope') : P.cart ? '—' : 'Correr');
+  const c = P._ctx, bx = $('bx'), lab = c ? c.label : P._auto ? 'Indo…' : 'Ação', m = String(lab).match(/^\s*(\p{Extended_Pictographic}\uFE0F?)/u), k = lab + '|' + !!c;
+  if (PADB.last.bx !== k) { PADB.last.bx = k; bx.innerHTML = `<span class="bxI">${m ? m[1] : ic('hand', 28)}</span><span class="bxT">${esc(noEmo(lab))}</span>`; }
+  bx.classList.toggle('off', !c); bx.classList.toggle('ready', !!c);
+  $('bl').classList.toggle('hot', !!lasso.aim); $('bm').classList.toggle('on', !!P.mnt || !!P.cart);
+  padLayout();
+}
+function padLayout() { // dois arcos em volta do botão grande: Aboio, Laço e Montar colados nele; Correr e Arma no arco de fora
+  const armed = document.body.classList.contains('armed'), key = armed + '|' + SET.ctl; if (PADB.lay === key) return; PADB.lay = key;
+  const k = SET.ctl || 1, cx = 44 * k, cy = 44 * k, half = 28 * k, put = (id, R, a) => { const b = $(id), r = a * Math.PI / 180; b.style.right = (cx - Math.cos(r) * R * k - half) + 'px'; b.style.bottom = (cy + Math.sin(r) * R * k - half) + 'px'; };
+  put('ba', 100, 180); put('bl', 100, 135); put('bm', 100, 90); put('bg', 160, armed ? 165 : 152); put('bw', 160, 124);
+}
+function padTick() { // anéis: fôlego do cavalo, recarga e força do aboio
+  const h = P.mnt ? byId(P.mnt) : null, g = $('bg'), a = $('ba'); if (!g || !a) return;
+  if (h) { const st = (h._stam || 0) / 100; g.style.setProperty('--ring', st.toFixed(3)); g.style.setProperty('--rc', h._winded ? '#e04030' : st < 0.25 ? '#f08030' : st < 0.55 ? '#f0d040' : '#5ad06a'); g.style.setProperty('--ro', 1); } else g.style.setProperty('--ro', 0);
+  if (ABH.on) { const u = Math.min(1, (performance.now() - ABH.t0) / 2500); a.style.setProperty('--ring', u.toFixed(3)); a.style.setProperty('--rc', u > 0.28 ? '#ffd35a' : '#f4f0e0'); a.style.setProperty('--ro', 1); a.classList.add('on'); }
+  else if (abCd > 0) { a.style.setProperty('--ring', (1 - abCd / 5).toFixed(3)); a.style.setProperty('--rc', '#9ad0ff'); a.style.setProperty('--ro', 0.9); a.classList.remove('on'); a.classList.add('dim'); }
+  else { a.style.setProperty('--ro', 0); a.classList.remove('on', 'dim'); }
+}
+function v78Tick(dt) { try { padTick(); } catch (e) { } tipTick(dt); try { lassoTick(dt); } catch (e) { } try { famTick(dt); } catch (e) { } try { lstTick(dt); } catch (e) { } if ((desAcc += dt) >= 2) { desAcc = 0; try { desTick(); } catch (e) { } } }
 
 /* ============ v7.9: FILHOS E HERANÇA ============
    Casados podem ter filhos. A criança nasce, ganha nome, cresce na fazenda (bebê, criança, jovem, adulto),
@@ -12991,9 +13035,7 @@ function hud(dt) {
   $('hEnC').firstElementChild.title = 'Energia'; if (!$('hEnC').dataset.i) { $('hEnC').insertAdjacentHTML('afterbegin', ic('bolt', 12)); $('hEnC').dataset.i = 1; $('hFoC').insertAdjacentHTML('afterbegin', ic('meat', 12)); $('hFoC').dataset.i = 1; }
   $('hEn').style.width = P.en + '%'; $('hFo').style.width = P.fo + '%';
   const h = P.mnt ? byId(P.mnt) : null;
-  $('bm').innerHTML = (P.mnt ? '' : ic('mount', 14)) + (P.cart ? 'Descer' : P.mnt ? 'Desmontar' : 'Montar'); $('bl').innerHTML = ic('lasso', 14) + (lasso.t ? 'Soltar' : lasso.aim ? 'Jogar!' : 'Laço'); $('ba').innerHTML = ic('note', 14) + 'Aboio';
-  { const st = h ? h._stam || 0 : 0, col = h && h._winded ? '#c0392b' : st < 25 ? '#e0702a' : st < 55 ? '#e0c040' : '#4caf50'; $('bg').innerHTML = ic(h ? 'horse' : 'boot', 14) + (h ? (h._winded ? 'Cansado' : Math.round(st) + '%') : P.cart ? '—' : 'Correr') + (h ? `<i class="stb" style="width:${Math.max(2, st * 0.9)}%;background:${col}"></i>` : ''); }
-  const c = P._ctx; const bx = $('bx'); bx.textContent = c ? noEmo(c.label) : (P._auto ? 'Indo…' : 'Ação'); bx.classList.toggle('off', !c);
+  padUpdate(h);
 }
 
 /* ============ VISUAL HD-2D (WebGL 2) ============
@@ -14212,6 +14254,8 @@ $('ba').onpointerdown = e => { AU.init(); e.preventDefault(); aboioPress(); }; $
 $('bl').onclick = () => { AU.init(); doLasso(); };
 $('bm').onclick = () => { AU.init(); mountToggle(); };
 $('bx').onclick = () => { AU.init(); doAction(); };
+document.querySelectorAll('.pad button').forEach(b => { b.addEventListener('pointerdown', () => { b.classList.add('pr'); try { buzz(8); } catch (e) { } }); ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => b.addEventListener(ev, () => b.classList.remove('pr'))); });
+addEventListener('resize', () => { PADB.lay = ''; });
 $('bw').onclick = () => { AU.init(); attack(); };
 $('bb').onclick = () => { if (mode === 'play') { closeSheet(); openBag(); } };
 $('br').onclick = () => { if (mode === 'play') { closeSheet(); openMenu(); } };
