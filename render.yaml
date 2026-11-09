@@ -1,8 +1,8 @@
 # Fazenda da Live (pasta live/) no Render: servidor-ponte do TikTok + o jogo, num link https.
-# No Render: New + > Blueprint > escolha este repositório. Preencha TIKTOK_USUARIO (seu usuário, sem @).
+# No Render: New + > Blueprint > escolha este repositório (branch ccr-8494ac05-m0vb49).
 services:
   - type: web
-    name: fazenda-da-live
+    name: fazenda-live
     runtime: node
     rootDir: live
     plan: free
@@ -10,6 +10,4 @@ services:
     startCommand: node servidor.mjs
     envVars:
       - key: TIKTOK_USUARIO
-        sync: false
-      - key: EULER_KEY
-        sync: false
+        value: Overkillfelipe
