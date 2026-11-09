@@ -8,7 +8,44 @@ vaquejada, e as curtidas enchem a barra do São João. A tela já é **em pé (9
 
 ---
 
-## 1. O que precisa
+## 0. Só tenho celular
+
+Dá para fazer tudo pelo celular. O jogo roda no **navegador do celular** e você transmite a **tela do celular** pela
+live de **jogos para celular** do próprio TikTok. A ponte que lê os comentários e presentes fica num **servidor
+grátis na internet** (Render), que você configura uma vez pelo navegador do celular.
+
+**Passo 1. Colocar a ponte na internet (uma vez só, uns 10 minutos)**
+1. No navegador do celular, entre em **https://render.com** e crie a conta com o botão **GitHub** (a mesma conta
+   onde está este projeto).
+2. Toque em **New +** → **Blueprint** → escolha o repositório deste projeto. O Render lê o arquivo `render.yaml`
+   sozinho.
+3. Quando ele pedir **TIKTOK_USUARIO**, escreva o seu usuário do TikTok **sem o @**. O **EULER_KEY** pode deixar
+   vazio.
+4. Toque em **Apply / Criar** e espere uns minutos. No fim aparece um link parecido com
+   `https://fazenda-da-live.onrender.com`. **Esse é o link do seu jogo.** Guarde nos favoritos.
+5. Para testar sem estar ao vivo: abra o link com `?sim=1` no final (ex.: `https://fazenda-da-live.onrender.com/?sim=1`)
+   e use os botões do simulador. Ou, no Render, crie a variável **DEMO** = `1` (Environment) para chegarem eventos de
+   mentira sozinhos; apague a variável antes da live de verdade.
+
+> No plano grátis o Render "dorme" quando ninguém usa. Abra o link uns 2 minutos antes da live para ele acordar.
+> Os planos e limites do Render mudam com o tempo; confira na página deles.
+
+**Passo 2. Fazer a live**
+1. Abra o link do jogo no navegador do celular e toque em **Começar**. O jogo pede tela cheia e deixa a tela
+   sempre acesa.
+2. Abra o **TikTok** → **+** → **LIVE** → escolha a live de **jogos para celular** ("Mobile gaming"). Ela transmite a
+   tela do celular. Se a opção não aparecer na sua conta, o TikTok ainda não liberou esse tipo de live para você.
+3. Comece a live e **volte para o navegador com o jogo**. O TikTok continua transmitindo a tela, e os comentários
+   aparecem numa bolinha por cima.
+4. Em poucos segundos a ponte conecta na sua live (dá para ver na página do Render, em **Logs**:
+   `✅ Conectado na live de @seu_usuario`). A partir daí, o que o povo comentar e mandar aparece na fazenda.
+
+**Dicas no celular**
+- **3 toques no título** do jogo abrem e fecham o simulador.
+- Deixe o celular **na tomada** e com o **"não perturbe"** ligado, para notificação não aparecer na live.
+- Se a fazenda "zerar", é porque o navegador foi limpo: ela fica salva no navegador do celular.
+
+## 1. O que precisa (no computador)
 
 - Um **computador** (Windows, Mac ou Linux) com internet.
 - **Node.js** (versão 18 ou mais nova): baixe em https://nodejs.org (botão "LTS").

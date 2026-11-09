@@ -9,7 +9,7 @@
 html,body{margin:0;height:100%;background:#0b0704;overflow:hidden;font-family:'Bree Serif',Georgia,serif}
 #tela{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);aspect-ratio:9/16;max-width:100vw;height:100vh}
 #cv{width:100%;height:100%;display:block;image-rendering:pixelated}
-#sim{position:fixed;right:8px;top:8px;width:300px;max-height:96vh;overflow:auto;background:rgba(30,18,10,.94);color:#fbe9c2;border:3px solid #110905;border-radius:8px;padding:10px;font-size:13px;display:none;z-index:9}
+#sim{position:fixed;right:8px;top:8px;width:min(300px,calc(100vw - 32px));max-height:96vh;overflow:auto;background:rgba(30,18,10,.94);color:#fbe9c2;border:3px solid #110905;border-radius:8px;padding:10px;font-size:13px;display:none;z-index:9}
 #sim.on{display:block}#sim h3{margin:4px 0 8px;font-family:Rye,serif;color:#f4d58a;font-weight:400}
 #sim button{margin:3px 2px;padding:6px 8px;border:2px solid #110905;border-radius:5px;background:linear-gradient(#f0a84a,#c97a24);color:#2b1608;font-weight:700;cursor:pointer;font-family:inherit}
 #sim input{width:96%;padding:5px;margin:3px 0;border-radius:4px;border:2px solid #110905;font-family:inherit}
@@ -21,7 +21,7 @@ html,body{margin:0;height:100%;background:#0b0704;overflow:hidden;font-family:'B
 </head>
 <body>
 <div id="tela"><canvas id="cv" width="1080" height="1920"></canvas></div>
-<div id="comecar"><b>FAZENDA DA LIVE</b><p>Clique para começar (liga o som)</p><p style="font-size:15px;opacity:.75">Tecla <b style="font-family:inherit;font-size:15px">S</b> abre o simulador · teclas 1 a 0 disparam eventos</p></div>
+<div id="comecar"><b>FAZENDA DA LIVE</b><p>Clique para começar (liga o som)</p><p style="font-size:15px;opacity:.75">Simulador: tecla <b style="font-family:inherit;font-size:15px">S</b> no computador ou 3 toques no título no celular</p></div>
 <div id="sim"><h3>Simulador da live</h3>
   <div class="mut">Teste tudo sem estar ao vivo. Tecla S esconde.</div>
   <input id="simNome" value="Zé do Gado" placeholder="nome do espectador">
@@ -373,9 +373,14 @@ let demoIv = null; $('simDemo').onclick = () => { if (demoIv) { clearInterval(de
   demoIv = setInterval(() => { const n = pick(NOMES), u = n.toLowerCase().replace(/\W+/g, ''), r = Math.random(); if (r < 0.62) evento({ tipo: 'chat', user: u, nome: n, texto: pick(CMDS) }); else if (r < 0.85) evento({ tipo: 'like', user: u, nome: n, curtidas: 10 + Math.floor(Math.random() * 60) }); else if (r < 0.95) evento({ tipo: 'gift', user: u, nome: n, presente: 'Rosa', diamantes: pick([1, 1, 1, 5, 30, 100]), qtd: 1 }); else evento({ tipo: 'follow', user: u, nome: n }); }, 1500); };
 $('simZera').onclick = () => { if (!confirm('Zerar a fazenda (animais e ranking)?')) return; localStorage.removeItem('fazendaLive'); location.reload(); };
 if (/[?&]sim=1/.test(location.search)) $('sim').classList.add('on');
+// celular: tocar 3 vezes no topo abre/fecha o simulador (não tem tecla S)
+{ let taps = [], c = document.getElementById('cv'); c.addEventListener('pointerdown', e => { const r = c.getBoundingClientRect(); if ((e.clientY - r.top) / r.height > 0.13) return; const t = performance.now(); taps = taps.filter(x => t - x < 900); taps.push(t); if (taps.length >= 3) { taps = []; $('sim').classList.toggle('on'); } }); }
+// tela sempre acesa durante a live (o celular não apaga a tela)
+let wake = null; const acordar = async () => { try { if ('wakeLock' in navigator && !wake) { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => { wake = null; }); } } catch (e) { } };
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') acordar(); });
 if (/[?&]demo=1/.test(location.search)) setTimeout(() => $('simDemo').click(), 500);
 // começar (o navegador só libera o som depois de um clique; no OBS libera sozinho)
-const comecar = () => { AU.init(); if (AU.ctx && AU.ctx.state === 'suspended') AU.ctx.resume(); $('comecar').style.display = 'none'; };
+const comecar = () => { AU.init(); if (AU.ctx && AU.ctx.state === 'suspended') AU.ctx.resume(); $('comecar').style.display = 'none'; acordar(); if (matchMedia('(pointer: coarse)').matches && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => { }); };
 $('comecar').onclick = comecar; if (/[?&](obs|auto)=1/.test(location.search) || navigator.userAgent.includes('OBS')) comecar(); else setTimeout(() => { if ($('comecar').style.display !== 'none') { AU.init(); $('comecar').style.display = 'none'; } }, 6000);
 requestAnimationFrame(frame);
 })();

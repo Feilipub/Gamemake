@@ -21,10 +21,10 @@ import { WebSocketServer } from 'ws';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
-const DEMO = args.includes('--demo');
+const DEMO = args.includes('--demo') || /^(1|sim|true)$/i.test(process.env.DEMO || ''); // na nuvem: variável DEMO=1
 const chave = (args.find(a => a.startsWith('--chave=')) || '').split('=')[1] || process.env.EULER_KEY || '';
 const PORT = +((args.find(a => a.startsWith('--porta=')) || '').split('=')[1] || process.env.PORT || 8787);
-const usuario = (args.find(a => !a.startsWith('--')) || '').replace(/^@/, '').trim();
+const usuario = (args.find(a => !a.startsWith('--')) || process.env.TIKTOK_USUARIO || '').replace(/^@/, '').trim(); // na nuvem: variável TIKTOK_USUARIO
 
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css', '.png': 'image/png', '.json': 'application/json', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.wav': 'audio/wav' };
 const log = (...m) => console.log(new Date().toLocaleTimeString('pt-BR'), ...m);
