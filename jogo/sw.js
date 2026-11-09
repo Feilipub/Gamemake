@@ -1,5 +1,5 @@
 /* Lida no Sertão — trabalhador offline. A página vem da rede quando há internet (sempre a versão nova) e do cache quando não há. */
-const CACHE = 'lida-v9.4.0';
+const CACHE = 'lida-v9.5.0';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

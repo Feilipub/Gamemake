@@ -400,7 +400,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '9.4.0', SAVE_V = 9;
+const GAME_V = '9.5.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -2699,8 +2699,10 @@ function charSpr(ap, dir, fr, pose) {
   const c = cached('C' + apKey(ap) + '|' + d + '|' + fr + '|' + pose, 24, 34, g => drawChar(g, ap, d, fr, pose));
   if (!c._lk) { c._lk = 1; charLook(c); } return c; // luz, sombra e contorno colorido
 }
+const HIB = { f: -1, n: 0 };
 function charHi(c) { // v9.3: versão em alta (2x) do boneco: cantos arredondados (Scale2x), sombra da aba no rosto e brilho
   if (c._hi !== undefined) return c._hi; if (SET.q === 'baixa' || SET.look === false) return (c._hi = null);
+  if (HIB.f !== drawT) { HIB.f = drawT; HIB.n = 0; } if (HIB.n >= 3) return null; HIB.n++; // no máximo 3 desenhos novos em alta por quadro (o resto fica no normal até chegar a vez)
   const W = c.width, H = c.height, d = c.getContext('2d').getImageData(0, 0, W, H).data, [o, g] = mkC(W * 2, H * 2), im = g.createImageData(W * 2, H * 2), q = im.data;
   const px = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? 0 : ((d[(y * W + x) * 4] << 24) | (d[(y * W + x) * 4 + 1] << 16) | (d[(y * W + x) * 4 + 2] << 8) | d[(y * W + x) * 4 + 3]) >>> 0;
   const put = (x, y, v) => { const i = (y * W * 2 + x) * 4; q[i] = v >>> 24; q[i + 1] = (v >>> 16) & 255; q[i + 2] = (v >>> 8) & 255; q[i + 3] = v & 255; };
@@ -2714,10 +2716,10 @@ function charHi(c) { // v9.3: versão em alta (2x) do boneco: cantos arredondado
     const up = (y > 0 ? (y - 1) * W2 + x : -1) * 4, dn = (y < H2 - 1 ? (y + 1) * W2 + x : -1) * 4, lf = (x > 0 ? y * W2 + x - 1 : -1) * 4, rt = (x < W2 - 1 ? y * W2 + x + 1 : -1) * 4;
     let k = 1; if (up < 0 || A2(x, y - 1) < 200 || !same(i, up) || lf < 0 || A2(x - 1, y) < 200 || !same(i, lf)) k = 1.09; else if (dn < 0 || A2(x, y + 1) < 200 || !same(i, dn) || rt < 0 || A2(x + 1, y) < 200 || !same(i, rt)) k = 0.92;
     if (k !== 1) { r[i] = q[i] * k; r[i + 1] = q[i + 1] * k; r[i + 2] = q[i + 2] * k; } }
-  // sombra da aba do chapéu no rosto: pele logo abaixo de um pixel escuro do chapéu fica um tom mais escura
-  const skin = SKINS.map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
+  // sombra da aba do chapéu no rosto (só nas pessoas): pele logo abaixo de um pixel escuro do chapéu fica um tom mais escura
+  if (c._lk) { const skin = SKINS.map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
   const isSkin = i => skin.some(([a, b2, cc]) => Math.abs(q[i] - a) < 30 && Math.abs(q[i + 1] - b2) < 30 && Math.abs(q[i + 2] - cc) < 30);
-  for (let y = 2; y < H2 * 0.45; y++) for (let x = 0; x < W2; x++) { const i = (y * W2 + x) * 4; if (q[i + 3] < 200 || !isSkin(i)) continue; let hat = 0; for (let k2 = 1; k2 <= 3; k2++) { const j = ((y - k2) * W2 + x) * 4; if (q[j + 3] > 200 && !isSkin(j) && lum(j) < 110) { hat = k2; break; } } if (hat) { const f = hat === 1 ? 0.8 : hat === 2 ? 0.87 : 0.94; r[i] *= f; r[i + 1] *= f * 0.97; r[i + 2] *= f * 0.95; } }
+  for (let y = 2; y < H2 * 0.45; y++) for (let x = 0; x < W2; x++) { const i = (y * W2 + x) * 4; if (q[i + 3] < 200 || !isSkin(i)) continue; let hat = 0; for (let k2 = 1; k2 <= 3; k2++) { const j = ((y - k2) * W2 + x) * 4; if (q[j + 3] > 200 && !isSkin(j) && lum(j) < 110) { hat = k2; break; } } if (hat) { const f = hat === 1 ? 0.8 : hat === 2 ? 0.87 : 0.94; r[i] *= f; r[i + 1] *= f * 0.97; r[i + 2] *= f * 0.95; } } }
   im.data.set(r); g.putImageData(im, 0, 0); return (c._hi = o);
 }
 // parâmetros corporais de cada pose/quadro
@@ -5525,7 +5527,7 @@ function updPlayer(dt) {
     acc = gallop ? 70 * (B.ac || 2) * sd.ac : 220; dec = gallop ? 170 : 300; maxV *= 1 - mudAt(P.x, P.y) * (B.wade ? 0.07 : 0.22); { const wd = waterDepthAt(P.x, P.y); if (wd > 0.05) maxV *= 1 - wd * (B.wade ? 0.22 : 0.5); }
     const sp = hyp(P._vx, P._vy);
     // fôlego: só o galope gasta (Mangalarga ~40 s de galope, Crioulo ~55 s, Puro-Sangue ~25 s); recupera andando e mais rápido parado
-    if (gallop && sp > B.v[0] * 1.3) { horse._stam = Math.max(0, horse._stam - dt * B.cost * 0.16 * sd.cost * (stim === 0 ? 1.25 : stim === 2 ? 0.8 : 1) * perkM * trav * (horse.cond < 40 ? 1.2 : 1)); if (horse._stam <= 0.5) { horse._winded = true; say(horse.n + ' está sem fôlego! Deixe ele andar um pouco para recuperar.', 2600); AU.neigh && AU.neigh(P.x, P.y); } }
+    if (gallop && sp > B.v[0] * 1.3) { horse._stam = Math.max(0, horse._stam - dt * B.cost * 0.16 * sd.cost * (stim === 0 ? 1.25 : stim === 2 ? 0.8 : 1) * perkM * trav * (horse.cond < 40 ? 1.2 : 1) * (horse.ferr && S.day - horse.ferr < 60 ? 0.88 : 1)); if (horse._stam <= 0.5) { horse._winded = true; say(horse.n + ' está sem fôlego! Deixe ele andar um pouco para recuperar.', 2600); AU.neigh && AU.neigh(P.x, P.y); } }
     else horse._stam = Math.min(100, horse._stam + dt * B.rec * (sp < 4 ? 0.22 : sp < B.v[0] * 1.3 ? 0.13 : 0.06) * sd.rec);
     if (horse._stam < 20 && gallop) tip('stam', 'O fôlego do cavalo está acabando: ele já vai perdendo velocidade. Solte o Galope ou pare um pouco para ele recuperar.');
     if (gallop && horse._stam < 18 && Math.random() < dt * 0.8) part(P.x + (P.dir === 2 ? -14 : 14), P.y - 26, 'dust', { vx: rnd(-6, 6), vy: rnd(-10, -4), m: 0.8, c: '#e8e8e8' }); // bufando
@@ -7325,7 +7327,7 @@ function sheetStats(a) {
 }
 function sheetActions(a) {
   const own = a.own === 'player', near2 = hyp(a.x - P.x, a.y - P.y) < 60;
-  if (!own) { const who = a.own.startsWith('quest') ? NPCDEF[a.own.split(':')[1]].n : NPCDEF[a.own] ? NPCDEF[a.own].n : LESTE_F[a.own] ? LESTE_F[a.own].n : ''; return `<p class="mut">${a.barb ? 'O Barbatão, o boi bravo da Mata Grande. Acue com os cães ou canse ele na carreira, laçe e leve até um pasto da sua fazenda.' : a.own.startsWith('quest') ? 'Animal fujão de ' + who + '. Laçe e leve até o pasto dele.' : 'Pertence a ' + who + '. Para comprar, negocie com o dono.'}</p><div class="ag">${ibtn('eye', 'Examinar', 'sa', 'exam')}</div>`; }
+  if (!own) { const who = a.own.startsWith('quest') ? (NPCDEF[a.own.split(':')[1]] || LESTE_F[a.own.split(':')[1]] || { n: '' }).n : NPCDEF[a.own] ? NPCDEF[a.own].n : LESTE_F[a.own] ? LESTE_F[a.own].n : ''; return `<p class="mut">${a.barb ? 'O Barbatão, o boi bravo da Mata Grande. Acue com os cães ou canse ele na carreira, laçe e leve até um pasto da sua fazenda.' : a.own.startsWith('quest') ? 'Animal fujão de ' + who + '. Laçe e leve até o pasto dele.' : 'Pertence a ' + who + '. Para comprar, negocie com o dono.'}</p><div class="ag">${ibtn('eye', 'Examinar', 'sa', 'exam')}</div>`; }
   const L = [];
   const isH = a.sp === 'cavalo' || a.sp === 'burro', ride = isH || a.sp === 'jumento', big = a.sp !== 'galinha' && a.sp !== 'cao'; // jumento também é montaria
   if (ride) { if (P.mnt === a.id) L.push(['mount', 'Desmontar', 'dismount']); else L.push(['mount', 'Montar', 'mount', a.age < 12 || a.sick]); L.push(['saddle', a.saddle ? 'Tirar sela' : 'Selar', a.saddle ? 'unsaddle' : 'saddle', P.mnt === a.id]); }
@@ -7341,6 +7343,7 @@ function sheetActions(a) {
   if (a.sp === 'cao') { const c = a._cmd || 'seguir'; L.push(['cow', 'Juntar o gado', 'cmdjuntar', c === 'juntar']); L.push(['lasso', 'Tocar o gado', 'cmdtocar', c === 'tocar']); L.push(['eye', 'Farejar fujão', 'cmdfarejar', c === 'farejar']); L.push(['gate', 'Vigiar a fazenda', 'cmdguardar', c === 'guardar']); L.push(['pin', 'Ficar', 'cmdficar', c === 'ficar']); L.push(['boot', 'Seguir', 'cmdseguir', c === 'seguir']); L.push(['call', 'Chamar', 'call']); L.push(['ball', 'Brincar', 'play']); L.push(['book', 'Treinar', 'train']); L.push(['brush', 'Coleira e lenço', 'custom']); }
   if (ride) L.push(['bag', 'Preparar viagem', 'travel', !a.saddle || !has('alforje') || a.travel]);
   if (a.sp === 'cavalo' && a.sex === 'F' && a.own === 'player') L.push(['heart', a.preg ? 'Prenhe: potro em ~' + a.preg + ' dia(s)' : 'Cobrir a égua', 'cobrir', !!a.preg || a.age < (MATURE.cavalo || 30) || a._cobD === S.day]);
+  if ((a.sp === 'cavalo' || a.sp === 'burro') && a.own === 'player' && a.age >= 18) { const fd = a.ferr ? 60 - (S.day - a.ferr) : 0; L.push(['saddle', fd > 0 ? 'Ferrado (' + fd + ' dias)' : 'Ferrar (R$ 40)', 'ferrar', fd > 0 || !near2]); }
   if (ride && a.own === 'player' && !a.marca) L.push(['pin', 'Marcar a ferro (' + brandOf() + ')', 'hmarca', !hasFerro() || a.age < 6]);
   if (ride && a.own === 'player' && gaitOf(a)) L.push(['horse', 'Treinar andamento (' + Math.floor(a.and.nv) + '%)', 'gait', a._trD === S.day || !a.saddle]);
   if ((a.sp === 'jumento' || a.sp === 'burro') && a.own === 'player') L.push(['bag', a.cang ? 'Tirar a cangalha' : 'Pôr a cangalha', 'cang', !a.cang && (!has('cangalha') || !!a.saddle)]);
@@ -7548,6 +7551,7 @@ A.mnj = k => {
     case 'mama': return doAnimal(a, 'bottle', 2.2, () => { if (!useInv('leite', 2)) return; a.mamD = S.day; a.hp = cl(a.hp + 15, 0, 100); a.wt = (a.wt || 30) + 1.5; bond(a, 8); heart(a.x, a.y - 16); done('🍼 ' + a.n + ' mamou na mamadeira.'); });
     case 'iodo': return doAnimal(a, 'iodo', 1.4, () => { if (!useInv('iodo')) return; a.umb = 0; hist(a, 'Umbigo curado com iodo'); done('Umbigo de ' + a.n + ' curado.', false); });
     case 'ordenha': return doAnimal(a, 'milk', 0.8, () => ordenhaStart(a)); // ordenha no ritmo (v8.1)
+    case 'ferrar': return ferrarProprio(a); // v9.5: minijogo de ferrar
     case 'ia': SH.sub = 'ia'; return renderSheet();
     case 'pouron': return doAnimal(a, 'pouron', 1.8, () => { if (!useInv('pouron')) return; a.carr = 0; a.mosca = 0; a.carrP = S.day + 10; hist(a, 'Pour-on carrapaticida'); done('Pour-on em ' + a.n + ': sem carrapato por 10 dias.', false); });
     case 'verm': return doAnimal(a, 'inject', 1.2, () => { if (!useInv('vermifugo')) return; a.verme = 0; a.vermP = S.day + 28; if (a.dz === 'verminose') cureDz(a); hist(a, 'Vermifugado'); done(a.n + ' vermifugado(a).'); }, { it: 'vermifugo' });
@@ -9545,7 +9549,7 @@ function padTick() { // anéis: fôlego do cavalo, recarga e força do aboio
   else if (abCd > 0) { a.style.setProperty('--ring', (1 - abCd / 5).toFixed(3)); a.style.setProperty('--rc', '#9ad0ff'); a.style.setProperty('--ro', 0.9); a.classList.remove('on'); a.classList.add('dim'); }
   else { a.style.setProperty('--ro', 0); a.classList.remove('on', 'dim'); }
 }
-function v78Tick(dt) { try { padTick(); } catch (e) { } tipTick(dt); try { lassoTick(dt); } catch (e) { } try { famTick(dt); } catch (e) { } try { lstTick(dt); } catch (e) { } if ((desAcc += dt) >= 2) { desAcc = 0; try { desTick(); } catch (e) { } } }
+function v78Tick(dt) { try { padTick(); } catch (e) { } tipTick(dt); try { lassoTick(dt); } catch (e) { } try { famTick(dt); } catch (e) { } try { lstTick(dt); } catch (e) { } try { lst2Tick(dt); } catch (e) { } if ((desAcc += dt) >= 2) { desAcc = 0; try { desTick(); } catch (e) { } } }
 
 /* ============ v7.9: FILHOS E HERANÇA ============
    Casados podem ter filhos. A criança nasce, ganha nome, cresce na fazenda (bebê, criança, jovem, adulto),
@@ -10267,6 +10271,265 @@ function lstInteractables(add) {
   add({ k: 'placaTP', label: '🪧 Serra das Três Pontas', x: 206.6 * TS, y: 44.8 * TS, r: 26, prio: 2, hit: [205.6 * TS, 42.2 * TS, 207.6 * TS, 44.8 * TS], fn: () => showModal('Serra das Três Pontas', null, null, () => '<p>Três pontas de pedra: a Ponta Norte, a Ponta do Meio e a Ponta Sul. A trilha sai daqui e sobe até o mirante da Ponta Sul.</p><p class="mut">O nome Itarantim quer dizer "diadema de pedra" em tupi-guarani.</p>') });
   for (const k in LESTE_F) { const F = LESTE_F[k], x = F.placa[0] * TS, y = F.placa[1] * TS; add({ k: 'placaF', label: '🪧 ' + F.n, x, y: y + 2, r: 26, prio: 2, hit: [x - 30, y - 40, x + 30, y + 2], fn: () => showModal(F.n, null, null, () => `<div class="card"><b>${esc(F.n)}</b><p>Dono(a): ${esc(F.dono)}</p><p>${esc(F.d)}</p></div>`) }); }
 }
+
+/* ============ v9.5: VIDA NO LESTE — donos das fazendas, negócio, missões, Serra das Três Pontas e minijogos ============ */
+// ---------- animais em alta (2x), como o vaqueiro ----------
+let HIA = 0;
+{ const _da = drawAnimal; drawAnimal = function (a) { HIA = a && hyp(a.x - P.x, a.y - P.y) < 300 ? 1 : 0; try { return _da.apply(this, arguments); } finally { HIA = 0; } }; }
+{ const _dm = drawMounted; drawMounted = function () { HIA = 1; try { return _dm.apply(this, arguments); } finally { HIA = 0; } }; }
+// ---------- estado ----------
+function LSt() { if (!S.leste) S.leste = {}; const L = S.leste; for (const [k, v] of [['rep', {}], ['mis', {}], ['of', {}], ['climb', {}], ['svc', {}]]) if (!L[k]) L[k] = v; return L; }
+const LF_AP = {
+  tresPontas: { sex: 'F', skin: 3, hair: 7, hairC: 4, hat: 7, shirt: 4, shirtC: 2, pants: 4, pantsC: 3, boots: 2, acc: 0, scarfC: 0, orn: 'none' },
+  jundia: { sex: 'M', skin: 2, hair: 1, hairC: 0, hat: 2, shirt: 3, shirtC: 1, pants: 1, pantsC: 1, boots: 1, acc: 2, scarfC: 1, orn: 'fivela' },
+  caititu: { sex: 'M', skin: 4, hair: 0, hairC: 5, hat: 1, shirt: 1, shirtC: 4, pants: 0, pantsC: 0, boots: 0, acc: 0, scarfC: 0, orn: 'none' },
+  novaEsp: { sex: 'F', skin: 5, hair: 6, hairC: 0, hat: 7, shirt: 4, shirtC: 5, pants: 4, pantsC: 2, boots: 2, acc: 4, scarfC: 2, orn: 'none' },
+  pauBrasil: { sex: 'M', skin: 1, hair: 5, hairC: 3, hat: 4, shirt: 0, shirtC: 3, pants: 1, pantsC: 4, boots: 3, acc: 2, scarfC: 3, orn: 'none' }
+};
+const LF_LINES = {
+  tresPontas: ['Esta casa tem mais de oitenta anos. Meu avô ainda viu a feira que virou cidade.', 'Quem sobe as três pontas no mesmo ano volta diferente, dizia minha mãe.', 'Cavalo bom se conhece pelo casco. Ferradura mal posta aleija qualquer animal.', 'Do alto da Ponta do Meio dá pra ver até a fumaça da cidade.'],
+  jundia: ['Boi de corte aqui é nelore e tabapuã. Traga um garrote bem criado que eu pago o justo.', 'O córrego do Jundiá nunca secou de todo, nem na seca de noventa e três.', 'Às vezes um boi pula a cerca e some na caatinga. Bom vaqueiro acha pelo rastro.', 'Tocar boiada é com aboio, paciência e cachorro bom.'],
+  caititu: ['Leite aqui sai de girolando e guzerá. Ordenha antes do sol esquentar.', 'O milharal tá carregado. Se quiser ajudar a quebrar milho, pago por espiga.', 'Fazenda pequena, mas não falta nada: leite, milho e um café passado na hora.', 'Vaca leiteira boa eu compro, se vier mansa.'],
+  novaEsp: ['Nova Esperança era o nome do povoado antes de virar Itarantim. Meu pai fez questão de manter.', 'Meu jegue Trovão é o mais ligeiro da região, mas empaca quando quer!', 'Na festa tem corrida de jegue na praça. Dá pra treinar aqui comigo.', 'O açude no meio do pasto é que segura o gado na seca.'],
+  pauBrasil: ['Aqui é fazenda de cria: vaca parida e bezerro pra todo lado.', 'Bezerro novo tem que pegar pra vacinar e curar o umbigo. Ligeiro que só!', 'Compro bezerro desmamado se vier bem tratado.', 'Gado que nasce manso dá menos trabalho a vida toda.']
+};
+const LF_SPEC = { // o que cada fazenda paga melhor
+  tresPontas: { t: 'cavalos', f: a => a.sp === 'cavalo', m: 1.12 }, jundia: { t: 'bois de corte (machos com 2 anos ou mais)', f: a => a.sp === 'boi' && a.sex === 'M' && a.age >= 20, m: 1.15 },
+  caititu: { t: 'vacas leiteiras (fêmeas adultas)', f: a => a.sp === 'boi' && a.sex === 'F' && a.age >= 24, m: 1.15 }, novaEsp: { t: 'jumentos e burros', f: a => a.sp === 'jumento' || a.sp === 'burro', m: 1.15 },
+  pauBrasil: { t: 'bezerros e garrotes (menos de 1 ano)', f: a => a.sp === 'boi' && a.age < 12, m: 1.2 }
+};
+const LF_AREAS = { tresPontas: ['tpPasto', 'tpCurral'], jundia: ['jdPasto', 'jdCurral'], caititu: ['ctPasto'], novaEsp: ['nePasto'], pauBrasil: ['pbPasto'] };
+const lfRep = k => LSt().rep[k] || 0, lfRepAdd = (k, v) => { const L = LSt(); L.rep[k] = cl((L.rep[k] || 0) + v, 0, 5); };
+const lfOwnerPos = k => { const [sx, sy] = LESTE_F[k].sede; return [(sx + 2.6) * TS, (sy + 1.5) * TS]; };
+const lfOwnerHere = () => { const h = hour(); return h >= 6 && h < 18.5 && !isRain(); };
+const lfInFarm = (k, a) => LF_AREAS[k].some(ar => inArea(ar, a.x, a.y));
+// ---------- ofertas de gado (renovam a cada 7 dias) ----------
+function lfOffers(k) {
+  const L = LSt(), wk = Math.floor(S.day / 7); if (L.of[k] && L.of[k].wk === wk) return L.of[k].list;
+  const R = mulberry(wk * 131 + k.length * 977), mk = (sp, br, o) => { const a = mkAnimal(sp, br, Object.assign({ own: 'loja:' + k }, o)); a.x = a.y = -999; return a; };
+  const T = { tresPontas: () => [mk('cavalo', 'mm', { age: 40 + Math.floor(R() * 30) }), mk('cavalo', R() < 0.5 ? 'campolina' : 'mm', { age: 36, sex: 'F' }), mk('boi', 'guzera', { age: 26 })],
+    jundia: () => [mk('boi', 'nelore', { age: 22, sex: 'M' }), mk('boi', 'tabapua', { age: 24, sex: 'M' }), mk('boi', 'nelore', { age: 30, sex: 'F' })],
+    caititu: () => [mk('boi', 'girolando', { age: 32, sex: 'F' }), mk('boi', 'guzera', { age: 28, sex: 'F' }), mk('boi', 'girolando', { age: 26, sex: 'F' })],
+    novaEsp: () => [mk('jumento', 'nordestino', { age: 30 }), mk('boi', 'sindi', { age: 24 }), mk('boi', 'nelore', { age: 20 })],
+    pauBrasil: () => [mk('boi', 'nelore', { age: 8 }), mk('boi', 'nelore', { age: 9, sex: 'F' }), mk('boi', 'nelore', { age: 34, sex: 'F' })] };
+  L.of[k] = { wk, list: T[k]().map(a => ({ a, sold: 0 })) }; return L.of[k].list;
+}
+const lfBuyPrice = (k, a) => Math.round(animalValue(a) * (1.06 - lfRep(k) * 0.02));
+const lfSellPrice = (k, a) => Math.round(animalValue(a) * (LF_SPEC[k].f(a) ? LF_SPEC[k].m : 0.92) * (1 + lfRep(k) * 0.01));
+// ---------- serviços (missões) ----------
+const LF_SVC = { pauBrasil: ['bezerro', 'Pegar os bezerros pra vacinar'], tresPontas: ['ferrar', 'Ferrar o cavalo da fazenda'], caititu: ['milho', 'Ajudar a quebrar milho'], novaEsp: ['jegue', 'Treinar corrida de jegue com o Trovão'] };
+function lfNewMission(k, tipo) {
+  const L = LSt(); if (L.mis[k]) return L.mis[k]; const R = Math.random();
+  let m;
+  if (tipo ? tipo === 'fujao' : (k === 'jundia' ? R < 0.5 : R < 0.55)) { // boi fugido: laça na caatinga e traz pro pasto da fazenda
+    const a = mkAnimal('boi', k === 'caititu' ? 'girolando' : 'nelore', { own: 'quest:' + k, age: 30, n: pick(['Fumaça', 'Lampião', 'Malhado', 'Caçula', 'Brejeiro']) });
+    let sp = null; for (let i = 0; i < 200 && !sp; i++) { const tx = 214 + Math.floor(Math.random() * 155), ty = 60 + Math.floor(Math.random() * 56); if (tx > 215 && tx < 272 && ty > 61 && ty < 113) continue; if (tx > 298 && tx < 362 && ty > 61 && ty < 113) continue; const i2 = gi(tx, ty); if (!obj[i2] && ground[i2] !== G.WATER) sp = [tx, ty]; }
+    sp = sp || [290, 100]; a.x = (sp[0] + 0.5) * TS; a.y = (sp[1] + 0.5) * TS; S.animals.push(a);
+    m = { t: 'fujao', aid: a.id, r: 320 + lfRep(k) * 40, txt: `O ${a.n} pulou a cerca e sumiu na caatinga. Laça e traz ele de volta pro pasto da ${LESTE_F[k].n}.` };
+  } else { // levar a boiada: trazer gado seu tocando até a fazenda
+    const sp = LF_SPEC[k], n = k === 'novaEsp' || k === 'tresPontas' ? 1 : 3;
+    m = { t: 'boiada', n, k2: k, r: 200 + n * 60, txt: `Preciso de ${n} ${n > 1 ? sp.t : sp.t.replace(/s\b/g, '').replace('bois', 'boi')}. Traga tocando (aboio ou conduzindo) até o pasto ou o curral daqui. Pago o preço da fazenda e mais ${fmt(200 + n * 60)} de frete.` };
+  }
+  L.mis[k] = Object.assign(m, { d: S.day }); return m;
+}
+function lfCheckMissions() {
+  const L = LSt();
+  for (const k in L.mis) { const m = L.mis[k]; if (!m) continue;
+    if (m.t === 'fujao') { const a = byId(m.aid); if (!a) { L.mis[k] = null; continue; }
+      if (lfInFarm(k, a)) { if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; a.own = k; a.area = LF_AREAS[k][0]; a._st = 'idle'; L.mis[k] = null; lfRepAdd(k, 1); receive(m.r, 'Boi fugido devolvido (' + LESTE_F[k].n + ')', 'cash'); toast('🐂 ' + a.n + ' voltou pro pasto! ' + LESTE_F[k].dono + ' pagou ' + fmt(m.r) + '.'); S.leste.done = (S.leste.done || 0) + 1; } }
+    else if (m.t === 'boiada') { const ok = S.animals.filter(a => a.own === 'player' && !a.main && LF_SPEC[k].f(a) && lfInFarm(k, a)); if (ok.length >= m.n) { let tot = m.r; ok.slice(0, m.n).forEach(a => { const p = lfSellPrice(k, a); tot += p; soldRecord(a, p, LESTE_F[k].n); if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; a.own = k; a.area = LF_AREAS[k][0]; a._st = 'idle'; });
+      L.mis[k] = null; lfRepAdd(k, 1); receive(tot, 'Boiada entregue (' + LESTE_F[k].n + ')', 'cash'); toast('🐄 Boiada entregue na ' + LESTE_F[k].n + '! Recebeu ' + fmt(tot) + '.'); S.leste.done = (S.leste.done || 0) + 1; } } }
+}
+// ---------- janela da fazenda ----------
+function openFazL(k) { M.lfk = k; showModal(LESTE_F[k].n, null, null, () => lfHTML(M.lfk || k), 'farm'); }
+function lfHTML(k) {
+  const F = LESTE_F[k], L = LSt(), rep = lfRep(k), m = L.mis[k], sp = LF_SPEC[k], svc = LF_SVC[k];
+  let h = `<div class="card"><div class="row sp"><span>${charImg(LF_AP[k], 2)}</span><span style="flex:1"><b>${esc(F.dono)}</b> · ${esc(F.n)}<br><span class="mut">${esc(F.d)}</span><br>Confiança: ${'❤️'.repeat(rep)}${'🤍'.repeat(5 - rep)}</span></span></div>
+    <p>“${esc(M.lfLine || pick(LF_LINES[k]))}”</p><div class="row"><button class="btn" data-a="lfProsa">Prosear</button>${k === 'tresPontas' ? '<button class="btn" data-a="lfLenda">A lenda das Três Pontas</button>' : ''}</div></div>`;
+  // serviço / missão
+  h += '<h3>Serviço</h3>';
+  if (m) h += `<div class="card"><b>${m.t === 'fujao' ? '🐂 Boi fugido' : '🐄 Levar a boiada'}</b><p>${esc(m.txt)}</p><p class="mut">Recompensa: ${fmt(m.r)}${m.t === 'boiada' ? ' + o preço dos animais' : ''}.</p><button class="btn" data-a="lfDesiste">Desistir</button></div>`;
+  else h += `<div class="card"><p>Tem serviço de vaqueiro pra fazer?</p><button class="btn" data-a="lfMis">Pedir um serviço</button></div>`;
+  if (svc) { const dn = L.svc[k] === S.day; h += `<div class="card"><b>🎯 ${esc(svc[1])}</b><p class="mut">${dn ? 'Já fez hoje. Volte amanhã.' : 'Minijogo rápido. Paga conforme o seu desempenho.'}</p><button class="btn" data-a="lfSvc" ${dn ? 'disabled' : ''}>Fazer agora</button></div>`; }
+  // compra
+  h += `<h3>Gado à venda</h3>` + lfOffers(k).map((o, i) => { const a = o.a, p = lfBuyPrice(k, a); return `<div class="card"><div class="row sp"><span>${animalImg(a, 1)}</span><span style="flex:1"><b>${esc(a.n)}</b><br><span class="mut">${catName(a)} · ${breedOf(a).n} · ${Math.floor(a.age / 12)} ano(s) ${a.age % 12} mês(es)</span></span><b>${fmt(p)}</b><button class="btn" data-a="lfBuy" data-v="${i}" ${o.sold ? 'disabled' : ''}>${o.sold ? 'Vendido' : 'Comprar'}</button></div></div>`; }).join('') + '<p class="mut">O animal comprado chega amanhã no seu curral de recepção.</p>';
+  // venda
+  const mine = S.animals.filter(a => a.own === 'player' && !a.main && a.sp !== 'cao' && a.sp !== 'galinha' && lfInFarm(k, a));
+  h += `<h3>Vender aqui</h3><p class="mut">Paga melhor por <b>${esc(sp.t)}</b>. Traga os animais tocando até o pasto ou o curral desta fazenda.</p>` + (mine.length ? mine.map(a => `<div class="card"><div class="row sp"><span>${animalImg(a, 1)}</span><span style="flex:1"><b>${esc(a.n)}</b><br><span class="mut">${catName(a)} · ${breedOf(a).n}</span></span><b>${fmt(lfSellPrice(k, a))}</b><button class="btn" data-a="lfSell" data-v="${a.id}">Vender</button></div></div>`).join('') : '<div class="card mut">Nenhum animal seu dentro da fazenda agora.</div>');
+  return h;
+}
+A.lfProsa = () => { const k = M.lfk; M.lfLine = pick(LF_LINES[k]); if (LSt().svc['p' + k] !== S.day) { LSt().svc['p' + k] = S.day; if (Math.random() < 0.5) lfRepAdd(k, 0.5); } renderModal(); };
+A.lfLenda = () => { const L = LSt(); L.lenda = 1; showModal('A lenda das Três Pontas', null, null, () => `<p><i>Contam os mais velhos da Fazenda Três Pontas…</i></p>
+  <p>Que três irmãos vaqueiros saíram atrás de uma boiada encantada, de bois brancos que não deixavam rastro. Subiram a serra, cada um por um lado, e ficaram lá em cima esperando a boiada passar. Esperaram tanto que viraram pedra: são as três pontas.</p>
+  <p>Diz a lenda que quem subir nas três pontas, uma por uma, ganha o respeito dos irmãos. E que então, da estrada, se avista a boca de uma gruta no pé da serra, onde ficou guardado o <b>diadema de pedra</b> que dá nome à cidade.</p>
+  <p class="mut">Escaladas: ${['norte', 'meio', 'sul'].map(n => (L.climb[n] ? '✅' : '⬜') + ' Ponta ' + (n === 'norte' ? 'Norte' : n === 'meio' ? 'do Meio' : 'Sul')).join(' · ')}</p>`); };
+A.lfMis = () => { lfNewMission(M.lfk); renderModal(); };
+A.lfDesiste = () => { const k = M.lfk, L = LSt(), m = L.mis[k]; if (m && m.t === 'fujao') { const a = byId(m.aid); if (a) { a.own = k; a.area = LF_AREAS[k][0]; const p = randIn(LF_AREAS[k][0]); a.x = p[0]; a.y = p[1]; } } L.mis[k] = null; renderModal(); };
+A.lfBuy = v => { const k = M.lfk, o = lfOffers(k)[+v]; if (!o || o.sold) return; const a = o.a, p = lfBuyPrice(k, a); if (!pay(p, 'Compra de ' + a.n + ' (' + LESTE_F[k].n + ')')) return; a.own = 'player'; if (!feiraDeliver(a, p)) return; o.sold = 1; lfRepAdd(k, 0.5); toast('🐄 Comprou ' + a.n + '. Chega amanhã no curral de recepção.'); renderModal(); };
+A.lfSell = v => { const k = M.lfk, a = byId(+v); if (!a || a.own !== 'player') return; const p = lfSellPrice(k, a); soldRecord(a, p, LESTE_F[k].n); if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; a.own = k; a.area = LF_AREAS[k][0]; a._st = 'idle'; receive(p, 'Venda de ' + a.n + ' (' + LESTE_F[k].n + ')', 'cash'); lfRepAdd(k, 0.5); toast('💰 Vendeu ' + a.n + ' por ' + fmt(p) + '.'); renderModal(); };
+A.lfSvc = () => { const k = M.lfk, s = LF_SVC[k]; if (!s || LSt().svc[k] === S.day) return; closeModal(); const done = sc => { LSt().svc[k] = S.day; if (sc > 0) lfRepAdd(k, 0.5); };
+  if (s[0] === 'bezerro') mjBezerro(n => { const v = n * 70; if (v) receive(v, 'Pega de bezerro (' + LESTE_F[k].n + ')', 'cash'); done(n); toast(n ? '🐮 Pegou ' + n + ' bezerro(s)! ' + LESTE_F[k].dono + ' pagou ' + fmt(v) + '.' : 'Os bezerros escaparam todos… amanhã tem mais.'); });
+  else if (s[0] === 'ferrar') mjFerrar(null, n => { const v = n * 18; if (v) receive(v, 'Ferrar cavalo (' + LESTE_F[k].n + ')', 'cash'); done(n); toast(n >= 6 ? '🐴 Ferradura bem posta! Recebeu ' + fmt(v) + '.' : n ? 'Ferrou com alguns erros. Recebeu ' + fmt(v) + '.' : 'O cavalo não deixou ferrar desta vez.'); });
+  else if (s[0] === 'milho') mjMilho(n => { const v = n * 4, sacos = Math.floor(n / 8); if (v) receive(v, 'Quebrar milho (' + LESTE_F[k].n + ')', 'cash'); if (sacos) addInv('milho', sacos, true); done(n); toast('🌽 Quebrou ' + n + ' espigas: ' + fmt(v) + (sacos ? ' e ' + sacos + ' saco(s) de milho' : '') + '.'); });
+  else if (s[0] === 'jegue') mjJegue(false, pos => { done(pos === 1 ? 1 : 0); toast(pos === 1 ? '🏆 O Trovão ganhou o treino! Na festa da praça vale prêmio.' : '🫏 Chegou em ' + pos + 'º. Treine que na festa da praça vale prêmio.'); });
+};
+// ---------- Serra das Três Pontas: escalada, lenda e gruta ----------
+const TP_CLIMB = { norte: { n: 'Ponta Norte', p: 0, steps: 9 }, meio: { n: 'Ponta do Meio', p: 1, steps: 11 }, sul: { n: 'Ponta Sul', p: 2, steps: 8 } };
+const TP_GRUTA = [197.5, 41.4];
+function tpClimbSpot(key) { const q = LST.pontas[TP_CLIMB[key].p]; return q ? [(q.x + 5) * TS, (q.y - 1) * TS] : [0, 0]; }
+function lst2Gen() { // pé de cada ponta: um patamar de pedra livre para começar a escalada; boca da gruta (escondida até as três escaladas)
+  for (const key in TP_CLIMB) { const [x, y] = tpClimbSpot(key), tx = Math.floor(x / TS), ty = Math.floor(y / TS); for (let yy = ty - 1; yy <= ty + 1; yy++) for (let xx = tx - 1; xx <= tx + 1; xx++) { const i = gi(xx, yy); obj[i] = 0; ground[i] = G.ROCK; }
+    for (let xx = tx + 1; xx <= 207; xx++) { const i = gi(xx, ty); if (obj[i] === 3) obj[i] = 0; if (ground[i] !== G.DIRT) ground[i] = G.DRY; } // caminho até a trilha
+    for (let yy = Math.min(ty, 45); yy <= Math.max(ty, 45); yy++) { const i = gi(207, yy); if (obj[i] === 3) obj[i] = 0; if (ground[i] !== G.DIRT && ground[i] !== G.ROCK) ground[i] = G.DIRT; } }
+  const gx = Math.floor(TP_GRUTA[0]), gy = Math.floor(TP_GRUTA[1]); for (let xx = gx - 1; xx <= gx + 1; xx++) obj[gi(xx, gy - 1)] = 3; obj[gi(gx, gy)] = 0;
+}
+{ const _gl = genLeste; genLeste = function () { _gl.apply(this, arguments); try { lst2Gen(); } catch (e) { console.error('leste2', e); } }; }
+function tpClimbStart(key) {
+  const C = TP_CLIMB[key]; if (P.en < 15) return say('Cansado demais para escalar. Coma alguma coisa e descanse.', 2600); if (P.mnt) return say('Desça do cavalo para escalar.', 2000);
+  mjEscalada(C, ok => { P.en = Math.max(0, P.en - 12); if (!ok) return say('Escorregou e desceu de volta. Respire e tente de novo.', 2800);
+    const L = LSt(), first = !L.climb[key]; L.climb[key] = 1; const q = LST.pontas[C.p], all = ['norte', 'meio', 'sul'].every(n => L.climb[n]);
+    if (first) receive(150, 'Escalada da ' + C.n, 'cash');
+    const fin = () => { if (all && !L.gruta) { L.grutaVista = 1; toast('🗿 Você subiu as três pontas! Da estrada, no pé da serra, agora dá pra ver a boca de uma gruta…'); } else toast('⛰️ Você chegou ao topo da ' + C.n + '!' + (first ? ' +' + fmt(150) : '')); };
+    if (!cenasOn()) return fin();
+    cutscene([{ fade: 0, cam: [q.x, q.y - 6], snap: 1, z: 1.1, txt: '⛰️ Topo da ' + C.n + '. O vento canta na pedra e o sertão inteiro fica pequeno lá embaixo.', d: 3.6 },
+      { cam: [q.x + 30, q.y + 10], z: 0.6, spd: 0.8, txt: all ? 'Das três pontas, agora, você enxerga o que ninguém via: uma sombra escura no pé da serra, perto da estrada…' : 'Ainda faltam ' + ['norte', 'meio', 'sul'].filter(n => !L.climb[n]).length + ' ponta(s) para completar a lenda.', d: 3.8 }, { clr: 1, d: 0.1 }], fin);
+  });
+}
+function tpGruta() {
+  const L = LSt(); if (L.gruta) return showModal('Gruta das Três Pontas', null, null, () => '<p>A gruta está quieta. Nas paredes, os desenhos dos três vaqueiros e da boiada branca. O diadema já está com você.</p>');
+  L.gruta = 1; IT.diadema && addInv('diadema', 1, true); receive(2500, 'Achado na Gruta das Três Pontas', 'cash');
+  const fin = () => toast('👑 Você achou o Diadema de Pedra e R$ 2.500 em moedas antigas! A lenda das Três Pontas está completa.');
+  if (!cenasOn()) return fin();
+  cutscene([{ fade: 0, cam: [TP_GRUTA[0], TP_GRUTA[1] - 1], snap: 1, z: 1.6, txt: '🕯️ Lá dentro é frio e escuro. Na parede, pinturas antigas: três vaqueiros e uma boiada de bois brancos.', d: 4 },
+    { cam: [TP_GRUTA[0], TP_GRUTA[1] - 1], z: 1.9, spd: 0.6, txt: 'Num nicho de pedra, coberto de poeira: um diadema esculpido na própria rocha, e um pote de moedas antigas.', d: 4 },
+    { cam: [TP_GRUTA[0] + 6, TP_GRUTA[1] - 4], z: 0.9, spd: 0.8, txt: '“Diadema de pedra”: Itarantim. Os três irmãos podem descansar.', d: 3.4 }, { clr: 1, d: 0.1 }], fin);
+}
+IT.diadema = { i: '', n: 'Diadema de Pedra', kg: 0.6, p: 0, d: 'Relíquia achada na Gruta das Três Pontas. Não se vende: é a lenda que deu nome a Itarantim.', c: 'var' };
+// ---------- desenho: donos nas sedes, patamares, gruta ----------
+function drawLeste2(add, inV) {
+  if (!LST.ok) return; const L = LSt();
+  if (lfOwnerHere()) for (const k in LESTE_F) { const [x, y] = lfOwnerPos(k); if (!inV(x, y, 30)) continue; const look = hyp(P.x - x, P.y - y) < 60; add(y, () => drawPerson(LF_AP[k], x, y, look ? (P.x < x ? 2 : 1) : 0, (Math.floor(drawT * 1.3 + k.length) % 4 === 0) ? 1 : 0, 'idle'), x, { w: 30, h: 40, hi: 1 }); }
+  for (const key in TP_CLIMB) { const [x, y] = tpClimbSpot(key); if (!inV(x, y, 40)) continue; add(y, () => { X.fillStyle = L.climb[key] ? '#e8c040' : '#c83a2a'; X.fillRect(Math.round(x - 1), Math.round(y - 22), 2, 22); X.fillRect(Math.round(x + 1), Math.round(y - 22), 7, 5); X.fillStyle = '#3a2010'; X.fillRect(Math.round(x - 2), Math.round(y - 1), 4, 2); }, x, { w: 30, h: 36 }); }
+  if (L.grutaVista || L.gruta) { const x = TP_GRUTA[0] * TS, y = TP_GRUTA[1] * TS; if (inV(x, y, 40)) add(y - 2, () => { X.fillStyle = '#5a5650'; X.beginPath(); X.ellipse(x, y - 9, 15, 13, 0, Math.PI, 0); X.fill(); X.fillStyle = '#16120e'; X.beginPath(); X.ellipse(x, y - 4, 9, 9, 0, Math.PI, 0); X.fill(); X.fillRect(Math.round(x - 9), Math.round(y - 4), 18, 4); if (!L.gruta) { X.fillStyle = `rgba(255,220,120,${0.25 + Math.sin(drawT * 3) * 0.15})`; X.fillRect(Math.round(x - 1), Math.round(y - 8), 2, 2); } }, x, { w: 40, h: 34 }); }
+}
+function lst2Interactables(add) {
+  if (!LST.ok || P.x < 190 * TS || P.y > 125 * TS) return; const L = LSt(), foot = !P.mnt;
+  if (lfOwnerHere()) for (const k in LESTE_F) { const [x, y] = lfOwnerPos(k); add({ k: 'lfDono', label: '💬 ' + LESTE_F[k].dono + (L.mis[k] ? ' (serviço)' : ''), x, y: y + 2, r: 26, prio: 4, hit: [x - 10, y - 30, x + 10, y + 2], fn: () => openFazL(k) }); }
+  for (const key in TP_CLIMB) { const [x, y] = tpClimbSpot(key); add({ k: 'climb', label: '🧗 Escalar a ' + TP_CLIMB[key].n + (L.climb[key] ? ' ✅' : ''), x, y, r: 26, prio: 3, hit: [x - 12, y - 24, x + 12, y + 2], fn: () => tpClimbStart(key) }); }
+  if (L.grutaVista || L.gruta) { const x = TP_GRUTA[0] * TS, y = TP_GRUTA[1] * TS; add({ k: 'gruta', label: '🕳️ Entrar na gruta', x, y: y + 4, r: 28, prio: 4, hit: [x - 14, y - 22, x + 14, y + 4], fn: tpGruta }); }
+  // corrida de jegue nas festas da praça
+}
+function lst2Tick() { if (!S || !LST.ok) return; try { lfCheckMissions(); } catch (e) { } }
+// corrida de jegue oficial nas festas da praça de Itarantim
+function jegueFestaInteract(add) { const ev = eventNow(); if (!ev || !EVENTS[ev] || EVENTS[ev].place !== 'praca' || LSt().jegueD === S.day) return; const x = 88.5 * TS, y = 53.5 * TS; add({ k: 'jegueFesta', label: '🫏 Corrida de jegue (inscrição R$ 20)', x, y, r: 30, prio: 3, hit: [x - 16, y - 20, x + 16, y + 4], fn: () => { if (!pay(20, 'Inscrição na corrida de jegue')) return; LSt().jegueD = S.day; mjJegue(true, pos => { const pr = pos === 1 ? 300 : pos === 2 ? 100 : 0; if (pr) receive(pr, 'Prêmio da corrida de jegue (' + pos + 'º)', 'cash'); toast(pos === 1 ? '🏆 Ganhou a corrida de jegue! Prêmio de ' + fmt(pr) + ' e a praça inteira aplaudindo!' : pos === 2 ? '🥈 Segundo lugar na corrida de jegue: ' + fmt(pr) + '.' : '🫏 Chegou em ' + pos + 'º. O jegue empacou na hora errada…'); }); } }); }
+/* ============ MINIJOGOS (v9.5): escalada, pega de bezerro, ferrar cavalo, quebrar milho e corrida de jegue ============ */
+const MJ = { on: false };
+function mjOpen(title, info, btns, step, draw, end) { // janela com tela de jogo, botões grandes e laço de quadros próprio
+  showModal(title, null, null, () => `<canvas id="mjC" width="300" height="190" style="width:100%;max-width:520px;display:block;margin:0 auto;image-rendering:pixelated;border:3px solid #110905;border-radius:6px;background:#2a1a10;touch-action:none"></canvas>
+    <p id="mjI" class="mut" style="text-align:center;min-height:2.4em;margin:6px 0">${info}</p><div class="row" style="justify-content:center;gap:10px">${btns.map(([id, t]) => `<button class="btn" id="mjB_${id}" style="font-size:18px;padding:14px 18px;min-width:96px;touch-action:none">${t}</button>`).join('')}</div>`);
+  Object.assign(MJ, { on: true, t: 0, step, draw, end, last: performance.now(), done: false, cur: title });
+  setTimeout(() => { const c = $('mjC'); if (!c) return; MJ.c = c; MJ.g = c.getContext('2d'); MJ.g.imageSmoothingEnabled = false;
+    btns.forEach(([id]) => { const b = $('mjB_' + id); if (b) b.onpointerdown = e => { e.preventDefault(); MJ.press && MJ.press(id); }; });
+    c.onpointerdown = e => { const r = c.getBoundingClientRect(); MJ.tap && MJ.tap((e.clientX - r.left) / r.width * 300, (e.clientY - r.top) / r.height * 190); };
+    const loop = now => { if (!MJ.on) return; if (!M.open) { mjFinish(null); return; } const dt = Math.min(0.05, (now - MJ.last) / 1000); MJ.last = now; MJ.t += dt; try { MJ.step(dt); MJ.draw(MJ.g); } catch (e) { console.error(e); mjFinish(null); return; } requestAnimationFrame(loop); };
+    requestAnimationFrame(loop); }, 0);
+}
+function mjInfo(t) { const e = $('mjI'); if (e) e.innerHTML = t; }
+function mjFinish(res) { if (!MJ.on) return; MJ.on = false; MJ.press = MJ.tap = MJ.key = null; const end = MJ.end; MJ.end = null; if (M.open) closeModal(); if (end && res !== null) setTimeout(() => end(res), 60); }
+addEventListener('keydown', e => { if (!MJ.on || !MJ.key) return; if (MJ.key(e.code)) { e.preventDefault(); e.stopPropagation(); } }, true);
+// sprites reais dos bichos (RIG) para os minijogos
+const MJ_TPL = {};
+function mjRig(sp, br, an, fr, o) { const key = sp + br + JSON.stringify(o || {}), a = MJ_TPL[key] || (MJ_TPL[key] = mkAnimal(sp, br, Object.assign({ own: 'mj' }, o || {}))), k = rigK(a); const r = RIG.get(rigBreed(a), rigCoat(a), 'side', an, fr % RIG.frames(an), rigOpts(a, k)); return r; }
+function mjDrawRig(g, r, x, y, flip, sc) { sc = sc || 1; for (const c of [r.b, r.f]) { if (!c) continue; g.save(); if (flip) { g.translate(Math.round(x), 0); g.scale(-1, 1); g.drawImage(c, -Math.round((r.w - r.ox) * sc), Math.round(y - r.oy * sc), c.width * sc, c.height * sc); } else g.drawImage(c, Math.round(x - r.ox * sc), Math.round(y - r.oy * sc), c.width * sc, c.height * sc); g.restore(); } }
+function mjDrawMe(g, x, y, dir, fr, pose, sc) { sc = sc || 1; const c = charSpr(S.cf.ap, dir, fr, pose); g.save(); if (dir === 2) { g.translate(Math.round(x), 0); g.scale(-1, 1); g.drawImage(c, -12 * sc, Math.round(y - 30 * sc), 24 * sc, 34 * sc); } else g.drawImage(c, Math.round(x - 12 * sc), Math.round(y - 30 * sc), 24 * sc, 34 * sc); g.restore(); }
+function mjText(g, t, x, y, c, s) { g.font = `bold ${s || 12}px sans-serif`; g.textAlign = 'center'; g.fillStyle = '#000'; g.fillText(t, x + 1, y + 1); g.fillStyle = c || '#fff4c8'; g.fillText(t, x, y); }
+// --- escalada: segure o ritmo; agarre quando o marcador estiver na faixa verde ---
+function mjEscalada(C, end) {
+  const S0 = { h: 0, miss: 0, mk: 0, dir: 1, zone: 0.26, fx: 0, slip: 0 }, N = C.steps;
+  const grab = () => { const z0 = 0.5 - S0.zone / 2, ok = S0.mk > z0 && S0.mk < z0 + S0.zone; if (ok) { S0.h++; S0.fx = 0.3; AU.osc && AU.osc('triangle', 520 + S0.h * 30, 300, 0.06, 0.05); S0.zone = Math.max(0.1, 0.26 - S0.h * 0.014); if (S0.h >= N) setTimeout(() => mjFinish(true), 500); }
+    else { S0.miss++; S0.slip = 0.4; S0.h = Math.max(0, S0.h - 1); AU.osc && AU.osc('square', 160, 90, 0.12, 0.05); mjInfo('Escorregou! Erros: ' + S0.miss + '/3'); if (S0.miss >= 3) setTimeout(() => mjFinish(false), 400); } };
+  MJ.press = id => id === 'g' && grab(); MJ.key = code => (code === 'Space' || code === 'KeyE' || code === 'Enter') && (grab(), true);
+  mjOpen('🧗 Escalada da ' + C.n, 'Toque em <b>Agarrar</b> quando o marcador estiver na <b>faixa verde</b>. Três escorregões e você desce.', [['g', '✋ Agarrar']],
+    dt => { const sp = 0.9 + S0.h * 0.07; S0.mk += S0.dir * dt * sp; if (S0.mk > 1) { S0.mk = 1; S0.dir = -1; } if (S0.mk < 0) { S0.mk = 0; S0.dir = 1; } S0.fx = Math.max(0, S0.fx - dt); S0.slip = Math.max(0, S0.slip - dt); },
+    g => { const W = 300, H = 190; const top = H - 24 - (S0.h / N) * 120;
+      g.fillStyle = '#7fa7c8'; g.fillRect(0, 0, W, H); g.fillStyle = '#c8b090'; g.fillRect(0, H - 26, W, 26);
+      for (let y = 0; y < H; y += 2) { const w = 70 + Math.sin(y * 0.05) * 8 + (H - y) * 0.25; g.fillStyle = y % 6 < 2 ? '#8a8680' : '#9a968e'; g.fillRect(150 - w, y, w * 2, 2); }
+      for (let i = 0; i < N; i++) { const y = H - 30 - (i / N) * 120, x = 150 + (i % 2 ? 14 : -14); g.fillStyle = i < S0.h ? '#5a5650' : '#6e6a62'; g.fillRect(x - 5, y, 10, 3); }
+      mjText(g, C.n, 150, 14, '#fff', 11); g.fillStyle = '#2a2a30'; g.fillRect(146, 2, 8, 2);
+      mjDrawMe(g, 150 + Math.sin(MJ.t * 3) * 2, top + (S0.slip > 0 ? 6 : 0), 1, Math.floor(MJ.t * 4) % 2, S0.fx > 0 ? 'walk' : 'idle', 1);
+      const bx = 30, bw = 240, by = H - 16; g.fillStyle = '#2a1a10'; g.fillRect(bx - 2, by - 2, bw + 4, 12); g.fillStyle = '#6a3a1a'; g.fillRect(bx, by, bw, 8); g.fillStyle = '#4caf50'; g.fillRect(bx + bw * (0.5 - S0.zone / 2), by, bw * S0.zone, 8); g.fillStyle = '#fff4c8'; g.fillRect(bx + bw * S0.mk - 2, by - 3, 4, 14);
+      mjText(g, S0.h + ' / ' + N, 268, 30, '#ffe08a', 13); }, end);
+}
+// --- pega de bezerro: corra junto e agarre quando ele estiver perto e devagar ---
+function mjBezerro(end) {
+  const B = { x: 230, v: 0, tv: -40, dash: 0, caught: 0, me: 80, mv: 0, msg: 0, fr: 0, tm: 25 };
+  const grab = () => { const d = Math.abs(B.x - B.me); if (d < 22 && !B.dash) { B.caught++; B.msg = 1; AU.moo && AU.moo(P.x, P.y, 1.4); mjInfo('Pegou! ' + B.caught + '/3 bezerros vacinados.'); B.x = B.me > 150 ? 30 : 270; B.dash = 1.2; B.tv = B.me > 150 ? 60 : -60; if (B.caught >= 3) setTimeout(() => mjFinish(3), 500); }
+    else { mjInfo(B.dash ? 'Escapuliu! Espere ele parar de disparar.' : 'Longe demais: chegue mais perto.'); } };
+  MJ.press = id => { if (id === 'g') grab(); else B.mv = id === 'e' ? -1 : 1; };
+  MJ.key = code => { if (code === 'Space' || code === 'KeyE') { grab(); return true; } if (code === 'ArrowLeft' || code === 'KeyA') { B.mv = -1; return true; } if (code === 'ArrowRight' || code === 'KeyD') { B.mv = 1; return true; } return false; };
+  addEventListener('keyup', function ku(e) { if (!MJ.on) { removeEventListener('keyup', ku); return; } if (['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD'].includes(e.code)) B.mv = 0; });
+  mjOpen('🐮 Pega de bezerro', 'Corra com ◀ ▶ e toque <b>Agarrar</b> quando estiver colado no bezerro e ele não estiver disparando. Pegue 3 em 25 s.', [['e', '◀'], ['g', '✋ Agarrar'], ['d', '▶']],
+    dt => { B.tm -= dt; if (B.tm <= 0) return mjFinish(B.caught); B.dash = Math.max(0, B.dash - dt); if (Math.random() < dt * 0.9) { B.tv = (Math.random() < 0.5 ? -1 : 1) * (Math.random() < 0.35 ? 120 : 45); if (Math.abs(B.tv) > 100) B.dash = 0.7; }
+      B.v = lerp(B.v, B.tv, Math.min(1, dt * 4)); B.x += B.v * dt; if (B.x < 24) { B.x = 24; B.tv = Math.abs(B.tv); } if (B.x > 276) { B.x = 276; B.tv = -Math.abs(B.tv); } B.me = cl(B.me + B.mv * 95 * dt, 20, 280); B.fr += dt * (Math.abs(B.v) > 70 ? 14 : 8); },
+    g => { const W = 300, H = 190; g.fillStyle = '#8a6a40'; g.fillRect(0, 0, W, H); for (let i = 0; i < 70; i++) { g.fillStyle = i % 2 ? '#7a5a34' : '#9a7a4a'; g.fillRect((i * 53) % W, (i * 37) % H, 3, 2); }
+      g.fillStyle = '#5a3a1a'; for (const y of [40, 168]) { g.fillRect(0, y, W, 4); g.fillRect(0, y + 8, W, 4); for (let x = 0; x < W; x += 30) g.fillRect(x, y - 8, 5, 24); }
+      const r = mjRig('boi', 'nelore', Math.abs(B.v) > 70 ? 'trot' : Math.abs(B.v) > 8 ? 'walk' : 'idle', Math.floor(B.fr), { age: 3 }); mjDrawRig(g, r, B.x, 120, B.v < 0, 1.6);
+      mjDrawMe(g, B.me, 152, B.mv < 0 ? 2 : B.mv > 0 ? 1 : 0, Math.floor(MJ.t * 8) % 8, B.mv ? 'run' : 'idle', 1.4);
+      if (Math.abs(B.x - B.me) < 22 && !B.dash) { g.strokeStyle = '#7dff7d'; g.lineWidth = 2; g.beginPath(); g.ellipse(B.x, 124, 20, 7, 0, 0, 7); g.stroke(); }
+      mjText(g, '⏱ ' + Math.ceil(B.tm) + 's   🐮 ' + B.caught + '/3', 150, 20, '#fff4c8', 13); }, end);
+}
+// --- ferrar cavalo: martele quando o martelo passar em cima do cravo da vez ---
+function mjFerrar(horse, end) {
+  if (horse && !horse.own) horse = null; const F = { i: 0, hit: 0, bad: 0, x: 0, dir: 1, sp: 110, fx: 0, shake: 0 }, holes = [70, 98, 126, 174, 202, 230];
+  const hammer = () => { const tx = holes[F.i], ok = Math.abs(F.x - tx) < 9; if (ok) { F.hit++; F.fx = 0.25; AU.osc && AU.osc('triangle', 1400, 900, 0.05, 0.06); } else { F.bad++; F.shake = 0.4; AU.osc && AU.osc('square', 140, 80, 0.15, 0.05); mjInfo('O cavalo se assustou! Erros: ' + F.bad + '/3'); }
+    F.i++; F.sp += 18; if (F.bad >= 3) return setTimeout(() => mjFinish(F.hit), 400); if (F.i >= holes.length) setTimeout(() => mjFinish(F.hit), 400); };
+  MJ.press = id => id === 'm' && hammer(); MJ.key = code => (code === 'Space' || code === 'KeyE' || code === 'Enter') && (hammer(), true);
+  mjOpen('🐴 Ferrar ' + (horse ? horse.n : 'o cavalo'), 'Toque em <b>Martelar</b> quando o martelo estiver em cima do <b>cravo aceso</b>. Seis cravos; três erros e o cavalo não deixa.', [['m', '🔨 Martelar']],
+    dt => { F.x += F.dir * F.sp * dt; if (F.x > 280) { F.x = 280; F.dir = -1; } if (F.x < 20) { F.x = 20; F.dir = 1; } F.fx = Math.max(0, F.fx - dt); F.shake = Math.max(0, F.shake - dt); },
+    g => { const W = 300, H = 190, sh = F.shake > 0 ? Math.sin(MJ.t * 60) * 3 : 0; g.fillStyle = '#3a2a1e'; g.fillRect(0, 0, W, H); g.fillStyle = '#4a3626'; for (let x = 0; x < W; x += 20) g.fillRect(x, 0, 1, H);
+      const r = horse ? RIG.get(rigBreed(horse), rigCoat(horse), 'side', 'idle', 0, rigOpts(horse, rigK(horse))) : mjRig('cavalo', 'mm', 'idle', 0, { age: 48 }); mjDrawRig(g, r, 70 + sh, 92, false, 1.1);
+      // ferradura grande
+      g.save(); g.translate(150 + sh, 150); g.fillStyle = '#7c8088'; g.beginPath(); g.ellipse(0, 0, 100, 34, 0, Math.PI, 0); g.fill(); g.fillStyle = '#3a2a1e'; g.beginPath(); g.ellipse(0, 4, 70, 20, 0, Math.PI, 0); g.fill(); g.fillRect(-100, 0, 200, 12); g.restore();
+      holes.forEach((hx, i) => { const y = 150 - Math.sqrt(Math.max(0, 1 - ((hx - 150) / 85) ** 2)) * 26 + 4; g.fillStyle = i < F.i ? '#d8dce4' : i === F.i ? `rgba(255,220,90,${0.6 + Math.sin(MJ.t * 10) * 0.4})` : '#2a2a30'; g.fillRect(hx - 3 + sh, y - 3, 6, 6); });
+      g.fillStyle = '#6a4422'; g.fillRect(F.x - 2, 100 - (F.fx > 0 ? 0 : 14), 4, 26); g.fillStyle = '#9aa0aa'; g.fillRect(F.x - 9, 96 - (F.fx > 0 ? 0 : 14), 18, 8);
+      mjText(g, 'Cravos: ' + F.hit + ' · Erros: ' + F.bad, 150, 20, '#fff4c8', 12); }, end);
+}
+// --- quebrar milho: toque as espigas maduras (amarelas); a verde ainda não! ---
+function mjMilho(end) {
+  const Q = { tm: 15, n: 0, cells: Array.from({ length: 10 }, (_, i) => ({ x: 34 + (i % 5) * 58, y: 82 + Math.floor(i / 5) * 72, st: 0, t: 0 })) };
+  const hit = (x, y) => { for (const c of Q.cells) if (Math.abs(x - c.x) < 22 && y > c.y - 46 && y < c.y + 10) { if (c.st === 2) { Q.n++; c.st = 3; c.t = 0.35; AU.osc && AU.osc('triangle', 300, 160, 0.06, 0.06); } else if (c.st === 1) { Q.n = Math.max(0, Q.n - 1); c.st = 0; mjInfo('Essa ainda estava verde! −1'); } return; } };
+  MJ.tap = hit; MJ.key = code => { const m = /^Digit([0-9])$/.exec(code); if (!m) return false; const c = Q.cells[(+m[1] + 9) % 10]; hit(c.x, c.y - 20); return true; };
+  mjOpen('🌽 Quebrar milho', 'Toque nas espigas <b>amarelas</b> (maduras) antes que sumam. As <b>verdes</b> ainda não! 15 segundos.', [],
+    dt => { Q.tm -= dt; if (Q.tm <= 0) return mjFinish(Q.n); for (const c of Q.cells) { c.t -= dt; if (c.t <= 0) { if (c.st === 0 && Math.random() < dt * 1.6) { c.st = Math.random() < 0.72 ? 2 : 1; c.t = c.st === 2 ? 1.1 : 1.3; } else if (c.st !== 0) { c.st = 0; c.t = 0.2 + Math.random() * 0.6; } } } },
+    g => { const W = 300, H = 190; g.fillStyle = '#9a8a50'; g.fillRect(0, 0, W, H); g.fillStyle = '#7a6a36'; for (let i = 0; i < 40; i++) g.fillRect((i * 71) % W, (i * 29) % H, 4, 2);
+      for (const c of Q.cells) { const s = propSpr('milho', 2, 0); g.drawImage(s, Math.round(c.x - 32), Math.round(c.y - 64), 64, 72); if (c.st === 2 || c.st === 1) { g.fillStyle = c.st === 2 ? '#f2c838' : '#7ab83a'; g.fillRect(c.x + 3, c.y - 34, 6, 13); g.fillStyle = c.st === 2 ? '#c89a20' : '#5a8a2a'; g.fillRect(c.x + 3, c.y - 22, 6, 2); g.fillStyle = '#e8d8a0'; g.fillRect(c.x + 4, c.y - 37, 4, 3); } if (c.st === 3) mjText(g, '+1', c.x, c.y - 40, '#ffe08a', 13); }
+      mjText(g, '⏱ ' + Math.ceil(Q.tm) + 's   🌽 ' + Q.n, 150, 18, '#fff4c8', 13); }, end);
+}
+// --- corrida de jegue: alterne ◀ ▶ no ritmo; se empacar, cutuque! ---
+function mjJegue(oficial, end) {
+  const LEN = 1200, R = [{ n: 'Você', x: 0, v: 0, stall: 0, me: 1, fr: 0 }, { n: oficial ? 'Zé Bigode' : 'Dona Zezé', x: 0, v: 0, stall: 0, fr: 0, base: oficial ? 84 : 74 }, { n: oficial ? 'Tonho do Jegue' : 'Menino Juca', x: 0, v: 0, stall: 0, fr: 0, base: oficial ? 80 : 70 }];
+  const J = { last: null, poke: 0, go: 2.2, done: [], cam: 0 };
+  const push = side => { const me = R[0]; if (J.go > 0) return; if (me.stall > 0) { mjInfo('Empacou! Toque em <b>Cutucar</b>!'); return; } if (side === J.last) { me.v *= 0.6; mjInfo('Mesmo lado duas vezes: o jegue tropeçou!'); } else { me.v = Math.min(150, me.v + 15); } J.last = side; };
+  const poke = () => { const me = R[0]; if (me.stall > 0) { J.poke++; if (J.poke >= 3) { me.stall = 0; J.poke = 0; me.v = 40; mjInfo('Andou! Agora alterne ◀ ▶.'); AU.osc && AU.osc('square', 260, 200, 0.05, 0.05); } } };
+  MJ.press = id => id === 'c' ? poke() : push(id); MJ.key = code => { if (code === 'ArrowLeft' || code === 'KeyA') { push('e'); return true; } if (code === 'ArrowRight' || code === 'KeyD') { push('d'); return true; } if (code === 'Space' || code === 'KeyE') { poke(); return true; } return false; };
+  mjOpen(oficial ? '🫏 Corrida de jegue na praça' : '🫏 Treino de corrida de jegue', 'Alterne <b>◀</b> e <b>▶</b> no ritmo para o jegue correr. Se ele <b>empacar</b>, toque <b>Cutucar</b> três vezes!', [['e', '◀'], ['c', '👉 Cutucar'], ['d', '▶']],
+    dt => { if (J.go > 0) { J.go -= dt; return; }
+      for (const r of R) { if (J.done.includes(r)) { r.v *= 0.95; r.x += r.v * dt; continue; }
+        if (r.me) { r.v = Math.max(0, r.v - 46 * dt); if (r.stall <= 0 && r.v > 60 && Math.random() < dt * 0.16) { r.stall = 1; r.v = 0; mjInfo('EMPACOU! Toque em <b>Cutucar</b> três vezes!'); } }
+        else { if (r.stall > 0) { r.stall -= dt; r.v = 0; } else { r.v = lerp(r.v, r.base + Math.sin(MJ.t * 2 + r.base) * 10, Math.min(1, dt * 2)); if (Math.random() < dt * 0.12) r.stall = 1 + Math.random() * 1.4; } }
+        r.x += r.v * dt; r.fr += dt * (r.v / 8); if (r.x >= LEN && !J.done.includes(r)) J.done.push(r); }
+      J.cam = lerp(J.cam, R[0].x - 90, Math.min(1, dt * 4)); if (J.done.includes(R[0]) && !J.fin) { J.fin = 1; const pos = J.done.indexOf(R[0]) + 1; mjInfo(pos === 1 ? '🏆 Primeiro lugar!' : pos + 'º lugar.'); setTimeout(() => mjFinish(pos), 1200); } },
+    g => { const W = 300, H = 190, cx = J.cam; g.fillStyle = '#87b8d8'; g.fillRect(0, 0, W, 60); g.fillStyle = '#c8a870'; g.fillRect(0, 60, W, H - 60);
+      for (let i = -1; i < 12; i++) { const x = Math.floor(i * 40 - (cx * 0.5) % 40); g.fillStyle = ['#e03030', '#30a040', '#2050c0', '#f0d020'][((i + Math.floor(cx * 0.5 / 40)) % 4 + 4) % 4]; g.fillRect(x, 8, 10, 7); }
+      for (let i = -1; i < 9; i++) { const x = Math.floor(i * 40 - cx % 40); g.fillStyle = '#5a3a1a'; g.fillRect(x, 56, 4, 14); } g.fillRect(0, 58, W, 3);
+      const fx = LEN - cx + 40; if (fx > -10 && fx < W + 10) { for (let y = 64; y < H; y += 8) { g.fillStyle = (y / 8) % 2 ? '#fff' : '#111'; g.fillRect(fx, y, 6, 8); } }
+      R.forEach((r, i) => { const y = 102 + i * 34, x = r.x - cx + 40; const rg = mjRig('jumento', 'nordestino', r.v > 20 ? 'trot' : 'idle', Math.floor(r.fr), { age: 40, seed: i + 3 }); mjDrawRig(g, rg, x, y, false, 1.1);
+        if (r.me) { mjDrawMe(g, x - 2, y - 18, 1, 0, 'ride', 1); } mjText(g, r.n, x, y - 40, r.me ? '#ffe08a' : '#fff', 9); if (r.stall > 0) mjText(g, '!', x + 14, y - 28, '#ff4040', 14); });
+      if (J.go > 0) mjText(g, J.go > 1.5 ? 'Preparar…' : J.go > 0.7 ? 'Apontar…' : 'JÁ!', 150, 95, '#fff', 26);
+      mjText(g, Math.max(0, Math.round((LEN - R[0].x) / 10)) + ' m', 260, 30, '#2b1608', 12); }, end);
+}
+// ferrar o próprio cavalo (pela ficha): o fôlego gasta menos por 60 dias
+function ferrarProprio(a) { if (!pay(40, 'Ferraduras e cravos para ' + a.n)) return; closeSheet && closeSheet(); mjFerrar(a, n => { if (n >= 5) { a.ferr = S.day; bond(a, 2); toast('🐴 ' + a.n + ' ferrado! Por 60 dias ele cansa menos no galope.'); } else if (n >= 3) { a.ferr = S.day - 30; toast('🐴 Ferradura posta, mas meio torta: vale por 30 dias.'); } else { bond(a, -2); toast('🐴 ' + a.n + ' não deixou ferrar. Tente de novo outro dia (as ferraduras você já tem).'); } }); }
 
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
@@ -12712,7 +12975,7 @@ function shadowE(x, y, w) { const s = sunDX(), night = isNight(); X.fillStyle = 
 let SPK = 1; // quantos pixels de tela cabem num pixel do mundo: os bonecos encaixam no pixel da tela, não no do mundo (sem tremer ao andar)
 function drawSpr(c, x, y, flip, sc) {
   sc = sc || 1; x = Math.round(x * SPK) / SPK; y = Math.round(y * SPK) / SPK;
-  const im = c._lk && SPK >= 2 ? (charHi(c) || c) : c; // boneco em alta quando cada pixel do mundo vira 2+ pixels
+  const im = (c._lk || HIA) && SPK >= 2 ? (charHi(c) || c) : c; // boneco em alta quando cada pixel do mundo vira 2+ pixels
   if (flip) { X.save(); X.translate(x + c.width * sc, y); X.scale(-1, 1); X.drawImage(im, 0, 0, c.width * sc, c.height * sc); X.restore(); }
   else X.drawImage(im, x, y, c.width * sc, c.height * sc);
 }
@@ -12922,8 +13185,8 @@ function collectItems(tx0, tx1, ty0, ty1, vw, vh, se, vx0, vy0) {
     else { const stg = l.done ? 3 : l.prog < 0.3 ? 0 : l.prog < 0.65 ? 1 : 2; add(y1 - 4, () => { X.drawImage(consSpr(l.b, stg), x0 - 4, y0 - 20); if (l.b === 'catavento' && l.done) drawCataBlades(x0 + 59, y0 + 26); }, x0 + 56, { w: 150, h: 150, b: y1, fade: 1 }); if (l.b === 'farinha' && l.done) farinhaLive(add, x0, y0, y1);
       if (!l.done && hour() >= 7 && hour() < 17 && !isRain()) BUILDER_AP.forEach((ap, i) => { const bx = x0 + 20 + i * 70, by = y1 + 4; add(by, () => drawPerson(ap, bx, by, i ? 2 : 3, Math.floor(drawT * 3 + i) % 2, 'hammer'), bx); if (Math.random() < 0.02) { AU.hammer(bx, by); dust(bx + (i ? -10 : 10), by - 6, 1, '#b8a888'); } }); } }
   TROUGHS.forEach((t, i) => { const x = t.x * TS, y = t.y * TS; if (!inV(x, y, 40)) return; add(y + 15, () => X.drawImage(troughSpr(t, S.tr[i] / trCap(i)), x - 2, y - 2), x + t.w * 8, { w: t.w * 16 + 16, h: 40, b: y + 16 }); });
-  for (const a of S.animals) { if (a.id === P.mnt || a._wr || !inV(a.x, a.y, 40)) continue; add(iy(a), () => drawAnimal(a), ix(a), { w: 110, h: 100 }); }
-  aucDrawLot(add); drawCSX(add); milkTruckDraw(add, inV); drawCSA(add); drawAgro(add, inV); drawCityDeco(add, inV); drawLeste(add, inV); drawTraffic(add, inV); drawBirds(add, inV); drawParkedBoat(add, inV); drawPipa(add, inV); eventCards(add, inV);
+  for (const a of S.animals) { if (a.id === P.mnt || a._wr || !inV(a.x, a.y, 40)) continue; add(iy(a), () => drawAnimal(a), ix(a), { w: 110, h: 100, hi: hyp(a.x - P.x, a.y - P.y) < 300 }); }
+  aucDrawLot(add); drawCSX(add); milkTruckDraw(add, inV); drawCSA(add); drawAgro(add, inV); drawCityDeco(add, inV); drawLeste(add, inV); drawLeste2(add, inV); drawTraffic(add, inV); drawBirds(add, inV); drawParkedBoat(add, inV); drawPipa(add, inV); eventCards(add, inV);
   cineDrawActors(add, inV);
   for (const e of npcs) { if (e.hidden || !inV(e.x, e.y, 30)) continue; add(iy(e), () => { const [pz, fr] = npcPose(e); X.globalAlpha = e.alpha === undefined ? 1 : e.alpha; drawPerson(e.d.ap, ix(e), iy(e), e.dir, fr, pz); X.globalAlpha = 1; if (e.emote && e.et > 0) emote(ix(e), iy(e) - 34, e.emote); }, ix(e), { w: 90, h: 100, hi: 1 }); }
   for (const w of S.workers) { if (w.x === undefined || !inV(w.x, w.y, 30)) continue; if (w._mnt) { const h = workerHorse(w); if (h) { add(w.y, () => { const sp = h._mv || 0, an = sp < 2 ? 'idle' : sp > 40 ? 'trot' : 'walk', cyc = RIG.cycleLen(rigBreed(h), an === 'idle' ? 'walk' : an, rigK(h)) || 20; drawMounted(h, w.ap, w.x, w.y, w.dir || 0, an, an === 'idle' ? 0 : Math.floor(((h._dist || 0) / cyc % 1) * 8) % 8); }, w.x, { w: 120, h: 120 }); continue; } } if (w._sleep) continue; add(iy(w), () => { const wx = ix(w), wy = iy(w); const pz = w._pose === 'walk' ? 'walk' : w._pose || 'idle'; drawPerson(w.ap, wx, wy, w.dir || 0, pz === 'walk' ? Math.floor((w._ph || 0) / 22 * 8 / 0.22) % 8 : Math.floor(drawT * 3) % 2, pz === 'carry' && w._pose === 'walk' ? 'carryW' : pz); if (w.task && w._pose !== 'walk' && !w._wait) { X.fillStyle = '#2b1608'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), 16, 3); X.fillStyle = '#7ad040'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), Math.round(16 * (w.task.prog || 0)), 3); } }, ix(w), { w: 90, h: 100 }); }
@@ -14350,7 +14613,7 @@ function interactables(forTap) {
   if (has('galaoV') || forTap) { const R0 = FARM.reservoir, [cx, cy] = fpx('cistern'); add({ k: 'res', label: '💧 Encher galões', x: R0.lbl[0] * TS, y: R0.lbl[1] * TS, r: 30, prio: 1, hit: R0.hit.map(v => v * TS), fn: () => has('galaoV') ? act('pickup', 0.9, { x: R0.stand[0] * TS, y: R0.stand[1] * TS }, fillGallons) : say('Você não tem galões vazios.') }); add({ k: 'cist', label: '💧 Cisterna: encher galões', x: cx, y: cy + 6, r: 22, prio: 2, hit: [cx - 14, cy - 26, cx + 14, cy + 4], fn: () => has('galaoV') ? act('pickup', 0.9, { x: cx + 12, y: cy + 4 }, fillGallons) : say('Você não tem galões vazios.') }); }
   if (foot) { const f = objPos('fogueira'), c = objPos('churrasqueira'); add({ k: 'fire', label: 'Fogueira', x: f.x, y: f.y, r: 24, prio: 2, hit: [f.x - 16, f.y - 22, f.x + 16, f.y + 10], fn: openFire }); add({ k: 'bbq', label: 'Churrasqueira', x: c.x + 0.5 * TS, y: c.y + 0.8 * TS, r: 22, prio: 2, hit: [c.x - TS, c.y - 2.2 * TS, c.x + 2 * TS, c.y + 0.4 * TS], fn: openChurras }); }
   farmInteractables(add); mataInteractables(add, foot);
-  colmeiaInteractables(add); famInteractables(add); lstInteractables(add); { const q = PROPS.find(p => p.t === 'varalCarne'); if (q && foot) add({ k: 'varal', label: '🥩 Varal de carne de sol', x: q.x, y: q.y + 6, r: 24, prio: 2, hit: [q.x - 20, q.y - 26, q.x + 20, q.y + 4], fn: openVaral }); }
+  colmeiaInteractables(add); famInteractables(add); lstInteractables(add); lst2Interactables(add); jegueFestaInteract(add); { const q = PROPS.find(p => p.t === 'varalCarne'); if (q && foot) add({ k: 'varal', label: '🥩 Varal de carne de sol', x: q.x, y: q.y + 6, r: 24, prio: 2, hit: [q.x - 20, q.y - 26, q.x + 20, q.y + 4], fn: openVaral }); }
   { const q = PROPS.find(p => p.t === 'bauBrete'); if (q) add({ k: 'bret', label: '🧰 Baú do brete', x: q.x, y: q.y + 8, r: 22, prio: 2, hit: [q.x - 10, q.y - 16, q.x + 10, q.y + 2], fn: () => act('reach', 0.3, { x: q.x, y: q.y }, openBret, { zoom: false }) }); }
   { const b = objPos('bau'); add({ k: 'chest', label: 'Baú', x: b.x, y: b.y + 0.5 * TS, r: 20, prio: 2, hit: [b.x - 9, b.y - 15, b.x + 9, b.y + 1], fn: () => act('reach', 0.3, { x: b.x, y: b.y }, openChest, { zoom: false }) }); }
   { const ev = eventNow(); if (ev === 'vaquejada') add({ k: 'vaq', label: 'Correr na vaquejada', x: 87.5 * TS, y: 74.5 * TS, r: 40, prio: 5, hit: [85 * TS, 72 * TS, 90 * TS, 77 * TS], fn: startVaquejada }); else if (ev && EVENTS[ev].place === 'praca') add({ k: 'evento', label: EVENTS[ev].n, x: 84 * TS, y: 50 * TS, r: 44, prio: 4, hit: [80 * TS, 46 * TS, 88 * TS, 57 * TS], fn: () => openEventDesk(ev) }); else if (ev === 'criadores') add({ k: 'evento', label: EVENTS[ev].n, x: 95 * TS, y: 59 * TS, r: 30, prio: 6, hit: [92 * TS, 57 * TS, 98 * TS, 60 * TS], fn: () => openEventDesk(ev) }); }
