@@ -404,7 +404,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '10.1.0', SAVE_V = 9;
+const GAME_V = '10.2.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -2704,9 +2704,12 @@ function charSpr(ap, dir, fr, pose) {
   if (!c._lk) { c._lk = 1; charLook(c); } return c; // luz, sombra e contorno colorido
 }
 const HIB = { f: -1, n: 0 };
+function dImg(c, a, b, cw, ch, dx, dy, dw, dh) { // v10.2: desenha a versão em alta (2x) de casas, árvores e objetos quando a tela mostra o detalhe
+  const im = SPK >= 2 && SET.q !== 'baixa' && c.width * c.height <= 200000 ? (charHi(c) || c) : c, q = im === c ? 1 : 2;
+  if (cw === undefined) X.drawImage(im, a, b, c.width, c.height); else X.drawImage(im, a * q, b * q, cw * q, ch * q, dx, dy, dw, dh); }
 function charHi(c) { // v9.3: versão em alta (2x) do boneco: cantos arredondados (Scale2x), sombra da aba no rosto e brilho
   if (c._hi !== undefined) return c._hi; if (SET.q === 'baixa' || SET.look === false) return (c._hi = null);
-  if (HIB.f !== drawT) { HIB.f = drawT; HIB.n = 0; } if (HIB.n >= 3) return null; HIB.n++; // no máximo 3 desenhos novos em alta por quadro (o resto fica no normal até chegar a vez)
+  if (HIB.f !== drawT) { HIB.f = drawT; HIB.n = 0; } if (HIB.n >= 60000) return null; HIB.n += Math.max(4000, c.width * c.height); // orçamento por quadro: o que não couber fica no normal até chegar a vez
   const W = c.width, H = c.height, d = c.getContext('2d').getImageData(0, 0, W, H).data, [o, g] = mkC(W * 2, H * 2), im = g.createImageData(W * 2, H * 2), q = im.data;
   const px = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? 0 : ((d[(y * W + x) * 4] << 24) | (d[(y * W + x) * 4 + 1] << 16) | (d[(y * W + x) * 4 + 2] << 8) | d[(y * W + x) * 4 + 3]) >>> 0;
   const put = (x, y, v) => { const i = (y * W * 2 + x) * 4; q[i] = v >>> 24; q[i + 1] = (v >>> 16) & 255; q[i + 2] = (v >>> 8) & 255; q[i + 3] = v & 255; };
@@ -13176,13 +13179,13 @@ function collectItems(tx0, tx1, ty0, ty1, vw, vh, se, vx0, vy0) {
   for (const g of GATES) { const gx = g.t[0][0], gy = g.t[g.h ? 0 : 1][1]; if (gx < tx0 - 2 || gx > tx1 + 2 || gy < ty0 || gy > ty1 + 2) continue; add(g.h ? gy * TS + 14 : (gy + 1) * TS - 1, () => drawGate(g, X), g.x * TS, { w: 72, h: 72 }); }
   const inV = (x, y, m) => x > vx0 - m && x < vx0 + vw + m && y > vy0 - 20 && y < vy0 + vh + m * 1.5;
   for (const p of PROPS) { if (!inV(p.x, p.y, 50)) continue; const tree = TREES.has(p.t);
-    add(p.y, () => { const c = propSpr(p.t, p.v, se); if (tree && !HD.on) { const s2 = sunDX(); X.fillStyle = isNight() ? 'rgba(5,5,15,0.18)' : 'rgba(20,12,4,0.22)'; X.beginPath(); X.ellipse(p.x + s2 * 2.4, p.y - 2, 16 + Math.abs(s2), 6, 0, 0, 7); X.fill(); const swy = Math.round(Math.sin(drawT * 1.3 * wind + p.x * 0.05) * 0.7 * wind); const hide = P.y < p.y && P.y > p.y - 58 && Math.abs(P.x - p.x) < 22; if (hide) X.globalAlpha = 0.45; X.drawImage(c, 0, 0, 64, 56, p.x - 32 + swy, p.y - 70, 64, 56); X.globalAlpha = 1; X.drawImage(c, 0, 56, 64, 16, p.x - 32, p.y - 14, 64, 16); } else { const bo = MOVE.pop && MOVE.pop.id === p.mid ? -Math.round(Math.sin(MOVE.pop.t / 0.4 * Math.PI) * 4) : 0; if (p.t === 'fogueira') drawFogueira(p, bo); else X.drawImage(c, p.x - 32, p.y - 70 + bo); }
+    add(p.y, () => { const c = propSpr(p.t, p.v, se); if (tree && !HD.on) { const s2 = sunDX(); X.fillStyle = isNight() ? 'rgba(5,5,15,0.18)' : 'rgba(20,12,4,0.22)'; X.beginPath(); X.ellipse(p.x + s2 * 2.4, p.y - 2, 16 + Math.abs(s2), 6, 0, 0, 7); X.fill(); const swy = Math.round(Math.sin(drawT * 1.3 * wind + p.x * 0.05) * 0.7 * wind); const hide = P.y < p.y && P.y > p.y - 58 && Math.abs(P.x - p.x) < 22; if (hide) X.globalAlpha = 0.45; dImg(c, 0, 0, 64, 56, p.x - 32 + swy, p.y - 70, 64, 56); X.globalAlpha = 1; dImg(c, 0, 56, 64, 16, p.x - 32, p.y - 14, 64, 16); } else { const bo = MOVE.pop && MOVE.pop.id === p.mid ? -Math.round(Math.sin(MOVE.pop.t / 0.4 * Math.PI) * 4) : 0; if (p.t === 'fogueira') drawFogueira(p, bo); else dImg(c, p.x - 32, p.y - 70 + bo); }
       if (p.t === 'churrasqueira' && S.fires.churr > 0) { X.fillStyle = `rgba(255,${120 + Math.floor(Math.sin(drawT * 8) * 30)},40,0.75)`; X.fillRect(p.x - 11, p.y - 15, 22, 5); X.fillStyle = 'rgba(255,200,90,0.5)'; for (let k = 0; k < 5; k++) X.fillRect(p.x - 10 + k * 5, p.y - 13 + ((Math.floor(drawT * 6) + k) % 2), 2, 1); for (let k = 0; k < 4; k++) { const t = (drawT * 0.5 + k / 4) % 1; X.fillStyle = `rgba(150,145,140,${0.45 * (1 - t)})`; const r = 2 + t * 4; X.fillRect(p.x + 6 - r / 2 + Math.sin(t * 6 + k) * 3 * t, p.y - 47 - t * 22, r, r); } if (grill.on) { X.fillStyle = grill.s[grill.side] > 1.25 ? '#3a1a0a' : grill.s[grill.side] > 0.95 ? '#8a3a1a' : '#c84a4a'; X.fillRect(p.x - 5, p.y - 17, 10, 3); } }
       if (p.t === 'coop' && S.eggs > 0) { X.fillStyle = '#f8f0e0'; for (let k = 0; k < Math.min(5, S.eggs); k++) X.fillRect(p.x - 10 + k * 4, p.y - 4, 2, 3); }
       if (p.t === 'forrageira' && S.mach && S.mach.busy) { if (Math.random() < 0.3) part(p.x + rnd(-6, 6), p.y - 20, 'dust', { vx: rnd(-10, 10), vy: -12, m: .5, c: '#e8d080', s: 1 }); }
-    }, p.x, { w: 72, h: 92, fade: tree || p.t === 'coreto' || p.t === 'arquibancada', sway: tree || p.t === 'mandacaru' || p.t === 'arbusto' }); }
+    }, p.x, { w: 72, h: 92, fade: tree || p.t === 'coreto' || p.t === 'arquibancada', sway: tree || p.t === 'mandacaru' || p.t === 'arbusto', hq: 1 }); }
   for (const b of BLD) { const x0 = b.r[0] * TS, y1 = (b.r[3] + 1) * TS; if (x0 > vx0 + vw + 20 || (b.r[2] + 1) * TS < vx0 - 20 || y1 < vy0 - 10 || b.r[1] * TS - 40 > vy0 + vh) continue;
-    add(y1 - 2, () => { const hv = S.house === undefined ? 2 : S.house; const c = b.id === 'casa' ? houseSpr(b, isNight(), hv) : bldSpr(b, isNight()); const s2 = sunDX(); X.fillStyle = isNight() ? 'rgba(5,5,15,0.2)' : 'rgba(20,12,4,0.25)'; if (!HD.on) { X.fillRect(x0 + (s2 > 0 ? c.width - 8 : s2 * 2), y1 - 6, Math.abs(s2) * 2 + 4, 6); X.fillRect(x0 - 2, y1 - 2, c.width - 4, 4); } X.drawImage(c, x0 - 4, b.r[1] * TS - b.top); }, (b.r[0] + b.r[2] + 1) / 2 * TS, { w: (b.r[2] - b.r[0] + 1) * TS + 24, h: (b.r[3] - b.r[1] + 1) * TS + 70, b: y1, fade: 1 }); }
+    add(y1 - 2, () => { const hv = S.house === undefined ? 2 : S.house; const c = b.id === 'casa' ? houseSpr(b, isNight(), hv) : bldSpr(b, isNight()); const s2 = sunDX(); X.fillStyle = isNight() ? 'rgba(5,5,15,0.2)' : 'rgba(20,12,4,0.25)'; if (!HD.on) { X.fillRect(x0 + (s2 > 0 ? c.width - 8 : s2 * 2), y1 - 6, Math.abs(s2) * 2 + 4, 6); X.fillRect(x0 - 2, y1 - 2, c.width - 4, 4); } dImg(c, x0 - 4, b.r[1] * TS - b.top); }, (b.r[0] + b.r[2] + 1) / 2 * TS, { w: (b.r[2] - b.r[0] + 1) * TS + 24, h: (b.r[3] - b.r[1] + 1) * TS + 70, b: y1, fade: 1, hq: 1 }); }
   for (const k in LOTS) { const r = LOTS[k].r, l = S.lots[k]; const x0 = r[0] * TS, y0 = r[1] * TS, y1 = (r[3] + 1) * TS; if (x0 > vx0 + vw || (r[2] + 1) * TS < vx0 || y1 < vy0 || y0 - 30 > vy0 + vh) continue; if (LOTS[k].exp && !S.exp[LOTS[k].exp]) continue;
     if (!lotOwned(k)) continue;
     if (!l) add(y0 + 4, () => { X.fillStyle = '#8a5a2a'; [[x0 + 2, y0 + 2], [x0 + 108, y0 + 2], [x0 + 2, y1 - 4], [x0 + 108, y1 - 4]].forEach(([x, y]) => { X.fillRect(x, y - 6, 2, 7); X.fillStyle = '#e04a2a'; X.fillRect(x - 1, y - 7, 4, 2); X.fillStyle = '#8a5a2a'; }); X.fillStyle = 'rgba(240,220,160,0.5)'; X.fillRect(x0 + 3, y0 + 1, 106, 1); X.fillRect(x0 + 3, y1 - 5, 106, 1); X.fillStyle = '#e8dcc0'; X.fillRect(x0 + 48, y1 - 14, 16, 9); X.fillStyle = '#6a4422'; X.fillRect(x0 + 55, y1 - 6, 2, 6); txt((x, y, w, h, c) => { X.fillStyle = c; X.fillRect(x, y, w, h); }, k, x0 + 54, y1 - 12, '#7a3a1a'); }, x0 + 56, { flat: 1 });
@@ -13350,7 +13353,7 @@ void main(){
  if(uMode>1.5){ float d=length((vT-0.5)*2.0); float a=(1.0-smoothstep(0.2,1.0,d))*uShA; if(a<0.01) discard; o=vec4(0.02,0.02,0.035,a); return; } // contato com o chão
  vec2 uv=vT; vec4 c=texture(uTex,vT);
  if(uGnd>0.5 && uHi>0.5 && uMode<0.5){ // v10.1: emendas orgânicas entre terra, capim, areia e água (asfalto e calçada continuam retos)
-   vec2 w=vec2(fbm(vW.xz*0.07),fbm(vW.xz*0.07+17.3))-0.5; w+=(vec2(vn(vW.xz*0.23),vn(vW.xz*0.23+5.7))-0.5)*0.45; vec2 uv2=vT+w*uTx*13.0; vec4 c1=texture(uTex,uv2);
+   vec2 w=vec2(vn(vW.xz*0.045),vn(vW.xz*0.045+17.3))-0.5; w+=(vec2(vn(vW.xz*0.09+3.1),vn(vW.xz*0.09+9.4))-0.5)*0.5; vec2 uv2=vT+w*uTx*14.0; vec4 c1=texture(uTex,uv2); // onda longa: dobra as bordas sem mexer no desenho de dentro
    if(satu(c.rgb)>0.13 && satu(c1.rgb)>0.13){ uv=uv2; c=c1; } }
  if(uMode>0.5){ float a=c.a; if(uHi>0.5){ vec2 q=uTx*2.0; a=(a*2.0+texture(uTex,vT+vec2(q.x,0.0)).a+texture(uTex,vT-vec2(q.x,0.0)).a+texture(uTex,vT+vec2(0.0,q.y)).a+texture(uTex,vT-vec2(0.0,q.y)).a)/6.0; } if(a<0.04) discard; o=vec4(0.03,0.04,0.08,uShA*a); return; } // sombra macia
  if(c.a<0.5) discard;
@@ -13495,13 +13498,14 @@ function renderHD0(dt) {
   const gl = HD.gl; gl.pixelStorei(gl.UNPACK_ROW_LENGTH, HCW); gl.pixelStorei(gl.UNPACK_SKIP_PIXELS, 0); gl.pixelStorei(gl.UNPACK_SKIP_ROWS, 0);
   gl.bindTexture(gl.TEXTURE_2D, HD.tG); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gw, gh, 0, gl.RGBA, gl.UNSIGNED_BYTE, C);
   // 2) cartões em pé: cada objeto pintado numa vaga da prancheta
-  const cards = []; for (const it of items) { if (it.o && it.o.flat) continue; if (it.x === undefined) continue; const o = it.o || {}; const k = o.hi && SET.q !== 'baixa' ? 2 : 1, w = Math.ceil(o.w || 96), h = Math.ceil(o.h || 96); cards.push({ y: it.y, x: it.x, b: o.b !== undefined ? o.b : it.y, w, h, k, aw: w * k, ah: h * k, f: it.f, fade: o.fade, sway: o.sway }); }
+  const cards = []; for (const it of items) { if (it.o && it.o.flat) continue; if (it.x === undefined) continue; const o = it.o || {}; const w = Math.ceil(o.w || 96), h = Math.ceil(o.h || 96); cards.push({ y: it.y, x: it.x, b: o.b !== undefined ? o.b : it.y, w, h, k: 1, aw: w, ah: h, want: (o.hi || o.hq) && SET.q !== 'baixa' ? (o.hi ? 2 : 1) : 0, f: it.f, fade: o.fade, sway: o.sway }); }
   cards.sort((a, b) => a.y - b.y);
   for (const e of npcs) if (!e.hidden && e.bt > 0 && e.bubble && e.x > F.x0 - 40 && e.x < F.x1 + 40 && e.y > F.y0 && e.y < F.y1 + 40) cards.push({ y: 1e9, x: ix(e), b: iy(e), w: 180, h: 64, k: 1, aw: 180, ah: 64, f: () => drawBubble(e), top: 1 });
   X.clearRect(0, HATY, HCW, HCH - HATY);
   let px = 0, py = HATY, rowH = 0;
   // empacota primeiro o que está mais perto da câmera (o jogador e o que está à frente); se faltar espaço, some só o que está lá no fundo
   const pack = cards.slice().sort((a, b) => (b.top ? 1e9 : b.y) - (a.top ? 1e9 : a.y));
+  { let area = 0; const cap = HCW * (HCH - HATY) * 0.78; for (const c of pack) { const base = (c.w + 1) * (c.h + 1); if (c.want && area + base * 4 < cap * (c.want === 2 ? 1 : 0.85)) { c.k = 2; c.aw = c.w * 2; c.ah = c.h * 2; } area += base * c.k * c.k; } } // gente sempre primeiro; casas e árvores em alta enquanto couber
   for (const c of pack) { if (px + c.aw > HCW) { px = 0; py += rowH + 1; rowH = 0; } if (py + c.ah > HCH) { c.skip = 1; continue; } c.sx = px; c.sy = py; px += c.aw + 1; rowH = Math.max(rowH, c.ah);
     X.save(); X.beginPath(); X.rect(c.sx, c.sy, c.aw, c.ah); X.clip(); const K2 = c.k; SPK = K2; X.setTransform(K2, 0, 0, K2, c.sx + c.aw / 2 - Math.round(c.x * K2), c.sy + c.ah - HMARG * K2 - Math.round(c.b * K2)); /* pinta na vaga em pixel inteiro; a fração vai na posição do cartão (sem tremer no 3D) */ try { c.f(); } catch (e) { if (!HD.err) { HD.err = 1; console.error(e); } } SPK = 1; X.restore(); }
   HD.nCards = cards.length; HD.nSkip = cards.filter(c => c.skip).length; HD.usedPx = (py - HATY) / (HCH - HATY);
