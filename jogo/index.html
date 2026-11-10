@@ -404,7 +404,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '10.0.0', SAVE_V = 9;
+const GAME_V = '10.1.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -13340,27 +13340,33 @@ void main(){ vec3 p=aP; if(aW>0.0){ float ph=uTv*1.6+aP.x*0.045+aP.z*0.031; p.x+
 const HFS = `#version 300 es
 precision mediump float; in vec2 vT; in vec3 vW; in vec2 vS; uniform sampler2D uTex; uniform vec3 uAmb; uniform int uN; uniform vec4 uL[16]; uniform vec3 uLC[16]; uniform float uMode; uniform float uShA;
 uniform float uT; uniform float uCl; uniform float uCov; uniform vec3 uFogC; uniform float uFogK; uniform vec3 uEye; uniform float uFogD; uniform float uGnd;
-uniform vec2 uTx; uniform vec3 uSun; uniform vec3 uSunC; uniform float uHi; uniform vec3 uSky; uniform float uGrassW; out vec4 o;
+uniform vec2 uTx; uniform vec3 uSun; uniform vec3 uSunC; uniform float uHi; uniform vec3 uSky; uniform float uGrassW; uniform float uFlor; out vec4 o;
 float h2(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
 float vn(vec2 p){ vec2 i=floor(p),f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y); }
 float fbm(vec2 p){ return vn(p)*0.55+vn(p*2.03+7.1)*0.3+vn(p*4.1+3.3)*0.15; }
 float lum(vec3 c){ return dot(c,vec3(0.299,0.587,0.114)); }
+float satu(vec3 c){ return max(c.r,max(c.g,c.b))-min(c.r,min(c.g,c.b)); }
 void main(){
  if(uMode>1.5){ float d=length((vT-0.5)*2.0); float a=(1.0-smoothstep(0.2,1.0,d))*uShA; if(a<0.01) discard; o=vec4(0.02,0.02,0.035,a); return; } // contato com o chão
- vec4 c=texture(uTex,vT);
+ vec2 uv=vT; vec4 c=texture(uTex,vT);
+ if(uGnd>0.5 && uHi>0.5 && uMode<0.5){ // v10.1: emendas orgânicas entre terra, capim, areia e água (asfalto e calçada continuam retos)
+   vec2 w=vec2(fbm(vW.xz*0.07),fbm(vW.xz*0.07+17.3))-0.5; w+=(vec2(vn(vW.xz*0.23),vn(vW.xz*0.23+5.7))-0.5)*0.45; vec2 uv2=vT+w*uTx*13.0; vec4 c1=texture(uTex,uv2);
+   if(satu(c.rgb)>0.13 && satu(c1.rgb)>0.13){ uv=uv2; c=c1; } }
  if(uMode>0.5){ float a=c.a; if(uHi>0.5){ vec2 q=uTx*2.0; a=(a*2.0+texture(uTex,vT+vec2(q.x,0.0)).a+texture(uTex,vT-vec2(q.x,0.0)).a+texture(uTex,vT+vec2(0.0,q.y)).a+texture(uTex,vT-vec2(0.0,q.y)).a)/6.0; } if(a<0.04) discard; o=vec4(0.03,0.04,0.08,uShA*a); return; } // sombra macia
  if(c.a<0.5) discard;
  vec3 li=uAmb; for(int i=0;i<16;i++){ if(i>=uN) break; vec2 d=vW.xz-uL[i].xy; float a=clamp(1.0-length(d)/uL[i].z,0.0,1.0); li+=uLC[i]*(a*a)*uL[i].w; }
  vec3 col=c.rgb; float sunK=clamp((uSunC.r+uSunC.g+uSunC.b)*0.6,0.0,1.0);
  if(uGnd>0.5){ float m=fbm(vW.xz*0.012); col*=0.9+m*0.2; col=mix(col,col*vec3(1.04,1.0,0.9),smoothstep(0.55,0.8,fbm(vW.xz*0.004+11.0))*0.6);
    if(uHi>0.5){ // relevo do chão pela luz do sol, água que reflete o céu, vento no capim
-     float hL=lum(texture(uTex,vT-vec2(uTx.x,0.0)).rgb), hR=lum(texture(uTex,vT+vec2(uTx.x,0.0)).rgb), hU=lum(texture(uTex,vT-vec2(0.0,uTx.y)).rgb), hD=lum(texture(uTex,vT+vec2(0.0,uTx.y)).rgb);
+     float hL=lum(texture(uTex,uv-vec2(uTx.x,0.0)).rgb), hR=lum(texture(uTex,uv+vec2(uTx.x,0.0)).rgb), hU=lum(texture(uTex,uv-vec2(0.0,uTx.y)).rgb), hD=lum(texture(uTex,uv+vec2(0.0,uTx.y)).rgb);
      vec3 n=normalize(vec3((hL-hR)*2.6,(hU-hD)*2.6,1.0)); vec3 Lg=normalize(vec3(uSun.x,0.4,0.85)); float df=dot(n,Lg)-Lg.z; // só o relevo muda a luz; o chão plano fica igual
      col*=1.0+clamp(df,-0.5,0.5)*0.9*sunK;
      if(c.b>c.r*1.2 && c.b>c.g*1.0 && c.b>0.28){ float w=sin(vW.x*0.21+uT*1.7)*sin(vW.z*0.17-uT*1.3)+sin(vW.x*0.07-uT*0.9+vW.z*0.05)*0.6;
        float fr=clamp(0.3+(uEye.z-vW.z)/(uFogD*1.4),0.0,1.0); col=mix(col,uSky,0.22+0.3*fr); col+=w*0.03;
        float sp=pow(vn(vW.xz*0.3+uT*vec2(0.7,0.45)),18.0)*1.1+pow(vn(vW.xz*0.11-uT*vec2(0.3,0.2)),12.0)*0.45; col+=uSunC*sp*sunK; }
-     else if(c.g>c.r*1.02 && c.g>c.b*1.15){ float gw=sin(vW.x*0.045+vW.z*0.028-uT*1.5)*0.5+0.5; float g2=sin(vW.x*0.11-vW.z*0.07-uT*2.3)*0.5+0.5; col*=1.0+((gw-0.5)*0.08+(g2-0.5)*0.03)*uGrassW; } }
+     else if(c.g>c.r*1.02 && c.g>c.b*1.15){ float gw=sin(vW.x*0.045+vW.z*0.028-uT*1.5)*0.5+0.5; float g2=sin(vW.x*0.11-vW.z*0.07-uT*2.3)*0.5+0.5; col*=1.0+((gw-0.5)*0.08+(g2-0.5)*0.03)*uGrassW;
+       vec2 cell=floor(vW.xz/2.0); float r=h2(cell); if(r<0.011*uFlor){ vec2 f=fract(vW.xz/2.0)-0.5; if(dot(f,f)<0.2){ float k=h2(cell+3.1); vec3 fc=k<0.35?vec3(1.0,0.96,0.86):k<0.6?vec3(1.0,0.84,0.25):k<0.8?vec3(0.78,0.5,0.95):vec3(1.0,0.45,0.55); col=mix(col,fc,0.85); } } } // florzinhas no capim
+     else if(c.r>c.g*1.06 && c.g>c.b*1.04 && satu(c.rgb)>0.12){ vec2 cell=floor(vW.xz/3.0); float r=h2(cell+9.7); if(r>0.988){ vec2 f=fract(vW.xz/3.0)-0.5; float d=dot(f,f); if(d<0.12){ col=mix(col,vec3(0.58,0.55,0.5)*(f.y<-0.08?1.18:0.92),0.85); } else if(d<0.2 && f.y>0.0) col*=0.85; } } } // pedrinhas na terra
  } else if(uHi>0.5){ // volume dos bonecos: a borda virada para o sol acende, a do outro lado fica na sombra
    vec2 q=uTx*1.5; float aL=texture(uTex,vT-vec2(q.x,0.0)).a, aR=texture(uTex,vT+vec2(q.x,0.0)).a, aU=texture(uTex,vT-vec2(0.0,q.y)).a, aD=texture(uTex,vT+vec2(0.0,q.y)).a;
    vec3 n=normalize(vec3(aL-aR,aD-aU,0.8)); vec3 Ls=normalize(vec3(uSun.x,0.65,0.7)); float df=dot(n,Ls)-dot(vec3(0.0,0.0,1.0),Ls); float edge=1.0-n.z;
@@ -13463,7 +13469,7 @@ function hdFilmUniforms(PP, night, hiQ) { const gl = HD.gl, u = PP.u, si = hdSun
   gl.uniform2f(u.uSunP, 0.5 + si.lx * 0.55, 1.25); gl.uniform1f(u.uRay, hiQ && si.day && !isRain() ? 0.2 + si.warm * 0.6 : 0); gl.uniform3f(u.uRayC, 1.0, 0.86 - si.warm * 0.2, 0.62 - si.warm * 0.3);
   gl.uniform1f(u.uFilm, hiQ ? 0.45 : 0); const nt = night || !si.day; gl.uniform3f(u.uShT, nt ? -0.2 : -0.25, nt ? -0.05 : 0.0, nt ? 0.45 : 0.35); gl.uniform3f(u.uHiT, 0.4 + si.warm * 0.4, 0.18, -0.25 - si.warm * 0.2); }
 function hdRealUniforms(P0, dark) { // v9.2: sombra de nuvem, névoa da distância e vento nas árvores; v10.0: sol, céu e capim
-  { const gl = HD.gl, u = P0.u, si = hdSunInfo(); gl.uniform3f(u.uSun, si.lx, 0.6, 0.7); gl.uniform3f(u.uSunC, si.col[0], si.col[1], si.col[2]); gl.uniform1f(u.uHi, SET.q === 'baixa' ? 0 : 1); gl.uniform3f(u.uSky, si.sky[0], si.sky[1], si.sky[2]); gl.uniform1f(u.uGrassW, S.weather === 'vento' ? 2.4 : isRain() ? 1.6 : 1); gl.uniform2f(u.uTx, 1 / 1024, 1 / 1024); }
+  { const gl = HD.gl, u = P0.u, si = hdSunInfo(); gl.uniform3f(u.uSun, si.lx, 0.6, 0.7); gl.uniform3f(u.uSunC, si.col[0], si.col[1], si.col[2]); gl.uniform1f(u.uHi, SET.q === 'baixa' ? 0 : 1); gl.uniform3f(u.uSky, si.sky[0], si.sky[1], si.sky[2]); gl.uniform1f(u.uGrassW, S.weather === 'vento' ? 2.4 : isRain() ? 1.6 : 1); gl.uniform1f(u.uFlor, season() === 0 ? 1 : 0.35); gl.uniform2f(u.uTx, 1 / 1024, 1 / 1024); }
   const gl = HD.gl, u = P0.u, m = S.min, ci = S.wx ? S.wx.ci : 0.15, rain = isRain(), seca = clima && clima().seca, low = SET.q === 'baixa';
   const t = (typeof drawT === 'number' ? drawT : performance.now() / 1000) % 3600;
   gl.uniform1f(u.uT, t); gl.uniform1f(u.uTv, t); gl.uniform1f(u.uWind, low ? 0 : (S.weather === 'vento' ? 2.6 : rain ? 1.8 : 1));
