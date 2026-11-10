@@ -95,7 +95,11 @@ button:disabled{opacity:.45;filter:grayscale(.7)}
 /* v9.4: estilo antigo dos botões fica só como base */ .pad button.old{height:calc(38px*var(--ctl));padding:2px;font-size:calc(11.5px*var(--fs));background:linear-gradient(#b9622a 0 50%,#9a4a1a 50%);color:#fbe9c2;text-shadow:0 2px 0 var(--ink);display:flex;align-items:center;justify-content:center;gap:3px}
 .pad button.on{background:linear-gradient(#e8c050 0 50%,#c89a20 50%);color:#2b1608;text-shadow:none}
 /* antigo */ .pad #bx.old{grid-column:1 / span 2;height:calc(42px*var(--ctl));background:linear-gradient(#ffe08a 0 50%,#f0b440 50%);color:#2b1608;text-shadow:0 1px 0 #fff3c0;font-size:calc(12.5px*var(--fs));overflow:hidden;white-space:nowrap}
-.pad #bx.off{filter:saturate(.7) brightness(.86);opacity:.8}
+.pad #bx.off{filter:saturate(.55) brightness(.72);opacity:1}
+body:not(.lan) .pad{width:calc(200px*var(--ctl));height:calc(196px*var(--ctl))}
+body:not(.lan) .pad button.rb{width:calc(52px*var(--ctl));height:calc(52px*var(--ctl))}
+body:not(.lan) .pad #bx{width:calc(80px*var(--ctl));height:calc(80px*var(--ctl))}
+#joy.run #knob{background:radial-gradient(circle at 35% 30%,#fff1b0,#f0b440 60%,#a8741a)!important;box-shadow:0 0 0 6px rgba(255,214,90,.45)}
 .pad #bw{display:none!important}body.armed .pad #bw{display:flex!important}
 #bar{position:absolute;z-index:6;left:0;right:0;bottom:0;display:flex;gap:6px;padding:6px;padding-left:calc(6px + var(--sal));padding-right:calc(6px + var(--sar));background:linear-gradient(rgba(74,44,24,.96),rgba(42,22,11,.96));border-top:3px solid var(--ink);box-shadow:inset 0 3px 0 #7e4624;padding-bottom:calc(6px + var(--sab))}
 #bar button{flex:1;padding:6px 2px;font-size:calc(12px*var(--fs));display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1}
@@ -400,7 +404,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '9.5.0', SAVE_V = 9;
+const GAME_V = '9.6.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -9537,10 +9541,11 @@ function padUpdate(h) {
   $('bl').classList.toggle('hot', !!lasso.aim); $('bm').classList.toggle('on', !!P.mnt || !!P.cart);
   padLayout();
 }
-function padLayout() { // dois arcos em volta do botão grande: Aboio, Laço e Montar colados nele; Correr e Arma no arco de fora
-  const armed = document.body.classList.contains('armed'), key = armed + '|' + SET.ctl; if (PADB.lay === key) return; PADB.lay = key;
-  const k = SET.ctl || 1, cx = 44 * k, cy = 44 * k, half = 28 * k, put = (id, R, a) => { const b = $(id), r = a * Math.PI / 180; b.style.right = (cx - Math.cos(r) * R * k - half) + 'px'; b.style.bottom = (cy + Math.sin(r) * R * k - half) + 'px'; };
-  put('ba', 100, 180); put('bl', 100, 135); put('bm', 100, 90); put('bg', 160, armed ? 165 : 152); put('bw', 160, 124);
+function padLayout() { // dois arcos em volta do botão grande. Em pé: arco curto, tudo no alcance do polegar; deitado: arco mais aberto
+  const armed = document.body.classList.contains('armed'), lan = document.body.classList.contains('lan'), key = armed + '|' + lan + '|' + SET.ctl; if (PADB.lay === key) return; PADB.lay = key;
+  const k = SET.ctl || 1, big = (lan ? 88 : 80) * k, sm = (lan ? 56 : 52) * k, cx = big / 2, cy = big / 2, half = sm / 2, put = (id, R, a) => { const b = $(id), r = a * Math.PI / 180; b.style.right = (cx - Math.cos(r) * R * k - half) + 'px'; b.style.bottom = (cy + Math.sin(r) * R * k - half) + 'px'; };
+  if (lan) { put('ba', 100, 180); put('bl', 100, 135); put('bm', 100, 90); put('bg', 160, armed ? 165 : 152); put('bw', 160, 124); }
+  else { put('ba', 80, 180); put('bl', 80, 135); put('bm', 80, 90); put('bg', 136, armed ? 160 : 148); put('bw', 136, 114); }
 }
 function padTick() { // anéis: fôlego do cavalo, recarga e força do aboio
   const h = P.mnt ? byId(P.mnt) : null, g = $('bg'), a = $('ba'); if (!g || !a) return;
@@ -12993,7 +12998,7 @@ function camUpdate(dt) { // câmera 2.0: segue com mola suave (igual em qualquer
     cam.svx = lerp(cam.svx || 0, vx, ex(1.6)); cam.svy = lerp(cam.svy || 0, vy, ex(1.6)); // velocidade média: o vaivém se anula
     const la = HD.on ? 0.22 : 0.32, mx = HD.on ? 26 : 34;
     cam.lx = lerp(cam.lx, cl(cam.svx * la, -mx, mx), ex(2)); cam.ly = lerp(cam.ly, cl(cam.svy * la * 0.75, -mx * 0.7, mx * 0.7), ex(2));
-    cam.shY = lerp(cam.shY, $('ap').classList.contains('on') ? vh * 0.2 : 0, ex(6)); tx = ix(P) + cam.lx; ty = iy(P) - 10 + cam.ly + cam.shY;
+    cam.shY = lerp(cam.shY, $('ap').classList.contains('on') ? vh * 0.2 : 0, ex(6)); cam.pY = lerp(cam.pY || 0, document.body.classList.contains('lan') ? 0 : vh * 0.09, ex(4)); tx = ix(P) + cam.lx; ty = iy(P) - 10 + cam.ly + cam.shY + cam.pY;
   }
   const nx = clampCam(tx - vw / 2, vw, WPX), ny = clampCam(ty - vh / 2, vh, HPX);
   if (cam.snap) { cam.x = nx; cam.y = ny; cam.svx = cam.svy = 0; cam.snap = false; return; }
@@ -14506,10 +14511,11 @@ function keyInput() {
 }
 /* ---------- joystick ---------- */
 const J = $('joy'), K = $('knob'); let jid = null, galTouch = false;
-function jm(e) { const b = J.getBoundingClientRect(), R = b.width * 0.36; const dx = e.clientX - (b.left + b.width / 2), dy = e.clientY - (b.top + b.height / 2), d = hyp(dx, dy), s = d > R ? R / d : 1; input.x = dx * s / R; input.y = dy * s / R; K.style.left = (b.width / 2 - 21 + dx * s) + 'px'; K.style.top = (b.height / 2 - 21 + dy * s) + 'px'; }
+function jm(e) { const b = J.getBoundingClientRect(), R = b.width * 0.36; const dx = e.clientX - (b.left + b.width / 2), dy = e.clientY - (b.top + b.height / 2), d = hyp(dx, dy), s = d > R ? R / d : 1; input.x = dx * s / R; input.y = dy * s / R;
+  { const now = performance.now(); if (d >= R * 1.05) { if (!J._edge) J._edge = now; if (now - J._edge > 300 && SET.joyRun !== false) { input.gal = true; J.classList.add('run'); } } else { J._edge = 0; if (!galTouch) input.gal = false; J.classList.remove('run'); } } /* v9.6: empurrar o direcional até a borda faz correr/galopar */ K.style.left = (b.width / 2 - 21 + dx * s) + 'px'; K.style.top = (b.height / 2 - 21 + dy * s) + 'px'; }
 J.addEventListener('pointerdown', e => { AU.init(); jid = e.pointerId; J.setPointerCapture(jid); jm(e); e.preventDefault(); });
 J.addEventListener('pointermove', e => { if (e.pointerId === jid) jm(e); });
-const je = e => { if (e.pointerId === jid) { jid = null; input.x = input.y = 0; K.style.left = K.style.top = 'calc(50% - 21px)'; } };
+const je = e => { if (e.pointerId === jid) { jid = null; input.x = input.y = 0; J._edge = 0; J.classList.remove('run'); if (!galTouch) input.gal = false; K.style.left = K.style.top = 'calc(50% - 21px)'; } };
 J.addEventListener('pointerup', je); J.addEventListener('pointercancel', je); J.addEventListener('lostpointercapture', je);
 $('bg').addEventListener('pointerdown', e => { AU.init(); galTouch = true; input.gal = true; $('bg').classList.add('on'); e.preventDefault(); });
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => $('bg').addEventListener(ev, () => { galTouch = false; input.gal = false; $('bg').classList.remove('on'); }));
