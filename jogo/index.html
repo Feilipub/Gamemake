@@ -404,7 +404,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '10.2.0', SAVE_V = 9;
+const GAME_V = '10.3.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -13354,7 +13354,7 @@ void main(){
  vec2 uv=vT; vec4 c=texture(uTex,vT);
  if(uGnd>0.5 && uHi>0.5 && uMode<0.5){ // v10.1: emendas orgânicas entre terra, capim, areia e água (asfalto e calçada continuam retos)
    vec2 w=vec2(vn(vW.xz*0.045),vn(vW.xz*0.045+17.3))-0.5; w+=(vec2(vn(vW.xz*0.09+3.1),vn(vW.xz*0.09+9.4))-0.5)*0.5; vec2 uv2=vT+w*uTx*14.0; vec4 c1=texture(uTex,uv2); // onda longa: dobra as bordas sem mexer no desenho de dentro
-   if(satu(c.rgb)>0.13 && satu(c1.rgb)>0.13){ uv=uv2; c=c1; } }
+   bool w0=c.b>c.r*1.2 && c.b>c.g && c.b>0.28, w1=c1.b>c1.r*1.2 && c1.b>c1.g && c1.b>0.28; if(w0!=w1){ uv=uv2; c=c1; } } // só a beira da água fica curva; o resto do chão não é mexido
  if(uMode>0.5){ float a=c.a; if(uHi>0.5){ vec2 q=uTx*2.0; a=(a*2.0+texture(uTex,vT+vec2(q.x,0.0)).a+texture(uTex,vT-vec2(q.x,0.0)).a+texture(uTex,vT+vec2(0.0,q.y)).a+texture(uTex,vT-vec2(0.0,q.y)).a)/6.0; } if(a<0.04) discard; o=vec4(0.03,0.04,0.08,uShA*a); return; } // sombra macia
  if(c.a<0.5) discard;
  vec3 li=uAmb; for(int i=0;i<16;i++){ if(i>=uN) break; vec2 d=vW.xz-uL[i].xy; float a=clamp(1.0-length(d)/uL[i].z,0.0,1.0); li+=uLC[i]*(a*a)*uL[i].w; }
