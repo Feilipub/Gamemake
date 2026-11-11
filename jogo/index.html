@@ -4354,7 +4354,7 @@ const MUS = {
     for (const o in this.layers) { const L = this.layers[o]; if (L.dying && C.currentTime > L.dying) { try { L.g.disconnect(); } catch (e) { } delete this.layers[o]; } }
     const mg = AU.buses.mu; if (mg) mg.gain.setTargetAtTime(AU.vol.mu * this.duck, C.currentTime, 0.2);
     if (this.hidden || !this.cur || !AU.ok()) { this.next = C.currentTime + 0.1; return; }
-    const T = THEMES[this.cur], L = this.layers[this.cur]; if (!T || !L || T.zz) return; // temas ZzFXM já vêm prontos const sd = 60 / T.bpm / 4;
+    const T = THEMES[this.cur], L = this.layers[this.cur]; if (!T || !L || T.zz) return; /* temas ZzFXM já vêm prontos */ const sd = 60 / T.bpm / 4;
     if (this.next < C.currentTime - 0.5) this.next = C.currentTime + 0.05; // aba voltou: recomeça sem rajada
     while (this.next < C.currentTime + 0.15) { this.sched(T, L.g, this.step, this.next); this.step++; this.next += sd; }
   },
