@@ -404,7 +404,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '11.0.0', SAVE_V = 9;
+const GAME_V = '11.1.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -13317,7 +13317,7 @@ function collectItems(tx0, tx1, ty0, ty1, vw, vh, se, vx0, vy0) {
   for (const w of S.workers) { if (w.x === undefined || !inV(w.x, w.y, 30)) continue; if (w._mnt) { const h = workerHorse(w); if (h) { add(w.y, () => { const sp = h._mv || 0, an = sp < 2 ? 'idle' : sp > 40 ? 'trot' : 'walk', cyc = RIG.cycleLen(rigBreed(h), an === 'idle' ? 'walk' : an, rigK(h)) || 20; drawMounted(h, w.ap, w.x, w.y, w.dir || 0, an, an === 'idle' ? 0 : Math.floor(((h._dist || 0) / cyc % 1) * 8) % 8); }, w.x, { w: 120, h: 120 }); continue; } } if (w._sleep) continue; add(iy(w), () => { const wx = ix(w), wy = iy(w); const pz = w._pose === 'walk' ? 'walk' : w._pose || 'idle'; drawPerson(w.ap, wx, wy, w.dir || 0, pz === 'walk' ? Math.floor((w._ph || 0) / 22 * 8 / 0.22) % 8 : Math.floor(drawT * 3) % 2, pz === 'carry' && w._pose === 'walk' ? 'carryW' : pz); if (w.task && w._pose !== 'walk' && !w._wait) { X.fillStyle = '#2b1608'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), 16, 3); X.fillStyle = '#7ad040'; X.fillRect(Math.round(wx - 8), Math.round(wy - 38), Math.round(16 * (w.task.prog || 0)), 3); } }, ix(w), { w: 90, h: 100 }); }
   for (const w of WILD) if (inV(w.x, w.y, 40)) add(WKIND[w.k].sky ? w.y + 200 : w.y, () => drawWild(w), w.x, { w: 110, h: 110, b: w.y });
   for (const v of vehs()) if (inV(v.x, v.y, 70)) { const a1 = v.hitch ? byId(v.hitch) : null, a2 = v.hitch2 ? byId(v.hitch2) : null; add(Math.max(iy(v), a1 ? iy(a1) : -1e9, a2 ? iy(a2) : -1e9), () => { const o = S.cart; S.cart = v; try { drawCart(); } finally { S.cart = o; } }, v.x, { w: 170, h: 110 }); }
-  add(iy(P) + 0.5, drawPlayer, ix(P), { w: 120, h: 120, hi: 1 }); famCollect(add, inV);
+  add(iy(P) + 0.5, drawPlayer, ix(P), { w: 120, h: 120, hi: 1, me: 1 }); famCollect(add, inV);
   return L;
 }
 const VIEW = { x0: 0, y0: 0, x1: 0, y1: 0 };
@@ -13615,15 +13615,18 @@ function renderHD0(dt) {
   const gl = HD.gl; gl.pixelStorei(gl.UNPACK_ROW_LENGTH, HCW); gl.pixelStorei(gl.UNPACK_SKIP_PIXELS, 0); gl.pixelStorei(gl.UNPACK_SKIP_ROWS, 0);
   gl.bindTexture(gl.TEXTURE_2D, HD.tG); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gw, gh, 0, gl.RGBA, gl.UNSIGNED_BYTE, C);
   // 2) cartões em pé: cada objeto pintado numa vaga da prancheta
-  const cards = []; for (const it of items) { if (it.o && it.o.flat) continue; if (it.x === undefined) continue; const o = it.o || {}; const w = Math.ceil(o.w || 96), h = Math.ceil(o.h || 96); cards.push({ y: it.y, x: it.x, b: o.b !== undefined ? o.b : it.y, w, h, k: 1, aw: w, ah: h, want: (o.hi || o.hq) && SET.q !== 'baixa' ? (o.hi ? 2 : 1) : 0, f: it.f, fade: o.fade, sway: o.sway }); }
+  const cards = []; for (const it of items) { if (it.o && it.o.flat) continue; if (it.x === undefined) continue; const o = it.o || {}; const w = Math.ceil(o.w || 96), h = Math.ceil(o.h || 96); cards.push({ y: it.y, x: it.x, b: o.b !== undefined ? o.b : it.y, w, h, k: 1, aw: w, ah: h, want: (o.hi || o.hq) && SET.q !== 'baixa' ? (o.hi ? 2 : 1) : 0, me: o.me, f: it.f, fade: o.fade, sway: o.sway }); }
   cards.sort((a, b) => a.y - b.y);
   for (const e of npcs) if (!e.hidden && e.bt > 0 && e.bubble && e.x > F.x0 - 40 && e.x < F.x1 + 40 && e.y > F.y0 && e.y < F.y1 + 40) cards.push({ y: 1e9, x: ix(e), b: iy(e), w: 180, h: 64, k: 1, aw: 180, ah: 64, f: () => drawBubble(e), top: 1 });
   X.clearRect(0, HATY, HCW, HCH - HATY);
   let px = 0, py = HATY, rowH = 0;
   // empacota primeiro o que está mais perto da câmera (o jogador e o que está à frente); se faltar espaço, some só o que está lá no fundo
-  const pack = cards.slice().sort((a, b) => (b.top ? 1e9 : b.y) - (a.top ? 1e9 : a.y));
+  const pack = cards.slice().sort((a, b) => (b.me ? 2e9 : b.top ? 1e9 : b.y) - (a.me ? 2e9 : a.top ? 1e9 : a.y)); // v11.1: o vaqueiro entra sempre primeiro na prancheta
   { let area = 0; const cap = HCW * (HCH - HATY) * 0.78; for (const c of pack) { const base = (c.w + 1) * (c.h + 1); if (c.want && area + base * 4 < cap * (c.want === 2 ? 1 : 0.85)) { c.k = 2; c.aw = c.w * 2; c.ah = c.h * 2; } area += base * c.k * c.k; } } // gente sempre primeiro; casas e árvores em alta enquanto couber
-  for (const c of pack) { if (px + c.aw > HCW) { px = 0; py += rowH + 1; rowH = 0; } if (py + c.ah > HCH) { c.skip = 1; continue; } c.sx = px; c.sy = py; px += c.aw + 1; rowH = Math.max(rowH, c.ah);
+  // v11.1: arruma as vagas antes de pintar; se não couber tudo, refaz com tudo em resolução normal (só o vaqueiro fica em alta) em vez de sumir com o que está no fundo
+  const lay = () => { px = 0; py = HATY; rowH = 0; let n = 0; for (const c of pack) { c.skip = 0; if (px + c.aw > HCW) { px = 0; py += rowH + 1; rowH = 0; } if (py + c.ah > HCH) { c.skip = 1; n++; continue; } c.sx = px; c.sy = py; px += c.aw + 1; rowH = Math.max(rowH, c.ah); } return n; };
+  if (lay()) { const hiC = pack.filter(c => !c.me && c.k === 2); while (hiC.length) { for (let i = Math.max(4, hiC.length * 0.2 | 0); i > 0 && hiC.length; i--) { const c = hiC.pop(); c.k = 1; c.aw = c.w; c.ah = c.h; } if (!lay()) break; } if (lay()) { pack.sort((a, b) => (b.me ? 1 : 0) - (a.me ? 1 : 0) || a.ah - b.ah); lay(); } }
+  for (const c of pack) { if (c.skip) continue;
     X.save(); X.beginPath(); X.rect(c.sx, c.sy, c.aw, c.ah); X.clip(); const K2 = c.k; SPK = K2; X.setTransform(K2, 0, 0, K2, c.sx + c.aw / 2 - Math.round(c.x * K2), c.sy + c.ah - HMARG * K2 - Math.round(c.b * K2)); /* pinta na vaga em pixel inteiro; a fração vai na posição do cartão (sem tremer no 3D) */ try { c.f(); } catch (e) { if (!HD.err) { HD.err = 1; console.error(e); } } SPK = 1; X.restore(); }
   HD.nCards = cards.length; HD.nSkip = cards.filter(c => c.skip).length; HD.usedPx = (py - HATY) / (HCH - HATY);
   const usedH = Math.min(HCH - HATY, py + rowH + 1 - HATY);
