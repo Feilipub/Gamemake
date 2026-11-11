@@ -404,7 +404,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '11.1.0', SAVE_V = 9;
+const GAME_V = '11.2.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -9465,9 +9465,10 @@ function tipsSeenHTML() { const L = TIPS.filter(x => S.flags['tip_' + x[0]]); re
 // ---------- retratos grandes com expressão ----------
 function bustCanvas(ap, mood) {
   const a = Object.assign({}, ap, { mood: mood || '' }), c = charSpr(a, 0, 0, 'idle');
+  if (c._lpc) return cached('bustL|' + apKey(a), 48, 42, g => { g.drawImage(c._hi, 0, 0, 48, 42, 0, 0, 48, 42); }, false); // v11.2: retrato do desenho LPC em alta
   return cached('bust|' + apKey(a), 24, 21, g => { g.drawImage(c, 0, 0, 24, 21, 0, 0, 24, 21); });
 }
-function bustImg(ap, mood, sc) { const c = bustCanvas(ap, mood); return sprHTML(c, sc || 4, 'bust|' + apKey(Object.assign({}, ap, { mood: mood || '' })) + '|' + (sc || 4)); }
+function bustImg(ap, mood, sc) { const c = bustCanvas(ap, mood), q = c.width === 48 ? 2 : 1; return sprHTML(c, (sc || 4) / q, 'bust' + q + '|' + apKey(Object.assign({}, ap, { mood: mood || '' })) + '|' + (sc || 4)); }
 function moodOf(id, txt) {
   const t = String(txt || '');
   if (/saudade|morreu|faleceu|chor|triste|pena|perdi|perdeu|sozinh|doente|seca braba|difícil/i.test(t)) return 'triste';
@@ -13625,7 +13626,7 @@ function renderHD0(dt) {
   { let area = 0; const cap = HCW * (HCH - HATY) * 0.78; for (const c of pack) { const base = (c.w + 1) * (c.h + 1); if (c.want && area + base * 4 < cap * (c.want === 2 ? 1 : 0.85)) { c.k = 2; c.aw = c.w * 2; c.ah = c.h * 2; } area += base * c.k * c.k; } } // gente sempre primeiro; casas e árvores em alta enquanto couber
   // v11.1: arruma as vagas antes de pintar; se não couber tudo, refaz com tudo em resolução normal (só o vaqueiro fica em alta) em vez de sumir com o que está no fundo
   const lay = () => { px = 0; py = HATY; rowH = 0; let n = 0; for (const c of pack) { c.skip = 0; if (px + c.aw > HCW) { px = 0; py += rowH + 1; rowH = 0; } if (py + c.ah > HCH) { c.skip = 1; n++; continue; } c.sx = px; c.sy = py; px += c.aw + 1; rowH = Math.max(rowH, c.ah); } return n; };
-  if (lay()) { const hiC = pack.filter(c => !c.me && c.k === 2); while (hiC.length) { for (let i = Math.max(4, hiC.length * 0.2 | 0); i > 0 && hiC.length; i--) { const c = hiC.pop(); c.k = 1; c.aw = c.w; c.ah = c.h; } if (!lay()) break; } if (lay()) { pack.sort((a, b) => (b.me ? 1 : 0) - (a.me ? 1 : 0) || a.ah - b.ah); lay(); } }
+  if (lay()) { const hiC = pack.filter(c => !c.me && c.k === 2); while (hiC.length) { for (let i = Math.max(4, hiC.length * 0.2 | 0); i > 0 && hiC.length; i--) { const c = hiC.pop(); c.k = 1; c.aw = c.w; c.ah = c.h; } if (!lay()) break; } if (lay()) { pack.sort((a, b) => (b.me ? 1 : 0) - (a.me ? 1 : 0) || b.ah - a.ah); lay(); } }
   for (const c of pack) { if (c.skip) continue;
     X.save(); X.beginPath(); X.rect(c.sx, c.sy, c.aw, c.ah); X.clip(); const K2 = c.k; SPK = K2; X.setTransform(K2, 0, 0, K2, c.sx + c.aw / 2 - Math.round(c.x * K2), c.sy + c.ah - HMARG * K2 - Math.round(c.b * K2)); /* pinta na vaga em pixel inteiro; a fração vai na posição do cartão (sem tremer no 3D) */ try { c.f(); } catch (e) { if (!HD.err) { HD.err = 1; console.error(e); } } SPK = 1; X.restore(); }
   HD.nCards = cards.length; HD.nSkip = cards.filter(c => c.skip).length; HD.usedPx = (py - HATY) / (HCH - HATY);
