@@ -406,7 +406,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '12.0.0', SAVE_V = 9;
+const GAME_V = '13.0.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -4354,7 +4354,7 @@ const MUS = {
     for (const o in this.layers) { const L = this.layers[o]; if (L.dying && C.currentTime > L.dying) { try { L.g.disconnect(); } catch (e) { } delete this.layers[o]; } }
     const mg = AU.buses.mu; if (mg) mg.gain.setTargetAtTime(AU.vol.mu * this.duck, C.currentTime, 0.2);
     if (this.hidden || !this.cur || !AU.ok()) { this.next = C.currentTime + 0.1; return; }
-    const T = THEMES[this.cur], L = this.layers[this.cur]; if (!T || !L) return; const sd = 60 / T.bpm / 4;
+    const T = THEMES[this.cur], L = this.layers[this.cur]; if (!T || !L || T.zz) return; // temas ZzFXM já vêm prontos const sd = 60 / T.bpm / 4;
     if (this.next < C.currentTime - 0.5) this.next = C.currentTime + 0.05; // aba voltou: recomeça sem rajada
     while (this.next < C.currentTime + 0.15) { this.sched(T, L.g, this.step, this.next); this.step++; this.next += sd; }
   },
@@ -5726,6 +5726,7 @@ function playerPose() {
     return [ACT_POSE[A.k] || 'reach', Math.floor(T * 6) % 2];
   }
   if (inst.on) return ['play', inst.st > 0 ? Math.floor(T * 12) % 2 : 0];
+  if (lasso.anim > 0) { const st0 = P._st; return [st0 === 'walk' || st0 === 'run' ? 'lacarW' : 'lacar', Math.floor(T * 10) % 8]; }
   const st = P._st || 'idle';
   if (st === 'walk' || st === 'run') return [st, Math.floor((P._cyc || 0) * 8) % 8];
   const blink = (T % 3.7) < 0.13; return ['idle', blink ? 3 : Math.floor(T / 0.55) % 3];
@@ -6803,7 +6804,7 @@ function placeConfirm() {
   const E = MOVE.edit; if (!E) return; const chk = (E.cx === E.ox && E.cy === E.oy) ? { ok: true } : placeCheck(E.id, E.cx, E.cy); if (!chk.ok) { say(chk.why, 2200); AU.err && AU.err(); return; }
   const m = MOV[E.id], d = objDef(E.id);
   if (m.prop) { const [ax0, ay0] = anchorOf(m.prop.x / TS, m.prop.y / TS); placeObj(E.id, m.prop.x / TS + (E.cx - ax0), m.prop.y / TS + (E.cy - ay0)); } else placeObj(E.id, E.cx, E.cy);
-  const p = objPos(E.id); dust(p.x, p.y, 8); AU.hammer && AU.hammer(p.x, p.y); MOVE.pop = { id: E.id, t: 0.4 }; toast(d.n + ' no lugar novo.');
+  const p = objPos(E.id); dust(p.x, p.y, 8); if (!(MOVDEF[E.id] && MOVDEF[E.id].deco && typeof ZZ !== 'undefined' && ZZ.play(DECO[MOVDEF[E.id].t] && DECO[MOVDEF[E.id].t].g === 'obj' ? 'build' : 'plant', p.x, p.y))) AU.hammer && AU.hammer(p.x, p.y); MOVE.pop = { id: E.id, t: 0.4 }; toast(d.n + ' no lugar novo.');
   placeEnd(); SAVE.save('auto', true);
 }
 function placeCancel() { placeEnd(); say('Movimentação cancelada. O objeto ficou onde estava.', 1800); }
@@ -7144,7 +7145,7 @@ function menuTab(t) {
 A.aniF = v => { M.sub = v; renderModal(); };
 A.aniOpen = v => openAnimal(+v);
 function spark(arr) { const w = 200, h = 40, mn = Math.min(...arr) - 2, mx = Math.max(...arr) + 2; const pts = arr.map((v, i) => `${(i / Math.max(1, arr.length - 1) * w).toFixed(1)},${(h - (v - mn) / (mx - mn) * h).toFixed(1)}`).join(' '); return `<svg width="100%" viewBox="0 0 ${w} ${h}" style="background:#fff4d0;border:2px solid #2b1608"><polyline points="${pts}" fill="none" stroke="#b8561c" stroke-width="2"/></svg>`; }
-function volHTML() { return '<div class="card"><b>Áudio</b>' + [['m', 'Volume geral'], ['s', 'Efeitos'], ['a', 'Ambiente'], ['mu', 'Música']].map(([k, n]) => `<label>${n}<input type="range" min="0" max="100" value="${Math.round(AU.vol[k] * 100)}" data-vol="${k}"></label>`).join('') + '</div>'; }
+function volHTML() { return '<div class="card"><b>Áudio</b>' + [['m', 'Volume geral'], ['s', 'Efeitos'], ['a', 'Ambiente'], ['mu', 'Música']].map(([k, n]) => `<label>${n}<input type="range" min="0" max="100" value="${Math.round(AU.vol[k] * 100)}" data-vol="${k}"></label>`).join('') + `<div class="row sp" style="margin-top:6px"><span>Efeitos novos (ZzFX)</span><span>${['true', 'false'].map(v => `<button data-a="setOpt" data-v="zzfx|${v}" class="${(SET.zzfx !== false) === (v === 'true') ? 'on' : ''}">${v === 'true' ? 'Ligados' : 'Clássicos'}</button>`).join('')}</span></div><div class="row sp"><span>Músicas novas (ZzFXM)</span><span>${['true', 'false'].map(v => `<button data-a="setOpt" data-v="zzmus|${v}" class="${(SET.zzmus !== false) === (v === 'true') ? 'on' : ''}">${v === 'true' ? 'Ligadas' : 'Desligadas'}</button>`).join('')}</span></div></div>`; }
 function cfgHTML(inGame) {
   const opt = (k, v, l) => `<button data-a="setOpt" data-v="${k}|${v}" class="${SET[k] === v ? 'on' : ''}">${l}</button>`;
   let h = volHTML();
@@ -10547,6 +10548,8 @@ const LPC = {"anims":[["walk",0,9],["run",9,8],["idle",17,2],["sit",19,3],["slas
 /* ---------- v11: bonecos no estilo LPC (Universal LPC Spritesheet Character Generator; créditos em Créditos) ---------- */
 // Cada peça (corpo, cabeça, cabelo, barba, chapéu, camisa, calça, bota...) vem em tons de cinza e é recolorida aqui
 // com as cores da criação do personagem. O boneco continua 24x34 no mundo; a versão em alta (48x68) é o desenho LPC original.
+const LPC_X = {"L":{"xHeadM":{"z":100,"a":["expr"],"lo":91,"hi":220,"png":"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"},"xHeadF":{"z":100,"a":["expr"],"lo":91,"hi":220,"png":"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"},"xHeadO":{"z":100,"a":["expr"],"lo":91,"hi":220,"png":"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"},"xBrowT":{"z":101,"a":["expr"],"lo":76,"hi":107,"png":"iVBORw0KGgoAAAANSUhEUgAAAkAAAADwCAAAAADNpIS2AAABUElEQVR42u3VwY2EMAwAQKcSGkonried0BCd3Oe02sdpRdBawDHzAB5OcOxAIgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4DmaEszrS2xr5fzrfdbbzihQdcOq46fl5Pw5LlWf+gZndv+lT/unfsSjjrDLfQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcJKmBLP6Etv6dn/2etv1CzSbT3X8gfxHRETk3vnzN5+x7wX5yn+UxJc3OLO/378d/w/k67I7ev+I/PPxe/HccbdpMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMBDNCU4pi+xrcWvWG+w3nZigUobVh1/IP8xNyJH3Hi98wXK7P5Ln3dEYfTzjrDLfQEAAAAAAAAAAAAAAAAAAAAAAAAAANzWDyXqXXeRDJL8AAAAAElFTkSuQmCC"},"xBrowK":{"z":101,"a":["expr"],"lo":76,"hi":153,"png":"iVBORw0KGgoAAAANSUhEUgAAAkAAAADwCAAAAADNpIS2AAAByklEQVR42u3VvVHkQBAG0FZBDmdOBpiXAZ7ykDHxyFAcTBSctybehEAG59xRUMct28AUWvY9YyXjm79urRQBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACXY1KCvO0Q69D5l2Q+YhmaP3Leq1cHlJ+/dtWw5H5G50t/vE0u8OMhk8/NHuX+ITUinT9y3lffQLVHWQf+I7dDpAZk9zM6n1V7tNSAeeh29vcJe0fD4nxK9HFzS4+IFgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABcgkkJ0mrcLBGxHWLdxX62WF5cPzt/9LzTFxQoO//O8rVHWZ9d357+z7xPN2+v0CJiLqemk/v51Pz08QWGN2Bn+bT5af6WeH5Of4LO/RM2vAHnb25/f0563to/dwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB8V5MSvFONm2XsCltq/i1iaP4/573+wgKNbdjgfO257c8lW856l0yXofmefAPVHmUd2YBINyy1n9H5tDlbz94u6hOWbEDtMbhh+zO31PPWAgAAAAAAAAAAAAAAAAAAAAAAAACA0/wG0uynh/OZ9aAAAAAASUVORK5CYII="}},"meta":{"xHeadM":{"1":[0,-2,280,280],"2":[0,-2,292,292],"3":[0,-2,280,280]},"xHeadF":{"1":[0,-2,280,280],"2":[0,-2,292,292],"3":[0,-2,280,280]},"xHeadO":{"1":[0,-2,280,280],"2":[0,-2,292,292],"3":[0,-2,280,280]},"xBrowT":{"1":[0,-2,280,280],"2":[0,-2,292,292],"3":[0,-2,280,280]},"xBrowK":{"1":[0,-2,280,280],"2":[0,-2,292,292],"3":[0,-2,280,280]},"refM":{"0":[12,13],"1":[11,15],"2":[11,13],"3":[11,14]},"refF":{"0":[12,13],"1":[11,15],"2":[11,13],"3":[11,14]}}};
+Object.assign(LPC.L, LPC_X.L);
 LPC.px = {}; LPC.ok = false; LPC.fail = false;
 (function lpcLoad() {
   const ks = Object.keys(LPC.L); let left = ks.length;
@@ -10598,29 +10601,65 @@ function lpcParts(ap) { // lista de [peça, rampa, extra] na ordem de desenho
   const H = HATS[ap.hat]; if (H && H.id !== 'none') { const id = H.base || H.id; if (id === 'bone') L.cap = lpcRamp(H.c || '#2e5a9a'); else add(LPC_HAT[id] || 'tCav', lpcRamp(H.c || '#8a5226', 1), id === 'palha' ? 'palha' : 0); }
   const cap = L.cap; L.sort((a, b) => a[3] - b[3]); L.cap = cap; return L;
 }
+// v13: poses montadas a partir de duas animações (parte de cima de uma, de baixo de outra) e rostos com expressão (ElizaWy / LPC Revised)
+Object.assign(LPC_POSE, {
+  carry: { u: ['thrust', () => 1], l: ['idle', () => 0] }, carryW: { u: ['thrust', () => 1], l: ['walk', f => 1 + f % 8] },
+  holdW: { u: ['thrust', () => 1], l: ['walk', f => 1 + f % 8] }, kettleW: { u: ['thrust', () => 1], l: ['walk', f => 1 + f % 8] },
+  ride: { u: ['thrust', () => 1], l: ['sit', () => 2], spread: 1 }, moto: { u: ['thrust', () => 1], l: ['sit', () => 2], spread: 1 },
+  rideLaco: { u: ['slash', f => f % 2 ? 3 : 4], l: ['sit', () => 2], spread: 1 }, lacar: { u: ['slash', f => f % 2 ? 3 : 4], l: ['idle', () => 0] },
+  lacarW: { u: ['slash', f => (f >> 1) % 2 ? 3 : 4], l: ['walk', f => 1 + f % 8] }
+});
+const LPC_MOOD = { feliz: 9, tocar: 9, triste: 8, fome: 8, bravo: 7, cansado: 1, susto: 6, vergonha: 10, amor: 10, olhaE: 4, olhaD: 3 };
+const lpcHT = {}; // topo da cabeça em cada quadro (para alinhar cima e baixo)
+function lpcHeadTop(an, f, row) { const k = an + f + '|' + row; if (lpcHT[k] !== undefined) return lpcHT[k]; const src = LPC.px.headM; let t = 99;
+  if (src && LPC_AN[an]) { const col = (LPC_AN[an][0] + Math.min(f, LPC_AN[an][1] - 1)) * LPC.cw; for (let y = 0; y < LPC.ch && t === 99; y++) for (let x = 0; x < LPC.cw; x++) if (src.a[(row * LPC.ch + y) * src.w + col + x]) { t = y; break; } }
+  return (lpcHT[k] = t === 99 ? 10 : t); }
+function lpcFrameCol(meta, an, f) { let a2 = an, f2 = f; if (!meta.a.includes(an)) { if (an === 'run' && meta.a.includes('walk')) { a2 = 'walk'; f2 = 1 + f % 8; } else if (meta.a.includes('walk') && (an === 'thrust' || an === 'slash')) { a2 = 'walk'; f2 = 0; } else return -1; } return (LPC_AN[a2][0] + Math.min(f2, LPC_AN[a2][1] - 1)) * LPC.cw; }
 function lpcCompose(ap, dir, fr, pose) {
-  const cw = LPC.cw, ch = LPC.ch, row = dir === 0 ? 2 : dir === 1 ? 0 : 3, pm = LPC_POSE[pose] || LPC_POSE.idle, an = pm[0], lf = pm[1](fr || 0);
-  const [hi, g] = mkC(48, 68), im = g.createImageData(48, 68), q = im.data, DY = pose === 'ride' || pose === 'moto' ? -4 : 3;
+  const cw = LPC.cw, ch = LPC.ch, row = dir === 0 ? 2 : dir === 1 ? 0 : 3, pm = LPC_POSE[pose] || LPC_POSE.idle; fr = fr || 0;
+  const comp = !Array.isArray(pm), U = comp ? pm.u : pm, Lw = comp ? pm.l : pm, au = U[0], fu = U[1](fr), al = Lw[0], fl = Lw[1](fr);
+  const htL = lpcHeadTop(al, fl, row), dyU = comp ? htL - lpcHeadTop(au, fu, row) : 0, split = comp ? htL + 27 : 999, spread = comp && pm.spread && row !== 3 ? 2 : 0;
+  const [hi, g] = mkC(48, 68), im = g.createImageData(48, 68), q = im.data, DY = pose === 'ride' || pose === 'moto' || pose === 'rideLaco' ? -4 : 3;
   const parts = lpcParts(ap); let hT = 99, hX0 = 99, hX1 = -1;
-  for (const [k, ramp, ex] of parts) {
+  // expressão: humor do personagem, piscada no parado e susto
+  let ex = LPC.px.xHeadM && row !== 0 && SET.expr !== false ? (LPC_MOOD[ap.mood] !== undefined ? LPC_MOOD[ap.mood] : 0) : -1;
+  if (ex >= 0 && pose === 'idle' && fr === 3) ex = 2; if (ex >= 0 && pose === 'scared') ex = 6;
+  const old = ap.mark === 3 || ap.hairC === 5 || ap.hairC === 6, xHead = ap.sex === 'F' && !old ? 'xHeadF' : old ? 'xHeadO' : 'xHeadM', xBrow = ap.brow === 3 ? null : ap.brow === 1 ? 'xBrowK' : 'xBrowT';
+  const put = (tx, ty, c) => { if (tx < 0 || tx >= 48 || ty < 0 || ty >= 68) return; const i = (ty * 48 + tx) * 4; q[i] = c[0]; q[i + 1] = c[1]; q[i + 2] = c[2]; q[i + 3] = 255; };
+  const tone = (l, ramp, lo, span) => { if (l < 34) return ramp[0]; const t = Math.max(0, Math.min(1, (l - lo) / span)) * 3, i = Math.min(2, Math.floor(t)), f = t - i, A = ramp[1 + i], B = ramp[2 + i]; return [A[0] + (B[0] - A[0]) * f, A[1] + (B[1] - A[1]) * f, A[2] + (B[2] - A[2]) * f]; };
+  for (const [k, ramp, ext] of parts) {
     const src = LPC.px[k], meta = LPC.L[k]; if (!src) continue;
-    let a2 = an, f2 = lf; if (!meta.a.includes(an)) { if (an === 'run' && meta.a.includes('walk')) { a2 = 'walk'; f2 = 1 + lf % 8; } else continue; }
-    const col = (LPC_AN[a2][0] + Math.min(f2, LPC_AN[a2][1] - 1)) * cw, r0 = row * ch, span = Math.max(70, meta.hi - meta.lo), lo = (meta.lo + meta.hi - span) / 2;
-    for (let y = 0; y < ch; y++) { const ty = y + DY; if (ty < 0 || ty >= 68) continue;
-      for (let x = 0; x < cw; x++) { const l = src.a[(r0 + y) * src.w + col + x]; if (!l) continue;
-        let c; if (l < 34) c = ramp[0]; else { const t = Math.max(0, Math.min(1, (l - lo) / span)) * 3, i = Math.min(2, Math.floor(t)), f = t - i, A = ramp[1 + i], B = ramp[2 + i]; c = [A[0] + (B[0] - A[0]) * f, A[1] + (B[1] - A[1]) * f, A[2] + (B[2] - A[2]) * f]; }
-        if (ex === 'xadrez' && l >= 34) { const fx = Math.floor(x / 3) % 2, fy = Math.floor((y + 1) / 3) % 2; if (fx && fy) c = [c[0] * 0.42, c[1] * 0.42, c[2] * 0.42]; else if (!fx && !fy) c = [c[0] * 0.45 + 128, c[1] * 0.45 + 120, c[2] * 0.45 + 104]; }
-        else if (ex === 'jeans' && l >= 34 && (x * 7 + y * 3) % 11 === 0) c = [c[0] * 0.9, c[1] * 0.93, c[2] * 1.04];
-        else if (ex === 'palha' && l >= 34 && ((x + y) % 3 === 0)) c = [c[0] * 0.84, c[1] * 0.8, c[2] * 0.7];
-        else if (ex === 'bordado' && l >= 34 && (x * 5 + y * 3) % 13 === 0) c = [232, 192, 80];
-        else if (ex === 'festa' && l >= 34 && (x + (y >> 1)) % 4 === 0) c = [c[0] * 0.75 + 60, c[1] * 0.75 + 50, c[2] * 0.75 + 20];
-        else if (ex === 'remendo' && l >= 34 && ((x >> 2) + (y >> 2) * 3) % 7 === 0) c = [200, 60, 50];
-        if (k[0] === 'h' && k[1] === 'e') { if (ty < hT) hT = ty; if (x < hX0) hX0 = x; if (x > hX1) hX1 = x; }
-        const i = (ty * 48 + x) * 4; q[i] = c[0]; q[i + 1] = c[1]; q[i + 2] = c[2]; q[i + 3] = 255; } }
-    if (ex === 'fivela') lpcBuckle(q, an, lf, row, DY);
+    const colU = lpcFrameCol(meta, au, fu), colL = comp ? lpcFrameCol(meta, al, fl) : colU; if (colU < 0 && colL < 0) continue;
+    const span = Math.max(70, meta.hi - meta.lo), lo = (meta.lo + meta.hi - span) / 2, isHead = k[0] === 'h' && k[1] === 'e';
+    const pxs = []; // [x, y destino, valor, x local]
+    for (let y = 0; y < ch; y++) { const up = y < split, col = up ? colU : colL, sy = up ? y - dyU : y; if (col < 0 || sy < 0 || sy >= ch) continue; const ty = y + DY; if (ty < 0 || ty >= 68) continue;
+      for (let x = 0; x < cw; x++) { const l = src.a[(row * ch + sy) * src.w + col + x]; if (!l) continue; const tx = !up && spread ? x + (x < 24 ? -spread : spread) : x; pxs.push(tx, ty, l, x); } }
+    if (isHead) { for (let i = 0; i < pxs.length; i += 4) { if (pxs[i + 1] < hT) hT = pxs[i + 1]; if (pxs[i] < hX0) hX0 = pxs[i]; if (pxs[i] > hX1) hX1 = pxs[i]; } }
+    if (isHead && ex >= 0 && LPC.px[xHead] && pxs.length) { // cabeça com expressão no lugar da cabeça antiga (mesmo lugar, um pouco menor: a borda antiga fica por baixo)
+      for (let i = 0; i < pxs.length; i += 4) put(pxs[i], pxs[i + 1], tone(pxs[i + 2], ramp, lo, span));
+      const ref = LPC_X.meta['ref' + (ap.sex === 'F' ? 'F' : 'M')][row], sx = hX0 - ref[1], sy0 = hT - DY - ref[0];
+      lpcFace(put, xHead, ex, row, sx, sy0 + DY, ramp, ap); if (xBrow) lpcFace(put, xBrow, ex, row, sx, sy0 + DY, lpcRamp(HAIRC[ap.hairC] || HAIRC[1], 1), ap);
+      continue; }
+    for (let i = 0; i < pxs.length; i += 4) { const x = pxs[i + 3], y = pxs[i + 1] - DY, l = pxs[i + 2]; let c = tone(l, ramp, lo, span);
+      if (ext === 'xadrez' && l >= 34) { const fx = Math.floor(x / 3) % 2, fy = Math.floor((y + 1) / 3) % 2; if (fx && fy) c = [c[0] * 0.42, c[1] * 0.42, c[2] * 0.42]; else if (!fx && !fy) c = [c[0] * 0.45 + 128, c[1] * 0.45 + 120, c[2] * 0.45 + 104]; }
+      else if (ext === 'jeans' && l >= 34 && (x * 7 + y * 3) % 11 === 0) c = [c[0] * 0.9, c[1] * 0.93, c[2] * 1.04];
+      else if (ext === 'palha' && l >= 34 && ((x + y) % 3 === 0)) c = [c[0] * 0.84, c[1] * 0.8, c[2] * 0.7];
+      else if (ext === 'bordado' && l >= 34 && (x * 5 + y * 3) % 13 === 0) c = [232, 192, 80];
+      else if (ext === 'festa' && l >= 34 && (x + (y >> 1)) % 4 === 0) c = [c[0] * 0.75 + 60, c[1] * 0.75 + 50, c[2] * 0.75 + 20];
+      else if (ext === 'remendo' && l >= 34 && ((x >> 2) + (y >> 2) * 3) % 7 === 0) c = [200, 60, 50];
+      put(pxs[i], pxs[i + 1], c); }
+    if (ext === 'fivela' && !comp) lpcBuckle(q, au, fu, row, DY);
   }
   if (parts.cap && hT < 99) lpcCap(q, parts.cap, row, hT, hX0, hX1);
-  g.putImageData(im, 0, 0); lpcItems(g, ap, dir, fr || 0, pose, row, DY); return hi;
+  g.putImageData(im, 0, 0); lpcItems(g, ap, dir, fr, pose, row, DY); return hi;
+}
+function lpcFace(put, key, ex, row, sx, sy, ramp, ap) { // desenha uma célula da folha de expressões, deslocada para onde a cabeça está neste quadro
+  const src = LPC.px[key], meta = LPC.L[key]; if (!src) return; const cw = LPC.cw, ch = LPC.ch, col = ex * cw, span = Math.max(70, meta.hi - meta.lo), lo = (meta.lo + meta.hi - span) / 2;
+  const eye = hexRGB(EYEC[ap.eyeC] || EYEC[0]), eyeL = eye.map(v => Math.round(v + (255 - v) * 0.45)), eyeD = eye.map(v => Math.round(v * 0.45)), skinB = ramp[3], blush = [Math.round(skinB[0] * .4 + 255 * .6), Math.round(skinB[1] * .4 + 120), Math.round(skinB[2] * .4 + 100 * .6)];
+  for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) { const l = src.a[(row * ch + y) * src.w + col + x]; if (!l) continue;
+    let c; if (l === 241) c = [252, 246, 238]; else if (l === 242) c = eyeL; else if (l === 243) c = eye; else if (l === 244) c = eyeD; else if (l === 245) c = blush;
+    else if (l < 34) c = ramp[0]; else { const t = Math.max(0, Math.min(1, (l - lo) / span)) * 3, i = Math.min(2, Math.floor(t)), f = t - i, A = ramp[1 + i], B = ramp[2 + i]; c = [A[0] + (B[0] - A[0]) * f, A[1] + (B[1] - A[1]) * f, A[2] + (B[2] - A[2]) * f]; }
+    put(x + sx, y + sy, c); }
 }
 function lpcCap(q, C, row, hT, x0, x1) { // boné: copa por cima da cabeça e aba para a frente
   const put = (x, y, c) => { if (x < 0 || x >= 48 || y < 0 || y >= 68) return; const i = (y * 48 + x) * 4; q[i] = c[0]; q[i + 1] = c[1]; q[i + 2] = c[2]; q[i + 3] = 255; }, op = (x, y) => x >= 0 && x < 48 && y >= 0 && y < 68 && q[(y * 48 + x) * 4 + 3];
@@ -10652,7 +10691,7 @@ function lpcItems(g, ap, dir, fr, pose, row, DY) { // objetos que o boneco segur
 }
 const _charSprOld = charSpr;
 charSpr = function (ap, dir, fr, pose) {
-  if (!LPC.ok || SET.lpc === false) return _charSprOld(ap, dir, fr, pose);
+  if (!LPC.ok || SET.lpc === false) return _charSprOld(ap, dir, fr, { rideLaco: 'ride', lacar: 'throw', lacarW: 'walk' }[pose] || pose);
   const d = dir === 2 ? 3 : dir, key = 'CL' + apKey(ap) + '|' + d + '|' + (fr || 0) + '|' + pose;
   let c = SPR.get(key); if (c) return c;
   if (SPR.size > 4000) for (const k of SPR.keys()) if (k[0] === 'C' || k.startsWith('hr|')) SPR.delete(k);
@@ -10837,6 +10876,167 @@ A.fazSell = t => { const D = DECO[t]; if (!D || !(S.decoInv[t] > 0)) return; S.d
 { const _pc = placeCancel; placeCancel = function () { const E = MOVE.edit; if (E && E.isNew) { const id = E.id; placeEnd(); decoStore(id); return; } _pc(); }; }
 { const _ps = propSpr; propSpr = function (t, v, se) { return t === 'placaFaz' ? placaSpr() : _ps(t, v, se); }; }
 { const _dm = drawMoveFx; drawMoveFx = function () { _dm(); drawPntFx(); }; }
+/* ============ v13: ZzFX + ZzFXM — efeitos sonoros e músicas novas geradas por código ============
+   ZzFX v1.4.0 (MIT) por Frank Force — https://github.com/KilledByAPixel/ZzFX
+   ZzFXM v2.0.3 (MIT) por Keith Clark e Frank Force — https://github.com/keithclark/ZzFXM
+   Adaptados: o gerador roda num Worker (as músicas ficam prontas sem travar o jogo) e toca no mixer do jogo. */
+const ZZ_SRC = `
+const zzfxR = 44100;
+function zzfxG(volume = 1, randomness = .05, frequency = 220, attack = 0, sustain = 0, release = .1, shape = 0, shapeCurve = 1, slide = 0, deltaSlide = 0, pitchJump = 0, pitchJumpTime = 0, repeatTime = 0, noise = 0, modulation = 0, bitCrush = 0, delay = 0, sustainVolume = 1, decay = 0, tremolo = 0, filter = 0) {
+  let sampleRate = zzfxR, PI2 = Math.PI * 2, abs = Math.abs, sign = v => v < 0 ? -1 : 1,
+    startSlide = slide *= 500 * PI2 / sampleRate / sampleRate,
+    startFrequency = frequency *= (1 + randomness * 2 * Math.random() - randomness) * PI2 / sampleRate,
+    modOffset = 0, repeat = 0, crush = 0, jump = 1, length, b, t = 0, i = 0, s = 0, f,
+    quality = 2, w = PI2 * abs(filter) * 2 / sampleRate, cos = Math.cos(w), alpha = Math.sin(w) / 2 / quality,
+    a0 = 1 + alpha, a1 = -2 * cos / a0, a2 = (1 - alpha) / a0, b0 = (1 + sign(filter) * cos) / 2 / a0, b1 = -(sign(filter) + cos) / a0, b2 = b0, x2 = 0, x1 = 0, y2 = 0, y1 = 0;
+  const minAttack = 9; attack = attack * sampleRate || minAttack; decay *= sampleRate; sustain *= sampleRate; release *= sampleRate; delay *= sampleRate;
+  deltaSlide *= 500 * PI2 / sampleRate ** 3; modulation *= PI2 / sampleRate; pitchJump *= PI2 / sampleRate; pitchJumpTime *= sampleRate; repeatTime = repeatTime * sampleRate | 0;
+  length = attack + decay + sustain + release + delay | 0; b = new Float32Array(length > 0 ? length : 0);
+  for (; i < length; b[i++] = s * volume) {
+    if (!(++crush % (bitCrush * 100 | 0))) {
+      s = shape ? shape > 1 ? shape > 2 ? shape > 3 ? shape > 4 ? (t / PI2 % 1 < shapeCurve / 2 ? 1 : -1) : Math.sin(t ** 3) : Math.max(Math.min(Math.tan(t), 1), -1) : 1 - (2 * t / PI2 % 2 + 2) % 2 : 1 - 4 * abs(Math.round(t / PI2) - t / PI2) : Math.sin(t);
+      s = (repeatTime ? 1 - tremolo + tremolo * Math.sin(PI2 * i / repeatTime) : 1) * (shape > 4 ? s : sign(s) * abs(s) ** shapeCurve) *
+        (i < attack ? i / attack : i < attack + decay ? 1 - ((i - attack) / decay) * (1 - sustainVolume) : i < attack + decay + sustain ? sustainVolume : i < length - delay ? (length - i - delay) / release * sustainVolume : 0);
+      s = delay ? s / 2 + (delay > i ? 0 : (i < length - delay ? 1 : (length - i) / delay) * b[i - delay | 0] / 2 / volume) : s;
+      if (filter) s = y1 = b2 * x2 + b1 * (x2 = x1) + b0 * (x1 = s) - a2 * y2 - a1 * (y2 = y1);
+    }
+    f = (frequency += slide += deltaSlide) * Math.cos(modulation * modOffset++); t += f + f * noise * (i * i * PI2 % 2 - 1);
+    if (jump && ++jump > pitchJumpTime) { frequency += pitchJump; startFrequency += pitchJump; jump = 0; }
+    if (repeatTime && !(++repeat % repeatTime)) { frequency = startFrequency; slide = startSlide; jump ||= 1; }
+  }
+  return b;
+}
+function zzfxM(instruments, patterns, sequence, BPM = 125) {
+  let instrumentParameters, i, j, k, note, sample, patternChannel, notFirstBeat, stop, instrument, pitch, attenuation, outSampleOffset, isSequenceEnd, sampleOffset = 0, nextSampleOffset, sampleBuffer = [], leftChannelBuffer = [], rightChannelBuffer = [], channelIndex = 0, panning = 0, hasMore = 1, sampleCache = {}, beatLength = zzfxR / BPM * 60 >> 2;
+  for (; hasMore; channelIndex++) {
+    sampleBuffer = [hasMore = notFirstBeat = pitch = outSampleOffset = 0];
+    sequence.map((patternIndex, sequenceIndex) => {
+      patternChannel = patterns[patternIndex][channelIndex] || [0, 0, 0]; hasMore |= !!patterns[patternIndex][channelIndex];
+      nextSampleOffset = outSampleOffset + (patterns[patternIndex][0].length - 2 - !notFirstBeat) * beatLength; isSequenceEnd = sequenceIndex == sequence.length - 1;
+      for (i = 2, k = outSampleOffset; i < patternChannel.length + isSequenceEnd; notFirstBeat = ++i) {
+        note = patternChannel[i];
+        stop = i == patternChannel.length + isSequenceEnd - 1 && isSequenceEnd || instrument != (patternChannel[0] || 0) | note | 0;
+        for (j = 0; j < beatLength && notFirstBeat; j++ > beatLength - 99 && stop ? attenuation += (attenuation < 1) / 99 : 0) {
+          sample = (1 - attenuation) * sampleBuffer[sampleOffset++] / 2 || 0;
+          leftChannelBuffer[k] = (leftChannelBuffer[k] || 0) - sample * panning + sample; rightChannelBuffer[k] = (rightChannelBuffer[k++] || 0) + sample * panning + sample;
+        }
+        if (note) { attenuation = note % 1; panning = patternChannel[1] || 0;
+          if (note |= 0) { sampleBuffer = sampleCache[[instrument = patternChannel[sampleOffset = 0] || 0, note]] = sampleCache[[instrument, note]] || (instrumentParameters = [...instruments[instrument]], instrumentParameters[2] *= 2 ** ((note - 12) / 12), note > 0 ? zzfxG(...instrumentParameters) : []); } }
+      }
+      outSampleOffset = nextSampleOffset;
+    });
+  }
+  return [leftChannelBuffer, rightChannelBuffer];
+}`;
+const ZZ = { cache: {}, songs: {}, wk: null, wait: {}, ok: true };
+// gera um efeito (com 3 variações guardadas para não soar sempre igual) e toca no canal de efeitos
+(function () { try { ZZ.fn = new Function(ZZ_SRC + '\nreturn { zzfxG, zzfxM };')(); } catch (e) { ZZ.ok = false; } })();
+ZZ.play = function (name, x, y, vol) {
+  if (!ZZ.ok || SET.zzfx === false || !AU.ok()) return false; const P0 = ZZFX_SFX[name]; if (!P0) return false;
+  const C = AU.ctx, L = ZZ.cache[name] || (ZZ.cache[name] = []); let buf;
+  if (L.length < 3) { const d = ZZ.fn.zzfxG(...P0); buf = C.createBuffer(1, Math.max(1, d.length), 44100); buf.copyToChannel(d, 0); L.push(buf); } else buf = L[Math.floor(Math.random() * L.length)];
+  const s = C.createBufferSource(), g = C.createGain(); s.buffer = buf; g.gain.value = (vol || 1) * (x === undefined ? 1 : AU.sp(x, y)); s.connect(g); g.connect(AU.buses.s); s.start(); return true;
+};
+// [volume, aleatório, frequência, ataque, sustentação, soltura, forma, curva, deslize, deslize2, salto, tempoSalto, repetição, ruído, modulação, bitcrush, eco, volSust, queda, tremolo, filtro]
+const ZZFX_SFX = {
+  coin: [.5, .03, 1675, , .06, .24, 1, 1.82, , , 837, .06],
+  pay: [.45, .03, 700, , .04, .12, 1, 1.6, , , -220, .05, , , , , .03],
+  click: [.3, .02, 920, , .01, .03, 1, 1.5, , , , , , , , , , .6],
+  select: [.35, .02, 660, , .03, .08, 1, 1.4, , , 330, .04],
+  open: [.3, .02, 520, .01, .03, .09, 1, 1.3, 6, , 260, .03],
+  close: [.3, .02, 700, .01, .03, .09, 1, 1.3, -6, , -200, .03],
+  err: [.45, .02, 190, , .09, .16, 2, 1.2, -4, , , , , , , .1, , .6],
+  pickup: [.4, .03, 539, 0, .04, .29, 1, 1.92, , , 567, .02, .02, , , , .04],
+  chime: [.35, .02, 1046, .01, .08, .5, 0, 1, , , 262, .09, , , , , .12, .7],
+  jump: [.35, .05, 160, .03, .03, .12, 1, 1.3, 9, , , , , 1],
+  whoosh: [.35, .1, 320, .04, .06, .22, 4, 1, -2, , , , , 2, , , , .6, , , -1800],
+  lasso: [.4, .12, 240, .08, .2, .3, 4, 1, 3, , , , .09, 1.5, , , , .5, , .4, -2200],
+  whip: [.6, .05, 2400, , .01, .08, 4, 2, -30, , , , , 4, , , , .4],
+  splash: [.6, .2, 900, .01, .08, .4, 4, 1.4, -1, , , , , 3, , , .05, .5, , , 1200],
+  hammer: [.6, .04, 210, , .01, .09, 4, 1.5, , , , , , 3, 22, .1, .02, .5, .02],
+  slash: [.5, .1, 1600, , .02, .12, 4, 1.2, -18, , , , , 6, , , , .5, , , 900],
+  shot: [1, .05, 90, .002, .06, .7, 4, 1.4, -1, , , , , 1.5, , .6, .05, .4, .05],
+  fanfare: [.5, 0, 523, .02, .25, .45, 1, 1.4, , , 262, .15, .15, , , , .08, .8, , .05],
+  conquista: [.55, 0, 392, .03, .3, .6, 5, .5, , , 196, .1, .2, , , , .1, .8, .05, .1],
+  pop: [.45, .05, 380, , .02, .06, 1, 2, 30, , , , , , , , , .7],
+  plant: [.4, .1, 140, .01, .05, .15, 4, 1, -2, , , , , 1, , , , .5, , , 600],
+  build: [.5, .05, 300, , .02, .1, 4, 1.3, , , , , .08, 2, 15, , , .5, , .2]
+};
+// liga os efeitos novos por cima dos antigos (com a opção "Efeitos clássicos" volta ao som de antes)
+{ const wrap = (obj, k, name, pos) => { const old = obj[k]; obj[k] = function (...a) { if (ZZ.play(name, pos ? a[0] : undefined, pos ? a[1] : undefined)) return; return old.apply(this, a); }; };
+  wrap(AU, 'click', 'click'); wrap(AU, 'select', 'select'); wrap(AU, 'err', 'err'); wrap(AU, 'pickup', 'pickup'); wrap(AU, 'chime', 'chime'); wrap(AU, 'jump', 'jump');
+  wrap(AU, 'whoosh', 'whoosh'); wrap(AU, 'lasso', 'lasso'); wrap(AU, 'whip', 'whip'); wrap(AU, 'splash', 'splash'); wrap(AU, 'hammer', 'hammer', 1); wrap(AU, 'slash', 'slash'); wrap(AU, 'shot', 'shot', 1);
+  wrap(SFX, 'coin', 'coin'); wrap(SFX, 'pay', 'pay'); wrap(SFX, 'open', 'open'); wrap(SFX, 'close', 'close'); wrap(SFX, 'blip', 'click'); }
+/* ---------- músicas novas (ZzFXM) ---------- */
+// instrumentos: notas como no ZzFXM (12 = a nota base do instrumento)
+const ZZ_INST = [
+  [.42, 0, 261.63, .02, .2, .14, 5, .55, 0, 0, 0, 0, .09, 0, 0, 0, .01, .85, .04, .16, 3200], // 0 sanfona
+  [.34, 0, 261.63, .03, .2, .14, 1, 1, 0, 0, 0, 0, .16, 0, 0, 0, 0, .9, .03, .05], // 1 pífano
+  [.6, 0, 65.41, .005, .12, .1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, .7, .02], // 2 baixo
+  [1, 0, 70, 0, .03, .16, 0, 1.6, -3, 0, 0, 0, 0, 0, 0, 0, 0, .7, .02], // 3 zabumba
+  [.35, 0, 1500, 0, .01, .05, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, .5, .01, 0, 2500], // 4 aro (bacalhau)
+  [.12, 0, 4186, 0, .01, .14, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], // 5 triângulo
+  [.22, 0, 261.63, .002, .03, .4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, .35, .08, 0, -2400], // 6 viola (corda)
+  [.1, 0, 7000, 0, .01, .03, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, .4, 0, 0, 5000] // 7 ganzá
+];
+const ZZ_MODES = { mixo: [0, 2, 4, 5, 7, 9, 10], dorico: [0, 2, 3, 5, 7, 9, 10], maior: [0, 2, 4, 5, 7, 9, 11], menor: [0, 2, 3, 5, 7, 8, 10] };
+// compila um tema escrito em graus (como os temas antigos) para o formato do ZzFXM
+function zzCompile(T) {
+  const sc = ZZ_MODES[T.mode], deg = (d, oct) => T.root + 12 * (Math.floor((d - 1) / 7) + (oct || 0)) + sc[((d - 1) % 7 + 7) % 7];
+  const pats = [], mel = T.lead === 'pife' ? 1 : 0;
+  for (let sec = 0; sec < 4; sec++) { const part = sec % 2 ? T.B : T.A, C = { m: [], m2: [], b: [], k: [], r: [], t: [], v1: [], v2: [], v3: [], g: [] };
+    for (let bi = 0; bi < 4; bi++) { const bar = sec * 4 + bi, chord = T.ch[bar % T.ch.length], line = part[bi].split(' ');
+      for (let st = 0; st < 16; st++) {
+        let mn = 0; if (st % 2 === 0) { const tok = line[st / 2]; if (tok === '-') mn = -1; else if (tok && tok !== '.') { let o = 0, d = tok; while (d.endsWith("'")) { o++; d = d.slice(0, -1); } while (d.endsWith(',')) { o--; d = d.slice(0, -1); } mn = deg(+d, o) - 48; while (mn < 1) mn += 12; } }
+        if (sec === 3 && bi === 3 && st === 0 && mn > 0) mn = deg(1, 0) - 48; // fecha na tônica
+        C.m.push(mn); C.m2.push(sec >= 2 && mn > 0 ? mn + 12 + .6 : mn < 0 ? -1 : 0); // na volta, um pífano dobra a melodia baixinho
+        const bp = T.bass[st]; let bn = 0; if (bp && bp !== '.') { const r = deg(chord, -1) - 36; bn = bp === 'R' ? r : bp === '5' ? r + 7 : bp === '8' ? r + 12 : r + 4; while (bn < 1) bn += 12; } C.b.push(bn);
+        const kk = T.drum.K[st]; C.k.push(kk === 'K' ? 12 : kk === 'k' ? 12.5 : 0); C.r.push(kk === 'r' || (T.drum.r || '')[st] === 'r' ? 12 : 0);
+        const tt = (T.drum.t || '')[st]; C.t.push(tt === 'T' ? 12 : tt === 't' ? 12.6 : 0); C.g.push((T.drum.s || '')[st] === 's' ? 12 : 0);
+        const strum = T.acc === 'baiao' ? [2, 6, 10, 14].includes(st) : T.acc === 'strum' ? (st === 0 || st === 8) : T.acc === 'arp' ? st % 4 === 0 : false;
+        const tri = [deg(chord, -1), deg(chord + 2, -1), deg(chord + 4, -1)].map(m => { let n = m - 48 + 12; while (n < 1) n += 12; return n; });
+        if (T.acc === 'arp') { const a = [0, 1, 2, 1][st / 4 % 4 | 0]; C.v1.push(strum ? tri[a] + 12 + .3 : 0); C.v2.push(0); C.v3.push(0); }
+        else { C.v1.push(strum ? tri[0] + .35 : 0); C.v2.push(strum ? tri[1] + .45 : 0); C.v3.push(strum ? tri[2] + .5 : 0); }
+      } }
+    pats.push([[mel, 0, ...C.m], [mel ? 0 : 1, .3, ...C.m2], [2, 0, ...C.b], [3, 0, ...C.k], [4, -.2, ...C.r], [5, .4, ...C.t], [6, -.35, ...C.v1], [6, .1, ...C.v2], [6, .35, ...C.v3], [7, .25, ...C.g]]); }
+  return [ZZ_INST, pats, [0, 1, 2, 3], T.bpm];
+}
+// temas novos: [graus da melodia em colcheias; '.' segura a nota; '-' pausa]
+const ZZ_THEMES = {
+  xaxado: { n: 'Xaxado das Três Pontas (fazendas do leste e serra)', bpm: 116, root: 62, mode: 'mixo', lead: 'sanfona', acc: 'baiao', bass: 'R..R..5.R..R..5.', drum: { K: 'K..K..r.K..K..r.', t: 'ttTtttTtttTtttTt', s: '' }, ch: [1, 1, 4, 5, 1, 7, 4, 1],
+    A: ['1 . 3 5 . 3 4 3', '2 . 1 7, . 1 2 .', '3 . 5 6 . 5 4 3', '2 . . . - - 5, 7,'], B: ['4 . 6 8 . 7 6 5', '6 . 5 4 . 3 2 .', '3 4 5 . 6 5 4 3', '1 . . . - - - -'] },
+  mata: { n: 'Sombra da Mata Grande', bpm: 74, root: 64, mode: 'dorico', lead: 'pife', acc: 'arp', bass: 'R.......5.......', drum: { K: 'k...........k...', t: '......t.......t.', s: '..s...s...s...s.' }, ch: [1, 1, 7, 7, 4, 4, 5, 5],
+    A: ['5 . . . 4 3 . .', '1 . 2 3 . . - -', '4 . . 3 4 5 . .', '3 . . . - - - -'], B: ['7 . . 8 7 5 . .', '4 . 5 6 . 5 4 .', '3 . 4 5 . 4 3 2', '1 . . . - - - -'] },
+  chuva: { n: 'Chuva no Telhado (dias de chuva)', bpm: 82, root: 60, mode: 'maior', lead: 'pife', acc: 'arp', bass: 'R.......5...R...', drum: { K: 'k.......k.......', t: '', s: 's.s.s.s.s.s.s.s.' }, ch: [1, 6, 4, 5, 1, 6, 2, 5],
+    A: ['3 . 5 . 6 5 3 .', '2 . 3 . 1 . . -', '6, . 1 . 2 3 4 .', '3 . 2 . . . - -'], B: ['5 . 6 . 8 . 6 5', '4 . 5 . 6 . . -', '5 . 3 . 2 . 3 4', '1 . . . - - - -'] },
+  quadrilha: { n: 'Quadrilha do Arraiá (São João)', bpm: 132, root: 65, mode: 'maior', lead: 'sanfona', acc: 'baiao', bass: 'R...5...R...5...', drum: { K: 'K...r...K.K.r...', t: 'tTtTtTtTtTtTtTtT', s: '' }, ch: [1, 4, 5, 1, 1, 4, 5, 1],
+    A: ['5 . 5 6 5 . 3 .', '6 . 6 5 4 . 2 .', '5 . 4 3 2 . 3 4', '5 . . . 1 . . -'], B: ['8 . 7 6 5 . 6 .', '4 . 5 6 7 . 8 .', '6 . 5 4 3 . 2 .', '1 . . . - - - -'] },
+  minijogo: { n: 'Desafio Ligeiro (minijogos)', bpm: 150, root: 67, mode: 'mixo', lead: 'sanfona', acc: 'baiao', bass: 'R.R.5.R.R.R.5.8.', drum: { K: 'K..K.rK.K..K.rK.', t: 'tttttttttttttttt', s: '' }, ch: [1, 1, 4, 5, 1, 1, 7, 1],
+    A: ['1 3 5 3 1 3 5 .', '4 6 8 6 5 . . -', '1 3 5 8 7 5 6 7', '8 . . . 5 - - -'], B: ['7 . 5 . 7 . 5 .', '6 5 4 3 2 . . -', '3 5 7 5 6 4 2 7,', '1 . . . 1 - - -'] }
+};
+for (const k in ZZ_THEMES) THEMES[k] = Object.assign({ zz: 1, vol: 1.15 }, ZZ_THEMES[k]);
+ZZ.render = function (k) { // gera a música no Worker; quando fica pronta, toca se ainda for a vez dela
+  if (ZZ.songs[k] || ZZ.wait[k] || !ZZ.ok || !AU.ctx) return; ZZ.wait[k] = 1; const song = zzCompile(THEMES[k]);
+  const done = (L, R) => { const C = AU.ctx, b = C.createBuffer(2, L.length, 44100); b.copyToChannel(L instanceof Float32Array ? L : Float32Array.from(L, v => v || 0), 0); b.copyToChannel(R instanceof Float32Array ? R : Float32Array.from(R, v => v || 0), 1); ZZ.songs[k] = b; delete ZZ.wait[k]; if (MUS.cur === k) MUS.zzStart(k); };
+  try {
+    if (!ZZ.wk) { const src = ZZ_SRC + `\nonmessage = e => { const [L, R] = zzfxM(...e.data.song); const l = Float32Array.from(L, v => v || 0), r = Float32Array.from(R, v => v || 0); postMessage({ k: e.data.k, l, r }, [l.buffer, r.buffer]); };`;
+      ZZ.wk = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' }))); ZZ.wk.onmessage = e => { const f = ZZ.wkCb[e.data.k]; if (f) { delete ZZ.wkCb[e.data.k]; f(e.data.l, e.data.r); } }; ZZ.wkCb = {}; }
+    ZZ.wkCb[k] = done; ZZ.wk.postMessage({ k, song });
+  } catch (e) { setTimeout(() => { try { const [L, R] = ZZ.fn.zzfxM(...song); done(L, R); } catch (er) { delete ZZ.wait[k]; } }, 30); }
+};
+MUS.zzStart = function (k) { const L = this.layers[k], B = ZZ.songs[k]; if (!L || !B || L.src || L.dying) return; const C = AU.ctx, s = C.createBufferSource(); s.buffer = B; s.loop = true; s.connect(L.g); s.start(C.currentTime + 0.05); L.src = s; };
+{ const _play = MUS.play; MUS.play = function (k, fade) { _play.call(this, k, fade); const T = THEMES[k]; if (T && T.zz && AU.ctx) { if (ZZ.songs[k]) this.zzStart(k); else ZZ.render(k); } };
+  const _up = MUS.update; MUS.update = function (dt) { // temas ZzFXM tocam sozinhos: o sequenciador antigo não agenda notas para eles
+    if (this.unlocked && AU.ctx) for (const o in this.layers) { const L = this.layers[o]; if (L.src && L.dying && AU.ctx.currentTime > L.dying - 0.05) { try { L.src.stop(); } catch (e) { } L.src = null; } }
+    _up.call(this, dt); };
+  const _want = MUS.want; MUS.want = function () { const k = _want.call(this);
+    try { if (SET.zzmus === false) return k; if (typeof MJ !== 'undefined' && MJ.on) return 'minijogo'; if (mode !== 'play' || !S) return k;
+      if (k === 'festa' && eventNow('junina')) return 'quadrilha';
+      const r = worldRegion(P.x, P.y), id = r ? r.id : ''; if (k === 'xote' || k === 'casa' || k === 'festa') return k;
+      if (id === 'mata' || id === 'trilha') return 'mata'; if (id === 'leste' || id === 'serrote') return 'xaxado'; if (isRain() && (id === 'fazenda' || k === 'baiao')) return 'chuva';
+    } catch (e) { } return k; }; }
+
+{ const _so = A.setOpt; A.setOpt = v => { _so(v); if (/^zz/.test(v)) { ZZ.cache = {}; try { MUS.pick(true, 1.5); renderModal(); } catch (e) { } } }; }
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
@@ -10892,7 +11092,7 @@ const CONQ = [
 function histDone() { return S && S.hist ? Object.values(S.hist).filter(h => h && h.done).length : 0; }
 function conqTick() {
   if (!S) return; if (!S.conq) { S.conq = {}; if (S.day > 3) { for (const c of CONQ) { let ok = false; try { ok = c[4](); } catch (e) { } if (ok) S.conq[c[0]] = -1; } return; } } // save antigo: já ganha calado
-  for (const c of CONQ) { if (S.conq[c[0]]) continue; let ok = false; try { ok = !!c[4](); } catch (e) { } if (ok) { S.conq[c[0]] = S.day; toast('🏅 Conquista: ' + c[2] + ' — ' + c[3]); SFX.fanfare(false); break; } }
+  for (const c of CONQ) { if (S.conq[c[0]]) continue; let ok = false; try { ok = !!c[4](); } catch (e) { } if (ok) { S.conq[c[0]] = S.day; toast('🏅 Conquista: ' + c[2] + ' — ' + c[3]); if (!(typeof ZZ !== 'undefined' && ZZ.play('conquista'))) SFX.fanfare(false); break; } }
 }
 const conqN = () => S.conq ? Object.keys(S.conq).length : 0;
 function legado() { // pontuação do legado da fazenda
@@ -13396,7 +13596,7 @@ function drawMounted(h, ap, x, y, dir, an, fr) {
   drawRig(r, x, y, flip, 'b');
   const sx = flip ? x - (r.seat[0] - r.ox) : x + (r.seat[0] - r.ox), sy = y + (r.seat[1] - r.oy);
   const rf = an === 'gallop' ? fr % 4 : an === 'trot' ? (fr % 2) * 2 : an === 'walk' ? fr % 2 : 0;
-  drawSpr(charSpr(ap, dir === 0 ? 0 : dir === 1 ? 1 : 3, rf, 'ride'), sx - 12, sy - 21, flip);
+  drawSpr(charSpr(ap, dir === 0 ? 0 : dir === 1 ? 1 : 3, rf, lasso.anim > 0 && ap === S.cf.ap ? 'rideLaco' : 'ride'), sx - 12, sy - 21, flip);
   drawRig(r, x, y, flip, 'f');
   return r;
 }
@@ -13520,7 +13720,7 @@ function worldFx(dt) {
   fishFx();
   const px = ix(P), py = iy(P);
   if (lasso.t) { const a = lasso.t, hx = px + (P.mnt ? 4 : 0), hy = py - (P.mnt ? 26 : 16), ax = ix(a), ay = iy(a) - 14; X.strokeStyle = '#e8d8a8'; X.lineWidth = 1; X.beginPath(); X.moveTo(hx, hy); const d = hyp(ax - hx, ay - hy); X.quadraticCurveTo((hx + ax) / 2, (hy + ay) / 2 + Math.max(0, 34 - d) * 0.4 + 4, ax, ay); X.stroke(); }
-  if (lasso.anim > 0) { lasso.anim -= dt; X.strokeStyle = '#e8d8a8'; X.beginPath(); X.ellipse(px, py - 40, 10, 4, 0, 0, 7); X.stroke(); }
+  if (lasso.anim > 0) { lasso.anim -= dt; X.strokeStyle = '#e8d8a8'; X.beginPath(); X.ellipse(px + (P.mnt ? (P.dir === 2 ? -4 : P.dir === 3 ? 4 : 0) : 0), py - (P.mnt ? 52 : 40), 10, 4, 0, 0, 7); X.stroke(); }
   if (lasso.aim || lasso.fly) lassoDraw(); aboioChargeDraw();
   if (P.lead) { const a = byId(P.lead); if (a) { X.strokeStyle = '#a07040'; X.beginPath(); X.moveTo(px, py - 14); X.lineTo(ix(a) + a.f * 12, iy(a) - 16); X.stroke(); } }
   for (const p of parts) { const al = 1 - p.l / p.m;
@@ -14716,7 +14916,7 @@ const OP = {
   mixC(a, b, k) { return `rgb(${Math.round(a[0] + (b[0] - a[0]) * k)},${Math.round(a[1] + (b[1] - a[1]) * k)},${Math.round(a[2] + (b[2] - a[2]) * k)})`; },
   /* ---------- créditos e controles ---------- */
   credits() {
-    const L = [['h2', 'RF GAMES'], ['rule', ''], ['k', 'Jogo idealizado por:'], ['v', 'Ryan Duarte Borges<br>e Felipe Rodrigues Campos'], ['k', 'Desenvolvimento e criação:'], ['v', 'RF Games'], ['k', 'Fontes (SIL Open Font License):'], ['v', 'Nunito · Bree Serif · Rye<br>Atkinson Hyperlegible · Pixelify Sans'], ['k', 'Personagens (Universal LPC Spritesheet Character Generator, licenças CC-BY-SA 3.0 / GPL 3.0 / OGA-BY 3.0, recoloridos):'], ['v', '<small>bluecarrot16, JaidynReiman, Benjamin K. Smith (BenCreating), Evert, Eliza Wyatt (ElizaWy), TheraHedwig, MuffinElZangano, Durrani, Johannes Sjölund (wulax), Stephen Challener (Redshrike), Pierre Vigier (pvigier), ElizaWy, Matthew Krohn (makrohn), Sander Frenken (castelonia), dalonedrau, Nila122, kheftel, Joe White, Ahmad3366, Michael Whitlock (bigbeargames), Thane Brimhall (pennomi), laetissima, Manuel Riecke (MrBeast), Carlo Enrico Victoria (Nemisys), Matthew Krohn (Makrohn) e a comunidade Liberated Pixel Cup (opengameart.org)</small>'], ['rule', '']];
+    const L = [['h2', 'RF GAMES'], ['rule', ''], ['k', 'Jogo idealizado por:'], ['v', 'Ryan Duarte Borges<br>e Felipe Rodrigues Campos'], ['k', 'Desenvolvimento e criação:'], ['v', 'RF Games'], ['k', 'Fontes (SIL Open Font License):'], ['v', 'Nunito · Bree Serif · Rye<br>Atkinson Hyperlegible · Pixelify Sans'], ['k', 'Personagens (Universal LPC Spritesheet Character Generator, licenças CC-BY-SA 3.0 / GPL 3.0 / OGA-BY 3.0, recoloridos):'], ['v', '<small>bluecarrot16, JaidynReiman, Benjamin K. Smith (BenCreating), Evert, Eliza Wyatt (ElizaWy), TheraHedwig, MuffinElZangano, Durrani, Johannes Sjölund (wulax), Stephen Challener (Redshrike), Pierre Vigier (pvigier), ElizaWy, Matthew Krohn (makrohn), Sander Frenken (castelonia), dalonedrau, Nila122, kheftel, Joe White, Ahmad3366, Michael Whitlock (bigbeargames), Thane Brimhall (pennomi), laetissima, Manuel Riecke (MrBeast), Carlo Enrico Victoria (Nemisys), Matthew Krohn (Makrohn) e a comunidade Liberated Pixel Cup (opengameart.org)</small>'], ['k', 'Expressões do rosto, cabeça idosa e sobrancelhas (LPC Revised, OGA-BY 3.0):'], ['v', '<small>Eliza Wyatt (ElizaWy / DeathsDarling) e Stephen Challener (Redshrike)</small>'], ['k', 'Efeitos e músicas geradas por código (licença MIT):'], ['v', '<small>ZzFX, de Frank Force · ZzFXM, de Keith Clark e Frank Force</small>'], ['rule', '']];
     $('cred').querySelector('.ovb').innerHTML = L.map(([k, v], i) => `<div class="${k}" style="animation-delay:${0.25 + i * 0.45}s">${k === 'h2' ? '<h2>' + v + '</h2>' : v}</div>`).join('') + `<button class="back" style="animation-delay:${0.25 + L.length * 0.45}s" onclick="">Voltar</button>`;
     $('cred').classList.add('on'); document.body.classList.add('ovl'); $('cred').querySelector('.back').onclick = () => { AU.click(); $('cred').classList.remove('on'); document.body.classList.remove('ovl'); };
   },
