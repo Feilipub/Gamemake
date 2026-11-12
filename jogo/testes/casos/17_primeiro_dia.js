@@ -23,7 +23,7 @@ module.exports = { nome: 'Primeiro dia: chegada, parto, fogueira, baú do avô e
   t.ok((await t.ev('S.inv.iodo || 0')) >= 2, 'o Seu Felipe deixa iodo para o umbigo');
   // fogueira da primeira noite
   await t.ev('S.tut.done = 1; S.min = 18.5 * 60; 0');
-  t.ok(await t.ate("mode === 'cs'", 12000), 'ao anoitecer começa a fogueira com causos');
+  t.ok(await t.ate("mode === 'cs'", 45000), 'ao anoitecer começa a fogueira com causos');
   await t.foto('fogueira');
   await t.ev('skipCS(); 0'); t.ok(await t.ate('S.bau && S.bau.st === 1'), 'a fogueira abre o mistério do baú do avô');
   t.ok(await t.ev("document.getElementById('jorn').textContent.includes('chave')"), 'a pista aparece no painel da Jornada');

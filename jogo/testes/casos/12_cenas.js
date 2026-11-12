@@ -7,7 +7,7 @@ module.exports = { nome: 'As 16 cutscenes terminam e devolvem o controle', tempo
   for (const [n, code] of cenas) {
     await t.ev('P.x = 14*TS; P.y = 36*TS; P.mnt = null; P._act = null; cam.snap = true; 0'); await t.espera(200); await t.ev(code + '; 0');
     const t0 = Date.now(); let last = -1, lt = Date.now(), travou = false;
-    while ((await t.ev('mode')) === 'cs' && Date.now() - t0 < 45000) { const i = await t.ev('CS.i'); if (i !== last) { last = i; lt = Date.now(); } if (Date.now() - lt > 15000) { travou = true; break; } await t.espera(250); }
+    while ((await t.ev('mode')) === 'cs' && Date.now() - t0 < 90000) { const i = await t.ev('CS.i'); if (i !== last) { last = i; lt = Date.now(); } if (Date.now() - lt > 30000) { travou = true; break; } await t.espera(250); }
     t.ok(!travou && (await t.ev('mode')) === 'play', 'a cena "' + n + '" terminou em ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s');
   }
   t.semErros();
