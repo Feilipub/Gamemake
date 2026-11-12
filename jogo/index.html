@@ -406,7 +406,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '13.0.0', SAVE_V = 9;
+const GAME_V = '13.1.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -11035,6 +11035,63 @@ MUS.zzStart = function (k) { const L = this.layers[k], B = ZZ.songs[k]; if (!L |
       const r = worldRegion(P.x, P.y), id = r ? r.id : ''; if (k === 'xote' || k === 'casa' || k === 'festa') return k;
       if (id === 'mata' || id === 'trilha') return 'mata'; if (id === 'leste' || id === 'serrote') return 'xaxado'; if (isRain() && (id === 'fazenda' || k === 'baiao')) return 'chuva';
     } catch (e) { } return k; }; }
+
+/* ---------- v13.1: mais músicas (ZzFXM) e sons do sertão (ZzFX) ---------- */
+Object.assign(ZZ_THEMES, {
+  vaquejada: { n: 'Corrida de Mourão (vaquejada)', bpm: 144, root: 62, mode: 'mixo', lead: 'sanfona', acc: 'baiao', bass: 'R.R.5.R.R.R.5.8.', drum: { K: 'K..K.rK.K..K.rK.', t: 'ttTtttTtttTtttTt', s: '' }, ch: [1, 1, 4, 5, 1, 4, 5, 1],
+    A: ['1 . 3 5 8 . 7 5', '6 . 5 4 3 . 2 .', '1 . 3 5 6 . 5 3', '2 . . . - - 5, 7,'], B: ['8 . 8 7 6 . 5 .', '4 . 6 5 4 . 3 .', '2 3 4 5 6 7 8 .', '8 . . . - - - -'] },
+  missa: { n: 'Bendito da Missa do Vaqueiro (igreja)', bpm: 66, root: 60, mode: 'maior', lead: 'pife', acc: 'arp', bass: 'R...............', drum: { K: '', t: '', s: '' }, ch: [1, 4, 1, 5, 6, 4, 5, 1],
+    A: ['3 . . . 4 . 5 .', '5 . . . 4 . 3 .', '2 . . . 3 . 4 .', '3 . . . - - - -'], B: ['5 . . . 6 . 5 .', '4 . . . 3 . 2 .', '1 . . . 2 . 3 .', '1 . . . - - - -'] },
+  mataNoite: { n: 'Lua na Mata (noite na mata)', bpm: 58, root: 62, mode: 'menor', lead: 'pife', acc: 'arp', bass: 'R...............', drum: { K: 'k...............', t: '', s: '....s.......s...' }, ch: [1, 1, 6, 6, 4, 4, 5, 5],
+    A: ['5 . . . - - 4 3', '4 . . . - - - -', '3 . . 2 1 . . -', '7, . . . - - - -'], B: ['1 . . . 3 . . .', '5 . . . 4 3 . .', '2 . . . 7, . . .', '1 . . . - - - -'] },
+  seresta: { n: 'Seresta na Praça (cidade à noite)', bpm: 76, root: 57, mode: 'menor', lead: 'sanfona', acc: 'strum', bass: 'R...5...R...5...', drum: { K: 'k.......k.......', t: '...t.......t....', s: '' }, ch: [1, 4, 5, 1, 6, 4, 5, 1],
+    A: ['5 . . 4 3 . 2 .', '3 . 4 5 . . - -', '6 . . 5 4 . 3 .', '2 . . . - - - -'], B: ['1 . 2 3 . 4 5 .', '6 . 5 . 4 . 3 .', '2 . 3 4 . 3 2 .', '1 . . . - - - -'] },
+  pesca: { n: 'Linha na Água (pescaria)', bpm: 90, root: 65, mode: 'maior', lead: 'pife', acc: 'arp', bass: 'R.......5.......', drum: { K: 'k.......k.......', t: '', s: '..s...s...s...s.' }, ch: [1, 4, 1, 5, 1, 4, 5, 1],
+    A: ['1 . 3 . 5 . 3 .', '4 . 3 . 2 . . -', '1 . 3 . 5 . 6 .', '5 . . . - - - -'], B: ['6 . 5 . 4 . 5 .', '3 . 2 . 1 . . -', '2 . 3 . 4 . 5 .', '1 . . . - - - -'] }
+});
+for (const k of ['vaquejada', 'missa', 'mataNoite', 'seresta', 'pesca']) THEMES[k] = Object.assign({ zz: 1, vol: 1.15 }, ZZ_THEMES[k]); THEMES.missa.vol = 1.9; THEMES.mataNoite.vol = 1.9; THEMES.seresta.vol = 1.4; THEMES.pesca.vol = 1.4;
+{ const _w = MUS.want; MUS.want = function () { const k = _w.call(this);
+  try { if (SET.zzmus === false || !S || mode !== 'play') return k;
+    if (typeof VQ !== 'undefined' && VQ.on) return 'vaquejada';
+    if (IN.on && IN.id === 'igreja') return 'missa';
+    if (typeof FS !== 'undefined' && FS.on) return 'pesca';
+    const r = worldRegion(P.x, P.y), id = r ? r.id : '';
+    if (isNight() && (id === 'mata' || id === 'trilha')) return 'mataNoite';
+    if (isNight() && !IN.on && (id === 'cidade' || id === 'bairro')) return 'seresta';
+  } catch (e) { } return k; }; }
+// efeito com atraso e tom (para cantos de pássaro em sequência)
+ZZ.at = function (name, delay, x, y, vol, rate) {
+  if (!ZZ.ok || SET.zzfx === false || !AU.ok()) return; const P0 = ZZFX_SFX[name]; if (!P0) return; const C = AU.ctx, L = ZZ.cache[name] || (ZZ.cache[name] = []); let buf;
+  if (L.length < 3) { const d = ZZ.fn.zzfxG(...P0); buf = C.createBuffer(1, Math.max(1, d.length), 44100); buf.copyToChannel(d, 0); L.push(buf); } else buf = L[Math.floor(Math.random() * L.length)];
+  const s = C.createBufferSource(), g = C.createGain(); s.buffer = buf; s.playbackRate.value = rate || 1; g.gain.value = (vol || 1) * (x === undefined ? 1 : AU.sp(x, y)); s.connect(g); g.connect(AU.buses.a); s.start(C.currentTime + (delay || 0));
+};
+Object.assign(ZZFX_SFX, {
+  seriema: [.55, .06, 980, .01, .04, .1, 1, 1.6, -9, , , , , .2, , , , .7],
+  chocalho: [.22, .08, 760, .002, .02, .32, 1, 1, 0, 0, 0, 0, 0, 0, 7.5, 0, 0, .3, .04],
+  cururu: [.42, .05, 118, .01, .14, .08, 2, 1, 0, 0, 0, 0, .035, 0, 0, 0, 0, .8, 0, .7, -700],
+  ra: [.28, .1, 640, .004, .03, .05, 5, .4, -22, , , , .04, , , , , .6],
+  rajada: [.5, .1, 220, .7, .7, 1.3, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, .6, 0, 0, -520],
+  bezerro: [.45, .08, 330, .06, .18, .25, 2, 1.2, -1, , , , , .1, 6, , , .7, .05, , -1600],
+  cabrito: [.35, .1, 520, .02, .12, .12, 2, 1, 0, , , , .045, , , , , .6, , .6, -2400],
+  mugidoLonge: [.3, .08, 150, .2, .5, .5, 2, 1.2, -.4, , , , , .1, 4, , .12, .7, , , -700]
+});
+{ const _amb = AU.ambient; AU.ambient = function (dt) { _amb.call(this, dt);
+  try { if (!AU.ok() || SET.zzfx === false || !S || mode !== 'play' || IN.on) return; const night = isNight(), cx = cam.x + VW() / 2, cy = cam.y + VH() / 2, r = worldRegion(cx, cy), id = r ? r.id : '';
+    // seriema gritando longe, de dia, na caatinga, serra e mata
+    if (!night && ['caatinga', 'serrote', 'mata', 'trilha', 'leste', 'caatsul', 'fazenda', 'retiro'].includes(id) && Math.random() < dt * 0.018) { const v = rnd(0.35, 0.6), rt = rnd(0.92, 1.08); for (let i = 0; i < 7; i++) ZZ.at('seriema', i * (0.2 - i * 0.012), undefined, undefined, v * (1 - i * 0.07), rt * (1 - i * 0.025)); }
+    // chocalho no pescoço do gado andando perto
+    if (Math.random() < dt * 0.6) { const a = S.animals.find(q => q.sp === 'boi' && q.own === 'player' && (q._mv || 0) > 2 && Math.abs(q.x - cx) < 140 && Math.abs(q.y - cy) < 110); if (a) { const n = rint(1, 3); for (let i = 0; i < n; i++) ZZ.at('chocalho', i * rnd(0.12, 0.2), a.x, a.y, 0.6, rnd(0.9, 1.15)); } }
+    // mugido distante de vez em quando no pasto
+    if (!night && id === 'fazenda' && Math.random() < dt * 0.01) ZZ.at('mugidoLonge', 0, undefined, undefined, 0.5, rnd(0.85, 1.1));
+    // sapo-cururu e rã à noite perto da água
+    if (night && Math.random() < dt * 1.2) { let near = false; for (let k = 0; k < 6 && !near; k++) { const tx = Math.floor(cx / TS) + rint(-8, 8), ty = Math.floor(cy / TS) + rint(-8, 8); if (gt(tx, ty) === G.WATER) near = true; }
+      if (near) { if (Math.random() < 0.35) ZZ.at('cururu', 0, undefined, undefined, rnd(0.4, 0.7), rnd(0.9, 1.1)); else { const n = rint(2, 4); for (let i = 0; i < n; i++) ZZ.at('ra', i * 0.14, undefined, undefined, rnd(0.3, 0.5), rnd(0.9, 1.2)); } } }
+    // rajadas de vento
+    if ((S.weather === 'vento' ? 0.12 : 0.012) * dt > Math.random()) ZZ.at('rajada', 0, undefined, undefined, S.weather === 'vento' ? 0.7 : 0.35, rnd(0.8, 1.2));
+  } catch (e) { } }; }
+// bezerro e cabrito com voz própria
+{ const _moo = AU.moo; AU.moo = function (x, y, pitch) { if ((pitch || 1) > 1.25 && SET.zzfx !== false && AU.ok()) { ZZ.at('bezerro', 0, x, y, 1, rnd(0.9, 1.1)); return; } return _moo.call(this, x, y, pitch); };
+  const _bl = AU.bleat; if (_bl) AU.bleat = function (x, y, ...r) { if (SET.zzfx !== false && AU.ok() && Math.random() < 0.6) { ZZ.at('cabrito', 0, x, y, 1, rnd(0.85, 1.2)); return; } return _bl.call(this, x, y, ...r); }; }
 
 { const _so = A.setOpt; A.setOpt = v => { _so(v); if (/^zz/.test(v)) { ZZ.cache = {}; try { MUS.pick(true, 1.5); renderModal(); } catch (e) { } } }; }
 /* ---------- CONQUISTAS ---------- */
