@@ -406,7 +406,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '13.1.0', SAVE_V = 9;
+const GAME_V = '14.0.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -2548,7 +2548,7 @@ function drawBldBase(g, b, w, h, top, night) {
 function consSpr(type, stage) {
   return cached(`cs|${type}|${stage}`, 120, 120, g => drawCons(g, type, stage));
 }
-function drawCons(g, type, stage) {
+function drawCons(g, type, stage) { type = ({ cocheira: 'estrebaria', maternidade: 'estrebaria', hotelH: 'casapeao', escola: 'casapeao', picadeiroC: 'galinheiro', pista: 'tronco' })[type] || type;
   const p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x + 4, y + 20, w, h); };
   const W = 112, H = 96, R = mulberry(type.length * 7 + stage);
   if (stage < 3) {
@@ -4528,7 +4528,7 @@ function animalValue(a) {
 function ageStr(a) { const d = a.age; if (a.sp === 'boi' && d < 24) return Math.max(1, Math.round(d * 12 / 14)) + (d < 12 ? ' meses (bezerro)' : ' meses'); if (a.sp === 'galinha') return d < 6 ? 'pinto' : 'adulta'; if (a.sp === 'cabra' && d < 6) return d + ' dias (cabrito)'; if (d < 12) return d + ' dias (filhote)'; return Math.floor(d / 14 + 1) + ' anos'; }
 function catName(a) { if (a.sp === 'burro') return a.sex === 'F' ? 'Muar (mula)' : 'Muar (burro)'; if (a.sp === 'jumento') return a.sex === 'F' ? 'Jumenta' : 'Jumento'; if (a.sp === 'boi' && a.sex === 'M' && a.age >= 24 && (a.carro || 0) >= 100) return 'Boi de carro'; if (a.sp === 'cabra') return a.age < 6 ? 'Cabrito' : a.sex === 'F' ? 'Cabra' : 'Bode'; if (a.sp !== 'boi') return SPN[a.sp] + (a.sex === 'F' ? (a.sp === 'cao' ? ' (fêmea)' : a.sp === 'cavalo' ? ' (égua)' : a.sp === 'galinha' ? ' (galinha)' : ' (fêmea)') : (a.sp === 'cavalo' ? ' (garanhão)' : a.sp === 'galinha' ? ' (galo)' : ' (macho)'));
   if (a.age < 12) return a.sex === 'F' ? 'Bezerra' : 'Bezerro'; if (a.sex === 'F') return a.age < 24 ? 'Novilha' : 'Vaca'; if (a.cast) return a.age < 24 ? 'Garrote (castrado)' : 'Boi'; return a.age < 24 ? 'Garrote' : 'Touro'; }
-const myAnimals = (sp) => S.animals.filter(a => a.own === 'player' && (!sp || a.sp === sp));
+const myAnimals = (sp) => S.animals.filter(a => a.own === 'player' && !a.hotel && (!sp || a.sp === sp));
 const mainHorse = () => S.animals.find(a => a.main);
 const byId = id => S.animals.find(a => a.id === id);
 /* ---------- gado: um dia na vida de cada animal ---------- */
@@ -7216,7 +7216,7 @@ function bankRemote() {
 }
 function obrasTab() {
   let h = fazCard() + '<h3>Lotes da fazenda</h3>' + Object.keys(LOTS).map(k => { const l = S.lots[k], lk = (LOTS[k].exp && !S.exp[LOTS[k].exp]) || !lotOwned(k); return `<div class="card"><div class="row sp"><b>Lote ${k}</b><span>${lk ? '🔒 terreno à venda' : !l ? 'livre' : l.done ? '✅ ' + BUILD[l.b].n : '🚧 ' + BUILD[l.b].n}</span></div>${l && !l.done ? `<div class="row sp">${bar(l.prog * 100)}<span>${Math.round(l.prog * 100)}%</span></div>` : ''}${l && l.done ? `<span class="mut">${BUILD[l.b].f}</span>` : ''}</div>`; }).join('');
-  h += '<h3>Projetos disponíveis</h3><p class="mut">Encomende na Casa do Pedreiro, em Itarantim. Materiais vão direto para o depósito.</p>' + Object.keys(BUILD).map(k => { const b = BUILD[k]; return `<div class="card"><div class="row sp"><b>${b.n}</b><b>${fmt(b.p)}</b></div><span class="mut">${b.f} · ${b.days} dia(s)</span><br><span style="font-size:calc(12px*var(--fs))">${matList(b.mat)}</span>${b.req.length ? '<br><span class="mut">Requer: ' + b.req.map(r => BUILD[r].n).join(', ') + '</span>' : ''}</div>`; }).join('');
+  h += '<h3>Projetos disponíveis</h3><p class="mut">Encomende na Casa do Pedreiro, em Itarantim. Materiais vão direto para o depósito.</p>' + buildKeys().map(k => { const b = BUILD[k]; return `<div class="card"><div class="row sp"><b>${b.n}</b><b>${fmt(b.p)}</b></div><span class="mut">${b.f} · ${b.days} dia(s)</span><br><span style="font-size:calc(12px*var(--fs))">${matList(b.mat)}</span>${b.req.length ? '<br><span class="mut">Requer: ' + b.req.map(r => BUILD[r].n).join(', ') + '</span>' : ''}</div>`; }).join('');
   return h;
 }
 function mapHTML() {
@@ -7428,7 +7428,7 @@ $('ap').addEventListener('click', e => { const b = e.target.closest('[data-a]');
 A.shClose = () => closeSheet();
 A.saNo = () => { SH.conf = null; renderSheet(); };
 A.saTo = k => { const a = SH.a; if (!a || a.dead || !S.animals.includes(a)) return; SH.sub = null; renderSheet(); escort(a, k); };
-A.saSell = () => { const a = SH.a; const p = a.area === 'curral' ? frigPrice(a) : Math.round(frigPrice(a) - 80); soldRecord(a, p, 'frigorífico'); const CC = cenasOn() && a.id !== P.mnt ? Object.assign({}, a, { own: 'player', _cs: 1, _sx: a.x, _sy: a.y, _px: undefined, _py: undefined, _hid: false }) : null; if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; unhitchId(a.id); if (P.mnt === a.id) return; S.animals = S.animals.filter(x => x !== a); S.stats.sold++; receive(p, 'Venda de ' + a.n + (a.area === 'curral' ? '' : ' (com frete)')); toast('💰 ' + a.n + ' vendido(a) por ' + fmt(p)); closeSheet(); if (CC) csTruckOut([CC], p, esc(a.n) + ' vendido(a).'); };
+A.saSell = () => { const a = SH.a; if (a && a.hotel) return say(a.n + ' é hóspede do hotel: o dono vem buscar.', 2600); const p = a.area === 'curral' ? frigPrice(a) : Math.round(frigPrice(a) - 80); soldRecord(a, p, 'frigorífico'); const CC = cenasOn() && a.id !== P.mnt ? Object.assign({}, a, { own: 'player', _cs: 1, _sx: a.x, _sy: a.y, _px: undefined, _py: undefined, _hid: false }) : null; if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; unhitchId(a.id); if (P.mnt === a.id) return; S.animals = S.animals.filter(x => x !== a); S.stats.sold++; receive(p, 'Venda de ' + a.n + (a.area === 'curral' ? '' : ' (com frete)')); toast('💰 ' + a.n + ' vendido(a) por ' + fmt(p)); closeSheet(); if (CC) csTruckOut([CC], p, esc(a.n) + ' vendido(a).'); };
 function nearPost(a) { const t = a || P; let b = -1, bd = 46; POSTS.forEach((p, i) => { const d = hyp(p.x - t.x, p.y - t.y); if (d < bd) { bd = d; b = i; } }); return b; }
 // executa a ação: caminha até o animal e toca a animação correspondente
 function doAnimal(a, k, dur, fn, opt) {
@@ -8854,7 +8854,7 @@ let lidaT = 0;
 let lidaV = 0;
 /* ---------- TUTORIAL GUIADO: os primeiros passos, com seta apontando para onde ir ---------- */
 const tutHorse = () => S.animals.find(a => a.own === 'player' && a.sp === 'cavalo' && !a.dead);
-const tutCow = () => { let best = null, bd = 1e12; for (const a of S.animals) { if (a.own !== 'player' || a.sp !== 'boi' || a.dead) continue; const d = (a.x - P.x) ** 2 + (a.y - P.y) ** 2; if (d < bd) { bd = d; best = a; } } return best; };
+const tutCow = () => { let best = null, bd = 1e12; for (const a of S.animals) { if (a.own !== 'player' || (S.modo === 'haras' ? (a.sp !== 'cavalo' || a.main || a.hotel) : a.sp !== 'boi') || a.dead) continue; const d = (a.x - P.x) ** 2 + (a.y - P.y) ** 2; if (d < bd) { bd = d; best = a; } } return best; };
 const tutTr = () => { const i = trIdx('p1', 'agua'); const t = TROUGHS[i]; return t ? [(t.x + t.w / 2) * TS, (t.y + 0.5) * TS] : null; };
 const TUT = [ // a ordem começa pelo que é mais gostoso: montar e tocar o gado
   { k: 'montar', t: 'Monte de novo no seu cavalo: botão Montar (tecla R). Longe dele, o mesmo botão assobia e ele vem.', at: () => { const a = tutHorse(); return a && !P.mnt ? [a.x, a.y] : null; }, ok: () => !!P.mnt || !tutHorse() },
@@ -8969,8 +8969,8 @@ function csArrive() {
       upd: (dt, u) => { if (!tiao) return; const k = Math.min(1, u / 0.62), nx = lerp(tx0, tx1, easeIO(k)), ny = lerp(ty0, ty1, easeIO(k)); tiao.dist += hyp(nx - tiao.x, ny - tiao.y); tiao.x = nx; tiao.y = ny;
         if (k < 1) { tiao.pose = 'walk'; tiao.fr = Math.floor(tiao.dist / 5) % 4; tiao.dir = 2; } else { tiao.pose = 'idle'; tiao.fr = 0; tiao.dir = 1; if (u > 0.8 && tiao.ap.hat !== 7) { tiao.ap = Object.assign({}, tiao.ap, { hat: 7 }); AU.buckle && AU.buckle(); } } } },
     { d: 2.4, txt: '<i>O chapéu ficou. O lugar dele também.</i>', upd: (dt, u) => { if (tiao) tiao.alpha = 1 - easeIO(u); } },
-    { grade: 'aurora', flash: 1, rays: 0.5, cam: [(P.x + fel.x) / 2 / TS, (P.y + fel.y) / 2 / TS - 0.3], snap: 1, z: 2.3, spd: 1.4, pitch: 46, dof: 0.6, txt: '<i>Do pasto vem um berro comprido…</i>', d: 2.2, fn: () => { CINE.actors.length = 0; tiao = null; if (m) AU.moo(m.x, m.y, 1.25); fel.dir = 2; } },
-    csSay('felipe', 'Escutou? É a Estrela! Ela tá parindo, e é o primeiro bezerro da fazenda nas suas mãos. Corre lá no pasto, que ela precisa de você!', { look: false, fn: two }),
+    { grade: 'aurora', flash: 1, rays: 0.5, cam: [(P.x + fel.x) / 2 / TS, (P.y + fel.y) / 2 / TS - 0.3], snap: 1, z: 2.3, spd: 1.4, pitch: 46, dof: 0.6, txt: '<i>Do pasto vem um berro comprido…</i>', d: 2.2, fn: () => { CINE.actors.length = 0; tiao = null; if (m) (m.sp === 'cavalo' ? AU.neigh(m.x, m.y) : AU.moo(m.x, m.y, 1.25)); fel.dir = 2; } },
+    csSay('felipe', modo() === 'haras' ? 'Escutou? É a Estrela, a égua do Imperador! Ela tá parindo, e é o primeiro potro do haras nas suas mãos. Corre lá no piquete, que ela precisa de você!' : 'Escutou? É a Estrela! Ela tá parindo, e é o primeiro bezerro da fazenda nas suas mãos. Corre lá no pasto, que ela precisa de você!', { look: false, fn: two }),
     { clr: 1, d: 0.1 }
   ], () => { CINE.actors.length = 0; fel.cs = false; fel.pose = 'idle'; partoStart(); });
 }
@@ -8987,17 +8987,17 @@ function csNasce(m) {
   const birth = () => { if (S.story.calf && byId(S.story.calf)) return; m.preg = 0; m.labor = 0; const c = birthCalf(m, { help: 1 }); bond(m, 12); bond(c, 12); hist(m, 'Primeiro parto na fazenda com ' + S.cf.name + ' ao lado'); c.x = x - s * 12; c.y = y + 5; c._fx = { pose: 'lie', t0: drawT, until: drawT + 4 }; CS._calf = c; S.story.calf = c.id; P._act = null; for (let i = 0; i < 8; i++) heart(x - s * 12 + rnd(-6, 6), y - 10); AU.chime(); };
   cutscene([
     { fade: 0, cam: [x / TS, y / TS - 0.6], snap: 0, z: 2.3, pitch: 40, dof: 0.5, txt: esc(m.n) + ' está deitada, inquieta. Chegou a hora.', d: 2.6, fn: () => { P.mnt = null; P.cart = false; P.x = x - s * 15; P.y = y + 3; P.dir = s > 0 ? 3 : 2; P._act = { k: 'calving', t: 0, dur: 99, a: m, opt: {} }; m._fx = { pose: 'lie', t0: drawT, until: drawT + 60 }; AU.moo(x, y, 1.15); } },
-    { txt: 'Você se ajoelha do lado dela, fala baixinho e ajuda com cuidado.', d: 2.8, upd: dt => { if (Math.random() < dt * 1.2) AU.moo(x, y, 1.2); if (Math.random() < dt * 3) dust(P.x, P.y, 1); } },
-    { txt: 'Mais uma força, ' + esc(m.n) + '…', d: 1.6, fn: () => { m._fx = { pose: 'scared', t0: drawT, until: drawT + 1.4 }; AU.moo(x, y, 1.3); } },
+    { txt: 'Você se ajoelha do lado dela, fala baixinho e ajuda com cuidado.', d: 2.8, upd: dt => { if (Math.random() < dt * 1.2) (m.sp === 'cavalo' ? AU.neigh(x, y) : AU.moo(x, y, 1.2)); if (Math.random() < dt * 3) dust(P.x, P.y, 1); } },
+    { txt: 'Mais uma força, ' + esc(m.n) + '…', d: 1.6, fn: () => { m._fx = { pose: 'scared', t0: drawT, until: drawT + 1.4 }; m.sp === 'cavalo' ? AU.neigh(x, y) : AU.moo(x, y, 1.3); } },
     { txt: '', d: 0.2, fn: () => { m._fx = { pose: 'lie', t0: drawT, until: drawT + 60 }; birth(); } },
-    { txt: 'Nasceu! A mãe se levanta e lambe o bezerro, que já tenta ficar de pé nas pernas bambas.', d: 3.4, fn: () => { m._fx = { pose: 'sniff', t0: drawT, until: drawT + 3.6 }; } },
+    { txt: 'Nasceu! A mãe se levanta e lambe ' + (m.sp === 'cavalo' ? 'o potrinho, que já tenta ficar de pé nas pernas compridas.' : 'o bezerro, que já tenta ficar de pé nas pernas bambas.'), d: 3.4, fn: () => { m._fx = { pose: 'sniff', t0: drawT, until: drawT + 3.6 }; } },
     { clr: 1, d: 0.1 }
   ], () => { P._act = null; m._fx = null; if (CS._calf) CS._calf._fx = null; CS._calf = null; csClear(); birth(); nameCalf(); });
 }
 function nameCalf() {
   const c = byId(S.story.calf); if (!c) return introDone(null);
-  const F = c.sex === 'F', sug = F ? ['Esperança', 'Estrelinha', 'Mimosa', 'Aurora', 'Boneca', 'Graúna'] : ['Tiãozinho', 'Pintado', 'Sertão', 'Valente', 'Trovãozinho', 'Bonito'];
-  showModal('🐄 Dê um nome ' + (F ? 'à bezerra' : 'ao bezerro'), null, null, () => `<div class="card"><b>${F ? 'É uma bezerra!' : 'É um bezerro!'}</b> ${animalImg(c, 1)}<p class="mut">O primeiro animal nascido na ${FN()} desde que você chegou. Que nome ${F ? 'ela' : 'ele'} vai ter?</p><input id="calfN" maxlength="14" value="${esc(c.n)}" style="width:100%"><div class="ch" style="margin-top:8px">${sug.map(n => `<button data-a="calfSug" data-v="${n}">${n}</button>`).join('')}</div><div class="row" style="margin-top:10px">${btn('Dar o nome', 'calfName')}</div></div>`);
+  const F = c.sex === 'F', H0 = c.sp === 'cavalo', sug = H0 ? (F ? ['Estrela d’Alva', 'Ventaninha', 'Princesa', 'Aurora', 'Pitanga', 'Graúna'] : ['Imperadorzinho', 'Trovão', 'Sertão', 'Corisco', 'Relâmpago', 'Tiãozinho']) : F ? ['Esperança', 'Estrelinha', 'Mimosa', 'Aurora', 'Boneca', 'Graúna'] : ['Tiãozinho', 'Pintado', 'Sertão', 'Valente', 'Trovãozinho', 'Bonito'];
+  showModal((H0 ? '🐴' : '🐄') + ' Dê um nome ' + (F ? 'à ' : 'ao ') + cria(c, F), null, null, () => `<div class="card"><b>${F ? 'É uma ' + cria(c, F) + '!' : 'É um ' + cria(c, F) + '!'}</b> ${animalImg(c, 1)}<p class="mut">O primeiro animal nascido na ${FN()} desde que você chegou. Que nome ${F ? 'ela' : 'ele'} vai ter?</p><input id="calfN" maxlength="14" value="${esc(c.n)}" style="width:100%"><div class="ch" style="margin-top:8px">${sug.map(n => `<button data-a="calfSug" data-v="${n}">${n}</button>`).join('')}</div><div class="row" style="margin-top:10px">${btn('Dar o nome', 'calfName')}</div></div>`);
 }
 A.calfSug = v => { const i = $('calfN'); if (i) i.value = v; };
 A.calfName = () => { const c = byId(S.story.calf), n = (($('calfN') && $('calfN').value) || '').trim(); if (c && n && n !== c.n) { hist(c, 'Batizado de ' + n + ' por ' + S.cf.name); c.n = n; } closeModal(); introDone(c); };
@@ -9006,7 +9006,7 @@ function introDone(c) {
   if (S.tut) { S.tut.arm = 0; } S.flags.tutAgua = 0; jornHUD();
   addInv('iodo', 2, true);
   if (c) { toast('🐮 ' + c.n + ' nasceu na ' + FN() + '!'); setTimeout(() => toast('🧴 O Seu Felipe deixou iodo na mochila: cure o umbigo de ' + c.n + ' hoje (ficha › Manejo).'), 1600); }
-  say('Agora siga o tutorial no canto da tela. Primeiro, monte de novo e vá tocar o gado!', 6000);
+  say('Agora siga o tutorial no canto da tela. Primeiro, monte de novo e vá ' + (modo() === 'haras' ? 'juntar a tropa!' : 'tocar o gado!'), 6000);
   SAVE.save('auto', true);
 }
 function introSkipAll() { // usado pelos testes automáticos: pula a chegada inteira
@@ -9527,7 +9527,7 @@ function desafioHTML() {
 function rankList() {
   regionInit(); const V = { boi: 3200, cavalo: 7000, burro: 2600, jumento: 1800, cabra: 400, galinha: 40 };
   const L = Object.keys(FARMS).map(k => { const F = FARMS[k], st = S.region.farms[k], hd = farmHerd(k); let v = st.money; for (const sp in hd) v += (V[sp] || 300) * hd[sp]; return { k, n: F.n, who: NPCDEF[F.own] ? NPCDEF[F.own].n : '', v: Math.round(v) }; });
-  L.push({ k: 'me', n: 'Fazenda ' + FN() + '', who: S.cf.name, v: patrimonio() }); return L.sort((a, b) => b.v - a.v);
+  L.push({ k: 'me', n: FT() + '', who: S.cf.name, v: patrimonio() }); return L.sort((a, b) => b.v - a.v);
 }
 function rankCheck() {
   const L = rankList(), pos = L.findIndex(x => x.k === 'me') + 1; if (!pos) return; const best = S.rankBest || 99;
@@ -10756,9 +10756,9 @@ function decoPlace(t) {
 const PLACA_POS = [56.4, 42.4];
 function placaApply() { if (!PROPS.some(p => p.t === 'placaFaz')) PROPS.push({ t: 'placaFaz', x: PLACA_POS[0] * TS, y: PLACA_POS[1] * TS, v: 1, faz: 1 }); }
 function placaSpr() {
-  const nm = FN().normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/[^A-Z0-9 .'-]/g, ''), st = (S.placa && S.placa.st) || 0;
-  return cached('placaFaz|' + nm + '|' + st, 96, 72, g => {
-    const p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); }, BX = 48, BY = 70, L1 = 'FAZENDA', w = Math.max(L1.length, nm.length) * 4 + 8, x0 = BX - (w >> 1);
+  const L0 = modo() === 'haras' ? 'HARAS' : 'FAZENDA', nm = FN().normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/[^A-Z0-9 .'-]/g, ''), st = (S.placa && S.placa.st) || 0;
+  return cached('placaFaz|' + L0 + nm + '|' + st, 96, 72, g => {
+    const p = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); }, BX = 48, BY = 70, L1 = L0, w = Math.max(L1.length, nm.length) * 4 + 8, x0 = BX - (w >> 1);
     const wood = st === 1 ? '#2e2e34' : st === 2 ? '#a8a090' : '#7a4a22', woodL = shade(wood, .25), woodD = shade(wood, -.35), board = st === 1 ? '#f0e8d0' : st === 2 ? '#d8d0bc' : st === 3 ? '#b07a44' : '#c8925a', ink = st === 1 ? '#1c1c20' : st === 3 ? '#f4e0b0' : '#3a1e0c';
     // pilares
     for (const px of [x0 - 1, x0 + w - 3]) { p(px, BY - 34, 4, 34, wood); p(px, BY - 34, 1, 34, woodL); p(px + 3, BY - 34, 1, 34, woodD); if (st === 2) for (let y = BY - 34; y < BY; y += 4) p(px, y, 4, 1, woodD); if (st === 1) p(px - 1, BY - 36, 6, 2, wood); }
@@ -10855,7 +10855,7 @@ function drawPntFx() { if (!PNT.on) return; const x = PNT.cx * TS, y = PNT.cy * 
 /* ---------- telas ---------- */
 function fazCard() {
   fzInit(); const inv = Object.keys(S.decoInv).filter(k => S.decoInv[k] > 0 && DECO[k]).reduce((a, k) => a + S.decoInv[k], 0);
-  return `<h3>🎨 Personalizar a fazenda</h3><div class="card"><div class="row sp"><b>${esc('Fazenda ' + FN())}</b>${btn('Nome e placa', 'fazNome')}</div><p class="mut">Enfeites colocados: ${S.deco.length} · guardados: ${inv} · cercas suas: ${S.fz.f.length} · porteiras: ${S.fz.g.length} · casas de caminho: ${Object.keys(S.fz.p).length}</p><div class="row">${btn('🌳 Enfeites e plantas', 'fazLoja')}${btn('🛠️ Caminhos e cercas', 'fazPinta')}</div><p class="mut">Para mudar um enfeite de lugar, segure o dedo nele por 3 segundos (ou a tecla V perto dele) e arraste. Lá dá para guardar também.</p></div>`;
+  return `<h3>🎨 Personalizar a fazenda</h3><div class="card"><div class="row sp"><b>${esc(FT())}</b>${btn('Nome e placa', 'fazNome')}</div><p class="mut">Enfeites colocados: ${S.deco.length} · guardados: ${inv} · cercas suas: ${S.fz.f.length} · porteiras: ${S.fz.g.length} · casas de caminho: ${Object.keys(S.fz.p).length}</p><div class="row">${btn('🌳 Enfeites e plantas', 'fazLoja')}${btn('🛠️ Caminhos e cercas', 'fazPinta')}</div><p class="mut">Para mudar um enfeite de lugar, segure o dedo nele por 3 segundos (ou a tecla V perto dele) e arraste. Lá dá para guardar também.</p></div>`;
 }
 A.fazPinta = () => pntStart();
 A.fazNome = () => showModal('🪧 Nome e placa da fazenda', null, null, () => `<div class="card"><label>Nome da fazenda</label><div class="row"><span>Fazenda</span><input id="fazNm" maxlength="18" value="${esc(FN())}" style="flex:1"></div><p class="mut">Aparece na placa da entrada, nas conversas e no ranking dos criadores.</p></div><div class="card"><label>Estilo da placa</label><div class="ch">${PLACA_ST.map(([k, n], i) => `<button data-a="fazPl" data-v="${i}" class="${(S.placa.st || 0) === i ? 'on' : ''}">${n}</button>`).join('')}</div><div style="text-align:center;margin-top:6px">${sprHTML(placaSpr(), 3, 'pf|' + FN() + '|' + (S.placa.st || 0))}</div></div><div class="row">${btn('Salvar', 'fazNmOk')}</div>`, 'scroll');
@@ -11094,6 +11094,162 @@ Object.assign(ZZFX_SFX, {
   const _bl = AU.bleat; if (_bl) AU.bleat = function (x, y, ...r) { if (SET.zzfx !== false && AU.ok() && Math.random() < 0.6) { ZZ.at('cabrito', 0, x, y, 1, rnd(0.85, 1.2)); return; } return _bl.call(this, x, y, ...r); }; }
 
 { const _so = A.setOpt; A.setOpt = v => { _so(v); if (/^zz/.test(v)) { ZZ.cache = {}; try { MUS.pick(true, 1.5); renderModal(); } catch (e) { } } }; }
+/* ============ v14: MODO HARAS — o mesmo sertão, mas a sua terra vira um haras ============
+   Escolhido na criação do personagem. A fazenda mantém o desenho (portas, porteiras, cochos), mas cada área ganha
+   outro uso: piquetes de éguas, potros e garanhão, picadeiro de areia, redondel de doma, maternidade, hotel de cavalos,
+   cocheiras e uma pista no piquete grande. Renda: venda de potros, cobertura, provas, hotel e aulas. */
+const modo = () => (typeof S !== 'undefined' && S && S.modo === 'haras') ? 'haras' : 'gado';
+function FT() { return (modo() === 'haras' ? 'Haras ' : 'Fazenda ') + FN(); }
+const HAR_AREAS = { p1: 'Piquete das Éguas', p2: 'Piquete dos Potros', p3: 'Piquete do Garanhão', p4: 'Pista e Piquete Grande', curral: 'Picadeiro de Areia', receb: 'Redondel de Doma', conf: 'Maternidade', quar: 'Hotel de Cavalos', haras: 'Cocheiras e Estábulo' };
+const HAR = { n0: null, tut0: null, jor0: null };
+// obras: as de gado somem no haras e as do haras só aparecem lá
+Object.assign(BUILD, {
+  cocheira: { n: 'Cocheira Nova (6 baias)', p: 15000, mat: { madeira: 3, telha: 3, tijolo: 2, cimento: 12 }, days: 3, req: [], modo: 'haras', f: '+6 baias no estábulo para os cavalos dormirem cobertos.' },
+  picadeiroC: { n: 'Picadeiro Coberto', p: 22000, mat: { madeira: 4, telha: 4, cimento: 10, arame: 2 }, days: 4, req: [], modo: 'haras', f: 'Treino de andamento 2x mais rápido no picadeiro, +4 nas provas de marcha e aulas mais caras.' },
+  maternidade: { n: 'Maternidade de Éguas', p: 12000, mat: { madeira: 2, telha: 2, tijolo: 2, cimento: 8 }, days: 3, req: [], modo: 'haras', f: 'Potros nascem mais fortes (+5 de genética) e as éguas ficam mais felizes.' },
+  hotelH: { n: 'Hotel de Cavalos', p: 14000, mat: { madeira: 3, telha: 2, cimento: 10, arame: 2 }, days: 3, req: [], modo: 'haras', f: '+4 vagas de hospedagem para cavalos de clientes (diárias).' },
+  escola: { n: 'Escolinha de Equitação', p: 9000, mat: { madeira: 2, telha: 1, tijolo: 1 }, days: 2, req: [], modo: 'haras', f: '+2 alunos por aula e aula mais cara.' },
+  pista: { n: 'Pista de Corrida Oficial', p: 18000, mat: { madeira: 3, arame: 4, cimento: 6 }, days: 3, req: [], modo: 'haras', f: '+8 nas corridas e prêmios maiores nas provas.' }
+});
+for (const k of ['ordenha', 'cocho', 'tronco', 'tanque']) if (BUILD[k]) BUILD[k].modo = 'gado';
+const buildKeys = () => Object.keys(BUILD).filter(k => !BUILD[k].modo || BUILD[k].modo === modo());
+const nBuilt = t => S && S.lots ? Object.values(S.lots).filter(l => l && l.done && l.b === t).length : 0;
+{ const _b = built; built = function (t) { if (t === 'estrebaria' && modo() === 'haras') return true; return _b(t); }; }
+{ const _fs = fenceStyleAt; fenceStyleAt = function (tx, ty) { if (modo() === 'haras' && tx < 60 && ty < 90) return 'm'; return _fs(tx, ty); }; }
+// a fazenda do jogo novo ou do save carregado, conforme o modo
+function modeSetup() {
+  if (!HAR.n0) { HAR.n0 = {}; for (const k in AREAS) HAR.n0[k] = AREAS[k].n; HAR.tut0 = TUT.map(t => t.t); HAR.jor0 = JORNADA.slice(); }
+  const h = modo() === 'haras';
+  for (const k in HAR.n0) if (AREAS[k]) AREAS[k].n = h && HAR_AREAS[k] ? HAR_AREAS[k] : HAR.n0[k];
+  TUT.forEach((t, i) => { t.t = HAR.tut0[i]; });
+  JORNADA.length = 0; for (const c of (h ? JOR_HARAS : HAR.jor0)) JORNADA.push(c);
+  if (!h) return;
+  const T = TUT.find(t => t.k === 'aboio'); if (T) T.t = 'Agora a parte boa: chegue perto das éguas e solte o Aboio (tecla Q). A tropa segue você!';
+  // chão: areia no picadeiro e no redondel, capim na maternidade e no hotel, pista de areia no piquete grande
+  const fill = (k, g) => { const r = AREAS[k].r; for (let y = r[1] + 1; y < r[3]; y++) for (let x = r[0] + 1; x < r[2]; x++) { const i = gi(x, y); if (!obj[i] && ground[i] !== G.WATER) ground[i] = g; } };
+  fill('curral', G.SAND); fill('receb', G.SAND); fill('conf', G.PAST); fill('quar', G.PAST);
+  { const r = AREAS.p4.r, x0 = r[0] + 2, x1 = r[2] - 2, y0 = r[1] + 2, y1 = r[3] - 2; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { if (!(x === x0 || x === x1 || y === y0 || y === y1)) continue; const i = gi(x, y); if (!obj[i]) ground[i] = G.SAND; }
+    for (let x = x0 + 1; x < x1; x += 3) for (const y of [y0 + 1, y1 - 1]) { const i = gi(x, y); if (!obj[i] && !PROPS.some(q => Math.abs(q.x - (x + 0.5) * TS) < 20 && Math.abs(q.y - (y + 0.9) * TS) < 20)) PROPS.push({ t: 'mourao', x: (x + 0.5) * TS, y: (y + 0.9) * TS, v: 1 }); } }
+  // tira o que era de gado (balança e tronco de contenção) e põe cavaletes de sela e obstáculos no picadeiro
+  for (let i = PROPS.length - 1; i >= 0; i--) { const p = PROPS[i]; if (p.t === 'balanca' || p.t === 'troncoCont') { const j = gi(Math.floor(p.x / TS), Math.floor(p.y / TS - 0.1)); if (obj[j] === 3) obj[j] = 0; PROPS.splice(i, 1); } }
+  for (const [t, x, y] of [['cavalete', 41.6, 34.6], ['cavalete', 48.4, 34.6], ['pneus', 44.5, 38.2], ['pneus', 46.5, 38.2], ['cavalete', 52.6, 36.6]]) PROPS.push({ t, x: x * TS, y: y * TS, v: 2 });
+  if (typeof GCH2 !== 'undefined') GCH2.clear();
+}
+{ const _g = genMap; genMap = function () { _g(); try { modeSetup(); } catch (e) { console.error(e); } }; }
+// as éguas no lugar das vacas na hora do tutorial e do primeiro parto
+function harasStart() {
+  const put = (a, k) => { const p = randIn(k); a.x = p[0]; a.y = p[1]; S.animals.push(a); return a; };
+  const g = put(mkAnimal('cavalo', 'mm', { sex: 'M', n: 'Imperador', age: ageDays(8), gen: 76, hap: 80, cond: 64, temp: 'esperto' }), 'p3'); g.marca = 'TS'; hist(g, 'O garanhão da casa: Mangalarga Marchador de pedigree');
+  const e = put(mkAnimal('cavalo', 'mm', { sex: 'F', n: 'Estrela', age: ageDays(9), gen: 68, hap: 85, cond: 62, temp: 'dócil' }), 'p1'); e.marca = 'TS'; e.preg = 3;
+  S.story = S.story || { intro: 0, mem: {}, seen: {} }; S.story.estrela = e.id; e._pai = g.id; e._paiN = 'Imperador'; e._paiSp = 'cavalo'; e._paiBr = 'mm'; e._paiGen = 76; hist(e, 'Prenha do Imperador, o garanhão da casa');
+  const v = put(mkAnimal('cavalo', 'campolina', { sex: 'F', n: 'Ventania', age: ageDays(7), gen: 64, hap: 80, temp: 'calmo' }), 'p1'); v.marca = 'TS';
+  S.gadoV = 0; S.har = harInit();
+}
+function harInit() { return { cob: [], hosp: [], hreq: [], nCob: 0, nAula: 0, nProva: 0, vit: 0, nHosp: 0, aulaD: -1, aulaN: 0, ganho: 0 }; }
+const harS = () => S.har || (S.har = harInit());
+const harHorses = () => S.animals.filter(a => a.own === 'player' && a.sp === 'cavalo' && !a.dead && !a.hotel);
+const harAdult = a => (a.age || 0) >= MATURE.cavalo;
+const harEquinos = () => S.animals.filter(a => a.own === 'player' && isEquine(a) && !a.dead && !a.hotel).length;
+const cria = (a, F) => a && a.sp === 'boi' ? (F ? 'bezerra' : 'bezerro') : (F ? 'potra' : 'potro');
+/* ---------- renda do haras ---------- */
+const HAR_DONOS = ['Seu Abílio (Serra Azul)', 'Dona Graça (Lagoa Seca)', 'Ryan Duarte', 'Coronel Tibúrcio', 'Doutor Mendes', 'Zé Preá (Umburana)', 'Vaqueiro Biu', 'Dona Cida', 'Haras do Cariri', 'Seu Nenem'];
+const HAR_RIVAIS = ['Haras Lagoa Seca', 'Haras Serra Azul', 'Rancho Duarte', 'Haras do Cariri', 'Haras Três Pontas', 'Cabanha do Pardo', 'Haras Santa Fé', 'Rancho Itapetinga'];
+const HAR_PROVAS = { marcha: ['Prova de Marcha', '🎵', 'Andamento, ritmo e conforto. Só para cavalos de marcha ou esquipado.'], corrida: ['Corrida na Pista', '🏁', 'Velocidade e arrancada na reta.'], morfo: ['Exposição de Morfologia', '🎀', 'Beleza, raça, pelagem e cuidado (escove antes!).'] };
+const harNivel = () => { const v = harS().vit; return v < 3 ? ['Regional', 150, [1500, 700, 300], 54] : v < 10 ? ['Estadual', 350, [4000, 1800, 800], 66] : ['Nacional', 800, [12000, 5000, 2000], 78]; };
+function harScore(a, k) {
+  const g = gaitOf(a), tr = a.trof || 0;
+  if (k === 'marcha') { if (!g || g.t === 'trote') return null; return g.nv * 0.55 + (a.gen || 60) * 0.35 + rnd(0, 20) + (nBuilt('picadeiroC') ? 4 : 0) + tr * 0.6; }
+  if (k === 'corrida') { const B = horseStats(a).B; return (B.v[2] - 70) * 1.2 + (a.gen || 60) * 0.4 + (g ? g.nv * 0.1 : 0) + rnd(0, 20) + (nBuilt('pista') ? 8 : 0) + tr * 0.6; }
+  return (a.gen || 60) * 0.6 + stars(a) * 6 + (COAT_RARE(a.coat || '') ? 10 : 0) + (a.cond || 50) * 0.15 + ((a.brushed || -9) >= S.day - 1 ? 5 : 0) + rnd(0, 15) + tr * 0.4;
+}
+function harasDay() {
+  if (modo() !== 'haras') return; const H = harS();
+  H.cob = H.cob.filter(c => c.ate >= S.day); H.hreq = H.hreq.filter(c => c.ate >= S.day);
+  const gar = harHorses().filter(a => a.sex === 'M' && !a.cast && harAdult(a));
+  if (gar.length && H.cob.length < 3 && Math.random() < 0.45) { const best = gar.reduce((a, b) => animalValue(b) > animalValue(a) ? b : a); const p = Math.round((350 + animalValue(best) * 0.05 + (best.trof || 0) * 120 + H.vit * 40) / 10) * 10;
+    H.cob.push({ id: Date.now() % 1e9 + Math.floor(Math.random() * 999), dono: pick(HAR_DONOS), egua: pick(['Mangalarga', 'Campolina', 'Quarto de Milha', 'Crioula', 'Nordestina', 'Pampa']), p, ate: S.day + 2 }); toast('🐎 Pedido de cobertura: ' + H.cob[H.cob.length - 1].dono + ' paga ' + fmt(p) + '. Veja em Menu › Haras.'); }
+  // hotel: diária só se o hóspede tiver água no cocho do hotel
+  const cap = harHotelCap(), wi = trIdx('quar', 'agua');
+  for (const h of H.hosp.slice()) { const a = byId(h.id); if (!a) { H.hosp.splice(H.hosp.indexOf(h), 1); continue; }
+    const ok = wi < 0 || S.tr[wi] > 5; if (ok) { receive(h.d, 'Hotel de cavalos: ' + a.n); H.ganho += h.d; } else toast('💧 O hóspede ' + a.n + ' ficou sem água no Hotel: ' + h.dono + ' não pagou a diária.');
+    if (--h.dias <= 0) { S.animals.splice(S.animals.indexOf(a), 1); H.hosp.splice(H.hosp.indexOf(h), 1); toast('🐴 ' + h.dono + ' buscou ' + a.n + '. Obrigado pela hospedagem!'); } }
+  if (owned('quar') && H.hosp.length + H.hreq.length < cap && Math.random() < 0.35) { const br = pick(['mm', 'qm', 'campolina', 'crioulo', 'arabe', 'nordestino']); H.hreq.push({ id: Date.now() % 1e9 + Math.floor(Math.random() * 999), dono: pick(HAR_DONOS), br, n: pick(['Faísca', 'Cigano', 'Duquesa', 'Baronesa', 'Relâmpago', 'Sultão', 'Rainha', 'Corisco', 'Lua', 'Xodó']), dias: rint(3, 7), d: rint(5, 9) * 10, ate: S.day + 2 }); toast('🏨 ' + H.hreq[H.hreq.length - 1].dono + ' quer hospedar um cavalo no seu haras. Veja em Menu › Haras.'); }
+  H.aulaN = 0;
+}
+const harHotelCap = () => owned('quar') ? 2 + nBuilt('hotelH') * 4 : 0;
+{ const _d = dayTick; dayTick = function (...a) { const r = _d.apply(this, a); try { harasDay(); } catch (e) { console.error(e); } return r; }; }
+// cavalo bem treinado, premiado e de pelagem rara vale mais no haras
+{ const _v = animalValue; animalValue = function (a) { const v = _v(a); if (modo() !== 'haras' || a.sp !== 'cavalo' || a.hotel) return v; const g = gaitOf(a); return Math.round(v * (1 + (g ? g.nv / 250 : 0) + (a.trof || 0) * 0.06 + (COAT_RARE(a.coat || '') ? 0.25 : 0))); }; }
+// maternidade: potros mais fortes; picadeiro coberto: treino mais rápido
+{ const _bc = birthCalf; birthCalf = function (m, o) { const c = _bc(m, o); if (c && c.sp === 'cavalo' && modo() === 'haras' && nBuilt('maternidade')) c.gen = Math.min(100, (c.gen || 60) + 5); return c; }; }
+{ const _gt = gaitTick; gaitTick = function () { _gt(); if (modo() !== 'haras' || !nBuilt('picadeiroC') || !P || !P.mnt) return; const h = byId(P.mnt), g = h && gaitOf(h); if (g && areaAt(P.x, P.y) === 'curral' && hyp(P._vx || 0, P._vy || 0) > 6) g.nv = Math.min(100, g.nv + 0.035); }; }
+/* ---------- ações ---------- */
+A.harCob = v => { const H = harS(), c = H.cob.find(q => q.id === +v); if (!c) return; const gar = harHorses().filter(a => a.sex === 'M' && !a.cast && harAdult(a) && a._cobD !== S.day); if (!gar.length) return say('Seu garanhão já cobriu hoje. Amanhã ele atende de novo.', 2600);
+  const g = gar.reduce((a, b) => animalValue(b) > animalValue(a) ? b : a); g._cobD = S.day; receive(c.p, 'Cobertura de ' + g.n + ' (' + c.dono + ')'); H.nCob++; H.ganho += c.p; hist(g, 'Cobriu a égua ' + c.egua + ' de ' + c.dono); H.cob.splice(H.cob.indexOf(c), 1); ZZ.play && ZZ.play('coin'); renderModal(); };
+A.harCobNo = v => { const H = harS(); H.cob = H.cob.filter(q => q.id !== +v); renderModal(); };
+A.harHosp = v => { const H = harS(), r = H.hreq.find(q => q.id === +v); if (!r) return; if (H.hosp.length >= harHotelCap()) return say('O hotel está cheio. Construa mais vagas (obra Hotel de Cavalos).', 2600);
+  const a = mkAnimal('cavalo', r.br, { sex: Math.random() < 0.5 ? 'M' : 'F', n: r.n, age: ageDays(rint(5, 10)), hap: 75 }); const p = randIn('quar'); a.x = p[0]; a.y = p[1]; a.cast = a.sex === 'M' ? 1 : 0; a.hotel = { dono: r.dono }; S.animals.push(a);
+  H.hosp.push({ id: a.id, dono: r.dono, dias: r.dias, d: r.d }); H.nHosp++; H.hreq.splice(H.hreq.indexOf(r), 1); toast('🏨 ' + a.n + ' chegou ao Hotel de Cavalos. Mantenha o cocho d’água cheio.'); renderModal(); };
+A.harHospNo = v => { const H = harS(); H.hreq = H.hreq.filter(q => q.id !== +v); renderModal(); };
+A.harAula = () => { const H = harS(), hr = hour(); if (hr < 7 || hr >= 17) return say('Aula só de dia, das 7h às 17h.', 2400); if (P.x > 60 * TS || IN.on) return say('A aula é no picadeiro do seu haras. Volte para a fazenda.', 2600);
+  if (H.aulaN >= 2) return say('Já teve duas turmas hoje. Os cavalos precisam descansar.', 2400);
+  const ok = harHorses().filter(a => harAdult(a) && !a.main && !(a.preg > 0 && a.preg < 3) && ['dócil', 'calmo'].includes(a.temp || 'dócil'));
+  if (!ok.length) return say('Precisa de pelo menos um cavalo adulto, manso (dócil ou calmo) e que não seja a sua montaria.', 3200);
+  const esc2 = nBuilt('escola'), al = Math.min(2 + 2 * esc2, ok.length * 2 + esc2), pr = 40 + 15 * esc2 + (nBuilt('picadeiroC') ? 10 : 0), t = al * pr;
+  H.aulaN++; H.nAula++; H.ganho += t; S.min = Math.min(S.min + 90, 17.9 * 60); P.en = Math.max(0, P.en - 8); ok.forEach(a => { a.hap = Math.min(100, (a.hap || 70) + 2); });
+  receive(t, 'Aula de equitação (' + al + ' alunos)'); toast('🧑‍🎓 Aula de equitação no picadeiro: ' + al + ' alunos, ' + fmt(t) + '.'); renderModal(); };
+A.harProva = v => { const [k, id] = v.split('|'), a = byId(+id), H = harS(); if (!a) return; const N = harNivel(), sc = harScore(a, k);
+  if (sc === null) return say(a.n + ' não é de marcha: inscreva na corrida ou na morfologia.', 2600); if (!pay(N[1], 'Inscrição: ' + HAR_PROVAS[k][0])) return;
+  a._provaD = S.day; H.nProva++; const L = [{ n: a.n, d: FT(), s: sc, me: 1 }]; const riv = HAR_RIVAIS.slice().sort(() => Math.random() - 0.5).slice(0, 5);
+  for (const r of riv) L.push({ n: pick(['Ventania', 'Trovador', 'Diamante', 'Princesa', 'Bravo', 'Capricho', 'Majestade', 'Cacique', 'Ouro Fino', 'Gaivota']), d: r, s: N[3] + rnd(-14, 14) });
+  L.sort((x, y) => y.s - x.s); const pos = L.findIndex(q => q.me) + 1, prem = N[2][pos - 1] * (nBuilt('pista') && k === 'corrida' ? 1.25 : 1) || 0;
+  if (prem) { receive(prem, HAR_PROVAS[k][0] + ' ' + N[0] + ': ' + pos + 'º lugar'); H.ganho += prem; } if (pos === 1) { H.vit++; a.trof = (a.trof || 0) + 1; ZZ.play && ZZ.play('conquista'); } else if (pos <= 3) a.trof = (a.trof || 0) + 0.3;
+  hist(a, HAR_PROVAS[k][0] + ' ' + N[0] + ': ' + pos + 'º lugar' + (prem ? ' (' + fmt(prem) + ')' : ''));
+  showModal(HAR_PROVAS[k][1] + ' ' + HAR_PROVAS[k][0] + ' — ' + N[0], null, null, () => `<div class="card"><b>${pos === 1 ? '🏆 ' + esc(a.n) + ' venceu!' : pos <= 3 ? '🥉 ' + esc(a.n) + ' ficou no pódio!' : esc(a.n) + ' ficou em ' + pos + 'º.'}</b><p class="mut">${prem ? 'Prêmio: <b>' + fmt(prem) + '</b>. ' : ''}${pos === 1 ? 'Troféu na sala da sede e o cavalo vale mais.' : 'Treine o andamento montado no picadeiro e escove no dia da prova.'}</p></div><div class="card">${L.map((q, i) => `<div class="row sp" style="${q.me ? 'font-weight:800' : ''}"><span>${i + 1}º ${esc(q.n)} <span class="mut">· ${esc(q.d)}</span></span><span>${q.s.toFixed(1)}</span></div>`).join('')}</div><div class="row">${btn('Voltar ao Haras', 'harBack')}</div>`, 'horse'); };
+A.harBack = () => openMenu('har');
+function harasTab() {
+  const H = harS(), hs = harHorses(), eg = hs.filter(a => a.sex === 'F'), prenhes = eg.filter(a => a.preg > 0).length, pot = hs.filter(a => !harAdult(a)).length, N = harNivel();
+  let h = `<div class="card"><b>🐎 ${esc(FT())}</b><p class="mut">${harEquinos()} equinos · ${eg.length} éguas (${prenhes} prenhes) · ${pot} potros · ${H.vit} vitórias em provas · já faturou ${fmt(H.ganho)} com coberturas, provas, hotel e aulas.</p><p class="mut">Nível das provas: <b>${N[0]}</b> (inscrição ${fmt(N[1])}, 1º lugar ${fmt(N[2][0])}). Vença 3 provas para o Estadual e 10 para o Nacional.</p></div>`;
+  h += '<h3>Pedidos de cobertura</h3>' + (H.cob.length ? H.cob.map(c => `<div class="card"><div class="row sp"><span><b>${esc(c.dono)}</b><br><span class="mut">égua ${c.egua} · vale até o dia ${c.ate}</span></span><b>${fmt(c.p)}</b></div><div class="row">${btn('Aceitar', 'harCob', c.id)}${btn('Recusar', 'harCobNo', c.id)}</div></div>`).join('') : '<p class="mut">Nenhum pedido agora. Com um garanhão adulto, os vizinhos pedem coberturas quase todo dia; garanhão premiado cobra mais.</p>');
+  h += '<h3>Provas</h3><p class="mut">Uma prova por cavalo por dia. Precisa ser adulto.</p>' + (hs.filter(harAdult).map(a => { const g = gaitOf(a); return `<div class="card"><div class="row sp"><span><b>${esc(a.n)}</b> <span class="mut">${HORSES[a.br] ? HORSES[a.br].n : ''}${g ? ' · ' + GAITS[g.t][0] + ' ' + Math.floor(g.nv) + '%' : ''}${a.trof ? ' · 🏆 ' + Math.floor(a.trof) : ''}</span></span></div><div class="row">${Object.keys(HAR_PROVAS).map(k => btn(HAR_PROVAS[k][1] + ' ' + HAR_PROVAS[k][0].split(' ')[0], 'harProva', k + '|' + a.id, a._provaD === S.day || (k === 'marcha' && (!g || g.t === 'trote')))).join('')}</div></div>`; }).join('') || '<p class="mut">Nenhum cavalo adulto ainda.</p>');
+  const cap = harHotelCap(); h += `<h3>Hotel de cavalos</h3><p class="mut">${cap ? 'Vagas: ' + H.hosp.length + '/' + cap + '. Os hóspedes ficam no ' + AREAS.quar.n + '; sem água no cocho, o dono não paga a diária.' : 'Compre o terreno do leste (Menu › Fazenda › Terras) para abrir o hotel no ' + AREAS.quar.n + '.'}</p>`;
+  h += H.hosp.map(q => { const a = byId(q.id); return a ? `<div class="card"><b>${esc(a.n)}</b> <span class="mut">de ${esc(q.dono)} · ${fmt(q.d)}/dia · faltam ${q.dias} dia(s)</span></div>` : ''; }).join('');
+  h += H.hreq.map(r => `<div class="card"><div class="row sp"><span><b>${esc(r.dono)}</b> quer hospedar <b>${esc(r.n)}</b><br><span class="mut">${r.dias} dias · ${fmt(r.d)} por dia</span></span></div><div class="row">${btn('Aceitar', 'harHosp', r.id, H.hosp.length >= cap)}${btn('Recusar', 'harHospNo', r.id)}</div></div>`).join('');
+  h += `<h3>Aulas de equitação</h3><div class="card"><p class="mut">Gente da cidade vem aprender a montar no picadeiro. Precisa de cavalo adulto e manso (fora a sua montaria). Até 2 turmas por dia, das 7h às 17h; cada aula leva 1h30. Hoje: ${H.aulaN}/2.</p>${btn('🧑‍🎓 Dar aula agora', 'harAula', '', H.aulaN >= 2)}</div>`;
+  h += '<p class="mut">Obras do haras (cocheira, picadeiro coberto, maternidade, hotel, escolinha e pista) ficam na Casa do Pedreiro e em Menu › Obras. Para vender potros e cavalos, use a ficha do animal ou o leilão.</p>';
+  return h;
+}
+{ const _mt = menuTab; menuTab = function (t) { if (t === 'har') return harasTab(); return _mt(t); }; }
+{ const _om = openMenu; openMenu = function (tab) { if (modo() !== 'haras') return _om(tab); if (tab === 'gad') tab = 'har'; showModal('', MTABS.map(t => t[0] === 'gad' ? ['har', 'Haras', 'horse'] : t), tab || 'ini', menuTab); }; }
+// jornada do haras
+const JOR_HARAS = [
+  { n: 'A chegada ao haras', d: 'Os primeiros dias no haras do avô.', r: { cash: 400, it: { racao: 0 } }, o: [
+    ['agua', 'Encher o cocho d’água do Piquete das Éguas', () => { const i = trIdx('p1', 'agua'); return i >= 0 && S.tr[i] >= trCap(i) * 0.9; }, 'Pegue o galão no reservatório ao lado da casa e despeje no cocho, ou use o botão do cocho.'],
+    ['horta', 'Capinar e plantar um canteiro da horta', () => agroPlots().some(q => q.kind === 'h' && ['plant', 'maduro'].includes(plotSt(q.id).st)), 'A horta fica atrás do rancho.'],
+    ['aboio', 'Juntar a tropa com o Aboio', () => (S.flags.aboio || 0) > 0, 'Chegue perto das éguas e use o Aboio (tecla Q ou botão Aboio).'],
+    ['vizinhos', 'Conhecer 3 moradores de Itarantim', () => npcMet() >= 3, 'A cidade fica depois da ponte do riacho, a leste.']] },
+  { n: 'Primeiros negócios', d: 'O haras começa a pagar as contas.', r: { cash: 800 }, o: [
+    ['potro', 'Ver nascer o primeiro potro', () => (S.stats.born || 0) > 0, 'A égua Estrela está prenha do Imperador.'],
+    ['cobertura', 'Fazer a primeira cobertura paga', () => harS().nCob >= 1, 'Os pedidos aparecem em Menu › Haras.'],
+    ['aula', 'Dar uma aula de equitação', () => harS().nAula >= 1, 'Menu › Haras › Dar aula agora (de dia, com um cavalo manso).'],
+    ['prova', 'Correr a primeira prova', () => harS().nProva >= 1, 'Menu › Haras › Provas.']] },
+  { n: 'Nome nas pistas', d: 'O haras começa a ser falado na região.', r: { cash: 2500 }, o: [
+    ['vitoria', 'Vencer uma prova', () => harS().vit >= 1, 'Treine o andamento montado no picadeiro e escove o cavalo antes da morfologia.'],
+    ['equinos6', 'Ter 6 equinos', () => harEquinos() >= 6, 'Cubra as éguas com o garanhão ou compre na feira e no leilão.'],
+    ['obraH', 'Construir uma obra do haras', () => ['cocheira', 'picadeiroC', 'maternidade', 'hotelH', 'escola', 'pista'].some(k => nBuilt(k)), 'Casa do Pedreiro, em Itarantim.'],
+    ['venda', 'Vender um cavalo ou potro', () => !!S.flags.venda1, 'Ficha do animal › Vender, ou leilão de cavalos.']] },
+  { n: 'Haras respeitado', d: 'Clientes de longe procuram o seu haras.', r: { cash: 6000 }, o: [
+    ['vit3', 'Vencer 3 provas (chegar ao Estadual)', () => harS().vit >= 3, 'Cada vitória sobe o nível das provas.'],
+    ['hotel3', 'Hospedar 3 cavalos de clientes', () => harS().nHosp >= 3, 'Compre o terreno do leste para abrir o hotel.'],
+    ['equinos12', 'Ter 12 equinos', () => harEquinos() >= 12, ''],
+    ['raro', 'Tirar um potro de pelagem rara', () => !!S.flags.potroRaro, 'Garanhões pagos do Haras Lagoa Seca ajudam (ficha da égua › Cobrir).']] },
+  { n: 'Haras de renome', d: 'O nome do haras corre o Brasil.', r: { cash: 20000 }, o: [
+    ['vit10', 'Vencer 10 provas (chegar ao Nacional)', () => harS().vit >= 10, ''],
+    ['equinos25', 'Ter 25 equinos', () => harEquinos() >= 25, ''],
+    ['cob20', 'Fazer 20 coberturas pagas', () => harS().nCob >= 20, ''],
+    ['patri', 'Patrimônio de R$ 400 mil', () => patrimonio() >= 400000, '']] }
+];
+
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
@@ -11699,7 +11855,7 @@ function openPedreiro() { showModal('🔨 Casa do Pedreiro', [['pro', 'Projetos'
   if (t === 'pro') {
     if (M.sub && M.sub.b) { const b = BUILD[M.sub.b]; const lots = Object.keys(LOTS).filter(k => !S.lots[k] && !(LOTS[k].exp && !S.exp[LOTS[k].exp]) && lotOwned(k));
       h += `<div class="card"><b>${b.n}</b><p>${b.f}</p><p>Mão de obra: <b>${fmt(b.p)}</b> · Tempo: ${b.days} dia(s)</p><p>Materiais: ${matList(b.mat)}</p>${b.req.length ? '<p>Requer: ' + b.req.map(r => BUILD[r].n + (built(r) ? ' ✅' : ' ❌')).join(', ') + '</p>' : ''}<p>Escolha o local:</p><div class="row">${lots.map(k => btn('Lote ' + k, 'pedLot', k, M.sub.lot === k)).join('') || '<span class="mut">Nenhum lote livre. Compre expansões.</span>'}</div>${M.sub.lot ? `<p>Local: <b>Lote ${M.sub.lot}</b></p>` + btn('✅ Contratar obra', 'pedOk', 'pay') + btn('🏦 Financiar (20% entrada)', 'pedOk', 'fin') : ''} ${btn('Voltar', 'pedBack')}</div>`; return h; }
-    h += '<p class="mut">Cada obra ocupa um lote e tem função real na fazenda.</p>' + Object.keys(BUILD).map(k => { const b = BUILD[k]; const n = Object.values(S.lots).filter(l => l && l.b === k).length; return `<div class="card" data-a="pedSel" data-v="${k}"><div class="row sp"><b>${b.n}</b><b>${fmt(b.p)}</b></div><span class="mut">${b.f}</span>${n ? '<br>✅ Já possui ' + n : ''}</div>`; }).join('');
+    h += '<p class="mut">Cada obra ocupa um lote e tem função real na fazenda.</p>' + buildKeys().map(k => { const b = BUILD[k]; const n = Object.values(S.lots).filter(l => l && l.b === k).length; return `<div class="card" data-a="pedSel" data-v="${k}"><div class="row sp"><b>${b.n}</b><b>${fmt(b.p)}</b></div><span class="mut">${b.f}</span>${n ? '<br>✅ Já possui ' + n : ''}</div>`; }).join('');
   }
   if (t === 'mat') h += '<p class="mut">Entregues direto no depósito da fazenda.</p>' + Object.keys(MATS).map(k => `<div class="card"><div class="row sp"><span>${MATS[k][0]} <b>${MATS[k][1]}</b></span><b>${fmt(MATS[k][2] * priceMul())}</b></div>No depósito: ${S.dep[k] || 0} ${btn('+1', 'mat', k + '|1')}${btn('+5', 'mat', k + '|5')}</div>`).join('');
   if (t === 'obr') h += Object.keys(S.lots).filter(k => S.lots[k]).map(k => { const l = S.lots[k]; return `<div class="card"><b>Lote ${k}: ${BUILD[l.b].n}</b><div class="row sp">${bar(l.prog * 100)}<span>${l.done ? 'Concluída' : Math.round(l.prog * 100) + '%'}</span></div><span class="mut">${l.done ? BUILD[l.b].f : 'Pedreiros trabalham das 7h às 17h (exceto com chuva).'}</span></div>`; }).join('') || '<p class="mut">Nenhuma obra.</p>';
@@ -12683,7 +12839,7 @@ function csParto(m) {
   cutscene([
     { fade: 0, cam: [x / TS, y / TS - 0.6], snap: 0, z: 2.3, pitch: 40, dof: 0.5, txt: esc(m.n) + ' está deitada, num parto difícil. O bezerro está atravessado…', d: 2.8, fn: () => { P.mnt = null; P.cart = false; P.x = x - s * 15; P.y = y + 3; P.dir = s > 0 ? 3 : 2; pAct(); m._fx = { pose: 'lie', t0: drawT, until: drawT + 60 }; AU.moo(x, y, 1.15); } },
     { txt: 'Com calma, você ajeita o bezerro e puxa junto com a força da vaca.', d: 2.8, upd: (dt) => { if (Math.random() < dt * 1.4) AU.moo(x, y, 1.2); if (Math.random() < dt * 4) dust(P.x, P.y, 1); } },
-    { txt: 'Mais uma força…', d: 1.6, fn: () => { m._fx = { pose: 'scared', t0: drawT, until: drawT + 1.4 }; AU.moo(x, y, 1.3); } },
+    { txt: 'Mais uma força…', d: 1.6, fn: () => { m._fx = { pose: 'scared', t0: drawT, until: drawT + 1.4 }; m.sp === 'cavalo' ? AU.neigh(x, y) : AU.moo(x, y, 1.3); } },
     { txt: '', d: 0.2, fn: () => { m._fx = { pose: 'lie', t0: drawT, until: drawT + 60 }; finishLabor(m, true); const c = S.animals.filter(b => b.maeId === m.id).pop(); if (c) { c.x = x - s * 12; c.y = y + 5; c._fx = { pose: 'lie', t0: drawT, until: drawT + 4 }; CS._calf = c; } P._act = null; for (let i = 0; i < 8; i++) heart(x - s * 12 + rnd(-6, 6), y - 10); AU.chime(); } },
     { txt: () => '', d: 0 },
     { txt: 'Nasceu! A mãe se levanta e lambe o bezerro, que já tenta ficar de pé.', d: 3.2, fn: () => { m._fx = { pose: 'sniff', t0: drawT, until: drawT + 3.4 }; } },
@@ -12779,7 +12935,7 @@ function equineNightStep(a, dt) { // IA dos equinos: à noite os do haras vão p
 }
 function openEstabulo() {
   showModal('Estábulo', null, null, () => {
-    const L = stableHorses(), cap = 6 + (built('estrebaria') ? 6 : 0), night = stableNight();
+    const L = stableHorses(), cap = 6 + (built('estrebaria') ? 6 : 0) + 6 * nBuilt('cocheira'), night = stableNight();
     let h = `<p class="mut">${L.length} de ${cap} baias ocupadas. ${night ? 'É noite: os animais do haras estão recolhidos nas baias.' : 'De dia os animais pastam no haras e voltam às baias ao anoitecer.'}</p>`;
     if (!L.length) h += '<div class="card">Nenhum cavalo, burro ou jegue no Haras. Leve um animal até o Haras para ele ganhar uma baia.</div>';
     for (const a of L) {
@@ -12895,7 +13051,7 @@ function aiContext(id) {
   const facts = { nome: b.nome, idade: b.idade, profissao: b.prof, aparencia: b.look, jeito_de_falar: b.fala, personalidade: d.pers, familia: b.familia, passado: b.passado, memorias: b.memorias, sonho: b.sonho, medo: b.medo, problema_atual: b.problema, objetivos: b.obj, gosta: (d.likes || []).map(k => IT[k] ? IT[k].n : k), segredo: secretOpen(id) ? b.segredo : '(guardado: NÃO revele, nem dê pistas)' };
   const rel = {}; for (const k of DIMS) rel[DIMN[k]] = Math.round(r[k]);
   return { personagem: facts, relacao_com_jogador: { resumo: relWord(id), valores_0a100: rel, primeira_impressao: r.imp, memorias: r.mem.slice(0, 6).map(m => 'dia ' + m.d + ': ' + m.t) },
-    jogador: { nome: S.cf.name, quem_e: 'neto de Tiãozinho, que herdou a fazenda do avô em Itarantim', fazenda: 'Fazenda ' + FN() + '', titulo: RANKS[S.rankI || 0][1] },
+    jogador: { nome: S.cf.name, quem_e: 'neto de Tiãozinho, que herdou a fazenda do avô em Itarantim', fazenda: FT() + '', titulo: RANKS[S.rankI || 0][1] },
     mundo: { data: dateStr ? dateStr(S.day) : 'dia ' + S.day, hora: Math.floor(hour()) + 'h', tempo: S.weather, estacao: season() ? 'seca' : 'águas', novidades_que_voce_sabe: newsFor(id).map(e => e.t), relacoes: Object.keys(NPCDEF).filter(k => k !== id && (BIO[k] || ['zefa', 'felipe', 'ryan', 'padre', 'joana'].includes(k))).slice(0, 12).map(k => NPCDEF[k].n + ': ' + socWord(soc(id, k))) },
     assuntos_ja_conversados: Object.keys(r.topics).slice(-8) };
 }
@@ -13851,7 +14007,7 @@ function lighting() {
 /* ---------- HUD e região ---------- */
 let hudT = 0, regT = 0, curReg = null, regHide = null;
 const WXIC = { sol: 'sun', nublado: 'cloud', chuva: 'rain', neblina: 'fog', vento: 'wind' };
-function regionAt(x, y) { const tx = x / TS, ty = y / TS; if (ty >= MG.top) return ['Mata Grande', 'RESERVA DA MATA · ITARANTIM']; if (ty >= MG.y0) return ['Caatinga da Mata', 'ITARANTIM · BAHIA']; if (tx >= 112 || ty >= 90) { const r = worldRegion(x, y); return r ? [r.n, r.s || 'ITARANTIM · BAHIA'] : ['Estrada do sul', 'ITARANTIM · BAHIA']; } if (tx < 60) return ty < 21 && S.exp.norte ? ['Gleba do Mandacaru', 'FAZENDA BOA ESPERANÇA'] : ty > 67 && S.exp.sul ? ['Gleba do Açude', 'FAZENDA BOA ESPERANÇA'] : ['Fazenda ' + FN() + '', 'SUA PROPRIEDADE']; if (tx > 66 && ty < 27) return ['Fazenda Campos', 'SR. FELIPE']; if (tx > 66 && ty > 62) return ['Fazenda Duarte', 'SR. RYAN']; if (tx >= 68 && ty >= 28 && ty <= 62) return ['Itarantim', 'CENTRO DA CIDADE']; return ['Estrada do Riacho', 'ITARANTIM · BAHIA']; }
+function regionAt(x, y) { const tx = x / TS, ty = y / TS; if (ty >= MG.top) return ['Mata Grande', 'RESERVA DA MATA · ITARANTIM']; if (ty >= MG.y0) return ['Caatinga da Mata', 'ITARANTIM · BAHIA']; if (tx >= 112 || ty >= 90) { const r = worldRegion(x, y); return r ? [r.n, r.s || 'ITARANTIM · BAHIA'] : ['Estrada do sul', 'ITARANTIM · BAHIA']; } if (tx < 60) return ty < 21 && S.exp.norte ? ['Gleba do Mandacaru', 'FAZENDA BOA ESPERANÇA'] : ty > 67 && S.exp.sul ? ['Gleba do Açude', 'FAZENDA BOA ESPERANÇA'] : [FT() + '', 'SUA PROPRIEDADE']; if (tx > 66 && ty < 27) return ['Fazenda Campos', 'SR. FELIPE']; if (tx > 66 && ty > 62) return ['Fazenda Duarte', 'SR. RYAN']; if (tx >= 68 && ty >= 28 && ty <= 62) return ['Itarantim', 'CENTRO DA CIDADE']; return ['Estrada do Riacho', 'ITARANTIM · BAHIA']; }
 function hud(dt) {
   if ((regT -= dt) < 0 && mode === 'play') { regT = 0.5; const r = regionAt(P.x, P.y); if (!curReg) curReg = r[0]; else if (r[0] !== curReg) { curReg = r[0]; const el = $('reg'); el.innerHTML = r[0] + '<small>' + r[1] + '</small>'; el.classList.add('on'); clearTimeout(regHide); regHide = setTimeout(() => el.classList.remove('on'), 2400); AU.jingle(); } }
   if ((hudT -= dt) > 0) return; hudT = 0.25;
@@ -14620,6 +14776,7 @@ function renderSetup() {
   let h = `<div class="sw2"><div class="pvbox"><h2>${ic(setupEdit ? 'brush' : 'hat', 20)} ${setupEdit ? 'Guarda-roupa' : 'Novo vaqueiro'}</h2><canvas id="pv" width="360" height="170"></canvas>
     <div class="steps">${STEPS.map((n, i) => `<button data-s="step" data-v="${i}" class="${i === setStep ? 'on' : ''}">${i + 1}. ${n}</button>`).join('')}</div></div><div>`;
   if (setStep === 0) {
+    if (!setupEdit) h += `<label>Escolha o mapa</label><div class="row" style="gap:8px;margin:2px 0 10px">${[['gado', '🐂 Fazenda de Gado', 'O mapa original: criação de gado, com cavalos e piquetes também.'], ['haras', '🐎 Haras', 'A fazenda vira um haras: éguas, garanhão, potros, picadeiro, pista, provas, coberturas, hotel e aulas.']].map(([k, n, d]) => `<button data-s="modo" data-v="${k}" class="${(CF.modo || 'gado') === k ? 'on' : ''}" style="flex:1;padding:10px;text-align:left;white-space:normal"><b style="font-size:calc(15px*var(--fs))">${n}</b><br><span style="font-size:calc(12px*var(--fs));opacity:.85">${d}</span></button>`).join('')}</div>`;
     if (!setupEdit) h += `<div class="desc" style="text-align:center"><b>Com pressa de ir pra lida?</b><br>O jogo monta um vaqueiro pronto e você muda tudo depois no guarda-roupa.</div><div class="row" style="gap:8px;margin:6px 0 4px"><button data-s="quick" style="flex:2;padding:11px;font-size:calc(15px*var(--fs))">⚡ Começar rápido</button><button class="btn" data-s="rand" style="flex:1;padding:11px">🎲 Sortear visual</button></div>`;
     if (!setupEdit) h += `<label>Nome do vaqueiro</label><input id="pn" maxlength="16" value="${esc(CF.name)}">`;
     h += `<label>Sexo</label><div class="ch"><button data-s="sex" data-v="M" class="${a.sex === 'M' ? 'on' : ''}">Homem</button><button data-s="sex" data-v="F" class="${a.sex === 'F' ? 'on' : ''}">Mulher</button></div>`;
@@ -14681,6 +14838,7 @@ $('setup').addEventListener('input', e => { if (e.target.id === 'dn') CF.dogs[CF
 $('setup').addEventListener('click', e => {
   const b = e.target.closest('[data-s]'); if (!b) return; const k = b.dataset.s, v = b.dataset.v; AU.init(); AU.click();
   if (k === 'go') return setupEdit ? finishWardrobe() : newGame(CF);
+  if (k === 'modo') { CF.modo = v; return renderSetup(); }
   if (k === 'quick') { randomCF(true); return newGame(CF); }
   if (k === 'rand') { randomCF(false); return renderSetup(); }
   if (k === 'back') { $('setup').style.display = 'none'; document.body.classList.remove('ovl'); mode = 'title'; return; }
@@ -14758,6 +14916,7 @@ function finishWardrobe() { S.cf.ap = Object.assign({}, CF.ap); $('setup').style
 function newGame(cf) {
   $('setup').style.display = 'none'; document.body.classList.remove('ovl');
   S = newState(); P = S.p; initVeh(S); initAgro(S); initAguas(S); if (FS.on) stopFishing(); AVES.length = 0; FISHV.length = 0; lasso.t = null; parts = [];
+  S.modo = cf.modo === 'haras' ? 'haras' : 'gado';
   S.cf = { name: cf.name, st: cf.st, sk: cf.sk, ap: Object.assign({}, cf.ap), hn: cf.hn, aj: cf.aj, mt: cf.mt };
   S.saddles = [...new Set(['nord', SADDLES[cf.sd].id])]; S.saddleSel = SADDLES[cf.sd].id;
   genMap(); agroMap(); genCityDeco(); initGrass(); S.tr = TROUGHS.map(t => t.cap * (t.k === 'agua' ? 0.7 : 0.5)); S.gates = GATES.map(g => g.open ? 1 : 0);
@@ -14767,10 +14926,12 @@ function newGame(cf) {
   const y0 = MOUNT_AGES[cf.age === undefined ? 2 : cf.age][1], am0 = y0 <= 4 ? 'esperto' : y0 >= 12 ? 'calmo' : undefined;
   const h = mkAnimal(sp, cf.hbr, { sex: cf.hsex, n: cf.hn, main: true, age: ageDays(y0), gen: rnd(62, 78), hap: 85, saddle: S.saddleSel, cond: y0 >= 14 ? 50 : 60, coat: cf.coat, mk: cf.mt !== 'jegue' ? cf.mk : 0, aff: 60, cust: cf.cust, temp: am0 });
   S.tack = {}; if (cf.cust) { if (cf.cust.peit) S.tack.peit = 1; if (cf.cust.orn && cf.cust.orn !== 'none') S.tack[cf.cust.orn] = 1; } h.x = 12.5 * TS + 10; h.y = 31 * TS; S.animals.push(h);
+  if (S.modo === 'haras') harasStart(); else {
   // dois bois Pé-Duro
   const bois = [put(mkAnimal('boi', 'peduro', { sex: 'M', age: 34, n: 'Malhado', coat: 'peVermelho' }), 'p1'), put(mkAnimal('boi', 'peduro', { sex: 'M', age: 30, n: 'Fumaça', coat: 'amarelo' }), 'p1')]; bois.forEach(b => { b.cast = 1; b.marca = 'TS'; }); S.gadoV = 2;
   // a vaca Estrela, prenha do touro nelore do Seu Felipe: o primeiro bezerro vem em poucos dias
   { const v = put(mkAnimal('boi', 'peduro', { sex: 'F', age: 44, n: 'Estrela', coat: 'peVermelho', hap: 85, cond: 62, gen: 66 }), 'p1'); v.marca = 'TS'; v.preg = 3; S.story = S.story || { intro: 0, mem: {}, seen: {} }; S.story.estrela = v.id; v._pai = 0; v._paiN = 'Imperador (touro do Seu Felipe)'; v._paiSp = 'boi'; v._paiBr = 'nelore'; v._paiGen = 72; v.temp = 'dócil'; v.traits = ['docil', 'sociavel']; hist(v, 'Prenha do touro nelore do Seu Felipe'); }
+  }
   // sementes para a horta (a terra precisa de capina antes do plantio)
   S.agro.seeds = { alface: 3, couve: 2, cheiro: 3, tomate: 2, feijao: 2, abobora: 1, pimenta: 1 };
   (cf.dogs && cf.dogs.length ? cf.dogs : [defDog(0)]).forEach((d, i) => S.animals.push(mkDogCF(d, i))); S.caoV = 1; S.dep.racaoCao = (S.dep.racaoCao || 0) + 10;
