@@ -1,0 +1,24 @@
+# Fazenda da Live (pasta live/) no Render: servidor-ponte do TikTok + o jogo, num link https.
+# No Render: New + > Blueprint > escolha este repositório (branch ccr-8494ac05-m0vb49).
+services:
+  - type: web
+    name: fazenda-live
+    runtime: node
+    rootDir: live
+    plan: free
+    buildCommand: npm install
+    startCommand: node servidor.mjs
+    envVars:
+      - key: TIKTOK_USUARIO
+        value: Overkillfelipe
+
+  # Lida no Sertão — servidor de salas OPCIONAL (o modo online já funciona sem ele, direto entre os aparelhos).
+  # O link do jogo online fica: https://lida-online.onrender.com
+  - type: web
+    name: lida-online
+    runtime: node
+    rootDir: online
+    plan: free
+    buildCommand: npm install
+    startCommand: node servidor.mjs
+    healthCheckPath: /estado
