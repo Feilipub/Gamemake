@@ -11,3 +11,14 @@ services:
     envVars:
       - key: TIKTOK_USUARIO
         value: Overkillfelipe
+
+  # Lida no Sertão — modo online (pasta online/): sala para 2 a 6 vaqueiros + o jogo, num link https.
+  # O link do jogo online fica: https://lida-online.onrender.com
+  - type: web
+    name: lida-online
+    runtime: node
+    rootDir: online
+    plan: free
+    buildCommand: npm install
+    startCommand: node servidor.mjs
+    healthCheckPath: /estado
