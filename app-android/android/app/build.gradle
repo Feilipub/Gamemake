@@ -12,8 +12,9 @@ android {
         applicationId "br.com.rfgames.lidanosertao"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 81
-        versionName "7.9.2"
+        // na nuvem (GitHub Actions) o número vem de VERSION_CODE, sempre maior que o anterior
+        versionCode (System.getenv('VERSION_CODE') ?: '82') as int
+        versionName "16.2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
