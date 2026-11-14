@@ -13,7 +13,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // na nuvem (GitHub Actions) o número vem de VERSION_CODE, sempre maior que o anterior
-        versionCode (System.getenv('VERSION_CODE') ?: '82') as int
+        versionCode Integer.parseInt(System.getenv('VERSION_CODE') ?: '82')
         versionName "16.2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
