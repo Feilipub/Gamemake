@@ -4,7 +4,16 @@
   "private": true,
   "type": "module",
   "description": "Servidor da sala cooperativa do Lida no Sertão (serve o jogo e repassa as mensagens).",
-  "scripts": { "start": "node servidor.mjs" },
-  "engines": { "node": ">=18" },
-  "dependencies": { "ws": "^8.18.0" }
+  "scripts": {
+    "start": "node servidor.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "peer": "^1.0.2"
+  }
 }

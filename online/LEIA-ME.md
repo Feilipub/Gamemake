@@ -1,22 +1,19 @@
 # Lida no Sertão — modo online
 
-Servidor pequeno (Node + `ws`) que faz duas coisas:
+**Não precisa ligar servidor nenhum.** Quando o dono toca em **Abrir minha fazenda**, o próprio jogo dele vira o servidor da sala.
 
-1. entrega o jogo (a pasta `../jogo`), e
-2. passa as mensagens entre os vaqueiros da mesma sala, que tem um código de 4 letras e cabe de 2 a 6 jogadores.
+- Os amigos se conectam **direto no aparelho do dono** (WebRTC, pela biblioteca PeerJS, MIT).
+- O jogo só usa o "telefonista" público e grátis da PeerJS (`0.peerjs.com`) para os aparelhos se acharem pelo código de 4 letras. Ele fica sempre ligado e não dorme.
+- Quando a rede não deixa a ligação direta (algumas redes 4G), entra o retransmissor grátis da PeerJS.
+- Funciona abrindo o jogo de qualquer lugar: o arquivo do zip, o GitHub Pages, o app instalado.
 
-A fazenda roda no navegador de quem **cria a sala** (o dono). Os convidados recebem a fazenda do dono e jogam nela.
+## Servidor próprio (opcional)
 
-## Colocar na nuvem de graça (Render)
+A pasta `online/` tem um servidor de salas (`servidor.mjs`, Node + `ws`). Ele também entrega o jogo (a pasta `../jogo`). Use se quiser não depender da PeerJS, por exemplo numa rede que bloqueia WebRTC.
 
-1. Entre em <https://render.com> e crie uma conta grátis (dá para entrar com o GitHub).
-2. Clique em **New +**, depois em **Blueprint**, e escolha este repositório (branch `ccr-8494ac05-m0vb49`).
-3. O Render lê o `render.yaml` e cria o serviço **lida-online**. Clique em **Apply**.
-4. Quando terminar, o jogo fica em `https://lida-online.onrender.com` (ou no nome que o Render mostrar).
-
-O plano grátis dorme depois de 15 minutos sem ninguém jogando. A primeira pessoa a abrir pode esperar cerca de 1 minuto até ele acordar.
-
-Se o seu serviço ganhar outro endereço, abra o jogo e vá em **Jogar online › Servidor**, cole o endereço (por exemplo `wss://meu-nome.onrender.com/ws`) e toque em **Salvar**. Isso só é necessário para quem abre o jogo por outro lugar, como o arquivo do zip ou o app. Quem abre pelo link do Render já usa o servidor certo.
+- **Render, grátis:** clique em **New +**, depois em **Blueprint**, escolha este repositório e clique em **Apply**. Isso cria o serviço `lida-online` do `render.yaml`. No plano grátis ele dorme depois de 15 minutos sem uso e leva cerca de 1 minuto para acordar.
+- **Abrindo pelo link do servidor:** o jogo percebe sozinho que está no servidor e passa a usá-lo.
+- **Abrindo de outro lugar:** em **Jogar online › Conexão**, cole `wss://seu-endereço/ws` e toque em **Salvar**. Para voltar ao automático, deixe o campo vazio e toque em **Salvar** de novo.
 
 ## Como jogar
 
@@ -25,9 +22,9 @@ Se o seu serviço ganhar outro endereço, abra o jogo e vá em **Jogar online �
 - **Juntos:** todos podem abrir porteiras, encher cochos, aboiar o gado, escovar, limpar e tratar. Tudo isso aparece para os outros. O caixa da fazenda é um só.
 - **Chat:** tem chat e emojis, e as falas aparecem em balões em cima de cada vaqueiro.
 - **Mural do dia:** traz 3 tarefas em grupo. Com 2 ou mais vaqueiros, a recompensa dobra.
-- **Só o dono pode:** vender, fazer obras, comprar terra e dormir para passar o dia. O jogo fica salvo no aparelho do dono.
+- **Só o dono pode:** vender, fazer obras, comprar terra e dormir para passar o dia. O jogo fica salvo no aparelho do dono, e a sala fecha quando o dono sai.
 
-## Rodar no seu computador
+## Rodar o servidor próprio no seu computador
 
 ```bash
 cd online
@@ -37,4 +34,7 @@ node servidor.mjs        # abre em http://localhost:8790
 
 Para testar, abra duas abas: abra a fazenda numa e entre com o código na outra.
 
-Teste automático (precisa do Playwright): `node testes/teste_online.cjs`.
+Testes automáticos (precisam do Playwright):
+
+- `node testes/teste_online.cjs` testa pelo servidor de salas.
+- `node testes/teste_online.cjs --p2p` testa a conexão direta, com um PeerServer local no lugar do público.

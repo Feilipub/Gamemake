@@ -2,12 +2,19 @@
 // Uso (na pasta online):  npm install   e depois   node testes/teste_online.cjs      (precisa do Playwright)
 const { chromium } = require('playwright'); const { spawn } = require('child_process'); const path = require('path'); const fs = require('fs');
 const OUT = path.join(__dirname, 'saida'); fs.mkdirSync(OUT, { recursive: true });
-const PORTA = 8791; const srv = spawn(process.execPath, [path.join(__dirname, '..', 'servidor.mjs')], { env: Object.assign({}, process.env, { PORT: String(PORTA) }), stdio: 'ignore' });
+// node testes/teste_online.cjs        -> pelo servidor de salas (servidor.mjs)
+// node testes/teste_online.cjs --p2p  -> conexão direta entre os navegadores (sem servidor do jogo; usa um PeerServer local no lugar do público)
+const P2P = process.argv.includes('--p2p'); const PORTA = P2P ? 8792 : 8791; let srv = { kill() { } };
+if (!P2P) { srv = spawn(process.execPath, [path.join(__dirname, '..', 'servidor.mjs')], { env: Object.assign({}, process.env, { PORT: String(PORTA) }), stdio: 'ignore' }); }
+else { const JOGO = path.join(__dirname, '..', '..', 'jogo'); const http = require('http');
+  const st = http.createServer((q, r) => { let f = decodeURIComponent(new URL(q.url, 'http://x').pathname); if (f === '/') f = '/index.html'; const fp = path.join(JOGO, f); if (!fp.startsWith(JOGO) || !fs.existsSync(fp) || fs.statSync(fp).isDirectory()) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'Content-Type': f.endsWith('.html') ? 'text/html; charset=utf-8' : f.endsWith('.js') ? 'text/javascript' : 'application/octet-stream' }); fs.createReadStream(fp).pipe(r); }).listen(PORTA, '127.0.0.1');
+  const { ExpressPeerServer } = require('peer'); const app = require('express')(); const ps = app.listen(9017, '127.0.0.1'); app.use('/', ExpressPeerServer(ps, { path: '/' })); srv = { kill() { try { st.close(); ps.close && ps.close(); } catch (e) { } } }; }
 process.on('exit', () => { try { srv.kill(); } catch (e) { } });
 (async () => {
-  await new Promise(r => setTimeout(r, 1200)); const b = await chromium.launch(); const erros = [];
-  const abre = async (nome) => { const ctx = await b.newContext({ viewport: { width: 800, height: 600 } }); const p = await ctx.newPage(); p.on('pageerror', e => erros.push(nome + ': ' + e.message)); p.on('console', m => { if (m.type() === 'error') erros.push(nome + ' console: ' + m.text()); });
+  await new Promise(r => setTimeout(r, 1200)); const b = await chromium.launch({ args: ['--disable-features=WebRtcHideLocalIpsWithMdns'] }); const erros = [];
+  const abre = async (nome) => { const ctx = await b.newContext({ viewport: { width: 800, height: 600 } }); const p = await ctx.newPage(); p.on('pageerror', e => erros.push(nome + ': ' + e.message)); p.on('console', m => { if (m.type() === 'error' && !/status of 404/.test(m.text())) erros.push(nome + ' console: ' + m.text()); });
     await p.addInitScript(s => localStorage.setItem('lida_set', JSON.stringify(s)), { view: '2d', cenas: false });
+    if (P2P) await p.addInitScript(() => localStorage.setItem('lida_net_peer', JSON.stringify({ host: '127.0.0.1', port: 9017, path: '/', secure: false, config: { iceServers: [] } })));
     await p.goto('http://localhost:' + PORTA + '/index.html#debug&nointro'); await p.waitForFunction(() => window.__lida, null, { timeout: 30000 }); return p; };
   const ev = (p, c) => p.evaluate(c => window.__lida.ev(c), c);
   const host = await abre('dono'); await ev(host, 'newGame(defaultCF())'); await host.waitForTimeout(800);
@@ -50,5 +57,5 @@ process.on('exit', () => { try { srv.kill(); } catch (e) { } });
   if (erros.length) { falhas++; console.log('❌ erros no console:', erros.slice(0, 5)); } else console.log('✅ nenhum erro no console');
   await ev(host, "document.querySelectorAll('.tip,#tipC').forEach(e=>e.remove()); P.x = 30 * TS; P.y = 40 * TS; cam.uz = 1.8; 0"); await ev(guest, "document.querySelectorAll('.tip,#tipC').forEach(e=>e.remove()); P.x = 32 * TS; P.y = 40.5 * TS; P.dir = 2; cam.uz = 1.8; netChat('Bora tocar o gado!'); 0"); await host.waitForTimeout(2500); await ev(host, "document.querySelectorAll('.tip,#tipC').forEach(e=>e.remove()); 0"); await ev(guest, "document.querySelectorAll('.tip,#tipC').forEach(e=>e.remove()); 0");
   await host.screenshot({ path: path.join(OUT, 'dono.png') }); await guest.screenshot({ path: path.join(OUT, 'convidado.png') });
-  await b.close(); srv.kill(); console.log(falhas ? falhas + ' falha(s).' : 'Tudo certo no modo online.'); process.exit(falhas ? 1 : 0);
+  await b.close(); srv.kill(); console.log((P2P ? '[direto P2P] ' : '[servidor] ') + (falhas ? falhas + ' falha(s).' : 'Tudo certo no modo online.')); process.exit(falhas ? 1 : 0);
 })();
