@@ -291,6 +291,7 @@ body.hc #jorn,body.hc #msg,body.hc #toast,body.hc .card{background:#120804!impor
 #quad{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;background:rgba(20,8,2,.55)}#quad .qbox{width:min(92vw,420px);background:#f6e2b4;border:4px solid #2b1608;box-shadow:0 0 0 3px #d98a2c;padding:12px;text-align:center;color:#2b1608}#quad .qt{font-weight:800;font-size:calc(13px*var(--fs))}#quad .qc{font-family:var(--fH);font-size:calc(24px*var(--fs));margin:8px 0 2px}#quad .qa{font-size:54px;line-height:1.1;color:#c0461e;text-shadow:2px 2px 0 #2b1608}#quad .qbar{height:10px;border:2px solid #2b1608;background:#fff6dc;margin:6px 0}#quad .qbar i{display:block;height:100%;background:#d98a2c}#quad .qr{min-height:2.6em;font-size:calc(13px*var(--fs))}#quad .qbt{display:flex;gap:8px;justify-content:center;margin-top:6px}#quad .qbt button{font-size:26px;min-width:62px;padding:8px;border:3px solid #2b1608;background:linear-gradient(#f0a84a 0 50%,#d98a2c 50%);color:#2b1608;font-weight:800}
 .padf{outline:3px solid #ffd34a!important;outline-offset:2px;box-shadow:0 0 0 6px rgba(43,22,8,.55)!important;position:relative;z-index:1}
 #jorn .bau{margin-top:3px;color:#ffd890;border-top:1px dashed rgba(255,216,144,.35);padding-top:2px}#jorn .tutsk{margin-top:3px;text-decoration:underline;opacity:.7;font-size:.9em}
+body.foto #hud,body.foto #bar,body.foto #joy,body.foto #bg,body.foto #ba,body.foto #bl,body.foto #bm,body.foto #bw,body.foto #bx,body.foto #ap,body.foto #msg,body.foto #toast,body.foto #jorn,body.foto #netbox,body.foto #pingArr,body.foto #tutArr,body.foto .pad,body.foto #movebar,body.foto #pntbar,body.foto .tip,body.foto #tipC{display:none!important}#fotobar{position:fixed;left:8px;right:8px;bottom:calc(10px + var(--sab,0px));z-index:30;display:none;flex-direction:column;gap:6px;align-items:center}#fotobar .fr{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}#fotobar button{background:rgba(43,22,8,.9);color:#ffe8b0;border:2px solid #e0b060;border-radius:4px;padding:6px 10px;font:800 calc(13px*var(--fs)) var(--fT)}#fotobar button.on{background:#e0b060;color:#2b1608}#fotobar button.big{background:#c03a20;border-color:#ffd040;color:#fff}
 #pingArr{position:fixed;z-index:23;display:none;flex-direction:column;align-items:center;gap:2px;pointer-events:none;transform:translate(-50%,-50%)}#pingArr i{font-style:normal;color:#ffd040;font-size:28px;line-height:1;text-shadow:0 0 3px #2b1608,2px 2px 0 #2b1608,-2px -2px 0 #2b1608}#pingArr span{background:rgba(43,22,8,.85);color:#ffe8b0;border:1px solid #e0b060;border-radius:3px;padding:1px 6px;font:800 calc(11px*var(--fs)) var(--fT);white-space:nowrap}body.cs #pingArr,body.ttl #pingArr{display:none!important}
 #tutArr{position:fixed;z-index:6;display:none;pointer-events:none;color:#ffd34a;font-size:30px;line-height:1;text-shadow:0 0 3px #2b1608,2px 2px 0 #2b1608,-2px -2px 0 #2b1608,2px -2px 0 #2b1608,-2px 2px 0 #2b1608}#tutArr span{display:block;animation:tutb .8s ease-in-out infinite alternate}#tutArr.edge span{animation:none;opacity:.9}@keyframes tutb{from{transform:translateY(-6px)}to{transform:translateY(4px)}}
 body.ttl #tutArr,body.cs #tutArr{display:none!important}#jorn{transition:opacity .3s}#jorn .ck{color:#8ad070;font-weight:800}
@@ -425,7 +426,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '17.0.0', SAVE_V = 9;
+const GAME_V = '18.0.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -11717,6 +11718,91 @@ const netSonoLista = () => Object.keys(NET.players).filter(p => NET2.sono[p] ===
 A.netConvidar = () => netConvidar(); A.netPing = () => { netPing(); closeModal(); }; A.corrStart = k => corrStart(k);
 A.netSono = () => { if (!NET.guest) return; netSend({ t: 'pt', p: { sono: 1 } }); say('😴 Você avisou que quer dormir. Quem leva todos para a cama é o dono.', 3000); closeModal(); };
 { const _tf = tutFrame; tutFrame = function () { _tf(); try { corrTick(); netArrFrame(); } catch (e) { console.error(e); } }; }
+/* ============ v18: MODO FOTO e RETROSPECTIVA DO ANO ============
+   Modo foto: esconde a interface, pausa o tempo, aproxima a câmera e aplica um filtro (sépia, cordel, entardecer); a foto sai com
+   moldura (nome da fazenda e data) e vai para a galeria/Downloads ou para o "Compartilhar". Retrospectiva: no virar do ano, um
+   resumo do que o vaqueiro fez (vendas, nascimentos, peixes, colheitas, festas...), que também vira cartão para guardar. */
+const FOTO = { on: false, f: 'nat', mold: true, want: null, last: null, z0: 1 };
+const FOTO_F = { nat: ['Natural', 'none'], sep: ['Sépia', 'sepia(0.85) contrast(1.06)'], cor: ['Cordel', 'grayscale(1) contrast(1.9) brightness(1.06)'], ent: ['Entardecer', 'sepia(0.35) saturate(1.45) hue-rotate(-12deg) brightness(1.04)'], sec: ['Seca', 'saturate(0.6) sepia(0.25) contrast(1.1)'] };
+function fotoAbrir() {
+  if (mode !== 'play' || FOTO.on) return; closeModal(); try { closeSheet(); } catch (e) { }
+  FOTO.on = true; FOTO.z0 = cam.uz || 1; paused = true; document.body.classList.add('foto'); fotoBar(); fotoFiltro(FOTO.f);
+}
+function fotoSair() { if (!FOTO.on) return; FOTO.on = false; paused = false; cam.uz = FOTO.z0; document.body.classList.remove('foto'); fotoFiltro('nat', true); const b = $('fotobar'); if (b) b.style.display = 'none'; }
+function fotoFiltro(k, soCss) { if (!FOTO_F[k]) return; if (!soCss) FOTO.f = k; for (const c of document.querySelectorAll('#wrap canvas')) c.style.filter = FOTO_F[k][1] === 'none' ? '' : FOTO_F[k][1]; if (!soCss) fotoBar(); }
+function fotoBar() {
+  let b = $('fotobar'); if (!b) { b = document.createElement('div'); b.id = 'fotobar'; document.body.appendChild(b); b.addEventListener('click', e => { const t = e.target.closest('[data-fo]'); if (!t) return; AU.click && AU.click(); const [k, v] = t.dataset.fo.split(':'); if (k === 'f') fotoFiltro(v); else if (k === 'z') { cam.uz = cl((cam.uz || 1) * (v === '+' ? 1.25 : 0.8), 0.6, 3.2); } else if (k === 'm') { FOTO.mold = !FOTO.mold; fotoBar(); } else if (k === 'tirar') FOTO.want = 'tirar'; else if (k === 'sair') fotoSair(); }); }
+  b.style.display = 'flex';
+  b.innerHTML = `<div class="fr">${Object.keys(FOTO_F).map(k => `<button data-fo="f:${k}" class="${FOTO.f === k ? 'on' : ''}">${FOTO_F[k][0]}</button>`).join('')}</div><div class="fr"><button data-fo="z:-">－</button><button data-fo="z:+">＋</button><button data-fo="m:1" class="${FOTO.mold ? 'on' : ''}">Moldura</button><button data-fo="tirar:1" class="big">📸 Tirar foto</button><button data-fo="sair:1">Sair</button></div>`;
+}
+function fotoMolduraTxt() { const c = calDate(); return [FT() + ' · Itarantim, Bahia', 'Dia ' + c.d + ' de ' + MESES[c.m] + ' · Ano ' + (c.y || 1)]; }
+function fotoCompor() { // junta o que está na tela (2D ou HD-2D) numa imagem só, com filtro e moldura
+  const src = HD.on && !HD.susp && HD.cv ? [HD.cv, HD.ov] : [C]; const w0 = src[0].width, h0 = src[0].height; if (!w0 || !h0) return null;
+  const k = Math.max(1, Math.min(3, 1440 / Math.max(w0, h0))), w = Math.round(w0 * k), h = Math.round(h0 * k), band = FOTO.mold ? Math.round(Math.max(54, h * 0.085)) : 0;
+  const o = document.createElement('canvas'); o.width = w; o.height = h + band; const g = o.getContext('2d'); g.imageSmoothingEnabled = false;
+  const fl = FOTO_F[FOTO.f][1]; try { g.filter = fl; } catch (e) { }
+  for (const s of src) if (s && s.width) g.drawImage(s, 0, 0, w, h);
+  try { g.filter = 'none'; } catch (e) { }
+  if (band) { g.fillStyle = '#2b1608'; g.fillRect(0, h, w, band); g.fillStyle = '#e0b060'; g.fillRect(0, h, w, Math.max(2, band * 0.06)); const [t1, t2] = fotoMolduraTxt();
+    // os textos encolhem juntos até caber lado a lado (foto do celular em pé é estreita)
+    const pad = band * 0.35; let k2 = 1; for (let i = 0; i < 12; i++) { g.font = `700 ${Math.round(band * 0.34 * k2)}px 'Bree Serif', serif`; const a1 = g.measureText(t1).width; g.font = `400 ${Math.round(band * 0.36 * k2)}px 'Rye', serif`; const a2 = g.measureText('Lida no Sertão').width; if (a1 + a2 + pad * 3 <= w) break; k2 *= 0.9; }
+    g.textBaseline = 'middle'; g.fillStyle = '#ffe8b0'; g.font = `700 ${Math.round(band * 0.34 * k2)}px 'Bree Serif', serif`; g.fillText(t1, pad, h + band * 0.38);
+    g.fillStyle = '#d8b888'; g.font = `600 ${Math.round(band * 0.24 * Math.max(k2, 0.8))}px 'Nunito', sans-serif`; g.fillText(t2, pad, h + band * 0.74);
+    g.textAlign = 'right'; g.fillStyle = '#ffd040'; g.font = `400 ${Math.round(band * 0.36 * k2)}px 'Rye', serif`; g.fillText('Lida no Sertão', w - pad, h + band * 0.52); g.textAlign = 'left'; }
+  return o;
+}
+function fotoNome(pre) { const c = calDate(); return (pre || 'lida-foto') + '_' + String(FT()).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w-]+/g, '_') + '_ano' + (c.y || 1) + '_dia' + S.day + '_' + Date.now().toString(36).slice(-4) + '.png'; }
+async function fotoGuardar(cv, pre) {
+  const url = cv.toDataURL('image/png'), b64 = url.split(',')[1], nome = fotoNome(pre); FOTO.last = url;
+  S.stats = S.stats || {}; S.stats.fotos = (S.stats.fotos || 0) + 1;
+  if (appNativo()) { try { const r = await Capacitor.Plugins.LidaApp.salvar({ nome, texto: b64, mime: 'image/png', base64: true }); toast('📸 Foto salva em ' + ((r && r.onde) || 'Imagens')); return true; } catch (e) { } }
+  try { const bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); const blob = new Blob([u8], { type: 'image/png' });
+    const f = typeof File === 'function' ? new File([blob], nome, { type: 'image/png' }) : null;
+    if (f && navigator.canShare && navigator.canShare({ files: [f] }) && /Android|iPhone|iPad/i.test(navigator.userAgent)) { try { await navigator.share({ files: [f], title: 'Lida no Sertão' }); return true; } catch (e) { if (e && e.name === 'AbortError') return false; } }
+    const u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = nome; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(u); a.remove(); }, 2000); toast('📸 Foto baixada: ' + nome); return true; } catch (e) { toast('⚠️ Não consegui salvar a foto.'); return false; }
+}
+function fotoFrame() { if (!FOTO.want) return; const w = FOTO.want; FOTO.want = null; if (w !== 'tirar') return; const cv = fotoCompor(); if (!cv) return; AU.chime && AU.chime(); const fl = $('fade'); if (fl) { fl.style.transition = 'none'; fl.style.background = '#fff'; fl.style.opacity = '0.8'; setTimeout(() => { fl.style.transition = 'opacity .5s'; fl.style.opacity = '0'; setTimeout(() => { fl.style.background = ''; }, 600); }, 60); } fotoGuardar(cv); }
+// a foto é tirada logo depois do desenho do quadro (o WebGL não guarda a imagem entre quadros)
+{ const _pf = PERF.frame.bind(PERF); PERF.frame = function (...a) { try { if (FOTO.on || FOTO.want) fotoFrame(); } catch (e) { console.error(e); } return _pf(...a); }; }
+/* ---------- retrospectiva do ano ---------- */
+const ANO_ITENS = [['earned', '💰', 'Dinheiro ganho', v => fmt(v)], ['sold', '🐂', 'Animais vendidos'], ['born', '🍼', 'Bezerros e potros nascidos'], ['peixes', '🎣', 'Peixes pescados'], ['colheitas', '🌽', 'Colheitas'], ['eggs', '🥚', 'Ovos recolhidos'], ['leiteVend', '🥛', 'Litros de leite vendidos'], ['mel', '🍯', 'Colheitas de mel'], ['farinhadas', '🥖', 'Farinhadas'], ['vaq', '🤠', 'Bois derrubados na vaquejada'], ['premios', '🏆', 'Prêmios em exposições'], ['lacos', '➰', 'Laçadas'], ['corridas', '🏁', 'Corridas vencidas'], ['diarias', '🤝', 'Diárias na fazenda de amigos', v => fmt(v)], ['fotos', '📸', 'Fotos tiradas'], ['dead', '🕊️', 'Animais perdidos']];
+function anoSnap() { const c = calDate(); return { y: c.y || 1, d0: S.day, s: JSON.parse(JSON.stringify(S.stats || {})), pat: Math.round(patrimonio()), gado: S.animals.filter(a => a.own === 'player' && !a.dead && !a.hotel).length }; }
+function anoResumo(A0) { const s = S.stats || {}, L = []; for (const [k, e, n, f] of ANO_ITENS) { const v = (+s[k] || 0) - (+A0.s[k] || 0); if (v > 0.5) L.push([e, n, f ? f(v) : String(Math.round(v))]); }
+  const pat = Math.round(patrimonio()), gado = S.animals.filter(a => a.own === 'player' && !a.dead && !a.hotel).length;
+  return { y: A0.y, dias: S.day - A0.d0, L, pat, dPat: pat - A0.pat, gado, dGado: gado - A0.gado, fz: FT(), nome: S.cf.name }; }
+function anoTick() { if (!S || !S.cf || (typeof NET !== 'undefined' && NET.guest)) return; const c = calDate(), y = c.y || 1;
+  if (!S.ano) { S.ano = anoSnap(); return; }
+  if (S.ano.y !== y) { const R = anoResumo(S.ano); S.retros = (S.retros || []).concat([R]).slice(-12); S.ano = anoSnap(); if (R.dias >= 20) setTimeout(() => { try { if (mode === 'play' && !M.open) anoAbrir(R); else S.flags.anoPend = 1; } catch (e) { } }, 1500); } }
+{ const _dt = dayTick; dayTick = function (...a) { const r = _dt.apply(this, a); try { anoTick(); } catch (e) { console.error(e); } return r; }; }
+function anoHTML(R) {
+  let h = `<div class="card" style="text-align:center"><span class="mut">${esc(R.fz)}</span><div style="font:400 calc(26px*var(--fs)) var(--fH)">Ano ${R.y}${R.atual ? ' (até agora)' : ''}</div><span class="mut">${esc(R.nome)} · ${R.dias} dia${R.dias === 1 ? '' : 's'} de lida</span></div>`;
+  h += `<div class="card"><div class="row sp"><span>🏡 Patrimônio</span><b>${fmt(R.pat)} <span class="mut">(${R.dPat >= 0 ? '+' : ''}${fmt(R.dPat)})</span></b></div><div class="row sp"><span>🐄 Animais na fazenda</span><b>${R.gado} <span class="mut">(${R.dGado >= 0 ? '+' : ''}${R.dGado})</span></b></div></div>`;
+  h += '<div class="card">' + (R.L.length ? R.L.map(([e, n, v]) => `<div class="row sp"><span>${e} ${n}</span><b>${v}</b></div>`).join('') : '<p class="mut">Ainda não teve muito movimento neste ano. Bora para a lida!</p>') + '</div>';
+  if ((S.retros || []).length && R.atual) h += `<div class="card"><b>Anos anteriores</b>${S.retros.slice().reverse().map((x, i) => `<div class="row sp"><span>Ano ${x.y}</span><button data-a="anoVer" data-v="${S.retros.length - 1 - i}">Ver</button></div>`).join('')}</div>`;
+  return h + `<div class="row">${btn('📸 Guardar cartão', 'anoCartao')}${btn('Fechar', 'anoFechar')}</div>`;
+}
+let ANO_VER = null;
+function anoAbrir(R) { ANO_VER = R || Object.assign(anoResumo(S.ano || anoSnap()), { atual: 1 }); showModal('📒 Retrospectiva', null, null, () => anoHTML(ANO_VER), 'book'); }
+function anoCartao(R) { // cartão vertical 1080 × 1350 para guardar ou mandar no WhatsApp
+  const W0 = 1080, H0 = 1350, o = document.createElement('canvas'); o.width = W0; o.height = H0; const g = o.getContext('2d');
+  const gr = g.createLinearGradient(0, 0, 0, H0); gr.addColorStop(0, '#2e3a6a'); gr.addColorStop(0.45, '#9a5a4a'); gr.addColorStop(1, '#e8903a'); g.fillStyle = gr; g.fillRect(0, 0, W0, H0);
+  g.fillStyle = 'rgba(43,22,8,0.82)'; g.fillRect(60, 250, W0 - 120, H0 - 360); g.strokeStyle = '#e0b060'; g.lineWidth = 6; g.strokeRect(60, 250, W0 - 120, H0 - 360);
+  g.textAlign = 'center'; g.fillStyle = '#ffd040'; g.font = "400 84px 'Rye', serif"; g.fillText('Lida no Sertão', W0 / 2, 120);
+  g.fillStyle = '#fff3d0'; g.font = "700 54px 'Bree Serif', serif"; g.fillText('Retrospectiva do Ano ' + R.y + (R.atual ? ' (até agora)' : ''), W0 / 2, 200);
+  g.font = "700 40px 'Nunito', sans-serif"; g.fillStyle = '#ffe8b0'; g.fillText(R.nome + ' · ' + R.fz, W0 / 2, 320);
+  g.textAlign = 'left'; let y = 400; const row = (a, b) => { g.fillStyle = '#ffe8b0'; g.font = "600 38px 'Nunito', sans-serif"; g.fillText(noEmo(a), 110, y); g.textAlign = 'right'; g.fillStyle = '#ffd040'; g.font = "800 40px 'Nunito', sans-serif"; g.fillText(b, W0 - 110, y); g.textAlign = 'left'; y += 62; };
+  row('Dias de lida', String(R.dias)); row('Patrimônio', fmt(R.pat)); row('Animais na fazenda', String(R.gado)); for (const [e, n, v] of R.L.slice(0, 11)) row(n, v);
+  g.textAlign = 'center'; g.fillStyle = '#2b1608'; g.font = "700 34px 'Nunito', sans-serif"; g.fillText('Ôôô boi! Itarantim, Bahia', W0 / 2, H0 - 50);
+  return o;
+}
+A.anoVer = v => { const R = (S.retros || [])[+v]; if (R) { ANO_VER = R; renderModal(); } };
+A.anoCartao = () => { if (!ANO_VER) return; fotoGuardar(anoCartao(ANO_VER), 'lida-ano' + ANO_VER.y); };
+A.anoAbrir = () => anoAbrir(); A.anoFechar = () => closeModal(); A.fotoAbrir = () => fotoAbrir();
+// no menu Início: modo foto e retrospectiva
+{ const _mt2 = menuTab; menuTab = function (t) { const h = _mt2(t); if (t !== 'ini') return h; return `<div class="card"><div class="row sp"><span><b>📸 Modo foto</b><br><span class="mut">Esconda a tela, escolha um filtro e guarde a foto.</span></span>${btn('Tirar foto', 'fotoAbrir')}</div><div class="row sp" style="margin-top:6px"><span><b>📒 Retrospectiva</b><br><span class="mut">O seu ano de lida em números.</span></span>${btn('Ver o ano', 'anoAbrir')}</div></div>` + h; }; }
+// se a retrospectiva chegou com um menu aberto, mostra quando fechar
+{ const _cm = closeModal; closeModal = function (...a) { const r = _cm.apply(this, a); try { if (S && S.flags && S.flags.anoPend && mode === 'play' && S.retros && S.retros.length) { S.flags.anoPend = 0; setTimeout(() => anoAbrir(S.retros[S.retros.length - 1]), 400); } } catch (e) { } return r; }; }
+addEventListener('keydown', e => { if (FOTO.on && (e.code === 'Escape' || e.code === 'Backspace')) { e.preventDefault(); e.stopImmediatePropagation(); fotoSair(); } }, true);
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
@@ -11750,6 +11836,7 @@ const CONQ = [
   ['vaq5', '🏇', 'Vaqueiro de pista', 'Ganhar 5 vaquejadas.', () => (S.stats.vaq || 0) >= 5],
   ['onl1', '🤝', 'Mutirão', 'Receber um amigo na sua fazenda pelo modo online.', () => (S.stats.mutirao || 0) >= 1],
   ['onl2', '💰', 'Diarista', 'Voltar para casa com diárias ganhas na fazenda de um amigo.', () => (S.stats.diarias || 0) > 0],
+  ['foto1', '📸', 'Retratista do sertão', 'Tirar 5 fotos no modo foto.', () => (S.stats.fotos || 0) >= 5],
   ['onl3', '🏁', 'Ligeiro', 'Vencer uma corrida de galope no modo online.', () => (S.stats.corridas || 0) >= 1],
   ['seca', '☀', 'Couro curtido', 'Atravessar uma seca forte sem perder o rebanho.', () => !!S.flags.secaVencida],
   ['amg3', '❤', 'Gente boa', 'Ter 3 moradores com 3 corações.', () => nFriends(3) >= 3],
@@ -15187,6 +15274,7 @@ const PWA = {
 addEventListener('visibilitychange', () => { if (document.hidden && S && mode === 'play') SAVE.save('auto', true); });
 window.lidaVoltar = () => { // v16.2: botão voltar do celular (app Android)
   try {
+    if (typeof FOTO !== 'undefined' && FOTO.on) { fotoSair(); return true; }
     for (const id of ['cred', 'ctrls']) { const el = $(id); if (el && el.classList.contains('on')) { el.classList.remove('on'); document.body.classList.remove('ovl'); return true; } }
     if (PNT.on) { pntEnd(); return true; } if (MOVE.edit) { placeCancel(); return true; }
     if (FS.on && !M.open) { stopFishing(); return true; } if (M.open) { closeModal(); return true; } if (SH.a) { closeSheet(); return true; } if (inst.on) { stopInst(); return true; }

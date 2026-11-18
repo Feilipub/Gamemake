@@ -17,11 +17,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import android.util.Base64;
 
 /**
  * Ponte do jogo com o Android: grava arquivos do jogo (save exportado, modelo de história)
- * na pasta Downloads/Lida no Sertao, ou abre o "Compartilhar" do Android em aparelhos antigos.
- * No jogo: Capacitor.Plugins.LidaApp.salvar({ nome, texto, mime }).
+ * na pasta Downloads/Lida no Sertao (fotos do modo foto vão para a galeria, em Imagens/Lida no Sertao),
+ * ou abre o "Compartilhar" do Android em aparelhos antigos.
+ * No jogo: Capacitor.Plugins.LidaApp.salvar({ nome, texto, mime, base64 }).
  */
 @CapacitorPlugin(name = "LidaApp")
 public class LidaAppPlugin extends Plugin {
@@ -35,15 +37,16 @@ public class LidaAppPlugin extends Plugin {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) { compartilhar(call); return; }
         try {
             ContentResolver cr = getContext().getContentResolver();
+            boolean img = mime.startsWith("image/");
             ContentValues v = new ContentValues();
-            v.put(MediaStore.Downloads.DISPLAY_NAME, nome);
-            v.put(MediaStore.Downloads.MIME_TYPE, mime);
-            v.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/" + PASTA);
-            Uri u = cr.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, v);
-            if (u == null) throw new Exception("sem acesso à pasta Downloads");
-            try (OutputStream o = cr.openOutputStream(u)) { o.write(texto.getBytes(StandardCharsets.UTF_8)); }
+            v.put(MediaStore.MediaColumns.DISPLAY_NAME, nome);
+            v.put(MediaStore.MediaColumns.MIME_TYPE, mime);
+            v.put(MediaStore.MediaColumns.RELATIVE_PATH, (img ? Environment.DIRECTORY_PICTURES : Environment.DIRECTORY_DOWNLOADS) + "/" + PASTA);
+            Uri u = cr.insert(img ? MediaStore.Images.Media.EXTERNAL_CONTENT_URI : MediaStore.Downloads.EXTERNAL_CONTENT_URI, v);
+            if (u == null) throw new Exception("sem acesso à pasta");
+            try (OutputStream o = cr.openOutputStream(u)) { o.write(bytes(call, texto)); }
             JSObject r = new JSObject();
-            r.put("onde", "Downloads/" + PASTA);
+            r.put("onde", img ? "a galeria (Imagens/" + PASTA + ")" : "Downloads/" + PASTA);
             call.resolve(r);
         } catch (Exception e) {
             compartilhar(call);
@@ -59,7 +62,7 @@ public class LidaAppPlugin extends Plugin {
             File dir = new File(getContext().getCacheDir(), "arquivos");
             dir.mkdirs();
             File f = new File(dir, nome);
-            try (FileOutputStream o = new FileOutputStream(f)) { o.write(texto.getBytes(StandardCharsets.UTF_8)); }
+            try (FileOutputStream o = new FileOutputStream(f)) { o.write(bytes(call, texto)); }
             Uri u = FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".fileprovider", f);
             Intent i = new Intent(Intent.ACTION_SEND);
             i.setType(mime);
@@ -91,6 +94,12 @@ public class LidaAppPlugin extends Plugin {
         } catch (Exception e) {
             call.reject("Não consegui compartilhar: " + e.getMessage());
         }
+    }
+
+    /** O conteúdo vem como texto ou, para imagens, em base64 (base64: true). */
+    private static byte[] bytes(PluginCall call, String texto) {
+        if (Boolean.TRUE.equals(call.getBoolean("base64", false))) return Base64.decode(texto, Base64.DEFAULT);
+        return texto.getBytes(StandardCharsets.UTF_8);
     }
 
     private static String limpar(String n) {

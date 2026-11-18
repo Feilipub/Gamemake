@@ -32,6 +32,9 @@ São João com quadrilha e fogueira, Missa do Vaqueiro, cavalgada, forró na pra
 👷 PEÕES E FAZENDA
 Contrate peões, dê ordens, construa curral, silo, ordenha e casa de peão, compre mais terra e transforme a Boa Esperança em Fazenda Modelo do Sertão.
 
+📸 MODO FOTO E RETROSPECTIVA
+Esconda a tela, escolha um filtro (sépia, cordel, entardecer, seca) e guarde a foto com a moldura da sua fazenda. No fim de cada ano, a retrospectiva mostra tudo o que você fez — vendas, bezerros, peixes, colheitas, vaquejadas — num cartão para mandar aos amigos.
+
 ✨ FEITO PARA O CELULAR
 Controles na tela ou controle de videogame, visual em pixel art com modo HD, letras grandes, modos para daltonismo e alto contraste. Funciona sem internet (o modo online só usa quando você chama os amigos), sem anúncios e sem compras dentro do jogo.
 
