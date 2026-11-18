@@ -52,8 +52,34 @@ process.on('exit', () => { try { srv.kill(); } catch (e) { } });
   await ev(guest, "netChat('Ê boi! Cheguei!'); 0"); await host.waitForTimeout(700);
   R.chat = await ev(host, "NET.chat.some(c => /Cheguei/.test(c.t))");
   R.mural = await ev(guest, 'S.mural && S.mural.t.length');
-  const nomes = { entrou: 'convidado entrou montado', hostVe: 'dono vê o convidado', posicao: 'posição do convidado chega no dono', porteira: 'porteira aberta pelo convidado', cocho: 'cocho enchido pelo convidado', aboio: 'gado segue o aboio do convidado', dinheiro: 'caixa da fazenda igual nos dois', hora: 'mesma hora nos dois', chat: 'chat chega no dono', mural: 'mural de tarefas no convidado' };
-  let falhas = 0; for (const k in nomes) { const ok = k === 'hostVe' ? R[k] >= 1 : k === 'aboio' ? R[k] >= 1 : k === 'mural' ? R[k] === 3 : !!R[k]; if (!ok) falhas++; console.log((ok ? '✅ ' : '❌ ') + nomes[k] + ' (' + JSON.stringify(R[k]) + ')'); }
+  // v17: chamado com seta, diária, pedido para dormir, corrida, convite, link e reconexão
+  await ev(guest, 'netPing(); 0'); await host.waitForTimeout(900);
+  R.chamado = await ev(host, '!!(NET2.ping && /Vaqueira|Gado|Vaqueiro/.test(NET2.ping.nome))');
+  R.diaria = await ev(guest, 'NET2.hoje > 0 && !!localStorage.getItem("lida_net_ganho")');
+  await ev(guest, 'A.netSono(); 0'); await host.waitForTimeout(900);
+  R.sono = await ev(host, 'netSonoLista().length === 1');
+  await ev(host, "corrStart('praca'); 0"); await host.waitForTimeout(800);
+  R.largada = await ev(guest, "!!(NET2.corr && NET2.corr.st === 'cd')");
+  await host.waitForTimeout(5600);
+  await ev(guest, "P.x = 84 * TS; P.y = 49 * TS; 0"); await guest.waitForTimeout(1500); await ev(host, "P.x = 84 * TS; P.y = 49.5 * TS; 0"); await host.waitForTimeout(2500);
+  R.corrida = await ev(guest, "!!(NET2.ult && NET2.ult.rank.length === 2 && NET2.hoje >= 300)");
+  R.convite = await ev(host, "netLink(NET.sala).endsWith('#sala=' + NET.sala)" + (P2P ? " && localStorage.getItem('lida_net_sala') === NET.sala" : ''));
+  { const p3 = await b.newPage(); p3.on('pageerror', e => erros.push('link: ' + e.message)); await p3.addInitScript(s => localStorage.setItem('lida_set', JSON.stringify(s)), { view: '2d', cenas: false });
+    await p3.goto('http://localhost:' + PORTA + '/index.html#debug&nointro&sala=' + sala); await p3.waitForFunction(() => window.__lida, null, { timeout: 30000 }); await p3.waitForTimeout(2500);
+    R.link = await p3.evaluate(() => window.__lida.ev("!!$('netCode') && $('netCode').value"));
+    // pagamento das diárias quando o jogador volta para o próprio jogo
+    await p3.evaluate(() => window.__lida.ev("closeModal(); localStorage.setItem('lida_net_ganho', JSON.stringify({ v: 432, fz: ['Fazenda Teste'] })); newGame(defaultCF()); 0")); await p3.waitForTimeout(1500);
+    R.pagamento = await p3.evaluate(() => window.__lida.ev("(async () => { const c0 = S.cash + S.acct; SAVE.apply(JSON.parse(SAVE.serialize())); await new Promise(r => setTimeout(r, 2200)); return Math.round(S.cash + S.acct - c0) === 432 && !localStorage.getItem('lida_net_ganho'); })()"));
+    await p3.close(); }
+  // a conexão do convidado cai e ele volta sozinho
+  const cav0 = await ev(guest, 'P.mnt');
+  await ev(guest, P2P ? 'NET.hc.close(); setTimeout(() => { if (NET.on) netClosed(); }, 300); 0' : 'NET.ws.close(); 0'); // queda: o canal fecha (no P2P o aviso de queda vem da própria conexão)
+  let caiu = false; for (let i = 0; i < 40 && !caiu; i++) { caiu = !(await ev(guest, 'NET.on')); if (!caiu) await guest.waitForTimeout(250); }
+  for (let i = 0; i < 100 && !(await ev(guest, 'NET.on && NET.guest && NET2.re === 0')); i++) await guest.waitForTimeout(250);
+  await guest.waitForTimeout(1500);
+  R.volta = caiu && await ev(guest, 'NET.on && NET.guest && mode === "play" && !!P.mnt && P.mnt !== ' + cav0) && (await ev(host, 'Object.keys(NET.players).length')) === 1;
+  const nomes = { entrou: 'convidado entrou montado', hostVe: 'dono vê o convidado', posicao: 'posição do convidado chega no dono', porteira: 'porteira aberta pelo convidado', cocho: 'cocho enchido pelo convidado', aboio: 'gado segue o aboio do convidado', dinheiro: 'caixa da fazenda igual nos dois', hora: 'mesma hora nos dois', chat: 'chat chega no dono', mural: 'mural de tarefas no convidado', chamado: 'chamado com seta chega no dono', diaria: 'convidado ganha diária', sono: 'pedido para dormir chega no dono', largada: 'corrida: convidado na largada', corrida: 'corrida: ranking e prêmio do vencedor', convite: 'link de convite (e código fixo)', link: 'link abre o jogo com o código preenchido', pagamento: 'diárias pagas ao voltar para o próprio jogo', volta: 'convidado volta sozinho quando a conexão cai' };
+  let falhas = 0; for (const k in nomes) { const ok = k === 'hostVe' ? R[k] >= 1 : k === 'aboio' ? R[k] >= 1 : k === 'mural' ? R[k] === 3 : k === 'link' ? R[k] === sala : !!R[k]; if (!ok) falhas++; console.log((ok ? '✅ ' : '❌ ') + nomes[k] + ' (' + JSON.stringify(R[k]) + ')'); }
   if (erros.length) { falhas++; console.log('❌ erros no console:', erros.slice(0, 5)); } else console.log('✅ nenhum erro no console');
   await ev(host, "document.querySelectorAll('.tip,#tipC').forEach(e=>e.remove()); P.x = 30 * TS; P.y = 40 * TS; cam.uz = 1.8; 0"); await ev(guest, "document.querySelectorAll('.tip,#tipC').forEach(e=>e.remove()); P.x = 32 * TS; P.y = 40.5 * TS; P.dir = 2; cam.uz = 1.8; netChat('Bora tocar o gado!'); 0"); await host.waitForTimeout(2500); await ev(host, "document.querySelectorAll('.tip,#tipC').forEach(e=>e.remove()); 0"); await ev(guest, "document.querySelectorAll('.tip,#tipC').forEach(e=>e.remove()); 0");
   await host.screenshot({ path: path.join(OUT, 'dono.png') }); await guest.screenshot({ path: path.join(OUT, 'convidado.png') });

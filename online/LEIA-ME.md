@@ -22,6 +22,12 @@ A pasta `online/` tem um servidor de salas (`servidor.mjs`, Node + `ws`). Ele ta
 - **Juntos:** todos podem abrir porteiras, encher cochos, aboiar o gado, escovar, limpar e tratar. Tudo isso aparece para os outros. O caixa da fazenda é um só.
 - **Chat:** tem chat e emojis, e as falas aparecem em balões em cima de cada vaqueiro.
 - **Mural do dia:** traz 3 tarefas em grupo. Com 2 ou mais vaqueiros, a recompensa dobra.
+- **Convite (v17):** o dono toca em **Convidar amigos** e manda o link pelo WhatsApp. Quem abre o link já cai na tela de entrar com o código preenchido. O código da fazenda fica o mesmo de uma vez para a outra.
+- **Caiu a internet?** O convidado tenta voltar sozinho para a fazenda, até 3 vezes, antes de voltar para o próprio jogo.
+- **Diária de vaqueiro:** o convidado ganha R$ 12 por tarefa feita, até R$ 900 por dia, mais metade de cada tarefa do mural. O dinheiro entra no jogo dele na próxima vez que ele abrir o próprio save.
+- **Chamar todos aqui:** todo mundo vê uma seta na tela com a distância até quem chamou. No mapa aparecem os outros vaqueiros (pontos amarelos).
+- **Corrida de galope:** o dono escolhe o destino (Praça de Itarantim, Pista da Fazenda Duarte ou Porto do Rio Pardo). Todos largam juntos depois de 3…2…1, e quem chegar primeiro leva R$ 300.
+- **Pedir para dormir:** o convidado avisa que quer dormir, e o dono vê quem está pronto (😴 na etiqueta da sala).
 - **Só o dono pode:** vender, fazer obras, comprar terra e dormir para passar o dia. O jogo fica salvo no aparelho do dono, e a sala fecha quando o dono sai.
 
 ## Rodar o servidor próprio no seu computador
@@ -32,7 +38,7 @@ npm install
 node servidor.mjs        # abre em http://localhost:8790
 ```
 
-Para testar, abra duas abas: abra a fazenda numa e entre com o código na outra.
+Para testar, abra duas abas: abra a fazenda numa e entre com o código na outra. O teste automático confere 20 itens, entre eles convite, reconexão, diária, chamado e corrida.
 
 Testes automáticos (precisam do Playwright):
 

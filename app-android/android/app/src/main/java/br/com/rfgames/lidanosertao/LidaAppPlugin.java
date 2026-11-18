@@ -76,6 +76,23 @@ public class LidaAppPlugin extends Plugin {
         }
     }
 
+    /** Abre o "Compartilhar" do Android com um texto (convite do modo online para o WhatsApp etc.). */
+    @PluginMethod
+    public void texto(PluginCall call) {
+        String t = call.getString("texto", "");
+        try {
+            Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("text/plain");
+            i.putExtra(Intent.EXTRA_TEXT, t);
+            Intent ch = Intent.createChooser(i, "Convidar amigos");
+            ch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(ch);
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Não consegui compartilhar: " + e.getMessage());
+        }
+    }
+
     private static String limpar(String n) {
         String s = n.replaceAll("[\\\\/:*?\"<>|]", "_");
         return s.isEmpty() ? "lida.txt" : s;

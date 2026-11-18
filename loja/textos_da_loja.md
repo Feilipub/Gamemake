@@ -18,7 +18,7 @@ Mais de 40 raças de boi — Nelore, Gir, Guzerá, Caracu, Pé-Duro e muitas out
 Monte, treine e personalize a sua montaria: sela, manta, guizos e marca de ferro na anca. Ou comece no mapa Haras: picadeiro, pista, hotel de cavalos, coberturas, provas de corrida e aulas de equitação.
 
 🤠 FAZENDA ONLINE COM OS AMIGOS
-Abra a sua fazenda e chame até 5 amigos pelo código de 4 letras. Cada um chega montado no próprio cavalo: abram porteiras, encham os cochos, toquem o gado no aboio e cumpram o mural de tarefas do dia — em mutirão o mural paga o dobro. Tem chat com balões em cima de cada vaqueiro. Sem cadastro e sem servidor pago: os celulares se ligam direto.
+Abra a sua fazenda e chame até 5 amigos pelo código de 4 letras. Cada um chega montado no próprio cavalo: abram porteiras, encham os cochos, toquem o gado no aboio e cumpram o mural de tarefas do dia — em mutirão o mural paga o dobro. Mande o convite pelo WhatsApp, chame a turma com uma seta no mapa, aposte corrida de galope até a cidade e volte para a sua fazenda com as diárias que ganhou ajudando o amigo. Tem chat com balões em cima de cada vaqueiro. Sem cadastro e sem servidor pago: os celulares se ligam direto.
 
 🌵 O SERTÃO DE VERDADE
 Seca e inverno que mudam tudo na fazenda, aboio, carro de boi, carne de sol no varal, caixa de abelha, cata-vento, pesca no Rio Pardo e uma Mata Grande cheia de segredos — e o lendário boi Barbatão.

@@ -1,4 +1,4 @@
-# Como colocar o Lida no Sertão na Play Store (versão 16.2)
+# Como colocar o Lida no Sertão na Play Store (versão 17.0)
 
 Tudo o que dá para preparar sem a sua conta já está pronto:
 
@@ -13,8 +13,8 @@ Os passos abaixo são os que **só você** pode fazer, porque pedem a sua conta 
 
 | Item | Onde |
 |---|---|
-| App para enviar à loja (`.aab`, versão 16.2.0, código 82, Android 16 / API 36) | enviado no chat: `LidaNoSertao-16.2.0.aab` |
-| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-16.2.0.apk` |
+| App para enviar à loja (`.aab`, versão 17.0.0, código 83, Android 16 / API 36) | enviado no chat: `LidaNoSertao-17.0.0.aab` |
+| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-17.0.0.apk` |
 | Chave de upload e senha | já enviadas antes no chat, em `chave_upload_lida.zip` (**é a mesma chave; guarde bem!**) |
 | Ícone 512 × 512 | `loja/imagens/icone_512.png` |
 | Banner 1024 × 500 | `loja/imagens/banner_1024x500.png` |
@@ -34,9 +34,18 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 - **Android 16 (API 36):** o app mira a versão que a Play Store exige para apps novos.
 - **Tela "Sobre e privacidade":** fica em Configurações. Os créditos agora incluem PeerJS e OpenStreetMap.
 
+## Novidades da 17.0 — Mutirão Online
+- **Convidar amigos:** o convite abre o "Compartilhar" do Android, com o link e o código. O código da fazenda fica o mesmo de uma vez para a outra.
+- **Reconexão:** quando a conexão cai, o convidado volta sozinho para a fazenda.
+- **Diárias:** o convidado leva as diárias que ganhou para o próprio jogo.
+- **Chamar todos aqui:** mostra uma seta na tela de todo mundo. O mapa mostra os outros vaqueiros.
+- **Corrida de galope:** entre os vaqueiros, com prêmio de R$ 300.
+- **Pedir para dormir:** o convidado pode pedir, e o dono vê quem está pronto.
+- **3 conquistas novas:** Mutirão, Diarista e Ligeiro.
+
 ## Passo 1 — Testar no celular (5 minutos)
 
-1. Passe `LidaNoSertao-16.2.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
+1. Passe `LidaNoSertao-17.0.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
 2. Jogue um pouco.
 3. Teste o botão voltar, o **Exportar save** e uma sala online com outro celular.
 
@@ -102,7 +111,7 @@ Depois do primeiro envio manual, o GitHub pode compilar e mandar cada versão no
 
 Sem esses segredos, o GitHub continua gerando um **APK de teste** a cada atualização (em **Actions**, na parte de baixo da execução, em "Artifacts").
 
-O número de versão da nuvem é automático (100, 200, 300…). Ele é sempre maior que o 82 deste envio.
+O número de versão da nuvem é automático (100, 200, 300…). Ele é sempre maior que o 83 deste envio.
 
 ## Avisos
 
