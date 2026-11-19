@@ -11460,6 +11460,7 @@ function netHostPatch(pid, p) { // o que o convidado fez, aplicado na fazenda de
   if (p.ani) for (const id in p.ani) { const a = byId(+id); if (!a) continue; Object.assign(a, p.ani[id]); n++; }
   if (p.aboio) { netAboio(pid, p.aboio); n++; MURAL.aboio = (MURAL.aboio || 0) + 1; }
   if (p.sono) netSonoIn(pid);
+  if (p.apaga && typeof fogoApagar === 'function') { fogoApagar(+p.apaga[0], +p.apaga[1]); n++; }
   if (n) NET.acts[pid] = (NET.acts[pid] || 0) + n;
 }
 function netAboio(pid, o) { const R = o.longo ? 260 : 170; for (const a of S.animals) { if (a.own !== 'player' || a._rider || a._st === 'tied' || a._st === 'route' || isHitched(a.id) || a.guest) continue; if (!['boi', 'cavalo', 'jumento', 'burro'].includes(a.sp)) continue; if (hyp(a.x - o.x, a.y - o.y) < R) { a._st = 'follow'; a._t = o.longo ? 22 : 10; a._fol = pid; } } }
@@ -11670,10 +11671,10 @@ function netPingIn(m) {
 }
 function netArrFrame() {
   const c = NET2.corr, tgt = c && c.st !== 'fim' ? { x: c.alvo[0], y: c.alvo[1], nome: '🏁 ' + c.n } : (NET2.ping && performance.now() < NET2.ping.until ? NET2.ping : null);
-  let el = NET2.el; if (!tgt || mode !== 'play' || M.open || !NET.on) { if (el) el.style.display = 'none'; return; }
+  let el = NET2.el; if (!tgt || mode !== 'play' || M.open || (!NET.on && !(tgt.solo))) { if (el) el.style.display = 'none'; return; }
   if (!el) { el = NET2.el = document.createElement('div'); el.id = 'pingArr'; document.body.appendChild(el); }
   const d = Math.hypot(tgt.x - P.x, tgt.y - P.y); if (!c && d < 2 * TS) { NET2.ping = null; el.style.display = 'none'; return; }
-  const r = C.getBoundingClientRect(), [sx, sy] = w2s(tgt.x, tgt.y - 20), kx = r.width / W, ky = r.height / H; let x = r.left + sx * kx, y = r.top + sy * ky, ang = 180; const m = 44, mx = Math.min(r.width / 2 - 10, 100);
+  const r = C.getBoundingClientRect(), [sx, sy] = w2s(tgt.x, tgt.y - 40), kx = r.width / W, ky = r.height / H; let x = r.left + sx * kx, y = r.top + sy * ky, ang = 180; const m = 44, mx = Math.min(r.width / 2 - 10, 100);
   const inside = isFinite(x) && isFinite(y) && x > r.left + mx && x < r.right - mx && y > r.top + 90 && y < r.bottom - 150;
   if (!inside) { const cx = r.left + r.width / 2, cy = r.top + r.height / 2; let dx = x - cx, dy = y - cy; if (!isFinite(dx) || !isFinite(dy)) { dx = tgt.x - P.x; dy = tgt.y - P.y; } ang = Math.atan2(dy, dx) * 180 / Math.PI + 90; const k = Math.min((r.width / 2 - mx) / Math.abs(dx || 1e-3), (r.height / 2 - 150) / Math.abs(dy || 1e-3)); x = cx + dx * k; y = cy + dy * k; }
   el.style.display = 'flex'; el.style.left = x + 'px'; el.style.top = y + 'px'; el.innerHTML = `<i style="transform:rotate(${Math.round(ang)}deg)">▲</i><span>${esc(tgt.nome)} · ${Math.round(d / TS * 2)} m</span>`;
@@ -11948,6 +11949,99 @@ function vqFimIn(m) { if (!VQ.duo || m.de !== VQ.duo) return; VQ.on = false; VQ.
   if (m.prize > 0) { if (NET.guest) netGanhoAdd(m.prize); else receive(m.prize, 'Vaquejada em dupla com ' + quem); }
   S.stats.vaq = (S.stats.vaq || 0) + (m.log || []).filter(x => x === 'valeu').length; VQ.papel = null; VQ.duo = null;
   showModal('🏇 Vaquejada em dupla', null, null, () => `<p>Você foi o esteireiro de <b>${esc(quem)}</b>.</p><p>Bois: ${(m.log || []).map(r => r === 'valeu' ? '<b style="color:#2a7a2a">VALEU BOI</b>' : '<b style="color:#b02020">ZERO</b>').join(' · ')}</p><p>Pontos da dupla: <b>${m.pts}</b> · Sua parte do prêmio: <b>${fmt(m.prize || 0)}</b>${NET.guest ? ' (vai para o seu jogo)' : ''}</p>`, 'horse'); }
+/* ============ v19: O ANO NO SERTÃO — acontecimentos das estações ============
+   🧂 Experiência de Santa Luzia (12 → 13 de dezembro): pedrinhas de sal no sereno; as que derretem são os meses de chuva.
+   🙏 Dia de São José (19 de março): se chover, o inverno está garantido (o povo diz e o jogo cumpre um pouco).
+   🔥 Fogo no pasto na seca: o aceiro segura; o vaqueiro (e os peões) apagam com AÇÃO; chuva apaga tudo.
+   🌽 Festa da Colheita (2º sábado de abril, fim das águas): concurso dos produtos da horta e da roça na praça. */
+const SAZ = { el: null, acc: 0, fogoN0: 0, peaoT: 0 };
+const COLH_ITENS = ['abobora', 'milho', 'feijaoV', 'mandioca', 'tomate', 'couve', 'alface', 'pimenta', 'cheiro', 'mel', 'queijo', 'farinha'];
+const sazHoje = (m, d) => { const c = calDate(); return c.m === m && c.d === d; };
+// ---------- Santa Luzia ----------
+function luziaPode() { const c = calDate(); return c.m === 11 && c.d === 12 && hour() >= 17 && (!S.luzia || S.luzia.y !== c.y); }
+A.luziaFaz = () => { const c = calDate(); S.luzia = { y: c.y, d: S.day, vista: 0 }; closeModal(); say('🧂 Você pôs seis pedrinhas de sal no sereno, uma para cada mês de janeiro a junho. Amanhã cedo, veja quais derreteram.', 5200); };
+function luziaRevela() {
+  const L = S.luzia; if (!L || L.vista || S.day !== L.d + 1) return; L.vista = 1; const inv = clima().inv, n = inv === 'bom' ? 4 + (Math.random() < 0.5 ? 1 : 0) : inv === 'regular' ? 2 + (Math.random() < 0.5 ? 1 : 0) : (Math.random() < 0.5 ? 1 : 0);
+  const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho'], r = mulberry(S.day * 13 + 5), idx = meses.map((_, i) => i).sort(() => r() - 0.5).slice(0, n).sort((a, b) => a - b); L.der = idx;
+  S.stats.luzia = (S.stats.luzia || 0) + 1;
+  showModal('🧂 Experiência de Santa Luzia', null, null, () => `<p>De manhãzinha, as pedrinhas de sal que passaram a noite no sereno:</p><div class="card">${meses.map((m, i) => `<div class="row sp"><span>${m}</span><b>${idx.includes(i) ? '💧 derreteu' : '🧂 seca'}</b></div>`).join('')}</div><p>${n >= 4 ? 'Muita pedra derretida: <b>inverno bom</b> pela frente! O povo vai plantar cedo.' : n >= 2 ? 'Umas derreteram, outras não: <b>inverno regular</b>. Planta, mas guarda reserva.' : 'Quase nada derreteu: <b>inverno fraco</b>. Faz silagem, planta palma e guarda água.'}</p><p class="mut">Tradição do sertão: na noite de 12 para 13 de dezembro, dia de Santa Luzia, seis pedrinhas de sal ficam no sereno, uma para cada mês. As que amanhecem derretidas mostram os meses de chuva.</p>`, 'book');
+}
+// ---------- São José ----------
+function saoJoseFim() { const c = clima(); if (S.sjose === calDate().y) return; S.sjose = calDate().y;
+  if (S.weather && WXT[S.weather] && WXT[S.weather].rain > 0.2 || c.choveu) { const up = { fraco: 'regular', regular: 'bom', bom: 'bom' }[c.inv] || c.inv; c.inv = up; toast('🙏 Choveu no dia de São José! O povo diz que o inverno está garantido.'); S.stats.sjose = (S.stats.sjose || 0) + 1; }
+  else toast('🙏 Dia de São José sem chuva… o povo do sertão fica de olho no céu.'); }
+// ---------- Festa da Colheita ----------
+setTimeout(() => Object.assign(EVENTS, { colheita: { n: 'Festa da Colheita', place: 'praca', h: [8, 18], d: 'No fim das águas, Itarantim festeja o que a terra deu: barracas, forró e o concurso do melhor produto da roça e da horta.' } }), 0); // EVENTS é declarado mais adiante no arquivo
+{ const _eod = eventsOnDay; eventsOnDay = function (day) { const L = _eod(day), c = calDate(day), wd = day % 7, wk = Math.floor((c.d - 1) / 7); if (c.m === 3 && wd === 6 && wk === 1) L.push('colheita'); return L; }; }
+function colhNota(k, q) { const b = { abobora: 30, milho: 34, mandioca: 33, feijaoV: 24, tomate: 22, mel: 36, queijo: 35, farinha: 32 }[k] || 18; return Math.round(b + Math.min(28, Math.sqrt(q) * 7) + skill('lid') * 2 + rnd(-8, 8)); }
+function colheitaHTML() {
+  const y = calDate().y, L = COLH_ITENS.filter(k => IT[k] && (S.inv[k] || 0) >= 1);
+  let h = '<div class="card"><b>🏆 Concurso do melhor produto</b><p class="mut">Leve o que você colheu ou fez na fazenda. Quanto mais e melhor, maior a nota dos jurados. Uma inscrição por ano.</p>';
+  if (S.colhY === y) h += `<p>Você já concorreu este ano: <b>${S.colhRes || ''}</b></p>`;
+  else h += L.map(k => `<div class="row sp"><span>${iic(k, 16)} ${IT[k].n} (${fmtQ(S.inv[k])})</span>${btn('Inscrever', 'colhInsc', k)}</div>`).join('') || '<p class="mut">Você não tem nada da roça ou da horta na mochila. Colha e traga!</p>';
+  h += '</div><div class="card"><b>🧺 Barraca da fazenda</b><p class="mut">Na festa, o povo paga 40% a mais pelo que é da terra.</p>' + (L.map(k => `<div class="row sp"><span>${IT[k].n} (${fmtQ(S.inv[k])})</span>${btn('Vender 1 por ' + fmt(Math.round(IT[k].p * 1.4)), 'colhVende', k)}</div>`).join('') || '<p class="mut">Nada para vender.</p>') + '</div>';
+  return h;
+}
+A.colhInsc = k => { const y = calDate().y; if (S.colhY === y || !(S.inv[k] >= 1)) return; const q = S.inv[k], nota = colhNota(k, q), pos = nota >= 62 ? 1 : nota >= 52 ? 2 : nota >= 44 ? 3 : 0, pr = [0, 900, 450, 220][pos];
+  S.colhY = y; useInv(k, 1); S.colhRes = (pos ? pos + 'º lugar' : 'sem colocação') + ' com ' + IT[k].n + ' (nota ' + nota + ')';
+  if (pos) { receive(pr, 'Festa da Colheita: ' + pos + 'º lugar'); S.stats.colhPremios = (S.stats.colhPremios || 0) + 1; S.stats.premios = (S.stats.premios || 0) + 1; for (const id of ['zefa', 'bene', 'dito']) if (NPCDEF[id]) addFr(id, 8); }
+  say(pos ? '🏆 ' + IT[k].n + ' ficou em ' + pos + 'º lugar na Festa da Colheita! Prêmio: ' + fmt(pr) + '.' : 'Os jurados gostaram, mas não deu pódio desta vez (nota ' + nota + ').', 4200); renderModal(); };
+A.colhVende = k => { if (!(S.inv[k] >= 1)) return; useInv(k, 1); receive(Math.round(IT[k].p * 1.4), 'Barraca da Festa da Colheita: ' + IT[k].n); S.stats.sold = S.stats.sold || 0; renderModal(); };
+{ const _oed = openEventDesk; openEventDesk = function (ev) { _oed(ev); if (ev !== 'colheita' || !M.open) return; const f0 = M.fn; M.fn = () => f0() + colheitaHTML(); renderModal(); }; }
+// ---------- Fogo no pasto e aceiro ----------
+NET_SHARED.push('fogo');
+const fogoPastos = () => Object.keys(AREAS).filter(k => AREAS[k].k === 'pasto' && owned(k) && !(AREAS[k].exp && !(S.exp || {})[AREAS[k].exp]));
+function fogoComeca(k) {
+  k = k || pick(fogoPastos()); if (!k) return false; for (let i = 0; i < 25; i++) { const [x, y] = randIn(k), tx = Math.floor(x / TS), ty = Math.floor(y / TS), gi0 = gi(tx, ty); if (ground[gi0] !== G.PAST || grass[gi0] < 50) continue;
+    S.fogo = [[tx, ty, 0]]; S.fogoA = k; SAZ.fogoN0 = 0; S.stats.fogosVistos = (S.stats.fogosVistos || 0) + 1;
+    say('🔥 FOGO NO PASTO! Está queimando no ' + AREAS[k].n + '. Corra lá e aperte AÇÃO perto das chamas para apagar' + (S.workers && S.workers.length ? ' — os peões vão ajudar.' : '.'), 6000); toast('🔥 Fogo no ' + AREAS[k].n + '!'); AU.err && AU.err();
+    if (typeof NET2 !== 'undefined') NET2.ping = { x: (tx + 0.5) * TS, y: (ty + 0.5) * TS, nome: '🔥 Fogo no pasto', until: performance.now() + 180000, solo: 1 }; return true; }
+  return false;
+}
+function fogoTick(dt) {
+  const F = S.fogo; if (!F || !F.length) return; SAZ.acc += dt; for (const f of F) f[2] += dt;
+  if (S.weather && WXT[S.weather] && WXT[S.weather].rain > 0.4) { S.fogo = []; toast('🌧 A chuva apagou o fogo do pasto!'); return; }
+  if (SAZ.acc >= 2.5) { SAZ.acc = 0; const aceiro = S.aceiro === calDate().y, A0 = S.fogoA && AREAS[S.fogoA] ? AREAS[S.fogoA].r : null, novos = [];
+    for (const f of F) { if (F.length + novos.length >= (aceiro ? 10 : 60)) break; if (Math.random() > (aceiro ? 0.22 : 0.45)) continue; const [dx, dy] = pick([[1, 0], [-1, 0], [0, 1], [0, -1]]), nx = f[0] + dx, ny = f[1] + dy, i = gi(nx, ny);
+      if (aceiro && A0 && (nx <= A0[0] || ny <= A0[1] || nx >= A0[2] || ny >= A0[3])) continue; // o aceiro segura o fogo dentro do pasto
+      if (ground[i] !== G.PAST || grass[i] < 30 || F.some(o => o[0] === nx && o[1] === ny) || novos.some(o => o[0] === nx && o[1] === ny)) continue; novos.push([nx, ny, 0]); }
+    F.push(...novos);
+    for (let j = F.length - 1; j >= 0; j--) if (F[j][2] > 14) { grass[gi(F[j][0], F[j][1])] = 0; F.splice(j, 1); SAZ.fogoN0++; } // queimou e apagou sozinho
+    for (const a of S.animals) if (a.own === 'player' && !a._rider && F.some(f => Math.hypot((f[0] + 0.5) * TS - a.x, (f[1] + 0.5) * TS - a.y) < 1.6 * TS)) { a.hp = Math.max(5, (a.hp || 100) - 3); a.hap = Math.max(0, (a.hap || 50) - 6); }
+    if (!F.length) fogoFim(); }
+  if (S.workers && S.workers.length && F.length && Math.max(...F.map(f => f[2])) > 10) { SAZ.peaoT += dt; if (SAZ.peaoT > 6 / S.workers.length) { /* os peões chegam depois de uns segundos */ SAZ.peaoT = 0; F.sort((a, b) => b[2] - a[2]).pop(); if (!F.length) fogoFim(); } } // os peões apagam as chamas mais novas
+}
+function fogoFim() { const q = SAZ.fogoN0; S.fogo = []; if (typeof NET2 !== 'undefined' && NET2.ping && NET2.ping.solo) NET2.ping = null; S.stats.fogos = (S.stats.fogos || 0) + 1;
+  say(q <= 3 ? '🔥 Fogo apagado a tempo! Quase nada do pasto queimou.' : '🔥 O fogo acabou, mas queimou ' + q + ' pedaço(s) do pasto. Um aceiro ajuda no próximo ano (Menu › Fazenda).', 4500); }
+function fogoApagar(x, y) { const F = S.fogo || [], R = (has('balde') ? 1.9 : 1.4) * TS; const n0 = F.length; S.fogo = F.filter(f => Math.hypot((f[0] + 0.5) * TS - x, (f[1] + 0.5) * TS - y) > R); const n = n0 - S.fogo.length;
+  if (typeof NET !== 'undefined' && NET.guest && n) netSend({ t: 'pt', p: { apaga: [Math.round(x), Math.round(y)] } });
+  if (n) { P.en = Math.max(0, P.en - 2); for (let i = 0; i < 8; i++) part(x + rnd(-14, 14), y - 6, 'smoke', { vx: rnd(-6, 6), vy: -18, m: 1.6, c: 'rgba(210,210,210,0.6)', s: 2 }); AU.nz && AU.nz(0.4, 0.2, 'lowpass', 600, 1); }
+  if (!S.fogo.length && n0 && !(typeof NET !== 'undefined' && NET.guest)) fogoFim(); return n; }
+function fogoPerto() { const F = S.fogo || []; let best = null, bd = 3 * TS; for (const f of F) { const d = Math.hypot((f[0] + 0.5) * TS - P.x, (f[1] + 0.5) * TS - P.y); if (d < bd) { bd = d; best = f; } } return best; }
+function drawFlame(f) { const x = (f[0] + 0.5) * TS, y = (f[1] + 0.8) * TS, t = performance.now() / 120 + f[0] * 3 + f[1] * 7, s = 0.75 + 0.25 * Math.sin(t);
+  X.fillStyle = 'rgba(30,14,6,0.5)'; X.fillRect(Math.round(x - 9), Math.round(y - 2), 18, 4);
+  for (const [c, w, h, o] of [['#b02814', 17, 25, 0], ['#e8601a', 13, 20, 1], ['#f8a828', 9, 14, 2], ['#fff0a0', 4, 7, 3]]) { X.fillStyle = c; X.beginPath(); X.moveTo(x - w / 2, y); X.quadraticCurveTo(x - w / 2, y - h * 0.5 * s, x + Math.sin(t + o) * 1.5, y - h * s); X.quadraticCurveTo(x + w / 2, y - h * 0.5 * s, x + w / 2, y); X.fill(); }
+  if (Math.random() < 0.04) part(x + rnd(-4, 4), y - 14, 'smoke', { vx: rnd(-4, 4), vy: -14, m: 2, c: 'rgba(90,90,90,0.45)', s: 2 }); }
+{ const _ci2 = collectItems; collectItems = function (...a) { const L = _ci2.apply(this, a); for (const f of S && S.fogo || []) L.push({ y: (f[1] + 0.8) * TS, f: () => drawFlame(f), x: (f[0] + 0.5) * TS, o: { w: 30, h: 40 } }); return L; }; }
+{ const _fi = farmInteractables; farmInteractables = function (add) { _fi(add); const f = fogoPerto(); if (f) { const x = (f[0] + 0.5) * TS, y = (f[1] + 0.5) * TS; add({ k: 'fogo', label: '🔥 Apagar o fogo', x, y, r: 3 * TS, prio: 9, hit: [x - TS, y - TS, x + TS, y + TS], fn: () => { if (P.mnt) { fogoApagar(x, y); return; } act('sweep', 0.7, { x, y }, () => fogoApagar(x, y), { zoom: false }); } }); }
+  if (luziaPode() && hyp(P.x - FARM_CASA()[0], P.y - FARM_CASA()[1]) < 6 * TS) add({ k: 'luzia', label: '🧂 Experiência de Santa Luzia', x: P.x, y: P.y, r: 6 * TS, prio: 3, fn: A.luziaFaz }); }; }
+const FARM_CASA = () => { try { const c = objPos('bau'); return [c.x, c.y]; } catch (e) { return [P.x, P.y]; } };
+// aceiro no menu da fazenda
+{ const _ft = farmTab; farmTab = function () { const y = calDate().y, ok = S.aceiro === y; return _ft() + `<div class="card"><b>🔥 Aceiro contra o fogo</b><p class="mut">Faixa limpa em volta dos pastos: na seca, se o fogo pegar, ele fica preso no pasto e não se espalha. Vale para o ano todo.</p>${ok ? '<p>✅ Aceiro feito este ano.</p>' : btn('Fazer o aceiro (' + fmt(ACEIRO_P()) + ')', 'aceiro')}</div>`; }; }
+const ACEIRO_P = () => 250 + fogoPastos().length * 60;
+A.aceiro = () => { const y = calDate().y; if (S.aceiro === y) return; if (!pay(ACEIRO_P(), 'Aceiro contra o fogo')) return; S.aceiro = y; toast('🔥 Aceiro feito em volta dos pastos. Na seca o fogo fica preso.'); renderModal(); };
+// calendário do ano: ganchos de hora e de dia (só no jogo do dono; o convidado recebe pelo modo online)
+{ const _ht = hourTick; hourTick = function (h) { const r = _ht(h); if (typeof NET !== 'undefined' && NET.guest) return r; try {
+  const c = calDate();
+  if (c.m === 11 && c.d === 12 && h === 17) toast('🧂 Hoje é véspera de Santa Luzia: à noite, faça a experiência das pedrinhas de sal perto de casa (AÇÃO).');
+  if (c.m === 11 && c.d === 13 && h === 6) luziaRevela();
+  if (c.m === 2 && c.d === 19 && h === 7) toast('🙏 Hoje é dia de São José. Se chover, o inverno está garantido!');
+  if (c.m === 2 && c.d === 19 && h === 21) saoJoseFim();
+  if (season() && [6, 7, 8, 9].includes(c.m) && h === 14 && !(S.fogo && S.fogo.length) && S.day > 20) { const cs = clima().seca, p = (cs === 'severa' ? 0.12 : cs === 'forte' ? 0.08 : 0.04) * (S.aceiro === c.y ? 0.4 : 1); if (Math.random() < p) fogoComeca(); }
+} catch (e) { console.error(e); } return r; }; }
+{ const _uw = updWeather; updWeather = function (dt, gm) { const r = _uw(dt, gm); if (typeof NET !== 'undefined' && NET.guest) return r; try { fogoTick(dt); } catch (e) { console.error(e); } return r; }; }
+// conquistas do ano no sertão
+setTimeout(() => CONQ.push(['luzia1', '🧂', 'Sabedoria do sertão', 'Fazer a experiência de Santa Luzia.', () => (S.stats.luzia || 0) >= 1], ['fogo1', '🔥', 'Bombeiro da caatinga', 'Apagar um fogo no pasto.', () => (S.stats.fogos || 0) >= 1], ['colh1', '🌽', 'Mão boa pra terra', 'Ganhar um prêmio na Festa da Colheita.', () => (S.stats.colhPremios || 0) >= 1]), 0);
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
