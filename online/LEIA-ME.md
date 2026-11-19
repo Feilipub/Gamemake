@@ -28,6 +28,11 @@ A pasta `online/` tem um servidor de salas (`servidor.mjs`, Node + `ws`). Ele ta
 - **Chamar todos aqui:** todo mundo vê uma seta na tela com a distância até quem chamou. No mapa aparecem os outros vaqueiros (pontos amarelos).
 - **Corrida de galope:** o dono escolhe o destino (Praça de Itarantim, Pista da Fazenda Duarte ou Porto do Rio Pardo). Todos largam juntos depois de 3…2…1, e quem chegar primeiro leva R$ 300.
 - **Pedir para dormir:** o convidado avisa que quer dormir, e o dono vê quem está pronto (😴 na etiqueta da sala).
+- **Vaquejada em dupla (v19):** na pista da Fazenda Duarte, em dia de vaquejada, chame o amigo montado ao seu lado. Um puxa e o outro esteira, e o prêmio do convidado vai para o jogo dele.
+- **Mercado de animais (v19):**
+  - O dono põe animais à venda, e o convidado compra com as diárias. O animal chega na fazenda do convidado quando ele voltar para o próprio jogo.
+  - O convidado pode oferecer um animal da fazenda dele, e o dono aceita ou recusa.
+- **Fogo no pasto:** quando pega fogo na fazenda do dono, os convidados veem as chamas e ajudam a apagar.
 - **Só o dono pode:** vender, fazer obras, comprar terra e dormir para passar o dia. O jogo fica salvo no aparelho do dono, e a sala fecha quando o dono sai.
 
 ## Rodar o servidor próprio no seu computador

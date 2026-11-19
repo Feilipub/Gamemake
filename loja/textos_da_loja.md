@@ -20,8 +20,11 @@ Monte, treine e personalize a sua montaria: sela, manta, guizos e marca de ferro
 🤠 FAZENDA ONLINE COM OS AMIGOS
 Abra a sua fazenda e chame até 5 amigos pelo código de 4 letras. Cada um chega montado no próprio cavalo: abram porteiras, encham os cochos, toquem o gado no aboio e cumpram o mural de tarefas do dia — em mutirão o mural paga o dobro. Mande o convite pelo WhatsApp, chame a turma com uma seta no mapa, aposte corrida de galope até a cidade e volte para a sua fazenda com as diárias que ganhou ajudando o amigo. Tem chat com balões em cima de cada vaqueiro. Sem cadastro e sem servidor pago: os celulares se ligam direto.
 
+🪨 SERRA DA PEDRA PINTADA
+Uma região nova para explorar a cavalo: gruta, paredão e lajedo com pinturas rupestres, mirante, cristais de quartzo, licurizeiros e o Povoado de Santa Rita, com capela e bodega.
+
 🌵 O SERTÃO DE VERDADE
-Seca e inverno que mudam tudo na fazenda, aboio, carro de boi, carne de sol no varal, caixa de abelha, cata-vento, pesca no Rio Pardo e uma Mata Grande cheia de segredos — e o lendário boi Barbatão.
+Seca e inverno que mudam tudo na fazenda, fogo no pasto que pede aceiro, a experiência de Santa Luzia, o dia de São José, a Festa da Colheita, aboio, carro de boi, carne de sol no varal, caixa de abelha, cata-vento, pesca no Rio Pardo e uma Mata Grande cheia de segredos — e o lendário boi Barbatão.
 
 🎉 FESTAS E TRADIÇÃO
 São João com quadrilha e fogueira, Missa do Vaqueiro, cavalgada, forró na praça e feira agropecuária com concurso de animais.
