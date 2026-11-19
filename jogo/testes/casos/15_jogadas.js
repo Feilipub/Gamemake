@@ -4,7 +4,7 @@ module.exports = { nome: 'Jogadas: dormir, vaquejada, leilão, tempestade, girar
   // dormir 3 noites seguidas
   for (let n = 0; n < 3; n++) { const d0 = await t.ev('S.day'); await t.ev('S.min = 21 * 60; P.x = fpx("wake")[0]; P.y = fpx("wake")[1]; A.sleep(); 0'); t.ok(await t.ate('S.day > ' + d0, 30000), 'dormiu e acordou no dia seguinte (' + (n + 1) + 'ª noite)'); await t.espera(800); await t.pularCenas(); await t.ev('closeModal(); 0'); }
   // vaquejada: no dia certo, montado
-  await t.ev('let d = S.day; while (!eventsOnDay(d).includes("vaquejada")) d++; S.day = d; S.min = 9 * 60; const h = mainHorse(); h.saddle = "nord"; P.mnt = h.id; h._st = "ridden"; S.vaqDay = 0; startVaquejada(); 0');
+  await t.ev('let d = S.day; while (!eventsOnDay(d).includes("vaquejada")) d++; S.day = d; S.min = 9 * 60; const h = mainHorse(); h.saddle = "nord"; P.mnt = h.id; h._st = "ridden"; S.vaqDay = 0; startVaquejada(); A.vqIr("pux:ryan"); 0');
   t.ok(await t.ev('VQ.on'), 'a vaquejada começa'); await t.ev('(()=>{ for (let i = 0; i < 900 && VQ.on; i++) { input.x = 1; input.gal = true; if (i % 40 === 20) vaqAction(); tick(1/30); } input.x = 0; input.gal = false; })()'); await t.espera(500);
   t.ok(!(await t.ev('VQ.on')) || ['fall', 'res', 'end'].includes(await t.ev('VQ.ph')), 'a corrida da vaquejada termina (' + (await t.ev('VQ.res || VQ.ph')) + ')');
   await t.ev('VQ.on = false; P.mnt = null; mainHorse()._st = "idle"; 0'); await t.pularCenas();

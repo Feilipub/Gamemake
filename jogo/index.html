@@ -11532,6 +11532,9 @@ function netOnPresence(pid, m) { if (pid === NET.pid) return; const r = NET.play
   if (m.mnt) { const hz = byId(m.mnt); if (hz) { hz._rider = pid; hz.x = m.x; hz.y = m.y; hz._st = 'ridden'; hz.f = m.dir === 2 ? -1 : m.dir === 3 ? 1 : hz.f; } } }
 function netOnMsg(raw) {
   let m = raw; if (typeof raw === 'string') { try { m = JSON.parse(raw); } catch (e) { return; } }
+  if (NET.host && m.para && m.para !== 'h' && m.de && m.de !== 'h') { const f = Object.assign({}, m, { org: m.de }); delete f.de; return netSend(f); } // v19: recado de um convidado para outro passa pelo dono
+  if (m.org) m.de = m.org;
+  if (/^vq/.test(m.t || '')) return vqMsg(m);
   switch (m.t) {
     case 'criada': NET.pid = 'h'; return netHostStart(m.sala);
     case 'entrou': NET.pid = m.pid; NET.sala = m.sala; return;
@@ -11803,6 +11806,148 @@ A.anoAbrir = () => anoAbrir(); A.anoFechar = () => closeModal(); A.fotoAbrir = (
 // se a retrospectiva chegou com um menu aberto, mostra quando fechar
 { const _cm = closeModal; closeModal = function (...a) { const r = _cm.apply(this, a); try { if (S && S.flags && S.flags.anoPend && mode === 'play' && S.retros && S.retros.length) { S.flags.anoPend = 0; setTimeout(() => anoAbrir(S.retros[S.retros.length - 1]), 400); } } catch (e) { } return r; }; }
 addEventListener('keydown', e => { if (FOTO.on && (e.code === 'Escape' || e.code === 'Backspace')) { e.preventDefault(); e.stopImmediatePropagation(); fotoSair(); } }, true);
+/* ============ v19: VAQUEJADA EM DUPLA — puxador e esteireiro ============
+   Na pista de verdade, o boi corre entre dois vaqueiros: o ESTEIREIRO vai do outro lado, mantém o boi na reta e entrega o
+   rabo; o PUXADOR emparelha, pega o rabo e derruba entre as faixas. Agora o jogador escolhe o papel e o parceiro (um morador,
+   que ajuda mais quanto maior a amizade) ou corre com um amigo no modo online. */
+const VQ2 = { conv: null };
+const VQ_PARC = ['ryan', 'felipe', 'chico', 'tonho', 'bene', 'dito']; // moradores que correm vaquejada
+const vqParcQ = id => cl(0.42 + (typeof hearts === 'function' ? hearts(id) : 0) * 0.09 + (id === 'ryan' ? 0.12 : 0), 0.35, 0.92);
+const vqParcOk = () => VQ_PARC.filter(id => NPCDEF[id]);
+function vqPerto() { return typeof NET !== 'undefined' && NET.on ? Object.keys(NET.players).filter(p => p !== NET.pid && Math.hypot(NET.players[p].x - P.x, NET.players[p].y - P.y) < 10 * TS && NET.players[p].mnt) : []; }
+const _vqStart0 = startVaquejada;
+startVaquejada = function () {
+  if (!eventNow('vaquejada')) return say('A vaquejada só acontece no dia marcado (veja o calendário no Menu).');
+  if (!P.mnt) return say('Monte no seu cavalo para correr na vaquejada.');
+  if (S.vaqDay === S.day) return say('Você já correu seus bois hoje. Volte na próxima vaquejada!');
+  showModal('🏇 Vaquejada em dupla', null, null, vqEscolhaHTML, 'horse');
+};
+function vqEscolhaHTML() {
+  const L = vqParcOk(); let h = '<p>Na vaquejada se corre em dupla: o <b>puxador</b> emparelha com o boi, pega o rabo e derruba entre as faixas; o <b>esteireiro</b> corre do outro lado, segura o boi na reta e não deixa ele abrir.</p>';
+  h += '<div class="card"><b>🐂 Correr de puxador</b><p class="mut">Escolha quem vai de esteireiro. Quanto mais amizade, mais reto o boi corre e mais fácil fica pegar o rabo.</p>' + L.map(id => `<div class="row sp"><span>${esc(NPCDEF[id].n)} <span class="mut">· ajuda ${Math.round(vqParcQ(id) * 100)}%</span></span>${btn('Correr com ' + esc(NPCDEF[id].n.split(' ')[0]), 'vqIr', 'pux:' + id)}</div>`).join('') + '</div>';
+  h += '<div class="card"><b>🐎 Correr de esteireiro</b><p class="mut">Você segura o boi na reta para o puxador. Fique emparelhado e, quando o boi tentar abrir, aperte AÇÃO para fechar.</p>' + L.slice(0, 3).map(id => `<div class="row sp"><span>Puxador: ${esc(NPCDEF[id].n)}</span>${btn('Esteirar para ' + esc(NPCDEF[id].n.split(' ')[0]), 'vqIr', 'est:' + id)}</div>`).join('') + '</div>';
+  const R0 = vqPerto(); if (R0.length) h += '<div class="card"><b>🤝 Dupla com amigo (online)</b>' + R0.map(p => `<div class="row sp"><span>${esc(NET.players[p].nome)}</span><span>${btn('Eu puxo', 'vqConv', 'pux:' + p)}${btn('Eu esteiro', 'vqConv', 'est:' + p)}</span></div>`).join('') + '</div>';
+  else if (typeof NET !== 'undefined' && NET.on) h += '<p class="mut">Para correr em dupla com um amigo, ele precisa estar montado perto de você na pista.</p>';
+  return h;
+}
+A.vqIr = v => { const [papel, id] = String(v).split(':'); closeModal(); vqComecar({ papel, npc: id, q: vqParcQ(id) }); };
+function vqComecar(o) { // o = { papel: 'pux'|'est', npc?, duo?: pid, host?: true (quem simula o boi) }
+  S.vaqDay = S.day; Object.assign(VQ, { on: true, round: 0, pts: 0, res: null, log: [], papel: o.papel, npc: o.npc || null, q: o.q || 0.6, duo: o.duo || null, sim: !o.duo || o.papel === 'pux', qe: 0.6, sw: null, swOk: 0, swN: 0, alin: 0, alinT: 0 });
+  VQ.estH = null; VQ2.lastS = performance.now(); vqNext();
+}
+const _vqNext0 = vqNext;
+vqNext = function () {
+  _vqNext0(); if (!VQ.papel) return; const h = byId(P.mnt), b = VQ.bull;
+  VQ.sw = null; VQ.alin = 0; VQ.alinT = 0; VQ.swT = 1.6 + Math.random() * 1.2; VQ.npcX = b.x - 6; VQ.npcHold = false;
+  if (VQ.papel === 'est') { P.y = b.y - 18; if (h) { h.y = P.y; } if (!VQ.puxH) { VQ.puxH = csHorse(1); VQ.puxH.id = 99002; } }
+  if (VQ.duo && !VQ.sim) b.v = 0;
+  const quem = VQ.duo ? netName(VQ.duo) : NPCDEF[VQ.npc] ? NPCDEF[VQ.npc].n : 'o parceiro';
+  say(VQ.papel === 'est' ? '🐎 ' + (VQ.round + 1) + 'º boi! Você é o esteireiro de ' + quem + ': fique emparelhado (acelere/segure) e aperte AÇÃO quando o boi tentar abrir.' : '🐂 ' + (VQ.round + 1) + 'º boi! ' + quem + ' vai de esteireiro. Emparelhe, pegue o rabo (AÇÃO) e derrube entre as faixas (AÇÃO).', 3600);
+};
+const _vqUpd0 = updVaquejada;
+updVaquejada = function (dt) {
+  if (!VQ.papel) return _vqUpd0(dt);
+  const b = VQ.bull; if (!b) return;
+  // esteireiro do outro aparelho: o boi vem do puxador; aqui só o vaqueiro anda
+  if (VQ.duo && !VQ.sim) { VQ.t += dt; vqEstAnda(dt); vqSwTick(dt); if (performance.now() - (VQ2.lastS || performance.now()) > 8000) { VQ.on = false; VQ.bull = null; VQ.papel = null; VQ.duo = null; P._gal = 0; say('A dupla se desfez: o puxador sumiu da pista.', 3000); } return; }
+  if (VQ.papel === 'pux') { // o esteireiro (morador ou amigo) deixa o boi mais reto: menos arrancadas e mais folga para segurar o rabo
+    const q = VQ.duo ? VQ.qe : VQ.q, bu0 = b.burst; _vqUpd0(dt);
+    if (VQ.bull === b && bu0 <= 0 && b.burst > 0.5 && Math.random() < q * 0.6) b.burst = -0.3; // o esteireiro segurou o boi na reta: arrancada cortada
+    if (VQ.duo) vqDuoSend(); return;
+  }
+  // papel esteireiro com puxador morador: o boi corre, o jogador acompanha do outro lado, o morador derruba
+  VQ.t += dt; const B = byId(P.mnt) ? horseStats(byId(P.mnt)).B : { v: [40, 50, 80], ac: 2 };
+  if (VQ.ph === 'ready') { if (VQ.t > 2.4) { VQ.ph = 'run'; AU.whistle && AU.whistle(); AU.moo(b.x, b.y, 0.85); } return; }
+  if (VQ.ph === 'run') {
+    if ((b.burst -= dt) < -1.2 && Math.random() < dt * 0.9) b.burst = 0.6; const tv = b.base + (b.burst > 0 ? 26 : 0) + Math.sin(VQ.t * 3.1) * 6;
+    b.v += (tv - b.v) * Math.min(1, dt * 3); b.x += b.v * dt; b.d += b.v * dt; vqEstAnda(dt, B); vqSwTick(dt);
+    VQ.npcX += ((b.x - 6) - VQ.npcX) * Math.min(1, dt * 4); if (Math.random() < dt * 8) dust(b.x - 8, b.y, 1);
+    const ali = VQ.alinT > 0 ? VQ.alin / VQ.alinT : 0, qq = cl(0.25 + ali * 0.55 + VQ.q * 0.25 - VQ.swN * 0.12 + VQ.swOk * 0.05, 0.05, 0.97);
+    if (!VQ.npcHold && b.x > (VQ.faixa[0] - 3) * TS) { VQ.npcHold = true; say(NPCDEF[VQ.npc].n.split(' ')[0] + ' pegou o rabo!', 1300); }
+    if (VQ.npcHold && b.x > (VQ.faixa[0] + 0.6) * TS && !VQ.res) { if (Math.random() < qq) { VQ.ph = 'fall'; VQ.res = 'valeu'; VQ.log.push('valeu'); b.fall = 0; VQ.pts += 10; S.stats.vaq = (S.stats.vaq || 0) + 1; say('VALEU BOI! Você segurou o boi na reta e ' + NPCDEF[VQ.npc].n.split(' ')[0] + ' derrubou entre as faixas.', 3000); AU.jingle && AU.jingle(); }
+      else vqEndRun('zero', 'Zero! O boi abriu e caiu fora das faixas. Segure ele mais na reta.'); }
+    if (b.x > (VQ.faixa[1] + 2.5) * TS && !VQ.res) vqEndRun('zero', 'Zero! O boi passou da faixa.');
+    return;
+  }
+  if (VQ.ph === 'fall') { b.fall += dt; VQ.pv = Math.max(0, VQ.pv - dt * 80); P.x += VQ.pv * dt; P._mv = VQ.pv; const h = byId(P.mnt); if (h) { h.x = P.x; h.y = P.y; } if (b.fall > 2.4) { VQ.ph = 'end'; VQ.t = 0; } return; }
+  if (VQ.ph === 'end') { VQ.pv = Math.max(0, VQ.pv - dt * 80); P._mv = VQ.pv; P.x += VQ.pv * dt; const h = byId(P.mnt); if (h) { h.x = P.x; h.y = P.y; } if (VQ.t > 1.8) { VQ.round++; if (VQ.round < 3) vqNext(); else vqFinal(); } }
+};
+function vqEstAnda(dt, B) { // o esteireiro controla a velocidade para ficar emparelhado com o boi (do outro lado)
+  const b = VQ.bull, h = byId(P.mnt); B = B || (h ? horseStats(h).B : { v: [40, 50, 80], ac: 2 });
+  if (VQ.ph !== 'run') { VQ.pv = Math.max(0, (VQ.pv || 0) - dt * 80); P.x += VQ.pv * dt; P._mv = VQ.pv; if (h) { h.x = P.x; h.y = P.y; } return; }
+  const ctl = cl((input.x || 0) + (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0), -1, 1), want = cl(b.v + ctl * 40, 0, B.v[2] * 1.15);
+  VQ.pv += (want - (VQ.pv || 0)) * Math.min(1, dt * (1.6 + (B.ac || 2) * 0.6)); const ox = P.x; P.x += VQ.pv * dt; P._mv = VQ.pv; P._dist = (P._dist || 0) + (P.x - ox); P._gal = 2; P.y = b.y - 18; if (h) { h.x = P.x; h.y = P.y; h._stam = Math.max(0, (h._stam || 100) - dt * 2); }
+  VQ.gap = P.x - (b.x - 2); VQ.alinT += dt; if (Math.abs(VQ.gap) < 11) VQ.alin += dt;
+}
+function vqSwTick(dt) { // de vez em quando o boi tenta abrir para o lado do esteireiro
+  if (VQ.ph !== 'run') return; if (VQ.sw) { VQ.sw.t -= dt; if (VQ.sw.t <= 0) { VQ.sw = null; VQ.swN++; say('O boi abriu! Aperte AÇÃO quando ele empurrar.', 1400); AU.err && AU.err(); if (VQ.duo && !VQ.sim) netSend({ t: 'vqsw', para: VQ.duo, ok: 0 }); } return; }
+  if (VQ.duo && !VQ.sim) return; // no online quem sorteia é o puxador
+  if ((VQ.swT -= dt) <= 0) { VQ.swT = 1.8 + Math.random() * 1.6; if (VQ.papel === 'est') VQ.sw = { t: 0.95 }; }
+}
+const _vqAct0 = vaqAction;
+vaqAction = function () {
+  if (!VQ.papel || VQ.papel === 'pux') return _vqAct0();
+  if (VQ.ph !== 'run') return;
+  if (VQ.sw) { const ok = Math.abs(VQ.gap || 99) < 16; VQ.sw = null; if (ok) { VQ.swOk++; say('Fechou o boi! Ele voltou para a reta.', 1100); AU.click && AU.click(); } else { VQ.swN++; say('Longe demais do boi! Emparelhe para fechar.', 1300); } if (VQ.duo && !VQ.sim) netSend({ t: 'vqsw', para: VQ.duo, ok: ok ? 1 : 0 }); return; }
+  say(Math.abs(VQ.gap || 99) < 11 ? 'Emparelhado. Espere o boi tentar abrir e feche com AÇÃO.' : (VQ.gap > 0 ? 'Passou da frente do boi! Segure o cavalo.' : 'Ficou atrás do boi! Acelere.'), 1200);
+};
+const _vqEst0 = vqDrawEst;
+vqDrawEst = function () { // desenha o parceiro: esteireiro (morador) do outro lado, ou o puxador (morador) quando o jogador esteira
+  if (!VQ.papel) return _vqEst0(); const b = VQ.bull; if (!b) return; const fr = Math.floor(b.d / 9) % 8, an = VQ.ph === 'ready' || VQ.ph === 'end' ? 'idle' : 'gallop';
+  if (VQ.duo) return; // o amigo aparece pelo modo online
+  const ap = (NPCDEF[VQ.npc] || NPCDEF.ryan).ap;
+  if (VQ.papel === 'pux') { if (!VQ.estH) { VQ.estH = csHorse(2); VQ.estH.id = 99001; } try { drawMounted(VQ.estH, ap, Math.round(b.x - 2), Math.round(b.y - 18), 3, an, fr); } catch (e) { } }
+  else { if (!VQ.puxH) { VQ.puxH = csHorse(1); VQ.puxH.id = 99002; } try { drawMounted(VQ.puxH, ap, Math.round(VQ.npcX || b.x - 6), Math.round((VQ.y0 + 0.9) * TS), 3, an, fr); } catch (e) { } }
+};
+const _vqMet0 = vqDrawMeter;
+vqDrawMeter = function () {
+  if (!VQ.papel || VQ.papel === 'pux') return _vqMet0(); const b = VQ.bull; if (!b || VQ.ph !== 'run') return;
+  const g = cl(VQ.gap || 0, -30, 30), x = Math.round(ix(P)), y = Math.round(iy(P) - 48);
+  X.fillStyle = 'rgba(20,10,4,0.75)'; X.fillRect(x - 32, y - 3, 64, 6); X.fillStyle = VQ.sw ? 'rgba(255,90,60,0.9)' : 'rgba(80,220,90,0.8)'; X.fillRect(x - 11, y - 2, 22, 4); X.fillStyle = Math.abs(g) < 11 ? '#ffffff' : '#ff5a3a'; X.fillRect(x + Math.round(g) - 1, y - 4, 3, 8);
+  X.font = 'bold 6px sans-serif'; X.textAlign = 'center'; X.fillStyle = VQ.sw ? '#ffd0b0' : Math.abs(g) < 11 ? '#a8f0a0' : '#ffd0b0'; X.fillText(VQ.sw ? 'O BOI VAI ABRIR! AÇÃO!' : Math.abs(g) < 11 ? 'EMPARELHADO: SEGURE NA RETA' : g < 0 ? 'ACELERE ▶' : '◀ SEGURE', x, y - 6); X.textAlign = 'left';
+};
+const _vqFim0 = vqFinal;
+vqFinal = function () {
+  const duo = VQ.duo, papel = VQ.papel, quem = duo ? netName(duo) : VQ.npc && NPCDEF[VQ.npc] ? NPCDEF[VQ.npc].n : null, log = VQ.log.slice(), pts = VQ.pts;
+  if (duo && !VQ.sim) { VQ.on = false; VQ.bull = null; P._gal = 0; return; } // o resultado vem do puxador
+  const c0 = S.cash + S.acct; _vqFim0(); const prize = Math.round(S.cash + S.acct - c0);
+  if (duo && NET.guest && prize > 0) { const c = Math.min(S.cash, prize); S.cash -= c; S.acct -= prize - c; netGanhoAdd(prize); toast('🏆 Sua parte do prêmio (' + fmt(prize) + ') vai para o seu jogo; o dono recebe a dele.'); } // o caixa da fazenda recebe uma vez só (pelo dono)
+  if (VQ.npc) { addFr(VQ.npc, 4 + VQ.log.filter(x => x === 'valeu').length * 4); }
+  if (duo) netSend({ t: 'vqfim', para: duo, log, pts, prize });
+  if (quem && M.open && typeof M.fn === 'function') { const f0 = M.fn, tx = `<p class="mut">Dupla: ${papel === 'pux' ? 'você de puxador e ' + esc(quem) + ' de esteireiro' : 'você de esteireiro e ' + esc(quem) + ' de puxador'}.</p>`; M.fn = () => tx + f0(); renderModal(); }
+  VQ.papel = null; VQ.duo = null; VQ.npc = null;
+};
+// ---------- dupla online: convite, estado do boi e resultado ----------
+A.vqConv = v => { const [papel, pid] = String(v).split(':'); if (!NET.players[pid]) return; closeModal(); netSend({ t: 'vqconv', para: pid, papel: papel === 'pux' ? 'est' : 'pux', nome: S.cf.name }); VQ2.esp = { pid, papel, t: Date.now() }; say('🤝 Convite enviado para ' + netName(pid) + '. Esperando a resposta…', 3000); };
+function vqConvIn(m) { if (VQ.on) return netSend({ t: 'vqnao', para: m.de, nome: S.cf.name }); VQ2.conv = { de: m.de, papel: m.papel, nome: m.nome };
+  showModal('🏇 Convite para a vaquejada', null, null, () => `<p><b>${esc(m.nome)}</b> chamou você para correr em dupla, de <b>${m.papel === 'pux' ? 'puxador' : 'esteireiro'}</b>.</p><div class="row">${btn('Bora!', 'vqAceita')}${btn('Agora não', 'vqRecusa')}</div>`, 'horse'); }
+A.vqAceita = () => { const c = VQ2.conv; VQ2.conv = null; closeModal(); if (!c || !NET.players[c.de]) return; if (!P.mnt) return say('Monte no cavalo para correr.'); netSend({ t: 'vqok', para: c.de, nome: S.cf.name }); vqComecar({ papel: c.papel, duo: c.de }); };
+A.vqRecusa = () => { const c = VQ2.conv; VQ2.conv = null; closeModal(); if (c) netSend({ t: 'vqnao', para: c.de, nome: S.cf.name }); };
+function vqOkIn(m) { const e = VQ2.esp; if (!e || e.pid !== m.de) return; VQ2.esp = null; if (!P.mnt) return say('Monte no cavalo para correr.'); vqComecar({ papel: e.papel, duo: m.de }); }
+let vqSendT = 0;
+function vqDuoSend() { const now = performance.now(); if (now - vqSendT < 90) return; vqSendT = now; const b = VQ.bull; if (!b) return;
+  if (VQ.papel === 'pux' && (VQ.swT -= 0.09) <= 0 && VQ.ph === 'run') { VQ.swT = 1.8 + Math.random() * 1.6; netSend({ t: 'vqsw0', para: VQ.duo }); }
+  netSend({ t: 'vqs', para: VQ.duo, ph: VQ.ph, x: Math.round(b.x), y: Math.round(b.y), v: Math.round(b.v), d: Math.round(b.d), f: Math.round(b.fall * 100) / 100, r: VQ.round, hold: VQ.hold ? 1 : 0 }); }
+function vqStateIn(m) { if (!VQ.on || !VQ.duo || VQ.sim || m.de !== VQ.duo) return; VQ2.lastS = performance.now(); const b = VQ.bull || (VQ.bull = { x: m.x, y: m.y, d: 0, v: 0, fall: 0, burst: 0, base: 64 });
+  if (m.r !== VQ.round) { VQ.round = m.r; VQ.alin = 0; VQ.alinT = 0; VQ.sw = null; P.x = (VQ.x0 + 0.2) * TS; VQ.pv = 0; }
+  b.x = m.x; b.y = m.y; b.v = m.v; b.d = m.d; b.fall = m.f; VQ.ph = m.ph; VQ.hold = !!m.hold;
+  if (performance.now() - (VQ2.qT || 0) > 200) { VQ2.qT = performance.now(); const ali = VQ.alinT > 0 ? VQ.alin / VQ.alinT : 0.5; netSend({ t: 'vqe', para: VQ.duo, q: Math.round(cl(0.3 + ali * 0.6 + VQ.swOk * 0.04 - VQ.swN * 0.1, 0.1, 0.95) * 100) / 100 }); } }
+function vqMsg(m) {
+  switch (m.t) {
+    case 'vqconv': return vqConvIn(m);
+    case 'vqok': return vqOkIn(m);
+    case 'vqnao': VQ2.esp = null; return say('🤝 ' + (m.nome || 'O amigo') + ' não pode correr agora.', 2600);
+    case 'vqs': return vqStateIn(m);
+    case 'vqe': if (VQ.on && VQ.duo === m.de && VQ.sim) VQ.qe = cl(+m.q || 0.5, 0.1, 0.95); return;
+    case 'vqsw0': if (VQ.on && VQ.duo === m.de && !VQ.sim && VQ.ph === 'run' && !VQ.sw) VQ.sw = { t: 0.95 }; return;
+    case 'vqsw': if (VQ.on && VQ.duo === m.de && VQ.sim && VQ.bull) { if (m.ok) VQ.qe = Math.min(0.95, VQ.qe + 0.05); else { VQ.bull.burst = 0.6; VQ.qe = Math.max(0.1, VQ.qe - 0.15); say('O boi abriu do lado do esteireiro!', 1200); } } return;
+    case 'vqfim': return vqFimIn(m);
+  }
+}
+function vqFimIn(m) { if (!VQ.duo || m.de !== VQ.duo) return; VQ.on = false; VQ.bull = null; P._gal = 0; const quem = netName(m.de);
+  if (m.prize > 0) { if (NET.guest) netGanhoAdd(m.prize); else receive(m.prize, 'Vaquejada em dupla com ' + quem); }
+  S.stats.vaq = (S.stats.vaq || 0) + (m.log || []).filter(x => x === 'valeu').length; VQ.papel = null; VQ.duo = null;
+  showModal('🏇 Vaquejada em dupla', null, null, () => `<p>Você foi o esteireiro de <b>${esc(quem)}</b>.</p><p>Bois: ${(m.log || []).map(r => r === 'valeu' ? '<b style="color:#2a7a2a">VALEU BOI</b>' : '<b style="color:#b02020">ZERO</b>').join(' · ')}</p><p>Pontos da dupla: <b>${m.pts}</b> · Sua parte do prêmio: <b>${fmt(m.prize || 0)}</b>${NET.guest ? ' (vai para o seu jogo)' : ''}</p>`, 'horse'); }
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
