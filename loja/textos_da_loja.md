@@ -15,7 +15,7 @@ Seu avô, Tiãozinho, deixou para você a Fazenda Boa Esperança, em Itarantim, 
 Mais de 40 raças de boi — Nelore, Gir, Guzerá, Caracu, Pé-Duro e muitas outras. Cuide do pasto, do cocho e da água, escolha o plano de trato de cada lote (sal mineral, proteinado, semiconfinamento ou confinamento), vacine no brete, acompanhe o peso e venda no frigorífico ou no leilão.
 
 🐎 CAVALOS, JUMENTOS E MULAS — E UM HARAS SÓ SEU
-Monte, treine e personalize a sua montaria: sela, manta, guizos e marca de ferro na anca. Ou comece no mapa Haras: picadeiro, pista, hotel de cavalos, coberturas, provas de corrida e aulas de equitação.
+Monte, treine e personalize a sua montaria: sela, manta, guizos e marca de ferro na anca. Ou comece no mapa Haras: picadeiro, pista, hotel de cavalos, coberturas, provas de corrida e aulas de equitação. E na vaquejada, corra em dupla — de puxador ou de esteireiro, com um morador ou com um amigo online.
 
 🤠 FAZENDA ONLINE COM OS AMIGOS
 Abra a sua fazenda e chame até 5 amigos pelo código de 4 letras. Cada um chega montado no próprio cavalo: abram porteiras, encham os cochos, toquem o gado no aboio e cumpram o mural de tarefas do dia — em mutirão o mural paga o dobro. Mande o convite pelo WhatsApp, chame a turma com uma seta no mapa, aposte corrida de galope até a cidade e volte para a sua fazenda com as diárias que ganhou ajudando o amigo. Tem chat com balões em cima de cada vaqueiro. Sem cadastro e sem servidor pago: os celulares se ligam direto.
