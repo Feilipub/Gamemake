@@ -1,4 +1,4 @@
-# Como colocar o Lida no Sertão na Play Store (versão 19.0)
+# Como colocar o Lida no Sertão na Play Store (versão 20.0)
 
 Tudo o que dá para preparar sem a sua conta já está pronto:
 
@@ -13,8 +13,8 @@ Os passos abaixo são os que **só você** pode fazer, porque pedem a sua conta 
 
 | Item | Onde |
 |---|---|
-| App para enviar à loja (`.aab`, versão 19.0.0, código 85, Android 16 / API 36) | enviado no chat: `LidaNoSertao-19.0.0.aab` |
-| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-19.0.0.apk` |
+| App para enviar à loja (`.aab`, versão 20.0.0, código 86, Android 16 / API 36) | enviado no chat: `LidaNoSertao-20.0.0.aab` |
+| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-20.0.0.apk` |
 | Chave de upload e senha | já enviadas antes no chat, em `chave_upload_lida.zip` (**é a mesma chave; guarde bem!**) |
 | Ícone 512 × 512 | `loja/imagens/icone_512.png` |
 | Banner 1024 × 500 | `loja/imagens/banner_1024x500.png` |
@@ -33,6 +33,14 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 - **Modo online:** funciona no app, ligando um celular direto no outro.
 - **Android 16 (API 36):** o app mira a versão que a Play Store exige para apps novos.
 - **Tela "Sobre e privacidade":** fica em Configurações. Os créditos agora incluem PeerJS e OpenStreetMap.
+
+## Novidades da 20.0 — visual 3D (fase 1)
+- **Como ligar:** em Configurações › Visual, toque em **3D (novo)**.
+- **O mundo:** chão, água, cercas, porteiras, casas, árvores, cactos e pedras viram polígonos.
+- **Os bonecos:** o vaqueiro, os moradores, o gado, os cavalos e os cães viram modelos 3D com passada.
+- **A câmera:** gira com os botões ↺ ↻ ou com as teclas Z e X.
+- **O visual:** jeitão de PlayStation, com resolução baixa, névoa e a luz da hora do dia.
+- **O que ainda é 2D nesta fase:** o interior das casas, a pesca, a vaquejada e as cenas.
 
 ## Novidades da 19.0
 - **Vaquejada em dupla:** você escolhe ser puxador ou esteireiro e corre com um morador (a amizade ajuda) ou com um amigo online.
@@ -67,7 +75,7 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 
 ## Passo 1 — Testar no celular (5 minutos)
 
-1. Passe `LidaNoSertao-19.0.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
+1. Passe `LidaNoSertao-20.0.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
 2. Jogue um pouco.
 3. Teste o botão voltar, o **Exportar save** e uma sala online com outro celular.
 
@@ -133,7 +141,7 @@ Depois do primeiro envio manual, o GitHub pode compilar e mandar cada versão no
 
 Sem esses segredos, o GitHub continua gerando um **APK de teste** a cada atualização (em **Actions**, na parte de baixo da execução, em "Artifacts").
 
-O número de versão da nuvem é automático (100, 200, 300…). Ele é sempre maior que o 85 deste envio.
+O número de versão da nuvem é automático (100, 200, 300…). Ele é sempre maior que o 86 deste envio.
 
 ## Avisos
 
