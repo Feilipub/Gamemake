@@ -1,0 +1,43 @@
+# Lida no Sertão — publica o jogo e a política de privacidade no GitHub Pages (link grátis, instalável no celular).
+# Liga uma vez: Settings › Pages › Source: "GitHub Actions". Enquanto não estiver ligado, este passo só avisa e não falha.
+# Endereços: https://feilipub.github.io/Gamemake/  e  https://feilipub.github.io/Gamemake/privacidade.html
+name: Lida no Sertão — site
+on:
+  push:
+    branches: [ccr-8494ac05-m0vb49, main]
+    paths: ['jogo/**', 'loja/**', '.github/workflows/lida-site.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency: { group: lida-pages, cancel-in-progress: true }
+jobs:
+  confere:
+    runs-on: ubuntu-latest
+    outputs: { ok: '${{ steps.pages.outputs.ok }}' }
+    steps:
+      - name: Pages está ligado?
+        id: pages
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          if gh api "repos/${{ github.repository }}/pages" --jq .build_type 2>/dev/null | grep -q workflow; then echo "ok=1" >> "$GITHUB_OUTPUT";
+          else echo "::notice::GitHub Pages ainda não está ligado (Settings › Pages › Source: GitHub Actions). Nada foi publicado."; fi
+  publica:
+    needs: confere
+    if: needs.confere.outputs.ok == '1'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Montar o site
+        run: |
+          mkdir -p _site
+          cp jogo/index.html jogo/sw.js jogo/manifest.webmanifest jogo/icon-192.png jogo/icon-512.png _site/
+          cp loja/politica-de-privacidade.html _site/privacidade.html
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+      - id: deploy
+        uses: actions/deploy-pages@v4
