@@ -13246,6 +13246,27 @@ function r3Moveis(B, r) { const T = TS, Z0 = 2 * T, X0 = T, noite = hour() >= 18
 { const _isl2 = r3InSala; r3InSala = function (B, r) { const r2 = Object.assign({}, r, { furn: (r.furn || []).filter(f => !(f.wallAt || (R3MOVEIS[f.k] && f.t))) }); _isl2(B, r2); r3Moveis(B, r);
   if (hour() >= 18.5 || hour() < 5) { const Z0 = 2 * TS; for (const wx of r.win || []) { const x = (wx + 0.5) * TS; r3quad(B, [x - 8, 16, Z0 + 0.5], [x + 8, 16, Z0 + 0.5], [x + 8, 32, Z0 + 0.5], [x - 8, 32, Z0 + 0.5], [0.08, 0.1, 0.2], 3); r3box(B, x - 0.4, 16, Z0 + 0.5, x + 0.4, 32, Z0 + 1, r3c('#5a3a1a')); } } }; }
 
+/* ============ v24: CIDADE COM CARA PRÓPRIA NO 3D ============
+   Igreja Matriz com torre, sino e cruz; prefeitura e banco com platibanda e colunas; escola e prefeitura com mastro e
+   bandeira; lojas com toldo listrado e letreiro colorido em cima da porta. */
+const R3LOJA = { mercadinho: ['#c83a2a', '#f4f0e8'], bar: ['#2a7a3a', '#f0d030'], acougue: ['#b02a2a', '#ffffff'], agro: ['#3a7ab0', '#f4f0e8'], padaria: ['#d8902a', '#fff4d8'], farmacia: ['#2a8a5a', '#ffffff'], barbearia: ['#2a4ab0', '#e83a2a'], restaurante: ['#8a3a1a', '#f0c060'], oficina: ['#3a3a40', '#f0c020'], consultorio: ['#3aa0a0', '#ffffff'] };
+function r3CidadeExtra(B, b) { const r = b.r, X0 = r[0] * TS, Z0 = r[1] * TS, X1 = (r[2] + 1) * TS, Z1 = (r[3] + 1) * TS, h = 30, dx = b.door !== undefined ? (b.door + 0.5) * TS : (X0 + X1) / 2, m0 = R3.mat;
+  try { const L = R3LOJA[b.id];
+    if (L) { const c1 = r3c(L[0]), c2 = r3c(L[1]); R3.mat = R3MAT.pano; for (let i = 0; i < 6; i++) { const xa = dx - 12 + i * 4, xb = xa + 4; r3quad(B, [xa, 19, Z1 + 7], [xb, 19, Z1 + 7], [xb, 23, Z1 + 0.6], [xa, 23, Z1 + 0.6], i % 2 ? c2 : c1); r3quad(B, [xa, 17.4, Z1 + 7], [xb, 17.4, Z1 + 7], [xb, 19, Z1 + 7], [xa, 19, Z1 + 7], i % 2 ? c2 : c1); }
+      R3.mat = 0; for (const sx of [dx - 12, dx + 12]) r3box(B, sx - 0.4, 0, Z1 + 6.6, sx + 0.4, 19, Z1 + 7.2, [0.35, 0.35, 0.38]);
+      r3box(B, dx - 11, 24, Z1, dx + 11, 29, Z1 + 0.8, c1); r3box(B, dx - 10, 25.2, Z1 + 0.8, dx + 10, 27.8, Z1 + 1, c2); for (let i = 0; i < 5; i++) r3box(B, dx - 8 + i * 3.6, 25.8, Z1 + 1, dx - 6.4 + i * 3.6, 27.2, Z1 + 1.2, c1.map(v => v * 0.6)); }
+    if (b.id === 'igreja') { const tx = (X0 + X1) / 2, tz = Z1 - 8; R3.mat = R3MAT.reboco; r3box(B, tx - 8, 0, tz - 8, tx + 8, 62, tz + 8, r3c('#fbfaf4')); r3box(B, tx - 9, 0, tz - 9, tx + 9, 6, tz + 9, r3c(b.trim || '#d8b040'));
+      R3.mat = 0; for (const [ax, az, nx] of [[tx, tz + 8.1, 0], [tx, tz - 8.1, 0]]) r3box(B, ax - 3.5, 44, az - 0.3, ax + 3.5, 54, az + 0.3, [0.12, 0.1, 0.1]); for (const az of [tz]) for (const ax of [tx - 8.1, tx + 8.1]) r3box(B, ax - 0.3, 44, az - 3.5, ax + 0.3, 54, az + 3.5, [0.12, 0.1, 0.1]);
+      r3cyl(B, tx, tz, 46, 51, 2.4, 1.4, 8, [0.75, 0.6, 0.25], [0.6, 0.45, 0.2]); R3.mat = R3MAT.telha; r3cyl(B, tx, tz, 62, 76, 11.5, 0.3, 4, r3c('#b0502a'), null); R3.mat = 0; r3box(B, tx - 0.6, 76, tz - 0.6, tx + 0.6, 86, tz + 0.6, [0.9, 0.85, 0.6]); r3box(B, tx - 3.5, 81, tz - 0.6, tx + 3.5, 82.4, tz + 0.6, [0.9, 0.85, 0.6]);
+      R3.mat = R3MAT.tabua; r3box(B, tx - 5, 0, Z1, tx + 5, 22, Z1 + 0.8, r3c('#6a3a1a')); R3.mat = 0; r3cyl(B, tx, tz + 8.4, 30, 31, 3, 3, 10, [0.3, 0.35, 0.6], null); }
+    if (b.id === 'prefeitura' || b.id === 'banco') { R3.mat = R3MAT.reboco; r3box(B, X0 - 1, h - 2, Z1 - 1, X1 + 1, h + 9, Z1 + 1, r3c(b.wall || '#f0e8d8').map(v => v * 0.96)); r3box(B, X0 - 1.5, h + 8, Z1 - 1.5, X1 + 1.5, h + 9.6, Z1 + 1.5, r3c(b.trim || '#6a4422'));
+      for (let x = X0 + 6; x <= X1 - 5; x += Math.max(10, (X1 - X0 - 12) / 4)) r3cyl(B, x, Z1 + 4, 0, h - 1, 1.6, 1.6, 8, r3c('#f4f0e8'), r3c('#f4f0e8')); r3box(B, X0 - 1, h - 2, Z1, X1 + 1, h - 0.5, Z1 + 6, r3c('#e8e0d0')); }
+    if (b.id === 'prefeitura' || b.id === 'escola') { const fx = X0 - 8, fz = Z1 + 6; R3.mat = 0; r3cyl(B, fx, fz, 0, 46, 0.6, 0.5, 6, [0.8, 0.8, 0.82], null); const t = performance.now() / 1000, n0 = B.a.length;
+      for (let i = 0; i < 4; i++) { const u0 = i / 4, u1 = (i + 1) / 4, w0 = Math.sin(u0 * 3) * 1.2, w1 = Math.sin(u1 * 3) * 1.2; r3quad(B, [fx + u0 * 14, 38, fz + w0], [fx + u1 * 14, 38, fz + w1], [fx + u1 * 14, 46, fz + w1], [fx + u0 * 14, 46, fz + w0], i === 1 || i === 2 ? [0.95, 0.8, 0.15] : [0.15, 0.55, 0.25]); } }
+  } finally { R3.mat = m0; } }
+{ const _rpd3 = r3Pedaco; r3Pedaco = function (cx, cy) { const B = _rpd3(cx, cy), x0 = cx * R3C, y0 = cy * R3C, x1 = x0 + R3C, y1 = y0 + R3C;
+  for (const b of BLD) { const r = b.r, mx = (r[0] + r[2] + 1) / 2, my = (r[1] + r[3] + 1) / 2; if (mx < x0 || mx >= x1 || my < y0 || my >= y1) continue; try { r3CidadeExtra(B, b); } catch (e) { } } return B; }; }
+
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
