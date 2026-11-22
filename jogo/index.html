@@ -7175,7 +7175,7 @@ function cfgHTML(inGame) {
   h += `<div class="card"><b>Visual</b><p class="mut">HD-2D: câmera em perspectiva com profundidade, sombras do sol, luz das fogueiras e desfoque nas bordas, mantendo a pixel art. Clássico: o 2D de antes.</p><div class="ch">${opt('view', '3d', '3D (novo)')}${opt('view', 'hd2d', 'HD-2D')}${opt('view', '2d', 'Clássico 2D')}</div><b>Desfoque de profundidade</b><div class="ch">${opt('dof', true, 'Ligado')}${opt('dof', false, 'Desligado')}</div><b>Cenas curtas da lida</b><p class="mut">Caminhão boiadeiro, parto, brete, ladrão de gado… Desligue para ir direto ao resultado.</p><div class="ch">${opt('cenas', true, 'Ligadas')}${opt('cenas', false, 'Desligadas')}</div><b>Trânsito na cidade</b><div class="ch">${opt('transito', true, 'Ligado')}${opt('transito', false, 'Desligado')}</div></div>`;
   h += `<div class="card"><b>Conversas com IA</b><p class="mut">Na versão publicada, os moradores podem responder perguntas livres usando o Claude (pede sua permissão na primeira vez). Sem internet ou sem permissão, eles usam as falas do próprio jogo.</p><div class="ch">${opt('ia', true, 'Ligada')}${opt('ia', false, 'Desligada')}</div><b>Limite por dia</b><div class="ch">${opt('iaMax', 15, '15')}${opt('iaMax', 30, '30')}${opt('iaMax', 60, '60')}</div></div>`;
   h += `<div class="card"><b>Gráficos</b><div class="ch">${opt('q', 'alta', 'Alta resolução')}${opt('q', 'media', 'Desempenho')}${opt('q', 'leve', 'Modo leve')}</div><p class="mut">${SET.q === 'leve' ? 'Modo leve: resolução menor, até 30 quadros por segundo, visual 2D e menos aves. Ideal para celulares simples e para poupar bateria.' : SET.q === 'media' ? 'Desempenho: resolução menor, bom para a maioria dos celulares.' : 'Alta resolução: mais nitidez, pede um aparelho mais forte.'}</p><b>Modo de controle</b><div class="ch">${opt('mode', 'joy', 'Joystick')}${opt('mode', 'touch', 'Toque na tela')}</div><p class="mut">${SET.mode === 'touch' ? 'Toque no chão para ir até lá; toque duas vezes para correr ou galopar. Os botões de ação continuam na tela.' : 'Joystick virtual (ou WASD/setas no teclado). Segure “Correr” para correr ou galopar.'}</p><b>Tamanho dos botões</b><div class="ch">${opt('ctl', 1, 'Normal')}${opt('ctl', 1.2, 'Grandes')}</div><b>Orientação da tela</b><div class="ch">${opt('ori', 'livre', 'Livre')}${opt('ori', 'retrato', 'Retrato')}${opt('ori', 'paisagem', 'Paisagem')}</div><p class="mut">Travar a orientação só funciona em tela cheia no celular.</p><div class="row">${btn('Tela cheia', 'fs')}</div><b>Cenas dos leilões</b><div class="ch">${opt('aucCs', 'on', 'Mostrar')}${opt('aucCs', 'off', 'Pular sempre')}</div><b>Vibração</b><div class="ch">${opt('vib', true, 'Ligada')}${opt('vib', false, 'Desligada')}</div><b>Zoom</b><p class="mut">Use dois dedos na tela (pinça) ou a rodinha do mouse.</p><div class="row">${btn('Zoom padrão', 'zoomReset')}</div></div>`;
-  if (SET.view === '3d') h += `<div class="card"><b>Ajustes do 3D</b><p class="mut">O jeitão de PlayStation: imagem em baixa resolução e vértices que "tremem". Gire a câmera com ↺ ↻ (ou Z e X).</p><div class="ch">${opt('r3snap', true, 'Tremidinho PS1')}${opt('r3snap', false, 'Sem tremidinho')}</div><div class="ch" style="margin-top:6px">${opt('r3res', 'baixa', 'Nitidez baixa (mais leve)')}${opt('r3res', 'media', 'Nitidez média')}${opt('r3res', 'alta', 'Nitidez alta')}</div><div class="ch" style="margin-top:6px">${opt('r3cenas', true, 'Cenas em 3D')}${opt('r3cenas', false, 'Cenas em 2D')}</div><div class="row">${opt('r3tex', true, 'Com texturas')}${opt('r3tex', false, 'Sem texturas')}</div></div>`;
+  if (SET.view === '3d') h += `<div class="card"><b>Ajustes do 3D</b><p class="mut">O jeitão de PlayStation: imagem em baixa resolução e vértices que "tremem". Gire a câmera com ↺ ↻ (ou Z e X).</p><div class="ch">${opt('r3snap', true, 'Tremidinho PS1')}${opt('r3snap', false, 'Sem tremidinho')}</div><div class="ch" style="margin-top:6px">${opt('r3res', 'baixa', 'Nitidez baixa (mais leve)')}${opt('r3res', 'media', 'Nitidez média')}${opt('r3res', 'alta', 'Nitidez alta')}</div><div class="ch" style="margin-top:6px">${opt('r3cenas', true, 'Cenas em 3D')}${opt('r3cenas', false, 'Cenas em 2D')}</div><div class="row">${opt('r3tex', true, 'Com texturas')}${opt('r3tex', false, 'Sem texturas')}</div><div class="row">${opt('r3cam', 'baixa', 'Câmera baixa (com céu)')}${opt('r3cam', 'alta', 'Câmera alta')}</div></div>`;
   h += kbHTML() + a11yHTML(opt);
   h += saveFileCard(inGame);
   h += `<div class="card"><b>ℹ️ Sobre e privacidade</b><p class="mut">Lida no Sertão ${GAME_V} · RF Games. O jogo não coleta dados pessoais, não tem anúncios nem compras. Os saves ficam só neste aparelho (desinstalar ou limpar os dados do navegador apaga). No modo online, os aparelhos dos vaqueiros se ligam direto entre si (o nome do vaqueiro, a posição e as mensagens do chat vão para os outros da sala); o código da sala passa pelo servidor público da PeerJS, só para os aparelhos se acharem.</p>${btn('Créditos e licenças', 'credits')}</div>`;
@@ -12444,9 +12444,9 @@ function r3Resize() {
 function r3Mostra(on) { if (R3.vis === on) return; R3.vis = on; if (on && !SET.r3dica) { SET.r3dica = 1; try { saveSet(); } catch (e) { } setTimeout(() => toast('🎮 Visual 3D: gire a câmera com os botões ↺ ↻ (ou Z e X). Ajustes em Configurações › Ajustes do 3D.'), 800); } if (on) { if (HD.on) hdSet(false); R3.cv.style.display = R3.ov.style.display = 'block'; C.style.opacity = '0'; r3Botoes(true); } else { R3.cv.style.display = R3.ov.style.display = 'none'; C.style.opacity = '1'; r3Botoes(false); } }
 function r3Camera(dt) {
   const vw = VW(), vh = VH(), tx = cam.x + vw / 2, tz = cam.y + vh / 2; if (!R3.T) R3.T = [tx, tz]; const k = Math.min(1, dt * 8); R3.T[0] += (tx - R3.T[0]) * k; R3.T[1] += (tz - R3.T[1]) * k;
-  let dy = R3.yawT - R3.yaw; R3.yaw += dy * Math.min(1, dt * 7); const asp = W / H, D = 480 / cl((mode === 'cs' ? cam.z : 0) || cam.uz || 1.3, 0.6, 3.6) * (asp < 1 ? 1.15 : 1), phi = 0.85, th = R3.yaw;
+  let dy = R3.yawT - R3.yaw; R3.yaw += dy * Math.min(1, dt * 7); const asp = W / H, baixa = SET.r3cam !== 'alta', D = 480 / cl((mode === 'cs' ? cam.z : 0) || cam.uz || 1.3, 0.6, 3.6) * (asp < 1 ? 1.15 : 1) * (baixa ? 0.9 : 1), phi = baixa ? 0.3 : 0.85, th = R3.yaw;
   const eye = [R3.T[0] + Math.sin(th) * D * Math.cos(phi), D * Math.sin(phi), R3.T[1] + Math.cos(th) * D * Math.cos(phi)]; R3.eye = eye;
-  const VP = M4.mul(M4.persp(0.78, asp, 6, 1800), M4.look(eye, [R3.T[0], 6, R3.T[1]], [0, 1, 0])); R3.M = { VP, IVP: M4.inv(VP) };
+  const VP = M4.mul(M4.persp(baixa && asp < 1 ? 0.92 : 0.78, asp, 6, 2200), M4.look(eye, [R3.T[0], baixa ? 20 : 6, R3.T[1]], [0, 1, 0])); R3.M = { VP, IVP: M4.inv(VP) };
 }
 function r3Luz() { // sol, céu e névoa pela hora do dia
   const m = S.min, hr = m / 60, am = ambient(), n = am.dark / 0.62, el = Math.sin(Math.max(0.05, Math.min(Math.PI - 0.05, (hr - 6) / 12 * Math.PI))), az = (hr - 6) / 12 * Math.PI;
@@ -12466,10 +12466,10 @@ function r3Render(dt) {
     if ((!ch || ch.ver !== R3.ver) && (refeitos < 2 || !ch)) { refeitos++; const g = r3Upload(r3Pedaco(cx, cy), ch && ch.g); ch = { g, ver: R3.ver, cx, cy }; R3.chunks.set(key, ch); R3.rebuilt++; } if (ch) usar.push(ch); }
   if (R3.chunks.size > 120) for (const [k, ch] of R3.chunks) { const [cx, cy] = k.split(',').map(Number); if (Math.abs(cx - ccx) > R3R + 3 || Math.abs(cy - ccy) > R3R + 3) { gl.deleteBuffer(ch.g.vb); gl.deleteVertexArray(ch.g.vao); R3.chunks.delete(k); } }
   const D = r3Dinamico(); R3.dynB = r3Upload(D, R3.dynB);
-  const L = r3Luz(); gl.bindFramebuffer(gl.FRAMEBUFFER, R3.fb); gl.viewport(0, 0, R3.lw, R3.lh); gl.clearColor(L.sky[0], L.sky[1], L.sky[2], 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  const L = r3Luz(); gl.bindFramebuffer(gl.FRAMEBUFFER, R3.fb); gl.viewport(0, 0, R3.lw, R3.lh); gl.clearColor(L.sky[0], L.sky[1], L.sky[2], 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); try { r3Ceu(L); } catch (e) { }
   gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE); gl.disable(gl.BLEND); gl.useProgram(R3.P); const u = R3.u;
   gl.uniformMatrix4fv(u.uVP, false, R3.M.VP); gl.uniform3fv(u.uEye, R3.eye); gl.uniform3fv(u.uSun, L.sun); gl.uniform3fv(u.uAmb, L.amb); gl.uniform3fv(u.uSunC, L.sc); gl.uniform1f(u.uT, performance.now() / 1000); gl.uniform1f(u.uNight, L.n); r3Luzes(L, null);
-  gl.uniform2f(u.uSnap, SET.r3snap === false ? 0 : R3.lw / 2, SET.r3snap === false ? 0 : R3.lh / 2); gl.uniform3fv(u.uFog, L.sky); gl.uniform2f(u.uFogR, L.fog[0], L.fog[1]);
+  gl.uniform2f(u.uSnap, SET.r3snap === false ? 0 : R3.lw / 2, SET.r3snap === false ? 0 : R3.lh / 2); gl.uniform3fv(u.uFog, L.sky); { const fk = SET.r3cam !== 'alta' ? 1.35 : 1; gl.uniform2f(u.uFogR, L.fog[0] * fk, L.fog[1] * fk); }
   let tris = 0, cortados = 0; for (const ch of usar) { if (r3ForaDaTela(ch)) { cortados++; continue; } gl.bindVertexArray(ch.g.vao); gl.drawArrays(gl.TRIANGLES, 0, ch.g.n); tris += ch.g.n / 3; }
   gl.bindVertexArray(R3.dynB.vao); gl.drawArrays(gl.TRIANGLES, 0, R3.dynB.n); tris += R3.dynB.n / 3; gl.bindVertexArray(null);
   // amplia a imagem pequena para a tela (pixel grande, como no PS1)
@@ -12710,7 +12710,7 @@ function r3Ave(B, a) {
   const D = BIRDS[a.k]; if (!D || a.st === 'dive') return; const s = D.s || 1, c = D.c || ['#8a8a8a', '#9a9a9a', '#7a7a7a', '#6a6a6a', '#e8a020', '#c88a3a'];
   const fly = a.z > 2 && a.st !== 'perch' && a.st !== 'hover' || a.st === 'pass' || a.st === 'circle', swim = a.st === 'swim', perch = a.st === 'perch' || a.st === 'hover';
   const ang = a.st === 'circle' ? (a.an || 0) + Math.PI / 2 * Math.sign(a.w || 1) : (a.vx || a.vy) ? Math.atan2(a.vy || 0, a.vx || 0) : (a.f < 0 ? Math.PI : 0);
-  const y = swim ? 0.5 : perch && a.z <= 2 ? 10 : a.z, W = { x: a.x, y, z: a.y, ca: Math.cos(ang), sa: Math.sin(ang) }, legH = swim || fly ? 0 : (D.ll || 4) * s * 0.55;
+  const y = swim ? 0.5 : perch && a.z <= 2 ? 10 : a.z > 30 ? a.z * 1.9 : a.z, W = { x: a.x, y, z: a.y, ca: Math.cos(ang), sa: Math.sin(ang) }, legH = swim || fly ? 0 : (D.ll || 4) * s * 0.55;
   const bl = 6 * s, bh = 3 * s, bw = 3.2 * s, body = r3c(c[0]), asa = r3c(c[1] || c[0]), bico = r3c(c[4] || '#e8a020'), perna = r3c(c[5] || '#c88a3a');
   r3bx(B, W, 0, legH + bh / 2, 0, bl, bh, bw, body); r3bx(B, W, -bl / 2 - (D.tl || 2) * s * 0.6, legH + bh * 0.6, 0, (D.tl || 2) * s * 1.2, bh * 0.4, bw * 0.7, asa);
   const nk = (D.nk || 2) * s * (fly ? 0.3 : 0.8), pk = a.st === 'peck' && Math.floor(a.ph * 4) % 2 ? -nk * 0.8 : 0;
@@ -12784,7 +12784,7 @@ function r3Festa(B) { const ev = evToday(), m = calDate().m, bands = [];
   const marca = (x, y, h) => { const [sx, sy0] = r3w2s(x, y, h); if (!isFinite(sx) || sx < -20 || sx > W + 20 || sy0 < -20 || sy0 > H + 20) return; const sy = sy0 + Math.sin(t * 5) * 2 * B0, w = 5 * B0;
     g.fillStyle = '#2b1608'; g.fillRect(sx - w / 2 - B0, sy - 12 * B0, w + 2 * B0, 9 * B0); g.fillRect(sx - w / 2 - B0, sy - 1 * B0, w + 2 * B0, 4 * B0); g.fillStyle = '#ffd34a'; g.fillRect(sx - w / 2, sy - 11 * B0, w, 7 * B0); g.fillRect(sx - w / 2, sy, w, 2 * B0); };
   try { for (const m of misActive()) { if (m.data.ids) for (const i of m.data.ids) { const a = byId(i); if (a) marca(a.x, a.y, 30); } if (m.k === 'cerca') { const [x, y] = m.data.tiles[0]; marca((x + 0.5) * TS, (y + 0.5) * TS, 22); } } } catch (e) { }
-  try { for (const s of memSpots()) { const [sx, sy] = r3w2s(s.x * TS, s.y * TS, 14); if (!isFinite(sx) || sx < 0 || sx > W || sy < 0 || sy > H) continue; g.globalAlpha = 0.45 + Math.sin(t * 4 + s.x) * 0.35; g.fillStyle = '#fff4c0'; g.fillRect(sx - B0, sy - 3 * B0, 2 * B0, 6 * B0); g.fillRect(sx - 3 * B0, sy - B0, 6 * B0, 2 * B0); } g.globalAlpha = 1; } catch (e) { g.globalAlpha = 1; } }; }
+  try { for (const s of memSpots()) { if (Math.hypot(s.x * TS - P.x, s.y * TS - P.y) > 260) continue; const [sx, sy] = r3w2s(s.x * TS, s.y * TS, 14); if (!isFinite(sx) || sx < 0 || sx > W || sy < 0 || sy > H) continue; g.globalAlpha = 0.45 + Math.sin(t * 4 + s.x) * 0.35; g.fillStyle = '#fff4c0'; g.fillRect(sx - B0, sy - 3 * B0, 2 * B0, 6 * B0); g.fillRect(sx - 3 * B0, sy - B0, 6 * B0, 2 * B0); } g.globalAlpha = 1; } catch (e) { g.globalAlpha = 1; } }; }
 /* o carro-pipa vai embora sozinho mesmo sem o desenho 2D (antes ele podia ficar "a caminho" para sempre no 3D) */
 { const _pt = pipaTick; pipaTick = function () { _pt(); if (S.pipa && S.pipa.on && S.day * 1440 + S.min - S.pipa.due > 90) S.pipa = null; }; }
 
@@ -13010,6 +13010,33 @@ function r3Quadru(B, a, x, z, ang, ph, mv) {
     for (const sg of [1, -1]) { r3bx(B, W, s(1), tp - s(4), sg * s(Wd / 2 + 0.5), 0.4, s(8), 0.4, r3c('#3a2a1a')); r3bx(B, W, s(1), tp - s(8.4), sg * s(Wd / 2 + 0.8), 1.8, 0.8, 1.2, r3c('#9a9aa0')); } }
 }
 const r3BichoVelho = r3Bicho; r3Bicho = r3ComMat(0, r3Quadru);
+
+/* ============ v23: CÉU, HORIZONTE E CÂMERA MAIS BAIXA ============
+   A câmera desce (dá para ver o horizonte) e o céu aparece: degradê pela hora, sol com brilho, lua, estrelas, nuvens que
+   andam e engrossam com o tempo, e as serras azuladas lá longe. Tudo num desenho só da tela, leve para o celular.
+   Em Configurações › Ajustes do 3D dá para voltar para a câmera alta. */
+const R3SKYFS = `#version 300 es
+precision highp float; in vec2 vU; uniform mat4 uIVP; uniform vec3 uSun, uTop, uHor, uSerra; uniform float uNight, uT, uCloud, uRain; out vec4 o;
+float h1(float n){ return fract(sin(n)*43758.5453); }
+float h2(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+float n1(float x){ float i=floor(x), f=fract(x); f=f*f*(3.0-2.0*f); return mix(h1(i),h1(i+1.0),f); }
+float n2(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y); }
+float fbm(vec2 p){ float s=0.0, a=0.5; for(int i=0;i<4;i++){ s+=n2(p)*a; p*=2.03; a*=0.5; } return s; }
+void main(){ vec2 nd=vU*2.0-1.0; vec4 a=uIVP*vec4(nd,-1.0,1.0), b=uIVP*vec4(nd,1.0,1.0); vec3 d=normalize(b.xyz/b.w-a.xyz/a.w);
+  float el=d.y, az=atan(d.z,d.x); vec3 c=mix(uHor,uTop,smoothstep(0.0,0.45,el));
+  float sd=max(dot(d,uSun),0.0); c+=vec3(1.0,0.85,0.6)*pow(sd,24.0)*0.35*(1.0-uNight); if(sd>0.9994&&uSun.y>-0.05) c=mix(c,vec3(1.0,0.97,0.86),1.0-uNight*0.8);
+  float md=max(dot(d,-uSun),0.0); if(uNight>0.3&&md>0.9993) c=mix(c,vec3(0.92,0.94,1.0),uNight); c+=vec3(0.5,0.55,0.7)*pow(md,60.0)*0.25*uNight;
+  if(uNight>0.2&&el>0.02){ vec2 q=floor(vec2(az*160.0,el*160.0)); float s=h2(q); if(s>0.996) c+=vec3(0.9,0.9,1.0)*(s-0.996)*250.0*uNight*(0.6+0.4*sin(uT*3.0+s*90.0)); }
+  if(el>0.01){ vec2 p=d.xz/(el+0.08)*1.6+vec2(uT*0.012,uT*0.004); float cl=fbm(p); float cov=0.62-uCloud*0.32-uRain*0.2; float k=smoothstep(cov,cov+0.18,cl)*smoothstep(0.01,0.12,el);
+    vec3 cc=mix(vec3(1.0,0.98,0.95),vec3(0.55,0.56,0.6),uRain*0.8+uCloud*0.3)*(1.0-uNight*0.85)+uHor*0.25; c=mix(c,cc,k*0.85); }
+  float hs=0.035+0.055*n1(az*2.2)+0.03*n1(az*6.0+1.7)+0.012*n1(az*17.0); float hs2=0.02+0.03*n1(az*3.1+4.0)+0.015*n1(az*9.0);
+  if(el<hs2) c=mix(c,mix(uSerra,uHor,0.25),0.9); else if(el<hs) c=mix(c,uSerra,0.8);
+  if(el<0.0) c=mix(mix(uSerra,uHor,0.35),uHor,smoothstep(-0.02,-0.3,el)); o=vec4(c,1.0); }`;
+function r3SkyInit() { const gl = R3.gl; R3.PS = hdProg(gl, R3BVS, R3SKYFS).p; R3.us = {}; for (const n of ['uIVP', 'uSun', 'uTop', 'uHor', 'uSerra', 'uNight', 'uT', 'uCloud', 'uRain']) R3.us[n] = gl.getUniformLocation(R3.PS, n); }
+function r3Ceu(L) { const gl = R3.gl; if (!R3.PS) r3SkyInit(); const u = R3.us, n = L.n, hor = L.sky, top = [hor[0] * 0.62, hor[1] * 0.78, Math.min(1, hor[2] * 1.08)], serra = [hor[0] * 0.62 + 0.04, hor[1] * 0.7 + 0.05, hor[2] * 0.8 + 0.07];
+  gl.disable(gl.DEPTH_TEST); gl.useProgram(R3.PS); gl.uniformMatrix4fv(u.uIVP, false, R3.M.IVP); gl.uniform3fv(u.uSun, L.sun); gl.uniform3fv(u.uTop, top); gl.uniform3fv(u.uHor, hor); gl.uniform3fv(u.uSerra, serra.map(v => v * (1 - n * 0.5)));
+  gl.uniform1f(u.uNight, n); gl.uniform1f(u.uT, performance.now() / 1000); gl.uniform1f(u.uCloud, S.wx ? S.wx.ci || 0 : 0.2); gl.uniform1f(u.uRain, S.wx ? S.wx.ri || 0 : 0);
+  gl.bindVertexArray(R3.tri); gl.drawArrays(gl.TRIANGLES, 0, 3); gl.bindVertexArray(null); gl.enable(gl.DEPTH_TEST); }
 
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
