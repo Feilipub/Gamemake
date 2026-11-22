@@ -12836,6 +12836,101 @@ r3Gente = r3ComMat(0, r3Gente); r3Bicho = r3ComMat(0, r3Bicho); r3Bicho2 = r3Com
 const R3MATCHAO = () => ({ [G.GRASS]: R3MAT.capim, [G.PAST]: R3MAT.capim, [G.DIRT]: R3MAT.terra, [G.DRY]: R3MAT.terra, [G.MUD]: R3MAT.terra, [G.SAND]: R3MAT.areia, [G.PAVE]: R3MAT.asfalto, [G.WALK]: R3MAT.calcada, [G.PLAZA]: R3MAT.calcada, [G.FLOOR]: R3MAT.tabua, [G.ROCK]: R3MAT.pedra, [G.BRIDGE]: R3MAT.tabua, [G.WATER]: R3MAT.agua });
 
 { const _isl = r3InSala; r3InSala = function (B, r) { const m0 = R3.mat; try { return _isl(B, r); } finally { R3.mat = m0; } }; }
+/* ============ v23: GENTE NOVA NO 3D — corpo com juntas, rosto e animação de verdade ============
+   Quadril, joelho, tornozelo, ombro, cotovelo e pescoço; mãos, orelhas e rosto com olhos (na cor escolhida), sobrancelha,
+   nariz, boca, barba e bigode. Os 8 cortes de cabelo, os chapéus de cada tipo, gibão, camiseta, bombacha, saia, perneira,
+   botas, lenço, cinturão e óculos. Anda dobrando o joelho, balança os braços ao contrário das pernas, o corpo sobe e desce,
+   respira parado, olha em volta e monta escanchado no cavalo. */
+function r3Pt(W, lx, ly, lz) { return [W.x + lx * W.ca - lz * W.sa, W.y + ly, W.z + lx * W.sa + lz * W.ca]; }
+function r3Fq(B, W, x, y0, y1, z0, z1, col, k) { r3quad(B, r3Pt(W, x, y0, z0), r3Pt(W, x, y0, z1), r3Pt(W, x, y1, z1), r3Pt(W, x, y1, z0), col, k); } // plaquinha virada para a frente (+x)
+function r3Seg(B, W, x0, y0, z, ang, len, w, d, col) { const ex = x0 + Math.sin(ang) * len, ey = y0 - Math.cos(ang) * len, cx = (x0 + ex) / 2, cy = (y0 + ey) / 2; r3bx(B, W, cx, cy, z, w, len, d, col, [cx, cy, ang]); return [ex, ey]; }
+const R3HAT = { couro: ['#8a5226', 7.6, 'couro'], palha: ['#e0c47a', 9.4, 'palha'], feltro: ['#3e2c22', 7, 'feltro'], pantaneiro: ['#c8b088', 9, 'palha'], rodeio: ['#e8dcc0', 7.4, 'rodeio'], bone: ['#2e5a9a', 0, 'bone'], boina: ['#2a2a30', 0, 'boina'] };
+function r3Humano(B, x, z, a, ap, ph, mv, o) {
+  o = o || {}; ap = ap || defaultCF().ap; mv = mv || 0; ph = ph || 0; const k = (o.k || 1.15) * 0.98, s = v => v * k, t = performance.now() / 1000, seed = ((x * 13.1 + z * 7.7) | 0) % 97;
+  const f = ap.sex === 'F', sk = r3c(SKINS[ap.skin] || SKINS[2]), hr = r3c(HAIRC[ap.hairC] || HAIRC[1]), shBase = [0, 1, 2, 3, 4, 0, 2, 3][ap.shirt] ?? 0, pnt = ap.pants || 0;
+  const sh = r3c(shBase === 2 ? '#8a5a2a' : (SHIRTC[ap.shirtC] || SHIRTC[0])), pa = r3c(pnt === 3 ? (PANTSC[ap.pantsC] || PANTSC[1]) : (PANTSC[ap.pantsC] || PANTSC[0])), couro = r3c('#7a4a22'), bota = r3c(ap.boots === 3 ? '#6a3a1a' : '#3a2414'), olho = r3c(EYEC[ap.eyeC || 0] || '#24140c');
+  const sentado = !!o.sentado, montado = sentado && (o.y || 0) > 5, parado = mv < 0.06;
+  const W = { x, y: o.y || 0, z, ca: Math.cos(a), sa: Math.sin(a) };
+  // passada: coxa vai e volta, joelho dobra na volta, corpo sobe e desce duas vezes por passo
+  const A = 0.62 * mv, bob = parado ? Math.sin(t * 2.1 + seed) * 0.12 : -Math.abs(Math.cos(ph)) * 0.9 * mv + 0.45 * mv, lean = 0.1 * mv;
+  const quadril = s(12.2) + (sentado ? 0 : s(bob)), hz = s(f ? 2.1 : 1.9);
+  // ---------- pernas ----------
+  for (const sg of [1, -1]) { const zz = sg * (montado ? s(4.4) : hz), p = sg > 0 ? ph : ph + Math.PI;
+    let coxa, dob; if (montado) { coxa = 1.05; dob = 1.35; } else if (sentado) { coxa = 1.5; dob = 1.5; } else { coxa = A * Math.sin(p); dob = mv * (0.12 + 0.95 * Math.max(0, Math.cos(p))) + (parado ? 0.04 : 0); }
+    const larg = pnt === 2 ? s(3.8) : s(3.1), saia = pnt === 4 && !montado;
+    const [jx, jy] = r3Seg(B, W, 0, quadril, zz, coxa, s(5.6), larg, larg, pa);
+    const [tx2, ty2] = r3Seg(B, W, jx, jy, zz, coxa - dob, s(5.4), s(2.7), s(2.7), saia ? sk : pa);
+    if (pnt === 3 && !saia) r3Seg(B, W, jx + Math.sin(coxa - dob) * s(0.4), jy, zz, coxa - dob, s(4.6), s(3.2), s(3.2), couro); // perneira
+    const bAlta = ap.boots === 1 || ap.boots === 3; if (bAlta) r3Seg(B, W, tx2 - Math.sin(coxa - dob) * s(2.6), ty2 + Math.cos(coxa - dob) * s(2.6), zz, coxa - dob, s(2.8), s(3), s(3), bota);
+    const pe = montado ? -0.3 : sentado ? 0 : Math.max(-0.5, Math.min(0.4, (coxa - dob) * 0.5 + (Math.sin(p) < -0.3 ? -0.25 * mv : 0)));
+    const alp = ap.boots === 2, fw = W; r3bx(B, fw, tx2 + s(1.1), ty2 - s(0.75), zz, s(ap.boots === 3 ? 4.8 : 4.2), s(1.5), s(2.7), alp ? sk : bota, [tx2, ty2, pe]); if (alp) r3bx(B, fw, tx2 + s(1.1), ty2 - s(1.3), zz, s(4.4), s(0.5), s(2.9), r3c('#6a3a1a'), [tx2, ty2, pe]); }
+  // ---------- quadril, saia e tronco ----------
+  if (pnt === 4) { const bal = Math.sin(ph) * 0.12 * mv; r3bx(B, W, 0, quadril - s(4), 0, s(6.2), s(9), s(7.4), pa, [0, quadril, bal]); r3bx(B, W, 0, quadril - s(8.2), 0, s(6.8), s(1), s(8), pa.map(v => v * 0.82), [0, quadril, bal]); }
+  else r3bx(B, W, 0, quadril + s(0.6), 0, s(4.2), s(2.4), s(f ? 6.8 : 6.2), pa);
+  const resp = parado ? Math.sin(t * 2.1 + seed) * 0.18 : 0, tor0 = quadril + s(1.6), inc = sentado ? (montado ? 0.05 : 0.02) : lean;
+  const [bx2, by2] = r3Seg(B, W, 0, tor0, 0, Math.PI - inc, s(4.6), s(4.2), s(f ? 6 : 6.6), sh);
+  const [cx2, cy2] = r3Seg(B, W, bx2, by2, 0, Math.PI - inc, s(5 + resp * 0.3), s(4.8), s(f ? 7 : 8), shBase === 2 ? sh.map(v => v * 1.06) : sh);
+  if (f) r3bx(B, W, bx2 + s(2.1), by2 + s(2.6), 0, s(1.4), s(2.4), s(5.6), sh.map(v => v * 0.96));
+  // cinto e fivela
+  r3bx(B, W, 0, tor0 - s(0.2), 0, s(4.5), s(1), s(f ? 6.4 : 6.6), r3c('#2a1a0e')); r3Fq(B, W, s(2.3), tor0 - s(0.6), tor0 + s(0.4), s(-0.7), s(0.7), r3c(ap.acc === 2 || ap.acc >= 8 ? '#f0d060' : '#b89040'));
+  // camisa: botões, xadrez, gibão
+  if (shBase === 3) for (let i = 0; i < 4; i++) r3Fq(B, W, s(2.45 + i * 0.02), tor0 + s(1.5 + i * 2), tor0 + s(2.1 + i * 2), s(-0.3), s(0.3), [0.92, 0.9, 0.84]);
+  if (shBase === 0) for (const dy of [2.5, 6.5]) r3Fq(B, W, s(2.46), tor0 + s(dy), tor0 + s(dy + 0.8), s(-3.4), s(3.4), sh.map(v => v * 0.72));
+  if (shBase === 2) { const cl2 = r3c('#c8a070'); r3Fq(B, W, s(2.6), tor0 + s(0.5), tor0 + s(9), s(-0.5), s(0.5), cl2); r3bx(B, W, cx2 - s(0.3), cy2 - s(0.6), 0, s(5.2), s(1.3), s(9), couro); if (ap.shirt === 6) for (let i = 0; i < 3; i++) r3Fq(B, W, s(2.62), tor0 + s(2 + i * 2.4), tor0 + s(2.8 + i * 2.4), s(1.2), s(2.6), [0.9, 0.75, 0.3]); }
+  if (shBase === 4) r3Fq(B, W, s(2.6), cy2 - s(3), cy2 - s(1.4), s(-2.6), s(2.6), [0.95, 0.85, 0.4]);
+  // ---------- braços (ao contrário das pernas) ----------
+  const ombroY = cy2 - s(1.2), ombroX = cx2 - s(0.2);
+  for (const sg of [1, -1]) { const zz = sg * s(f ? 4.6 : 5.1), p = sg > 0 ? ph + Math.PI : ph;
+    let ang, cot; if (montado) { ang = 0.55; cot = 0.9; } else if (sentado) { ang = 0.45; cot = 0.8; } else { ang = (parado ? Math.sin(t * 1.3 + sg + seed) * 0.04 : A * 0.95 * Math.sin(p)) + 0.05; cot = 0.18 + mv * 0.55 + (parado ? 0.04 : 0) + Math.max(0, Math.sin(p)) * 0.4 * mv; }
+    if (o.acao === 'laco' && sg > 0) { ang = Math.PI * 0.85 + Math.sin(t * 9) * 0.25; cot = 0.3; } if (o.acao === 'aboio' && sg > 0) { ang = 2.2; cot = 2.2; }
+    const curta = shBase === 1, mangaCor = sh;
+    const [ex, ey] = r3Seg(B, W, ombroX, ombroY, zz, ang, s(4.4), s(2.5), s(2.5), mangaCor);
+    const [hx, hy] = r3Seg(B, W, ex, ey, zz, ang + cot, s(4.1), s(2.2), s(2.2), curta ? sk : mangaCor);
+    r3bx(B, W, hx + Math.sin(ang + cot) * s(0.9), hy - Math.cos(ang + cot) * s(0.9), zz, s(1.9), s(2), s(1.7), ap.gl ? couro : sk, [hx, hy, ang + cot]); }
+  r3bx(B, W, ombroX, ombroY + s(0.2), 0, s(4.6), s(1.4), s(f ? 8.6 : 9.6), shBase === 2 ? couro : sh.map(v => v * 0.94)); // ombros
+  // ---------- pescoço e cabeça ----------
+  const ny = cy2 + s(0.4); r3bx(B, W, cx2, ny + s(0.7), 0, s(2.4), s(1.6), s(2.4), sk);
+  if (ap.acc === 1) { const sc = r3c(SCARFC[ap.scarfC] || SCARFC[0]); r3bx(B, W, cx2, ny + s(0.2), 0, s(3.4), s(1.4), s(3.8), sc); r3tri(B, r3Pt(W, cx2 + s(1.8), ny + s(0.8), s(-1.8)), r3Pt(W, cx2 + s(1.8), ny + s(0.8), s(1.8)), r3Pt(W, cx2 + s(2.2), ny - s(2.4), 0), sc); }
+  if (ap.acc === 4) r3bx(B, W, cx2 + s(1.3), ny - s(0.6), 0, s(0.6), s(0.6), s(3.6), r3c('#8a3a1a'));
+  const olhar = parado ? Math.sin(t * 0.4 + seed * 1.7) * 0.5 * (Math.sin(t * 0.13 + seed) > 0.3 ? 1 : 0.15) : 0, ah = a + olhar, Wh = { x: W.x + cx2 * W.ca, y: W.y, z: W.z + cx2 * W.sa, ca: Math.cos(ah), sa: Math.sin(ah) };
+  const hy0 = ny + s(1.6) + s(3.7), HH = s(7.4), HW = s(7.2), HD = s(6.8);
+  r3bx(B, Wh, 0, hy0, 0, HD, HH, HW, sk); r3bx(B, Wh, s(-0.3), hy0 - s(0.2), HW / 2 + s(0.3), s(1.4), s(2.2), s(0.8), sk.map(v => v * 0.92)); r3bx(B, Wh, s(-0.3), hy0 - s(0.2), -HW / 2 - s(0.3), s(1.4), s(2.2), s(0.8), sk.map(v => v * 0.92));
+  // rosto
+  const fx = HD / 2 + s(0.05), piscar = (t + seed) % 4.3 < 0.12, eyeY = hy0 + s(0.3), eS = ap.eyeS || 0, eH = piscar ? s(0.25) : eS === 2 ? s(1.5) : eS === 1 ? s(0.7) : s(1.15);
+  for (const sg of [1, -1]) { const ez = sg * s(1.65); r3Fq(B, Wh, fx, eyeY - eH / 2, eyeY + eH / 2, ez - s(0.75), ez + s(0.75), piscar ? sk.map(v => v * 0.8) : [0.96, 0.95, 0.92]); if (!piscar) r3Fq(B, Wh, fx + s(0.02), eyeY - eH / 2, eyeY + eH / 2 - s(0.1), ez - s(0.38) + s(0.15), ez + s(0.38) + s(0.15), olho);
+    const br = ap.brow || 0; if (br !== 3) r3Fq(B, Wh, fx + s(0.03), eyeY + s(1), eyeY + s(br === 1 ? 1.75 : br === 2 ? 1.3 : 1.5), ez - s(0.9), ez + s(0.9), hr.map(v => v * 0.85)); }
+  r3bx(B, Wh, fx + s(0.35), hy0 - s(0.9), 0, s(0.9), s(1.6), s(1.1), sk.map(v => v * 0.94));
+  const bd = ap.beard || 0, bc = hr.map(v => v * 0.9), boca = (ap.mood === 'feliz' || (t + seed) % 9 < 3) ? [0.6, 0.22, 0.2] : [0.52, 0.26, 0.22];
+  r3Fq(B, Wh, fx + s(0.04), hy0 - s(2.35), hy0 - s(1.95), s(-1.1), s(1.1), boca);
+  if (bd === 1) r3Fq(B, Wh, fx + s(0.06), hy0 - s(1.85), hy0 - s(1.5), s(-1.3), s(1.3), bc);
+  if (bd === 2) { r3Fq(B, Wh, fx + s(0.06), hy0 - s(1.9), hy0 - s(1.2), s(-1.6), s(1.6), bc); for (const sg of [1, -1]) r3Fq(B, Wh, fx + s(0.06), hy0 - s(2.8), hy0 - s(1.4), sg * s(1.3) - s(0.3), sg * s(1.3) + s(0.3), bc); }
+  if (bd === 3) { r3Fq(B, Wh, fx + s(0.06), hy0 - s(1.9), hy0 - s(1.4), s(-1.4), s(1.4), bc); r3bx(B, Wh, fx - s(0.3), hy0 - s(3.3), 0, s(1.2), s(1.4), s(1.6), bc); }
+  if (bd >= 4) { r3bx(B, Wh, s(0.3), hy0 - s(2.6), 0, HD + s(0.4), s(bd === 5 ? 3 : 2), HW + s(0.3), bc, null); r3Fq(B, Wh, fx + s(0.3), hy0 - s(2.4), hy0 - s(1.9), s(-1.1), s(1.1), boca); if (bd === 5) r3bx(B, Wh, s(1.6), hy0 - s(4.2), 0, s(3.4), s(1.6), s(4.4), bc); }
+  const mk = ap.mark || 0; if (mk === 5) for (const sg of [1, -1]) r3Fq(B, Wh, fx + s(0.03), hy0 - s(1.4), hy0 - s(0.7), sg * s(2.2) - s(0.6), sg * s(2.2) + s(0.6), [0.9, 0.5, 0.45]); if (mk === 2) r3Fq(B, Wh, fx + s(0.05), hy0 - s(1.2), hy0 + s(0.6), s(2.3), s(2.6), sk.map(v => v * 0.7));
+  if (mk === 1) for (const [dy, dz] of [[-0.8, 2], [-1.2, 2.6], [-0.9, -2.2], [-1.3, -2.7]]) r3Fq(B, Wh, fx + s(0.04), hy0 + s(dy), hy0 + s(dy + 0.35), s(dz), s(dz + 0.35), sk.map(v => v * 0.72));
+  if (ap.acc === 5) r3Fq(B, Wh, fx + s(0.08), eyeY - s(0.8), eyeY + s(0.7), s(-2.8), s(2.8), [0.08, 0.08, 0.1]);
+  // cabelo
+  const hs = ap.hair || 0, hTop = hy0 + HH / 2;
+  if (hs !== 1) { r3bx(B, Wh, s(-0.6), hTop - s(0.6), 0, HD + s(0.6), s(hs === 3 ? 4.2 : 2), HW + s(0.6), hr); r3bx(B, Wh, -HD / 2 - s(0.1), hy0 + s(0.6), 0, s(1), HH * 0.75, HW + s(0.5), hr); if (hs !== 3) r3bx(B, Wh, fx - s(0.4), hTop - s(1.3), s(-1), s(0.8), s(1.6), s(4.6), hr); }
+  else r3bx(B, Wh, s(-0.5), hTop - s(0.2), 0, HD + s(0.2), s(0.5), HW + s(0.2), hr.map(v => v * 0.7 + 0.2));
+  if (hs === 2) for (let i = 0; i < 6; i++) r3bx(B, Wh, s(-2 + (i % 3) * 1.6), hTop + s(0.3), s(-2.4 + (i % 2) * 4.6), s(1.6), s(1.4), s(1.6), hr.map(v => v * 0.92));
+  if (hs === 3) r3blob(B, Wh.x - s(1.2) * Wh.ca, W.y + hTop + s(2), Wh.z - s(1.2) * Wh.sa, s(5), s(3.4), s(5.2), hr, 9, 6);
+  if (hs === 4 || (f && hs === 0)) r3bx(B, Wh, -HD / 2 + s(0.4), hy0 - s(2.2), 0, s(1.6), s(6.5), HW + s(0.4), hr);
+  if (hs === 5 || hs === 6) { const bal = Math.sin(ph) * 0.3 * mv + Math.sin(t * 1.5) * 0.05; r3Seg(B, Wh, -HD / 2 - s(0.6), hy0 + s(1.5), 0, -0.25 + bal, s(hs === 6 ? 7.5 : 5.5), s(1.6), s(1.6), hr); }
+  if (hs === 7) r3bx(B, Wh, -HD / 2 - s(0.6), hTop - s(0.4), 0, s(2.6), s(2.6), s(2.8), hr);
+  // chapéu
+  const H = HATS[ap.hat], hid = H && (H.base || H.id); if (H && hid !== 'none' && !o.semChapeu) { const D = R3HAT[hid] || R3HAT.couro, hc = r3c(H.c || D[0]), hd = hc.map(v => v * 0.8), O = ORN[ap.orn || 'none'] || ORN.none, band = r3c((H.band && (ap.orn || 'none') === 'none' ? H.band : O.band)[0]), y0 = hTop - s(0.4);
+    const cx = Wh.x - s(0.3) * Wh.ca, cz = Wh.z - s(0.3) * Wh.sa;
+    if (D[2] === 'bone') { r3bx(B, Wh, s(-0.3), y0 + s(0.9), 0, HD + s(0.8), s(2.2), HW + s(0.8), hc); r3bx(B, Wh, HD / 2 + s(1.8), y0 + s(0.1), 0, s(4), s(0.5), s(5.4), hd); }
+    else if (D[2] === 'boina') { r3cyl(B, cx, cz, W.y + y0, W.y + y0 + s(1.8), s(4.8), s(5.2), 8, hc, hc); }
+    else { const br = s(D[1]), cy0 = W.y + y0; r3cyl(B, cx, cz, cy0, cy0 + s(0.8), br, br, 10, hd, hc);
+      if (D[2] === 'couro') for (const sg of [1, -1]) r3cyl(B, cx + Wh.ca * br * 0.92 * sg, cz + Wh.sa * br * 0.92 * sg, cy0 + s(0.4), cy0 + s(2.6), s(2.6), s(1.1), 5, hd, hc);
+      if (D[2] === 'rodeio') for (const sg of [1, -1]) r3cyl(B, cx - Wh.sa * br * 0.9 * sg, cz + Wh.ca * br * 0.9 * sg, cy0 + s(0.4), cy0 + s(2.2), s(2.2), s(1), 5, hd, hc);
+      r3cyl(B, cx, cz, cy0 + s(0.8), cy0 + s(1.9), s(4.4), s(4.3), 8, band, band); r3cyl(B, cx, cz, cy0 + s(1.9), cy0 + s(D[2] === 'palha' ? 4.4 : 5), s(4.3), s(D[2] === 'feltro' ? 3 : 3.6), 8, hc, hc.map(v => Math.min(1, v * 1.08)));
+      if (D[2] === 'couro' || O.stars) r3Fq(B, Wh, s(4.2), y0 + s(2.4), y0 + s(4), s(-0.8), s(0.8), [0.92, 0.75, 0.25]); } }
+}
+r3Gente = r3ComMat(0, r3Humano);
+
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
