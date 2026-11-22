@@ -1,7 +1,7 @@
 """Corte do Podcast do Mago (motor 3.0, loop) — GTA 6 saiu (19/11/2026). Convidado original: Flávio, flamingo de Miami.
 Sem imagens/marcas do jogo: fotos reais de Miami (inspiração de Vice City) + infográficos próprios com os dados oficiais."""
 import os as _o, sys as _s; _s.path.insert(0, _o.path.join(_o.path.dirname(_o.path.abspath(__file__)), '..', 'lib'))  # libs do repositório
-GUEST = 'Y'; GUEST_FN = 'flamingo'; OUT = 'corte4_gta6'; VOZ = 'dub_gta6'; MUSIC = 'mk:midnight_funk'; HALF = True; TIGHT = True
+GUEST = 'Y'; GUEST_FN = 'flamingo'; OUT = 'corte5_gta6'; VOZ = 'dub_gta6'; MUSIC = 'mk:midnight_funk'; HALF = True; TIGHT = True
 CAST4 = {'M': 'mago', GUEST: 'flamingo'}
 EP = 17; NEXT = 'COMENTA QUEM VOCÊ QUER AQUI!'
 HOOK = ['GTA 6 FEZ US$ 3,8 BI', 'EM UM ÚNICO DIA']

@@ -81,12 +81,27 @@ E acrescenta:
 - fotos reais com brilho passando;
 - legenda palavra a palavra com números em destaque.
 
+
+## Motor 5.0: animação solta (`podcast/rig2.py` + `podcast/corte5.py`)
+- **Boneco de recorte em camadas:** o mapa de profundidade (Depth Anything V2) separa o personagem do cenário.
+  - O fundo é limpo (o personagem é apagado e o buraco preenchido).
+  - Corpo, cabeça e ponta do chapéu ou crista viram camadas, e a mesa fica na frente.
+  - Cada camada gira e se move sozinha, então dá para fazer movimentos grandes sem entortar o cenário.
+- **Molas físicas (massa-mola-amortecedor):** dão atraso, exagero e acomodação, que é o que deixa o movimento solto.
+  - **Batidas da fala:** a cabeça marca as sílabas fortes, detectadas pela subida do volume da voz.
+  - **Emoção:** a cabeça inclina na curiosidade e na pergunta do outro, baixa na tristeza, e o corpo se assusta e se ergue na surpresa.
+  - **Quem escuta:** acena e reage.
+  - **Movimento secundário:** a ponta do chapéu ou a crista balança atrasada.
+  - **Risada:** o corpo pula e achata (squash).
+- **Câmera:** zoom suave na imagem em alta antes de pixelizar, empurrão em cada corte e chicote (whip-pan) entre planos.
+- **Personagem novo:** além do rig antigo, informe `neck`, `hip`, `tip_y`, `desk_y` e `seed`, e gere `<nome>_depth.npy` com o Depth Anything.
+
 ## Como rodar
 ```bash
 # 1) dublagem (ambiente com torch + chatterbox)
 cbenv/bin/python podcast/dublagem.py corte4_gta6
 # 2) vídeo
-python3 podcast/corte4.py corte4_gta6            # teste de quadros: ... corte4_gta6 test 0 5 10
+python3 podcast/corte5.py corte4_gta6            # motor 5.0 (teste de quadros: ... test 0 5 10)
 ```
 
 ## Dependências e dados (não versionados)
