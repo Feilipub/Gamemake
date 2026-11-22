@@ -12954,7 +12954,7 @@ function r3Quadru(B, a, x, z, ang, ph, mv) {
   const OF = gait === 'passo' ? { LH: 0, LF: 0.25, RH: 0.5, RF: 0.75 } : gait === 'trote' ? { LF: 0, RH: 0, RF: 0.5, LH: 0.5 } : { LH: 0, RH: 0.12, LF: 0.52, RF: 0.64 };
   const amp = (gait === 'galope' ? 0.75 : gait === 'trote' ? 0.5 : 0.36) * Math.min(1, mv * 2.2), cyc = ph * (gait === 'galope' ? 0.8 : 1);
   const balan = gait === 'galope' ? Math.sin(cyc + 1.2) * 0.1 * mv : 0, sobe = deit ? 0 : gait === 'galope' ? Math.max(0, Math.sin(cyc)) * s(2.2) * mv : gait === 'trote' ? Math.abs(Math.sin(cyc * 2)) * s(0.9) * mv : Math.abs(Math.sin(cyc * 2)) * s(0.3) * mv;
-  const yB = deit ? s(Hb / 2 + 1.5) : s(legH + Hb / 2) + sobe, resp = parado ? Math.sin(t * 1.6 + seed) * s(0.15) : 0, pv = [0, yB, balan];
+  if (equi) R3.ultBob = deit ? 0 : sobe; const yB = deit ? s(Hb / 2 + 1.5) : s(legH + Hb / 2) + sobe, resp = parado ? Math.sin(t * 1.6 + seed) * s(0.15) : 0, pv = [0, yB, balan];
   // corpo: peito, barriga e anca
   r3bx(B, W, 0, yB, 0, s(L * 0.62), s(Hb) + resp, s(Wd), cor, pv);
   r3bx(B, W, s(L * 0.3), yB + s(0.3), 0, s(L * 0.32), s(Hb * 1.02) + resp, s(Wd * 0.96), sp === 'boi' ? sombra.map((v, i) => (v + cor[i]) / 2) : cor, pv);
@@ -13288,6 +13288,8 @@ function r3FxDesenha(B) { const m0 = R3.mat; R3.mat = 0; const pinta = (n0, k) =
   R3.mat = m0; }
 { const _rd12 = r3Dinamico; r3Dinamico = function () { const B = _rd12(); try { r3FxTick(); if (SET.r3fx !== false) r3FxDesenha(B); } catch (e) { } return B; }; }
 
+/* o cavaleiro sobe e desce junto com o cavalo (trote e galope) */
+R3.ultBob = 0; { const _gb = r3Gente; r3Gente = function (B, x, z, a, ap, ph, mv, o) { if (o && o.sentado && (o.y || 0) > 5 && R3.ultBob) { o = Object.assign({}, o, { y: o.y + R3.ultBob * 0.9 }); } const r = _gb(B, x, z, a, ap, ph, mv, o); if (o && o.sentado && (o.y || 0) > 5) R3.ultBob = 0; return r; }; }
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
