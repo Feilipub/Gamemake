@@ -7175,7 +7175,7 @@ function cfgHTML(inGame) {
   h += `<div class="card"><b>Visual</b><p class="mut">HD-2D: câmera em perspectiva com profundidade, sombras do sol, luz das fogueiras e desfoque nas bordas, mantendo a pixel art. Clássico: o 2D de antes.</p><div class="ch">${opt('view', '3d', '3D (novo)')}${opt('view', 'hd2d', 'HD-2D')}${opt('view', '2d', 'Clássico 2D')}</div><b>Desfoque de profundidade</b><div class="ch">${opt('dof', true, 'Ligado')}${opt('dof', false, 'Desligado')}</div><b>Cenas curtas da lida</b><p class="mut">Caminhão boiadeiro, parto, brete, ladrão de gado… Desligue para ir direto ao resultado.</p><div class="ch">${opt('cenas', true, 'Ligadas')}${opt('cenas', false, 'Desligadas')}</div><b>Trânsito na cidade</b><div class="ch">${opt('transito', true, 'Ligado')}${opt('transito', false, 'Desligado')}</div></div>`;
   h += `<div class="card"><b>Conversas com IA</b><p class="mut">Na versão publicada, os moradores podem responder perguntas livres usando o Claude (pede sua permissão na primeira vez). Sem internet ou sem permissão, eles usam as falas do próprio jogo.</p><div class="ch">${opt('ia', true, 'Ligada')}${opt('ia', false, 'Desligada')}</div><b>Limite por dia</b><div class="ch">${opt('iaMax', 15, '15')}${opt('iaMax', 30, '30')}${opt('iaMax', 60, '60')}</div></div>`;
   h += `<div class="card"><b>Gráficos</b><div class="ch">${opt('q', 'alta', 'Alta resolução')}${opt('q', 'media', 'Desempenho')}${opt('q', 'leve', 'Modo leve')}</div><p class="mut">${SET.q === 'leve' ? 'Modo leve: resolução menor, até 30 quadros por segundo, visual 2D e menos aves. Ideal para celulares simples e para poupar bateria.' : SET.q === 'media' ? 'Desempenho: resolução menor, bom para a maioria dos celulares.' : 'Alta resolução: mais nitidez, pede um aparelho mais forte.'}</p><b>Modo de controle</b><div class="ch">${opt('mode', 'joy', 'Joystick')}${opt('mode', 'touch', 'Toque na tela')}</div><p class="mut">${SET.mode === 'touch' ? 'Toque no chão para ir até lá; toque duas vezes para correr ou galopar. Os botões de ação continuam na tela.' : 'Joystick virtual (ou WASD/setas no teclado). Segure “Correr” para correr ou galopar.'}</p><b>Tamanho dos botões</b><div class="ch">${opt('ctl', 1, 'Normal')}${opt('ctl', 1.2, 'Grandes')}</div><b>Orientação da tela</b><div class="ch">${opt('ori', 'livre', 'Livre')}${opt('ori', 'retrato', 'Retrato')}${opt('ori', 'paisagem', 'Paisagem')}</div><p class="mut">Travar a orientação só funciona em tela cheia no celular.</p><div class="row">${btn('Tela cheia', 'fs')}</div><b>Cenas dos leilões</b><div class="ch">${opt('aucCs', 'on', 'Mostrar')}${opt('aucCs', 'off', 'Pular sempre')}</div><b>Vibração</b><div class="ch">${opt('vib', true, 'Ligada')}${opt('vib', false, 'Desligada')}</div><b>Zoom</b><p class="mut">Use dois dedos na tela (pinça) ou a rodinha do mouse.</p><div class="row">${btn('Zoom padrão', 'zoomReset')}</div></div>`;
-  if (SET.view === '3d') h += `<div class="card"><b>Ajustes do 3D</b><p class="mut">O jeitão de PlayStation: imagem em baixa resolução e vértices que "tremem". Gire a câmera com ↺ ↻ (ou Z e X).</p><div class="ch">${opt('r3snap', true, 'Tremidinho PS1')}${opt('r3snap', false, 'Sem tremidinho')}</div><div class="ch" style="margin-top:6px">${opt('r3res', 'baixa', 'Nitidez baixa (mais leve)')}${opt('r3res', 'media', 'Nitidez média')}${opt('r3res', 'alta', 'Nitidez alta')}</div><div class="ch" style="margin-top:6px">${opt('r3cenas', true, 'Cenas em 3D')}${opt('r3cenas', false, 'Cenas em 2D')}</div></div>`;
+  if (SET.view === '3d') h += `<div class="card"><b>Ajustes do 3D</b><p class="mut">O jeitão de PlayStation: imagem em baixa resolução e vértices que "tremem". Gire a câmera com ↺ ↻ (ou Z e X).</p><div class="ch">${opt('r3snap', true, 'Tremidinho PS1')}${opt('r3snap', false, 'Sem tremidinho')}</div><div class="ch" style="margin-top:6px">${opt('r3res', 'baixa', 'Nitidez baixa (mais leve)')}${opt('r3res', 'media', 'Nitidez média')}${opt('r3res', 'alta', 'Nitidez alta')}</div><div class="ch" style="margin-top:6px">${opt('r3cenas', true, 'Cenas em 3D')}${opt('r3cenas', false, 'Cenas em 2D')}</div><div class="row">${opt('r3tex', true, 'Com texturas')}${opt('r3tex', false, 'Sem texturas')}</div></div>`;
   h += kbHTML() + a11yHTML(opt);
   h += saveFileCard(inGame);
   h += `<div class="card"><b>ℹ️ Sobre e privacidade</b><p class="mut">Lida no Sertão ${GAME_V} · RF Games. O jogo não coleta dados pessoais, não tem anúncios nem compras. Os saves ficam só neste aparelho (desinstalar ou limpar os dados do navegador apaga). No modo online, os aparelhos dos vaqueiros se ligam direto entre si (o nome do vaqueiro, a posição e as mensagens do chat vão para os outros da sala); o código da sala passa pelo servidor público da PeerJS, só para os aparelhos se acharem.</p>${btn('Créditos e licenças', 'credits')}</div>`;
@@ -12256,7 +12256,7 @@ function r3Chao(g, gi0, x, y, se) {
     case G.GRASS: c = se ? [0.62, 0.58, 0.32] : [0.38, 0.58, 0.24]; break;
     case G.PAST: { const k = cl((grass[gi0] || 0) / 255, 0, 1); c = se ? [0.68 - k * 0.12, 0.62, 0.34 - k * 0.04] : [0.58 - k * 0.2, 0.66 + k * 0.06, 0.3 - k * 0.04]; break; }
     case G.DIRT: c = [0.6, 0.44, 0.28]; break; case G.SAND: c = [0.84, 0.74, 0.52]; break; case G.PAVE: c = [0.42, 0.41, 0.4]; break;
-    case G.WALK: c = [0.82, 0.78, 0.68]; break; case G.PLAZA: c = Math.abs(Math.sin(x * 0.2 + Math.sin(y * 0.16) * 1.8)) < 0.28 ? [0.36, 0.35, 0.33] : [0.86, 0.84, 0.78]; break; // calçadão em ondas case G.DRY: c = [0.74, 0.62, 0.4]; break;
+    case G.WALK: c = [0.82, 0.78, 0.68]; break; case G.PLAZA: c = Math.abs(Math.sin(x * 0.2 + Math.sin(y * 0.16) * 1.8)) < 0.28 ? [0.36, 0.35, 0.33] : [0.86, 0.84, 0.78]; break; /* calçadão em ondas */ case G.DRY: c = [0.74, 0.62, 0.4]; break;
     case G.MUD: c = [0.46, 0.33, 0.2]; break; case G.FLOOR: c = [0.75, 0.6, 0.42]; break; case G.BRIDGE: c = [0.52, 0.36, 0.2]; break; case G.ROCK: c = [0.66, 0.64, 0.6]; break;
     case G.WATER: c = [0.2, 0.42, 0.66]; break; default: c = [0.4, 0.55, 0.3];
   }
@@ -12319,13 +12319,13 @@ function r3Cerca(B, tx, ty) { // mourão no meio do ladrilho e ripas até os viz
 function r3Pedaco(cx, cy) {
   const B = r3B(), se = season(), x0 = cx * R3C, y0 = cy * R3C, x1 = Math.min(MW, x0 + R3C), y1 = Math.min(MH, y0 + R3C), W2 = TS / 2;
   for (let ty = y0; ty < y1; ty++) for (let tx = x0; tx < x1; tx++) { const i = gi(tx, ty), g = ground[i], X0 = tx * TS, Z0 = ty * TS;
-    if (g === G.WATER) { r3quad(B, [X0, -3, Z0 + TS], [X0 + TS, -3, Z0 + TS], [X0 + TS, -3, Z0], [X0, -3, Z0], [0.2, 0.42, 0.66], 1);
+    if (g === G.WATER) { R3.mat = R3MAT.agua; r3quad(B, [X0, -3, Z0 + TS], [X0 + TS, -3, Z0 + TS], [X0 + TS, -3, Z0], [X0, -3, Z0], [0.2, 0.42, 0.66], 1); R3.mat = 0;
       const bank = [0.45, 0.34, 0.22]; for (const [dx, dy, a, b] of [[1, 0, [X0 + TS, 0, Z0 + TS], [X0 + TS, 0, Z0]], [-1, 0, [X0, 0, Z0], [X0, 0, Z0 + TS]], [0, 1, [X0, 0, Z0 + TS], [X0 + TS, 0, Z0 + TS]], [0, -1, [X0 + TS, 0, Z0], [X0, 0, Z0]]]) { const nx = tx + dx, ny = ty + dy; if (nx < 0 || ny < 0 || nx >= MW || ny >= MH) continue; const g2 = ground[gi(nx, ny)]; if (g2 !== G.WATER && g2 !== G.BRIDGE) r3quad(B, [a[0], -3, a[2]], [b[0], -3, b[2]], b, a, bank); }
       continue; }
     if (g === G.BRIDGE) { r3quad(B, [X0, -3, Z0 + TS], [X0 + TS, -3, Z0 + TS], [X0 + TS, -3, Z0], [X0, -3, Z0], [0.2, 0.42, 0.66], 1); r3box(B, X0, -0.5, Z0, X0 + TS, 1, Z0 + TS, [0.52, 0.36, 0.2]); continue; }
-    { const c = r3Chao(g, i, tx * 2, ty * 2, se), cv = (dx, dz) => { const h = (H2(tx * 2 + dx, ty * 2 + dz, 91) - 0.5) * 0.08; return [cl(c[0] + h, 0, 1), cl(c[1] + h, 0, 1), cl(c[2] + h * 0.7, 0, 1)]; }; // um ladrilho = 2 triângulos, com degradê nos cantos
+    { R3.mat = (R3.mc || (R3.mc = R3MATCHAO()))[g] || 0; const c = r3Chao(g, i, tx * 2, ty * 2, se), cv = (dx, dz) => { const h = (H2(tx * 2 + dx, ty * 2 + dz, 91) - 0.5) * 0.08; return [cl(c[0] + h, 0, 1), cl(c[1] + h, 0, 1), cl(c[2] + h * 0.7, 0, 1)]; }; // um ladrilho = 2 triângulos, com degradê nos cantos
       const p00 = [X0, 0, Z0], p10 = [X0 + TS, 0, Z0], p01 = [X0, 0, Z0 + TS], p11 = [X0 + TS, 0, Z0 + TS], c00 = cv(0, 0), c10 = cv(2, 0), c01 = cv(0, 2), c11 = cv(2, 2);
-      r3v(B, ...p01, c01, 0, 1, 0); r3v(B, ...p11, c11, 0, 1, 0); r3v(B, ...p10, c10, 0, 1, 0); r3v(B, ...p01, c01, 0, 1, 0); r3v(B, ...p10, c10, 0, 1, 0); r3v(B, ...p00, c00, 0, 1, 0); }
+      r3v(B, ...p01, c01, 0, 1, 0); r3v(B, ...p11, c11, 0, 1, 0); r3v(B, ...p10, c10, 0, 1, 0); r3v(B, ...p01, c01, 0, 1, 0); r3v(B, ...p10, c10, 0, 1, 0); r3v(B, ...p00, c00, 0, 1, 0); R3.mat = 0; }
     if (obj[i] === 1) r3Cerca(B, tx, ty);
   }
   for (const q of PROPS) { const tx = q.x / TS, ty = q.y / TS; if (tx >= x0 && tx < x1 && ty >= y0 && ty < y1) try { r3Prop(B, q); } catch (e) { } }
@@ -12406,21 +12406,21 @@ precision highp float;
 layout(location=0) in vec3 aP; layout(location=1) in vec3 aC; layout(location=2) in vec3 aN; layout(location=3) in float aK;
 uniform mat4 uVP; uniform vec3 uEye, uSun, uAmb, uSunC; uniform float uT, uNight; uniform vec2 uSnap;
 uniform vec4 uL[12]; uniform vec3 uLC[12]; uniform int uLN;
-out vec3 vC; out float vD;
-void main(){ vec3 p=aP; vec3 c=aC;
-  if(aK>0.5&&aK<1.5){ float w=sin(p.x*0.15+uT*1.7)*0.6+sin(p.z*0.21+uT*1.3)*0.6; p.y+=w*0.5; c*=0.9+0.14*w; }
+out vec3 vC; out float vD; flat out float vM; out vec3 vW; out vec3 vNn;
+void main(){ vec3 p=aP; vec3 c=aC; float mt=floor((aK+0.01)/8.0); float kk=aK-mt*8.0; vM=mt; vNn=aN;
+  if(kk>0.5&&kk<1.5){ float w=sin(p.x*0.15+uT*1.7)*0.6+sin(p.z*0.21+uT*1.3)*0.6; p.y+=w*0.5; c*=0.9+0.14*w; }
   vec4 cp=uVP*vec4(p,1.0);
   if(uSnap.x>0.0){ cp.xy=floor(cp.xy/cp.w*uSnap+0.5)/uSnap*cp.w; }
   gl_Position=cp;
   float d=max(dot(normalize(aN),uSun),0.0); vec3 lit=c*(uAmb+uSunC*d);
   vec3 nn=normalize(aN); for(int i=0;i<12;i++){ if(i>=uLN) break; vec3 dv=uL[i].xyz-p; float dd=length(dv); float at=max(0.0,1.0-dd/uL[i].w); lit+=c*uLC[i]*at*at*(0.45+0.55*max(dot(nn,dv/max(dd,0.001)),0.0)); }
-  if(aK>1.5&&aK<2.5) lit=mix(lit,vec3(1.0,0.86,0.5),uNight*0.9);
-  if(aK>2.5) lit=c;
-  vC=lit; vD=distance(p,uEye); }`;
+  if(kk>1.5&&kk<2.5) lit=mix(lit,vec3(1.0,0.86,0.5),uNight*0.9);
+  if(kk>2.5) lit=c;
+  vC=lit; vD=distance(p,uEye); vW=p; }`;
 const R3FS = `#version 300 es
-precision mediump float; in vec3 vC; in float vD; uniform vec3 uFog; uniform vec2 uFogR; out vec4 o;
+precision mediump float; precision mediump sampler2DArray; in vec3 vC; in float vD; flat in float vM; in vec3 vW; in vec3 vNn; uniform vec3 uFog; uniform vec2 uFogR; uniform sampler2DArray uTex; uniform float uTexOn; out vec4 o;
 const float BY[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
-void main(){ float f=clamp((vD-uFogR.x)/(uFogR.y-uFogR.x),0.0,1.0); vec3 c=mix(vC,uFog,f); ivec2 q=ivec2(gl_FragCoord.xy)%4; c+=(BY[q.x+q.y*4]/16.0-0.5)/28.0; o=vec4(c,1.0); }`;
+void main(){ float f=clamp((vD-uFogR.x)/(uFogR.y-uFogR.x),0.0,1.0); vec3 c0=vC; if(vM>0.5&&uTexOn>0.5){ vec3 n=abs(normalize(vNn)); vec2 uv=n.y>0.6?vW.xz:(n.x>n.z?vW.zy:vW.xy); c0*=texture(uTex,vec3(uv/32.0,vM)).r*2.0; } vec3 c=mix(c0,uFog,f); ivec2 q=ivec2(gl_FragCoord.xy)%4; c+=(BY[q.x+q.y*4]/16.0-0.5)/28.0; o=vec4(c,1.0); }`;
 const R3BVS = `#version 300 es
 out vec2 vU; void main(){ vec2 p=vec2(float((gl_VertexID<<1)&2),float(gl_VertexID&2)); vU=p; gl_Position=vec4(p*2.0-1.0,0.0,1.0); }`;
 const R3BFS = `#version 300 es
@@ -12435,7 +12435,7 @@ function r3Init() {
 }
 function r3Resize() {
   for (const c of [R3.cv, R3.ov]) { if (c.width !== W) c.width = W; if (c.height !== H) c.height = H; c.style.position = 'absolute'; c.style.left = C.style.left; c.style.top = C.style.top; c.style.width = C.style.width; c.style.height = C.style.height; }
-  const div = SET.r3res === 'baixa' ? 3 : SET.r3res === 'alta' ? 1.2 : SET.r3res === 'media' ? 2 : SET.q === 'leve' ? 3 : SET.q === 'media' ? 2.4 : 2, lh = Math.max(200, Math.min(H, Math.round(H / Math.max(1, (H / 400)) / (div / 2)))), lw = Math.round(lh * W / H);
+  const nv = SET.r3res || (SET.q === 'leve' ? 'baixa' : 'media'), curto = nv === 'baixa' ? 200 : nv === 'alta' ? 420 : 288, esc = Math.min(1, curto / Math.min(W, H)), lw = Math.max(120, Math.round(W * esc)), lh = Math.max(120, Math.round(H * esc));
   if (R3.lw === lw && R3.lh === lh) return; const gl = R3.gl; R3.lw = lw; R3.lh = lh;
   gl.bindTexture(gl.TEXTURE_2D, R3.ft); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, lw, lh, 0, gl.RGBA, gl.UNSIGNED_BYTE, null); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.bindRenderbuffer(gl.RENDERBUFFER, R3.fd); gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, lw, lh);
@@ -12571,12 +12571,12 @@ const R3IN_COR = { fogao: '#a8482a', coador: '#8a5a2a', bancada: '#9a6a3a', mesa
 const R3IN_ALT = { fogao: 22, coador: 16, bancada: 14, mesa: 12, cama: 8, bau: 9, roupa: 30, trab: 13, banco: 7, feno: 12, tambor: 14, tapete: 0.4, balcao: 16, estante: 30 };
 function r3InSala(B, r) {
   const T = TS, X0 = T, X1 = (r.w - 1) * T, Z0 = 2 * T, Z1 = (r.h - 1) * T, HW = 42, parede = r.city ? r3c('#f0e8d8') : r3c('#f4ecd8'), rodape = r3c('#8a6a42');
-  for (let z = Z0; z < Z1; z += T) for (let x = X0; x < X1; x += T) { const k = (Math.floor(z / T) % 2 ? 0.03 : -0.03) + (H2(x, z, 5) - 0.5) * 0.04; r3quad(B, [x, 0, z + T], [x + T, 0, z + T], [x + T, 0, z], [x, 0, z], [0.72 + k, 0.55 + k, 0.36 + k]); }
-  r3quad(B, [X0, 0, Z0], [X1, 0, Z0], [X1, HW, Z0], [X0, HW, Z0], parede); r3box(B, X0, 0, Z0, X1, 3, Z0 + 0.6, rodape);
+  R3.mat = R3MAT.tabua; for (let z = Z0; z < Z1; z += T) for (let x = X0; x < X1; x += T) { const k = (Math.floor(z / T) % 2 ? 0.03 : -0.03) + (H2(x, z, 5) - 0.5) * 0.04; r3quad(B, [x, 0, z + T], [x + T, 0, z + T], [x + T, 0, z], [x, 0, z], [0.72 + k, 0.55 + k, 0.36 + k]); }
+  R3.mat = R3MAT.reboco; r3quad(B, [X0, 0, Z0], [X1, 0, Z0], [X1, HW, Z0], [X0, HW, Z0], parede); r3box(B, X0, 0, Z0, X1, 3, Z0 + 0.6, rodape);
   r3quad(B, [X0, 0, Z1], [X0, 0, Z0], [X0, HW, Z0], [X0, HW, Z1], parede.map(v => v * 0.88)); r3quad(B, [X1, 0, Z0], [X1, 0, Z1], [X1, HW, Z1], [X1, HW, Z0], parede.map(v => v * 0.88));
   const dx = (r.door + 0.5) * T; r3box(B, X0, 0, Z1, dx - 9, 6, Z1 + 3, parede.map(v => v * 0.8)); r3box(B, dx + 9, 0, Z1, X1, 6, Z1 + 3, parede.map(v => v * 0.8)); // parede da frente baixa (maquete) com o vão da porta
   for (const wx of r.win || []) { const x = (wx + 0.5) * T; r3quad(B, [x - 8, 16, Z0 + 0.4], [x + 8, 16, Z0 + 0.4], [x + 8, 32, Z0 + 0.4], [x - 8, 32, Z0 + 0.4], [0.55, 0.75, 0.9], 2); r3box(B, x - 9, 15, Z0, x + 9, 16.5, Z0 + 2, rodape); }
-  for (const f of r.furn) { if (f.cond && !f.cond()) continue; const k = f.k || '', cor = r3c(R3IN_COR[k] || (k.startsWith('cad') ? '#7a4a24' : '#8a6a42'));
+  R3.mat = R3MAT.tabua; for (const f of r.furn) { if (f.cond && !f.cond()) continue; const k = f.k || '', cor = r3c(R3IN_COR[k] || (k.startsWith('cad') ? '#7a4a24' : '#8a6a42'));
     if (f.wallAt) { const x = f.at ? f.at[0] + 6 : X0 + 20; r3quad(B, [x - 6, 18, Z0 + 0.5], [x + 6, 18, Z0 + 0.5], [x + 6, 30, Z0 + 0.5], [x - 6, 30, Z0 + 0.5], cor); continue; }
     if (!f.t) { if (f.floor || k === 'tapete') { const [ax, ay] = f.at || [X0, Z0], w = (f.spr && f.spr[1]) || 32, h = (f.spr && f.spr[2]) || 20; r3quad(B, [ax, 0.3, ay + h], [ax + w, 0.3, ay + h], [ax + w, 0.3, ay], [ax, 0.3, ay], cor); } continue; }
     const [tx, ty, tw, th] = f.t, x0 = tx * T + 1, z0 = ty * T + 1, x1 = (tx + tw) * T - 1, z1 = (ty + th) * T - 1, sprH = f.spr ? f.spr[2] : 20, alt = R3IN_ALT[k] || (k.startsWith('cad') ? 9 : k.startsWith('p_') ? 6 + Math.min(14, (S.dep[k.slice(2)] || 0) / 40) : cl(sprH - th * T * 0.5, 5, 34));
@@ -12788,6 +12788,54 @@ function r3Festa(B) { const ev = evToday(), m = calDate().m, bands = [];
 /* o carro-pipa vai embora sozinho mesmo sem o desenho 2D (antes ele podia ficar "a caminho" para sempre no 3D) */
 { const _pt = pipaTick; pipaTick = function () { _pt(); if (S.pipa && S.pipa.on && S.day * 1440 + S.min - S.pipa.due > 90) S.pipa = null; }; }
 
+/* ============ v23: TEXTURAS NO 3D ============
+   Como no PlayStation, tudo ganha textura: capim, terra, areia, calçada, asfalto, tábua, reboco, telha, tijolo, couro,
+   pelo, folhagem, pedra, água, pano e casca de árvore. As texturas são desenhadas pelo próprio jogo (nada baixado) e
+   projetadas pela posição no mundo, então a cor de cada coisa continua a mesma e só ganha o "grão". */
+const R3MAT = { capim: 1, terra: 2, areia: 3, calcada: 4, asfalto: 5, tabua: 6, reboco: 7, telha: 8, tijolo: 9, couro: 10, pelo: 11, folha: 12, pedra: 13, agua: 14, pano: 15, casca: 16 };
+const R3TS = 64, R3NL = 17;
+function r3TexGera() {
+  const N = R3TS, out = new Uint8Array(N * N * 4 * R3NL), rnd0 = mulberry(4242);
+  const ruido = (sd, f) => { const g = []; const R = mulberry(sd); const G = Math.max(2, Math.round(N / f)); for (let i = 0; i < G * G; i++) g.push(R()); return (x, y) => { const gx = x / N * G, gy = y / N * G, ix = Math.floor(gx), iy = Math.floor(gy), fx = gx - ix, fy = gy - iy, s = t => t * t * (3 - 2 * t), at = (a, b) => g[((b % G + G) % G) * G + ((a % G + G) % G)]; const a = at(ix, iy), b = at(ix + 1, iy), c = at(ix, iy + 1), d = at(ix + 1, iy + 1); return a + (b - a) * s(fx) + (c - a) * s(fy) + (a - b - c + d) * s(fx) * s(fy); }; };
+  const fbm = (sd) => { const o = [ruido(sd, 32), ruido(sd + 1, 16), ruido(sd + 2, 8), ruido(sd + 3, 4)]; return (x, y) => o[0](x, y) * 0.4 + o[1](x, y) * 0.3 + o[2](x, y) * 0.2 + o[3](x, y) * 0.1; };
+  const L = [];
+  L[0] = () => 0.5;
+  { const f = fbm(11), r = mulberry(12), fios = new Float32Array(N * N); for (let i = 0; i < 260; i++) { const x = Math.floor(r() * N), y = Math.floor(r() * N), h = 2 + Math.floor(r() * 4), v = r() < 0.5 ? 0.18 : -0.16; for (let k = 0; k < h; k++) fios[((y - k + N) % N) * N + x] += v * (1 - k / h); } L[1] = (x, y) => 0.5 + (f(x, y) - 0.5) * 0.5 + fios[y * N + x]; }
+  { const f = fbm(21), r = mulberry(22), pd = new Float32Array(N * N); for (let i = 0; i < 70; i++) { const x = Math.floor(r() * N), y = Math.floor(r() * N), v = r() < 0.6 ? -0.14 : 0.12; pd[y * N + x] += v; pd[y * N + (x + 1) % N] += v * 0.6; } L[2] = (x, y) => 0.5 + (f(x, y) - 0.5) * 0.6 + pd[y * N + x]; }
+  { const f = fbm(31), r = mulberry(32); const gr = new Float32Array(N * N).map(() => (r() - 0.5) * 0.12); L[3] = (x, y) => 0.5 + (f(x, y) - 0.5) * 0.3 + gr[y * N + x] + Math.sin((x + f(x, y) * 30) * 0.4) * 0.03; }
+  { const f = fbm(41); L[4] = (x, y) => { const bx = x % 16, by = (y + (Math.floor(x / 16) % 2) * 8) % 16, junta = bx === 0 || by === 0 ? -0.2 : 0; return 0.52 + (f(x, y) - 0.5) * 0.25 + junta + (bx === 1 || by === 1 ? 0.04 : 0); }; }
+  { const f = fbm(51), r = mulberry(52); const gr = new Float32Array(N * N).map(() => (r() - 0.5) * 0.18); L[5] = (x, y) => 0.5 + (f(x, y) - 0.5) * 0.25 + gr[y * N + x]; }
+  { const f = ruido(61, 4), g = fbm(62); L[6] = (x, y) => { const tb = Math.floor(y / 8), fr = y % 8, veio = Math.sin(x * 0.35 + f(x, tb * 8) * 9 + tb * 2.1) * 0.06, emenda = (x + tb * 23) % 64 === 0 ? -0.18 : 0; return 0.5 + veio + (g(x, y) - 0.5) * 0.18 + (fr === 0 ? -0.22 : fr === 1 ? 0.05 : 0) + emenda; }; }
+  { const f = fbm(71), m = ruido(72, 12); L[7] = (x, y) => 0.55 + (f(x, y) - 0.5) * 0.18 + (m(x, y) < 0.22 ? -0.08 : 0) + (y > N - 6 ? -0.06 * (y - N + 6) / 6 : 0); }
+  { const f = fbm(81); L[8] = (x, y) => { const fila = Math.floor(y / 8), fy = y % 8, cx = (x + (fila % 2) * 6) % 12, curva = Math.cos((cx / 12) * Math.PI * 2) * 0.14; return 0.5 + curva + (fy === 7 ? -0.24 : fy < 2 ? 0.06 : 0) + (f(x, y) - 0.5) * 0.16; }; }
+  { const f = fbm(91), r = mulberry(92); const tons = []; for (let i = 0; i < 64; i++) tons.push((r() - 0.5) * 0.16); L[9] = (x, y) => { const fila = Math.floor(y / 8), bx = (x + (fila % 2) * 8) % 16, junta = bx === 0 || y % 8 === 0; return junta ? 0.3 : 0.52 + tons[(fila * 4 + Math.floor((x + (fila % 2) * 8) / 16)) % 64] + (f(x, y) - 0.5) * 0.14; }; }
+  { const f = fbm(101), g = ruido(102, 6); L[10] = (x, y) => 0.5 + (f(x, y) - 0.5) * 0.35 + (g(x, y) > 0.7 ? 0.06 : 0) + ((x + y * 3) % 17 === 0 ? -0.05 : 0); }
+  { const f = fbm(111), r = mulberry(112); const fio = new Float32Array(N * N); for (let i = 0; i < 900; i++) { const x = Math.floor(r() * N), y = Math.floor(r() * N), v = (r() - 0.5) * 0.22; for (let k = 0; k < 3; k++) fio[((y + k) % N) * N + (x + (k > 1 ? 1 : 0)) % N] += v; } L[11] = (x, y) => 0.5 + (f(x, y) - 0.5) * 0.3 + fio[y * N + x]; }
+  { const f = fbm(121), r = mulberry(122), fl = new Float32Array(N * N); for (let i = 0; i < 140; i++) { const cx = r() * N, cy = r() * N, rr = 2 + r() * 3, v = r() < 0.5 ? 0.16 : -0.14; for (let y = -4; y <= 4; y++) for (let x = -4; x <= 4; x++) { const d = Math.hypot(x, y * 1.6); if (d < rr) fl[((Math.floor(cy) + y + N) % N) * N + (Math.floor(cx) + x + N) % N] += v * (1 - d / rr); } } L[12] = (x, y) => 0.5 + (f(x, y) - 0.5) * 0.4 + fl[y * N + x]; }
+  { const f = fbm(131), g = ruido(132, 10); L[13] = (x, y) => { const v = f(x, y), r = Math.abs(g(x, y) - 0.5) < 0.03 ? -0.2 : 0; return 0.5 + (v - 0.5) * 0.7 + r; }; }
+  { const f = fbm(141); L[14] = (x, y) => 0.5 + Math.sin(x * 0.2 + f(x, y) * 8) * 0.06 + Math.sin(y * 0.3 + f(y, x) * 6) * 0.05 + (f(x, y) > 0.66 ? 0.12 : 0); }
+  { const f = fbm(151); L[15] = (x, y) => 0.5 + ((x + y) % 2 ? 0.04 : -0.04) + ((x % 4 === 0) ? -0.03 : 0) + (f(x, y) - 0.5) * 0.18; }
+  { const f = ruido(161, 3), g = fbm(162); L[16] = (x, y) => 0.5 + Math.sin(x * 0.9 + f(x, y) * 7) * 0.12 + (g(x, y) - 0.5) * 0.25 + (Math.sin(x * 0.9 + f(x, y) * 7) > 0.92 ? -0.15 : 0); }
+  for (let l = 0; l < R3NL; l++) { const fn = L[l] || L[0]; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const v = Math.round(cl(fn(x, y), 0, 1) * 255), o = ((l * N + y) * N + x) * 4; out[o] = out[o + 1] = out[o + 2] = v; out[o + 3] = 255; } }
+  return out;
+}
+function r3TexInit() { const gl = R3.gl; if (!gl || R3.tex) return; const t = R3.tex = gl.createTexture(); gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D_ARRAY, t);
+  gl.texImage3D(gl.TEXTURE_2D_ARRAY, 0, gl.RGBA8, R3TS, R3TS, R3NL, 0, gl.RGBA, gl.UNSIGNED_BYTE, r3TexGera()); gl.generateMipmap(gl.TEXTURE_2D_ARRAY);
+  gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.REPEAT);
+  gl.activeTexture(gl.TEXTURE0); R3.u.uTex = gl.getUniformLocation(R3.P, 'uTex'); R3.u.uTexOn = gl.getUniformLocation(R3.P, 'uTexOn'); }
+function r3TexBind() { const gl = R3.gl; if (!R3.tex) r3TexInit(); gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D_ARRAY, R3.tex); gl.uniform1i(R3.u.uTex, 1); gl.uniform1f(R3.u.uTexOn, SET.r3tex === false ? 0 : 1); gl.activeTexture(gl.TEXTURE0); }
+{ const _lz = r3Luzes; r3Luzes = function (L, s) { _lz(L, s); try { r3TexBind(); } catch (e) { } }; }
+/* material atual: vai junto do "tipo" de cada vértice (tipo + material × 8) */
+R3.mat = 0;
+{ const _v = r3v; r3v = function (B, x, y, z, c, nx, ny, nz, k) { B.a.push(x, y, z, c[0], c[1], c[2], nx, ny, nz, (k || 0) + R3.mat * 8); B.n++; }; }
+const r3ComMat = (m, f) => function () { const m0 = R3.mat; R3.mat = m; try { return f.apply(this, arguments); } finally { R3.mat = m0; } };
+r3roof = r3ComMat(R3MAT.telha, r3roof); r3Casa = r3ComMat(R3MAT.reboco, r3Casa); r3Cerca = r3ComMat(R3MAT.tabua, r3Cerca);
+r3Gente = r3ComMat(0, r3Gente); r3Bicho = r3ComMat(0, r3Bicho); r3Bicho2 = r3ComMat(0, r3Bicho2); r3Veiculo = r3ComMat(0, r3Veiculo); /* o que anda fica sem textura (textura presa ao mundo escorregaria) */
+{ const _pp = r3Prop; r3Prop = function (B, q) { const m0 = R3.mat; R3.mat = R3TREE[q.t] || R3PALM[q.t] ? R3MAT.casca : q.t === 'pedra' ? R3MAT.pedra : /banco|tronco|cocho|porteira|mesa|cerca|carro/.test(q.t) ? R3MAT.tabua : 0; try { return _pp(B, q); } finally { R3.mat = m0; } }; }
+{ const _bl = r3blob; r3blob = function (B, cx, cy, cz, rx, ry, rz, col, seed, seg) { const m0 = R3.mat; if (m0 === 0 || m0 === R3MAT.casca || m0 === R3MAT.pedra) R3.mat = col[1] > col[0] * 1.08 && col[1] > col[2] ? R3MAT.folha : Math.abs(col[0] - col[1]) < 0.06 && Math.abs(col[1] - col[2]) < 0.08 ? R3MAT.pedra : m0; try { return _bl(B, cx, cy, cz, rx, ry, rz, col, seed, seg); } finally { R3.mat = m0; } }; }
+const R3MATCHAO = () => ({ [G.GRASS]: R3MAT.capim, [G.PAST]: R3MAT.capim, [G.DIRT]: R3MAT.terra, [G.DRY]: R3MAT.terra, [G.MUD]: R3MAT.terra, [G.SAND]: R3MAT.areia, [G.PAVE]: R3MAT.asfalto, [G.WALK]: R3MAT.calcada, [G.PLAZA]: R3MAT.calcada, [G.FLOOR]: R3MAT.tabua, [G.ROCK]: R3MAT.pedra, [G.BRIDGE]: R3MAT.tabua, [G.WATER]: R3MAT.agua });
+
+{ const _isl = r3InSala; r3InSala = function (B, r) { const m0 = R3.mat; try { return _isl(B, r); } finally { R3.mat = m0; } }; }
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
