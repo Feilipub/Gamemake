@@ -7175,7 +7175,7 @@ function cfgHTML(inGame) {
   h += `<div class="card"><b>Visual</b><p class="mut">HD-2D: câmera em perspectiva com profundidade, sombras do sol, luz das fogueiras e desfoque nas bordas, mantendo a pixel art. Clássico: o 2D de antes.</p><div class="ch">${opt('view', '3d', '3D (novo)')}${opt('view', 'hd2d', 'HD-2D')}${opt('view', '2d', 'Clássico 2D')}</div><b>Desfoque de profundidade</b><div class="ch">${opt('dof', true, 'Ligado')}${opt('dof', false, 'Desligado')}</div><b>Cenas curtas da lida</b><p class="mut">Caminhão boiadeiro, parto, brete, ladrão de gado… Desligue para ir direto ao resultado.</p><div class="ch">${opt('cenas', true, 'Ligadas')}${opt('cenas', false, 'Desligadas')}</div><b>Trânsito na cidade</b><div class="ch">${opt('transito', true, 'Ligado')}${opt('transito', false, 'Desligado')}</div></div>`;
   h += `<div class="card"><b>Conversas com IA</b><p class="mut">Na versão publicada, os moradores podem responder perguntas livres usando o Claude (pede sua permissão na primeira vez). Sem internet ou sem permissão, eles usam as falas do próprio jogo.</p><div class="ch">${opt('ia', true, 'Ligada')}${opt('ia', false, 'Desligada')}</div><b>Limite por dia</b><div class="ch">${opt('iaMax', 15, '15')}${opt('iaMax', 30, '30')}${opt('iaMax', 60, '60')}</div></div>`;
   h += `<div class="card"><b>Gráficos</b><div class="ch">${opt('q', 'alta', 'Alta resolução')}${opt('q', 'media', 'Desempenho')}${opt('q', 'leve', 'Modo leve')}</div><p class="mut">${SET.q === 'leve' ? 'Modo leve: resolução menor, até 30 quadros por segundo, visual 2D e menos aves. Ideal para celulares simples e para poupar bateria.' : SET.q === 'media' ? 'Desempenho: resolução menor, bom para a maioria dos celulares.' : 'Alta resolução: mais nitidez, pede um aparelho mais forte.'}</p><b>Modo de controle</b><div class="ch">${opt('mode', 'joy', 'Joystick')}${opt('mode', 'touch', 'Toque na tela')}</div><p class="mut">${SET.mode === 'touch' ? 'Toque no chão para ir até lá; toque duas vezes para correr ou galopar. Os botões de ação continuam na tela.' : 'Joystick virtual (ou WASD/setas no teclado). Segure “Correr” para correr ou galopar.'}</p><b>Tamanho dos botões</b><div class="ch">${opt('ctl', 1, 'Normal')}${opt('ctl', 1.2, 'Grandes')}</div><b>Orientação da tela</b><div class="ch">${opt('ori', 'livre', 'Livre')}${opt('ori', 'retrato', 'Retrato')}${opt('ori', 'paisagem', 'Paisagem')}</div><p class="mut">Travar a orientação só funciona em tela cheia no celular.</p><div class="row">${btn('Tela cheia', 'fs')}</div><b>Cenas dos leilões</b><div class="ch">${opt('aucCs', 'on', 'Mostrar')}${opt('aucCs', 'off', 'Pular sempre')}</div><b>Vibração</b><div class="ch">${opt('vib', true, 'Ligada')}${opt('vib', false, 'Desligada')}</div><b>Zoom</b><p class="mut">Use dois dedos na tela (pinça) ou a rodinha do mouse.</p><div class="row">${btn('Zoom padrão', 'zoomReset')}</div></div>`;
-  if (SET.view === '3d') h += `<div class="card"><b>Ajustes do 3D</b><p class="mut">O jeitão de PlayStation: imagem em baixa resolução e vértices que "tremem". Gire a câmera com ↺ ↻ (ou Z e X).</p><div class="ch">${opt('r3snap', true, 'Tremidinho PS1')}${opt('r3snap', false, 'Sem tremidinho')}</div><div class="ch" style="margin-top:6px">${opt('r3res', 'baixa', 'Nitidez baixa (mais leve)')}${opt('r3res', 'media', 'Nitidez média')}${opt('r3res', 'alta', 'Nitidez alta')}</div><div class="ch" style="margin-top:6px">${opt('r3cenas', true, 'Cenas em 3D')}${opt('r3cenas', false, 'Cenas em 2D')}</div><div class="row">${opt('r3tex', true, 'Com texturas')}${opt('r3tex', false, 'Sem texturas')}</div><div class="row">${opt('r3cam', 'baixa', 'Câmera baixa (com céu)')}${opt('r3cam', 'alta', 'Câmera alta')}</div><div class="row">${opt('r3mato', true, 'Com mato')}${opt('r3mato', false, 'Sem mato (mais leve)')}${opt('r3morro', true, 'Com morros')}${opt('r3morro', false, 'Chão plano')}</div><div class="row">${opt('r3somb', true, 'Com sombras')}${opt('r3somb', false, 'Sem sombras')}${opt('r3pos', true, 'Com brilho e cor')}${opt('r3pos', false, 'Imagem crua')}</div></div>`;
+  if (SET.view === '3d') h += `<div class="card"><b>Ajustes do 3D</b><p class="mut">O jeitão de PlayStation: imagem em baixa resolução e vértices que "tremem". Gire a câmera com ↺ ↻ (ou Z e X).</p><div class="ch">${opt('r3snap', true, 'Tremidinho PS1')}${opt('r3snap', false, 'Sem tremidinho')}</div><div class="ch" style="margin-top:6px">${opt('r3res', 'baixa', 'Nitidez baixa (mais leve)')}${opt('r3res', 'media', 'Nitidez média')}${opt('r3res', 'alta', 'Nitidez alta')}</div><div class="ch" style="margin-top:6px">${opt('r3cenas', true, 'Cenas em 3D')}${opt('r3cenas', false, 'Cenas em 2D')}</div><div class="row">${opt('r3tex', true, 'Com texturas')}${opt('r3tex', false, 'Sem texturas')}</div><div class="row">${opt('r3cam', 'baixa', 'Câmera baixa (com céu)')}${opt('r3cam', 'alta', 'Câmera alta')}</div><div class="row">${opt('r3mato', true, 'Com mato')}${opt('r3mato', false, 'Sem mato (mais leve)')}${opt('r3morro', true, 'Com morros')}${opt('r3morro', false, 'Chão plano')}</div><div class="row">${opt('r3somb', true, 'Com sombras')}${opt('r3somb', false, 'Sem sombras')}${opt('r3pos', true, 'Com brilho e cor')}${opt('r3pos', false, 'Imagem crua')}</div><div class="row">${opt('r3corte', true, 'Ver através do telhado')}${opt('r3corte', false, 'Telhado sempre inteiro')}${opt('r3arv', true, 'Árvores caprichadas')}${opt('r3arv', false, 'Árvores simples')}</div></div>`;
   h += kbHTML() + a11yHTML(opt);
   h += saveFileCard(inGame);
   h += `<div class="card"><b>ℹ️ Sobre e privacidade</b><p class="mut">Lida no Sertão ${GAME_V} · RF Games. O jogo não coleta dados pessoais, não tem anúncios nem compras. Os saves ficam só neste aparelho (desinstalar ou limpar os dados do navegador apaga). No modo online, os aparelhos dos vaqueiros se ligam direto entre si (o nome do vaqueiro, a posição e as mensagens do chat vão para os outros da sala); o código da sala passa pelo servidor público da PeerJS, só para os aparelhos se acharem.</p>${btn('Créditos e licenças', 'credits')}</div>`;
@@ -12419,9 +12419,10 @@ void main(){ vec3 p=aP; vec3 c=aC; float mt=floor((aK+0.01)/8.0); float kk=aK-mt
   if(kk>2.5&&kk<3.5) lit=c;
   vC=lit; vD=distance(p,uEye); vW=p; }`;
 const R3FS = `#version 300 es
-precision mediump float; precision mediump sampler2DArray; in vec3 vC; in float vD; flat in float vM; in vec3 vW; in vec3 vNn; flat in float vK; uniform highp vec3 uSun; uniform highp vec3 uEye; uniform float uTa; uniform vec3 uFog; uniform vec2 uFogR; uniform sampler2DArray uTex; uniform float uTexOn; out vec4 o;
+precision mediump float; precision mediump sampler2DArray; in vec3 vC; in float vD; flat in float vM; in vec3 vW; in vec3 vNn; flat in float vK; uniform highp vec3 uSun; uniform highp vec3 uEye; uniform float uTa; uniform highp vec3 uAlvo; uniform float uCut; uniform vec3 uFog; uniform vec2 uFogR; uniform sampler2DArray uTex; uniform float uTexOn; out vec4 o;
 const float BY[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
-void main(){ float f=clamp((vD-uFogR.x)/(uFogR.y-uFogR.x),0.0,1.0); vec3 c0=vC; if(vM>0.5&&uTexOn>0.5){ vec3 n=abs(normalize(vNn)); vec2 uv=n.y>0.6?vW.xz:(n.x>n.z?vW.zy:vW.xy); c0*=texture(uTex,vec3(uv/32.0,vM)).r*2.0; } if(vK>0.5&&vK<1.5){ vec3 v=normalize(uEye-vW); vec3 n=normalize(vec3(sin(vW.x*0.21+uTa*1.6)*0.12+sin(vW.z*0.13+uTa)*0.08,1.0,cos(vW.z*0.19+uTa*1.3)*0.12)); float fr=0.25+0.55*pow(1.0-max(dot(v,n),0.0),3.0); c0=mix(c0,uFog*1.05,fr); vec3 r=reflect(-v,n); c0+=vec3(1.0,0.95,0.8)*pow(max(dot(r,uSun),0.0),48.0)*0.9; } vec3 c=mix(c0,uFog,f); ivec2 q=ivec2(gl_FragCoord.xy)%4; c+=(BY[q.x+q.y*4]/16.0-0.5)/28.0; o=vec4(c,1.0); }`;
+void main(){ if(uCut>0.5&&vW.y>2.5){ vec3 ab=uAlvo-uEye; float tt=dot(vW-uEye,ab)/dot(ab,ab); if(tt>0.02&&tt<0.9){ float dd=distance(vW,uEye+ab*tt); float a=smoothstep(34.0,16.0,dd); ivec2 qq=ivec2(gl_FragCoord.xy)%4; if(BY[qq.x+qq.y*4]/16.0<a*0.9) discard; } }
+  float f=clamp((vD-uFogR.x)/(uFogR.y-uFogR.x),0.0,1.0); vec3 c0=vC; if(vM>0.5&&uTexOn>0.5){ vec3 n=abs(normalize(vNn)); vec2 uv=n.y>0.6?vW.xz:(n.x>n.z?vW.zy:vW.xy); c0*=texture(uTex,vec3(uv/32.0,vM)).r*2.0; } if(vK>0.5&&vK<1.5){ vec3 v=normalize(uEye-vW); vec3 n=normalize(vec3(sin(vW.x*0.21+uTa*1.6)*0.12+sin(vW.z*0.13+uTa)*0.08,1.0,cos(vW.z*0.19+uTa*1.3)*0.12)); float fr=0.25+0.55*pow(1.0-max(dot(v,n),0.0),3.0); c0=mix(c0,uFog*1.05,fr); vec3 r=reflect(-v,n); c0+=vec3(1.0,0.95,0.8)*pow(max(dot(r,uSun),0.0),48.0)*0.9; } vec3 c=mix(c0,uFog,f); ivec2 q=ivec2(gl_FragCoord.xy)%4; c+=(BY[q.x+q.y*4]/16.0-0.5)/28.0; o=vec4(c,1.0); }`;
 const R3BVS = `#version 300 es
 out vec2 vU; void main(){ vec2 p=vec2(float((gl_VertexID<<1)&2),float(gl_VertexID&2)); vU=p; gl_Position=vec4(p*2.0-1.0,0.0,1.0); }`;
 const R3BFS = `#version 300 es
@@ -12868,7 +12869,7 @@ function r3Humano(B, x, z, a, ap, ph, mv, o) {
   // ---------- quadril, saia e tronco ----------
   if (pnt === 4) { const bal = Math.sin(ph) * 0.12 * mv; r3bx(B, W, 0, quadril - s(4), 0, s(6.2), s(9), s(7.4), pa, [0, quadril, bal]); r3bx(B, W, 0, quadril - s(8.2), 0, s(6.8), s(1), s(8), pa.map(v => v * 0.82), [0, quadril, bal]); }
   else r3bx(B, W, 0, quadril + s(0.6), 0, s(4.2), s(2.4), s(f ? 6.8 : 6.2), pa);
-  const resp = parado ? Math.sin(t * 2.1 + seed) * 0.18 : 0, tor0 = quadril + s(1.6), inc = sentado ? (montado ? 0.05 : 0.02) : lean;
+  const resp = parado ? Math.sin(t * 2.1 + seed) * 0.18 : 0, tor0 = quadril + s(1.6), inc = (sentado ? (montado ? 0.05 : 0.02) : lean) + (o.acao ? r3PoseTronco(o) : 0);
   const [bx2, by2] = r3Seg(B, W, 0, tor0, 0, Math.PI - inc, s(4.6), s(4.2), s(f ? 6 : 6.6), sh);
   const [cx2, cy2] = r3Seg(B, W, bx2, by2, 0, Math.PI - inc, s(5 + resp * 0.3), s(4.8), s(f ? 7 : 8), shBase === 2 ? sh.map(v => v * 1.06) : sh);
   if (f) r3bx(B, W, bx2 + s(2.1), by2 + s(2.6), 0, s(1.4), s(2.4), s(5.6), sh.map(v => v * 0.96));
@@ -12883,7 +12884,7 @@ function r3Humano(B, x, z, a, ap, ph, mv, o) {
   const ombroY = cy2 - s(1.2), ombroX = cx2 - s(0.2);
   for (const sg of [1, -1]) { const zz = sg * s(f ? 4.6 : 5.1), p = sg > 0 ? ph + Math.PI : ph;
     let ang, cot; if (montado) { ang = 0.55; cot = 0.9; } else if (sentado) { ang = 0.45; cot = 0.8; } else { ang = (parado ? Math.sin(t * 1.3 + sg + seed) * 0.04 : A * 0.95 * Math.sin(p)) + 0.05; cot = 0.18 + mv * 0.55 + (parado ? 0.04 : 0) + Math.max(0, Math.sin(p)) * 0.4 * mv; }
-    if (o.acao === 'laco' && sg > 0) { ang = Math.PI * 0.85 + Math.sin(t * 9) * 0.25; cot = 0.3; } if (o.acao === 'aboio' && sg > 0) { ang = 2.2; cot = 2.2; }
+    if (o.acao) [ang, cot] = r3PoseBraco(o, sg, ang, cot, t);
     const curta = shBase === 1, mangaCor = sh;
     const [ex, ey] = r3Seg(B, W, ombroX, ombroY, zz, ang, s(4.4), s(2.5), s(2.5), mangaCor);
     const [hx, hy] = r3Seg(B, W, ex, ey, zz, ang + cot, s(4.1), s(2.2), s(2.2), curta ? sk : mangaCor);
@@ -13115,6 +13116,96 @@ function r3DesenhaSombras(L, usar) { const gl = R3.gl; if (!R3.PSH) r3ShInit(); 
   if (R3.dynS && R3.dynS.n) { gl.bindVertexArray(R3.dynS.vao); gl.drawArrays(gl.TRIANGLES, 0, R3.dynS.n); }
   gl.bindVertexArray(null); gl.disable(gl.POLYGON_OFFSET_FILL); gl.depthMask(true); gl.disable(gl.BLEND); gl.useProgram(R3.P); }
 { const _lz3 = r3Luzes; r3Luzes = function (L, s) { _lz3(L, s); if (R3.u.uTa) R3.gl.uniform1f(R3.u.uTa, (performance.now() / 1000) % 1000); }; }
+
+/* ============ v24: CASAS E ÁRVORES CAPRICHADAS NO 3D ============
+   Casas com barra colorida na parede (como no sertão), janelas com moldura, peitoril e folhas de madeira abertas, janelas do
+   lado, porta com batente e degrau, cumeeira e beiral; a sede ganha alpendre com esteios e chaminé do fogão a lenha.
+   Árvores com galhos e copa feita de vários tufos, com tons diferentes. */
+const R3BARRA = ['#2f6f9f', '#3a8a5a', '#b04a3a', '#d8a030', '#6a4a8a', '#2a8a8a'];
+{ const _rc = r3Casa; r3Casa = function (B, x0, z0, x1, z1, wall, trim, roof, doorX, alto) {
+  _rc(B, x0, z0, x1, z1, wall, trim, roof, doorX, alto); const m0 = R3.mat;
+  try { const h = alto || 30, Tr = r3c(trim || '#6a4422'), W0 = r3c(wall), seed = Math.floor(x0 * 3 + z0 * 7), barra = r3c(trim && trim !== '#6a4422' && trim !== '#5a3a1a' ? trim : R3BARRA[Math.abs(seed) % R3BARRA.length]).map(v => v * 0.92), bh = 7, e = 0.2;
+    R3.mat = R3MAT.reboco; // barra pintada na parte de baixo das 4 paredes
+    r3quad(B, [x0, 0, z1 + e], [x1, 0, z1 + e], [x1, bh, z1 + e], [x0, bh, z1 + e], barra); r3quad(B, [x1, 0, z0 - e], [x0, 0, z0 - e], [x0, bh, z0 - e], [x1, bh, z0 - e], barra.map(v => v * 0.75));
+    r3quad(B, [x1 + e, 0, z1], [x1 + e, 0, z0], [x1 + e, bh, z0], [x1 + e, bh, z1], barra.map(v => v * 0.86)); r3quad(B, [x0 - e, 0, z0], [x0 - e, 0, z1], [x0 - e, bh, z1], [x0 - e, bh, z0], barra.map(v => v * 0.86));
+    R3.mat = R3MAT.tabua; const dx = doorX !== undefined ? doorX : (x0 + x1) / 2, mad = Tr.map(v => v * 0.85);
+    r3box(B, dx - 6.2, 0, z1, dx - 5, 18.4, z1 + 0.9, mad); r3box(B, dx + 5, 0, z1, dx + 6.2, 18.4, z1 + 0.9, mad); r3box(B, dx - 6.2, 17, z1, dx + 6.2, 18.6, z1 + 0.9, mad); // batente
+    r3quad(B, [dx - 5, 0, z1 + 0.35], [dx + 5, 0, z1 + 0.35], [dx + 5, 17, z1 + 0.35], [dx - 5, 17, z1 + 0.35], Tr.map(v => v * 0.6)); r3box(B, dx + 2.6, 8, z1 + 0.35, dx + 3.6, 9, z1 + 0.9, [0.85, 0.75, 0.3]);
+    R3.mat = R3MAT.pedra; r3box(B, dx - 7, 0, z1, dx + 7, 1.6, z1 + 4, r3c('#a8a49a')); R3.mat = R3MAT.tabua;
+    for (let wx = x0 + 9; wx < x1 - 6; wx += 22) { if (Math.abs(wx - dx) < 12) continue; // janelas da frente
+      r3box(B, wx - 5.2, 9, z1, wx + 5.2, 10.2, z1 + 1.6, r3c('#e8e2d0')); r3box(B, wx - 5, 19, z1, wx + 5, 20.2, z1 + 0.8, mad); r3box(B, wx - 5, 10, z1, wx - 4, 19, z1 + 0.8, mad); r3box(B, wx + 4, 10, z1, wx + 5, 19, z1 + 0.8, mad);
+      r3box(B, wx - 9.5, 10, z1 + 0.4, wx - 5, 19, z1 + 1, Tr); r3box(B, wx + 5, 10, z1 + 0.4, wx + 9.5, 19, z1 + 1, Tr); }
+    for (const [sx, nx] of [[x0, -1], [x1, 1]]) { const zc = (z0 + z1) / 2; if (z1 - z0 < 30) continue; const px = sx + nx * 0.3; // janela do lado
+      r3quad(B, [px, 10, zc - 4], [px, 10, zc + 4], [px, 19, zc + 4], [px, 19, zc - 4], [0.25, 0.32, 0.4], 2); r3box(B, Math.min(sx, sx + nx * 1.2), 9.4, zc - 5, Math.max(sx, sx + nx * 1.2), 10.4, zc + 5, r3c('#e8e2d0')); r3box(B, Math.min(sx, sx + nx * 0.9), 10, zc + 4, Math.max(sx, sx + nx * 0.9), 19, zc + 8.5, Tr); }
+    R3.mat = R3MAT.telha; const al = (x1 - x0) >= (z1 - z0), rH = Math.min(16, (Math.min(x1 - x0, z1 - z0)) * 0.42), RC = r3c(roof).map(v => v * 0.7); // cumeeira e beiral
+    if (al) r3box(B, x0 - 3.5, h + rH - 0.6, (z0 + z1) / 2 - 1.4, x1 + 3.5, h + rH + 1.2, (z0 + z1) / 2 + 1.4, RC); else r3box(B, (x0 + x1) / 2 - 1.4, h + rH - 0.6, z0 - 3.5, (x0 + x1) / 2 + 1.4, h + rH + 1.2, z1 + 3.5, RC);
+    R3.mat = R3MAT.tabua; r3box(B, x0 - 3, h - 1.6, z1 + 2.4, x1 + 3, h + 0.2, z1 + 3.2, mad.map(v => v * 0.9));
+    if (alto === 34) { // sede: alpendre com esteios e chaminé
+      const pz = z1 + 22, cor = r3c(roof); for (let px = x0 + 2; px <= x1 - 1; px += Math.max(16, (x1 - x0 - 4) / 3)) r3cyl(B, px, pz - 2, 0, 22, 1.4, 1.2, 6, r3c('#7a5232'), r3c('#7a5232'));
+      R3.mat = R3MAT.telha; r3quad(B, [x0 - 2, 22, pz + 1], [x1 + 2, 22, pz + 1], [x1 + 2, h - 2, z1 + 2], [x0 - 2, h - 2, z1 + 2], cor.map(v => v * 0.95)); r3quad(B, [x1 + 2, 21.6, pz + 1], [x0 - 2, 21.6, pz + 1], [x0 - 2, h - 2.4, z1 + 2], [x1 + 2, h - 2.4, z1 + 2], cor.map(v => v * 0.5));
+      R3.mat = R3MAT.calcada; r3box(B, x0 - 2, 0, z1, x1 + 2, 1.2, pz + 1, r3c('#c8b89a'));
+      R3.mat = R3MAT.tijolo; const cx = x0 + (x1 - x0) * 0.22, cz = z0 + 8; r3box(B, cx - 3.5, h + 2, cz - 3.5, cx + 3.5, h + rH + 9, cz + 3.5, r3c('#b85a3a')); R3.mat = 0; r3box(B, cx - 4.2, h + rH + 9, cz - 4.2, cx + 4.2, h + rH + 10.4, cz + 4.2, r3c('#6a3a2a')); }
+  } finally { R3.mat = m0; } }; }
+/* árvores com galhos e copa de vários tufos */
+{ const _pp2 = r3Prop; r3Prop = function (B, q) { const T0 = R3TREE[q.t]; if (!T0 || SET.r3arv === false) return _pp2(B, q);
+  const x = q.x, z = q.y - 2, R = mulberry(Math.floor(x * 7 + z * 13)), v = R(), [cc, H, rr, tc] = T0, h = H * (0.85 + v * 0.3), cor = r3c(cc), tron = r3c(tc), m0 = R3.mat;
+  try { R3.mat = R3MAT.casca; r3cyl(B, x, z, 0, h * 0.62, 2.4, 1.5, 6, tron); const nG = 3 + Math.floor(R() * 2), tufos = [[x, h * 0.8, z, rr * 0.8]];
+    for (let i = 0; i < nG; i++) { const a = i / nG * 6.28 + v * 3, L = rr * (0.45 + R() * 0.25), y0 = h * (0.45 + R() * 0.15), ex = x + Math.cos(a) * L, ez = z + Math.sin(a) * L, ey = y0 + L * 0.7;
+      const mx = (x + ex) / 2, my = (y0 + ey) / 2, mz = (z + ez) / 2, dl = Math.hypot(ex - x, ey - y0, ez - z); r3cyl(B, mx, mz, my - dl / 2 * 0.7, my + dl / 2 * 0.7, 0.9, 0.6, 4, tron); // galho (aproximado)
+      tufos.push([ex, ey + rr * 0.2, ez, rr * (0.5 + R() * 0.2)]); }
+    for (let i = 0; i < tufos.length; i++) { const [tx, ty, tz, tr] = tufos[i], k = 0.88 + R() * 0.24; r3blob(B, tx, ty, tz, tr, tr * 0.68, tr, cor.map(c => Math.min(1, c * k)), Math.floor(tx * 3 + tz) + i, 6); }
+    if (q.t === 'ipe' && v > 0.5) for (let i = 0; i < 3; i++) r3blob(B, x + (R() - 0.5) * rr, h * (0.85 + R() * 0.15), z + (R() - 0.5) * rr, 4, 3, 4, r3c('#e86aa8'), 3 + i, 5);
+    if ((q.t === 'manga' || q.t === 'caju' || q.t === 'cajazeira') && R() < 0.7) for (let i = 0; i < 5; i++) { const a = R() * 6.28; R3.mat = 0; r3box(B, x + Math.cos(a) * rr * 0.7 - 0.8, h * 0.62 + R() * rr * 0.4, z + Math.sin(a) * rr * 0.7 - 0.8, x + Math.cos(a) * rr * 0.7 + 0.8, h * 0.62 + R() * rr * 0.4 + 1.6, z + Math.sin(a) * rr * 0.7 + 0.8, q.t === 'manga' ? [0.9, 0.6, 0.15] : [0.9, 0.3, 0.15]); }
+  } finally { R3.mat = m0; } }; }
+r3Prop = r3NoChao(r3Prop, (B, q) => [q.x, q.y - 2]);
+
+/* ============ v24: 3D MAIS LEVE — só monta quem aparece e simplifica quem está longe ============ */
+function r3NaTela(x, z, h, m) { const M = R3.M; if (!M) return true; const v = M4.xf(M.VP, [x, h || 10, z, 1]); if (v[3] <= 1) return false; const k = m || 1.25; return Math.abs(v[0] / v[3]) < k && v[1] / v[3] < k + 0.2 && v[1] / v[3] > -k - 0.4; }
+const r3SeVisivel = (f, px) => function () { const p = px.apply(null, arguments); if (p && !r3NaTela(p[0], p[1], p[2])) return; return f.apply(this, arguments); };
+r3Gente = r3SeVisivel(r3Gente, (B, x, z) => [x, z, 16]); r3Bicho = r3SeVisivel(r3Bicho, (B, a, x, z) => [x, z, 12]); r3Bicho2 = r3SeVisivel(r3Bicho2, (B, w) => [w.x, w.y, 8]);
+r3Veiculo = r3SeVisivel(r3Veiculo, (B, x, z) => [x, z, 10]); r3Ave = r3SeVisivel(r3Ave, (B, a) => [a.x, a.y, a.z > 30 ? a.z * 1.9 : a.z]); r3Sombra = r3SeVisivel(r3Sombra, (B, x, z) => [x, z, 2]);
+R3.lod = 0; { const _gl = r3Gente; r3Gente = function (B, x, z) { const e = R3.eye, l0 = R3.lod; R3.lod = e && !R3.dentro && Math.hypot(x - e[0], z - e[2]) > 330 ? 1 : 0; try { return _gl.apply(this, arguments); } finally { R3.lod = l0; } }; }
+{ const _fq = r3Fq; r3Fq = function () { if (R3.lod) return; return _fq.apply(this, arguments); }; }
+
+/* ============ v24: CARROS, ÔNIBUS E CAMINHÕES CAPRICHADOS ============ */
+function r3Roda(B, W, lx, lz, r, lado) { const pn = [0.09, 0.09, 0.1], cal = [0.7, 0.7, 0.72]; for (let i = 0; i < 6; i++) { const a0 = i / 6 * 6.2832, a1 = (i + 1) / 6 * 6.2832, z0 = lz - lado * 1.2, z1 = lz + lado * 1.2;
+    const p = (a, zz) => r3Pt(W, lx + Math.cos(a) * r, r + Math.sin(a) * r, zz); r3quad(B, p(a0, z0), p(a1, z0), p(a1, z1), p(a0, z1), pn); r3tri(B, r3Pt(W, lx, r, z1), p(a0, z1), p(a1, z1), pn.map(v => v * 1.5)); }
+  r3Fq2(B, W, lx, r, lz + lado * 1.25, r * 0.5, cal); }
+function r3Fq2(B, W, lx, ly, lz, s, col) { r3quad(B, r3Pt(W, lx - s, ly - s, lz), r3Pt(W, lx + s, ly - s, lz), r3Pt(W, lx + s, ly + s, lz), r3Pt(W, lx - s, ly + s, lz), col); }
+function r3Veiculo2(B, x, z, ang, tipo, cor) { const W = { x, y: 0, z, ca: Math.cos(ang), sa: Math.sin(ang) }, c = r3c(cor || '#c83a2a'), vid = [0.42, 0.58, 0.72], cromo = [0.75, 0.75, 0.78], noite = (typeof R3 !== 'undefined' && R3.luzes) ? 1 : 0;
+  if (tipo === 'moto' || tipo === 'bike') { r3bx(B, W, 0, 5.5, 0, 10, 2.4, 1.8, c); r3bx(B, W, -1.5, 7.2, 0, 5, 1.4, 2.6, [0.12, 0.1, 0.1]); r3bx(B, W, 5, 7.5, 0, 1, 4, 0.6, cromo); r3bx(B, W, 5, 9.6, 0, 0.6, 0.6, 5, cromo); r3Roda(B, W, 5.2, 0, 2.6, 1); r3Roda(B, W, -5.2, 0, 2.6, 1); if (tipo === 'moto') { const n0 = B.a.length; r3bx(B, W, 6, 7.2, 0, 0.6, 1.2, 1.2, [1, 0.95, 0.7]); for (let j = n0 + 9; j < B.a.length; j += 10) B.a[j] = 2; } return; }
+  const big = tipo === 'onibus' || tipo === 'caminhao', L = big ? 46 : 26, Wd = big ? 16 : 13, Hh = big ? 18 : 6.5, rr = big ? 3.6 : 2.6, chao = rr * 1.2;
+  r3bx(B, W, 0, chao + Hh / 2, 0, L, Hh, Wd, c); r3bx(B, W, 0, chao + 0.6, 0, L + 1, 1.2, Wd + 0.4, [0.16, 0.16, 0.17]); // para-choque/saia
+  if (!big) { r3bx(B, W, -1.5, chao + Hh + 2.8, 0, 13, 5.6, Wd - 1.2, c.map(v => v * 0.96)); r3bx(B, W, 5.4, chao + Hh + 2.6, 0, 0.4, 4.6, Wd - 2.4, vid); r3bx(B, W, -8.2, chao + Hh + 2.6, 0, 0.4, 4.4, Wd - 2.4, vid); for (const sg of [1, -1]) r3bx(B, W, -1.5, chao + Hh + 2.8, sg * (Wd / 2 - 0.5), 11, 3.8, 0.3, vid); }
+  else if (tipo === 'onibus') { for (let i = 0; i < 6; i++) for (const sg of [1, -1]) r3bx(B, W, -L / 2 + 6 + i * 6.6, chao + Hh * 0.68, sg * (Wd / 2 + 0.05), 5.4, Hh * 0.32, 0.3, vid); r3bx(B, W, L / 2 + 0.2, chao + Hh * 0.62, 0, 0.4, Hh * 0.5, Wd - 2, vid); r3bx(B, W, 0, chao + Hh * 0.25, 0, L + 0.2, 1.6, Wd + 0.2, [0.95, 0.9, 0.85]); }
+  else { r3bx(B, W, L / 2 - 6, chao + Hh * 0.62, 0, 0.4, Hh * 0.4, Wd - 2, vid); r3bx(B, W, L / 2 - 12, chao + Hh / 2, 0, 0.6, Hh, Wd + 0.2, [0.15, 0.15, 0.16]); r3bx(B, W, -6, chao + Hh + 0.6, 0, L - 12, 1.2, Wd, c.map(v => v * 0.8)); }
+  const n0 = B.a.length; for (const sg of [1, -1]) r3bx(B, W, L / 2 + 0.2, chao + Hh * (big ? 0.2 : 0.55), sg * (Wd / 2 - 2), 0.4, 1.6, 2.4, [1, 0.96, 0.75]); for (let j = n0 + 9; j < B.a.length; j += 10) B.a[j] = 2; // faróis
+  const n1 = B.a.length; for (const sg of [1, -1]) r3bx(B, W, -L / 2 - 0.2, chao + Hh * (big ? 0.2 : 0.55), sg * (Wd / 2 - 1.6), 0.4, 1.4, 2, [0.9, 0.12, 0.08]); if (noite) for (let j = n1 + 9; j < B.a.length; j += 10) B.a[j] = 3;
+  for (const [dx, sg] of [[L / 2 - (big ? 8 : 5.5), 1], [L / 2 - (big ? 8 : 5.5), -1], [-L / 2 + (big ? 8 : 5.5), 1], [-L / 2 + (big ? 8 : 5.5), -1]]) r3Roda(B, W, dx, sg * (Wd / 2 - 0.6), rr, sg); }
+r3Veiculo = r3SeVisivel(r3NoChao(r3ComMat(0, r3Veiculo2), (B, x, z) => [x, z]), (B, x, z) => [x, z, 10]);
+
+/* o que fica entre a câmera e o vaqueiro vira um recorte pontilhado (dá para ver através do telhado da frente) */
+{ const _lz4 = r3Luzes; r3Luzes = function (L, sala) { _lz4(L, sala); const gl = R3.gl, u = R3.u; if (u.uAlvo === undefined) { u.uAlvo = gl.getUniformLocation(R3.P, 'uAlvo'); u.uCut = gl.getUniformLocation(R3.P, 'uCut'); } const ok = !sala && SET.r3corte !== false && SET.r3cam !== 'alta' && R3.T; gl.uniform1f(u.uCut, ok ? 1 : 0); if (ok) { const ax = mode === 'cs' ? R3.T[0] : P.x, az = mode === 'cs' ? R3.T[1] : P.y; gl.uniform3f(u.uAlvo, ax, 14 + (typeof r3Alt === 'function' ? r3Alt(ax, az) : 0), az); } }; }
+/* ============ v24: AÇÕES DO VAQUEIRO EM 3D — braços e corpo em cada trabalho ============ */
+function r3PoseBraco(o, sg, ang, cot, t) { const k = o.acao, u = o.acaoU || 0, osc = Math.sin(u * Math.PI * 2 * (o.acaoN || 2)), dir = sg > 0;
+  switch (k) {
+    case 'laco': return dir ? [Math.PI * 0.85 + Math.sin(t * 9) * 0.25, 0.3] : [0.5, 0.9];
+    case 'aboio': return dir ? [2.2, 2.25] : [0.35, 0.6];
+    case 'hoe': case 'slash': return [1.1 + osc * 0.9, 0.3];
+    case 'hammer': return dir ? [1.6 + osc * 1.0, 0.5 + Math.max(0, osc) * 0.6] : [0.7, 1.0];
+    case 'feed': case 'throw': case 'call': return dir ? [0.6 + Math.max(0, Math.sin(u * Math.PI)) * 1.4, 0.4] : [0.4, 1.1];
+    case 'water': case 'waterCan': case 'fill': return [1.0, 0.5];
+    case 'reach': case 'pickup': case 'hitch': return [0.9 + Math.sin(u * Math.PI) * 0.4, 0.2];
+    case 'sweep': case 'brush': case 'train': return [0.9 + osc * 0.45, 0.6];
+    case 'saddle': case 'gate': case 'door': return [1.35 + Math.sin(u * Math.PI) * 0.3, 0.5];
+    case 'wave': return dir ? [2.7, 0.4 + osc * 0.4] : [0.1, 0.2];
+    case 'eat': return dir ? [0.9 + Math.max(0, osc) * 0.5, 1.9] : [0.3, 1.2];
+    case 'shoot': return [1.5, 0.15];
+    case 'talk': return dir ? [0.4 + Math.max(0, osc) * 0.35, 1.0] : [0.15, 0.3];
+  } return [ang, cot]; }
+function r3PoseTronco(o) { const u = o.acaoU || 0; switch (o.acao) { case 'hoe': return 0.35 + Math.sin(u * Math.PI * 4) * 0.12; case 'reach': case 'pickup': case 'hitch': return Math.sin(u * Math.PI) * 0.6; case 'water': case 'waterCan': case 'fill': return 0.25; case 'sweep': return 0.2; case 'aboio': return -0.12; default: return 0; } }
+{ const _ga = r3Gente; r3Gente = function (B, x, z, a, ap, ph, mv, o) { if (x === P.x && z === P.y && mode !== 'cs') { o = Object.assign({}, o || {}); if (P._act) { o.acao = P._act.k; o.acaoU = cl(P._act.t / Math.max(0.1, P._act.dur), 0, 1); o.acaoN = P._act.dur > 1.5 ? 3 : 2; } else if (lasso.anim > 0 || lasso.t) o.acao = 'laco'; else if (typeof abCd !== 'undefined' && abCd > 2.4) o.acao = 'aboio'; }
+  return _ga(B, x, z, a, ap, ph, mv, o); }; }
 
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
