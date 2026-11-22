@@ -96,6 +96,31 @@ E acrescenta:
 - **Câmera:** zoom suave na imagem em alta antes de pixelizar, empurrão em cada corte e chicote (whip-pan) entre planos.
 - **Personagem novo:** além do rig antigo, informe `neck`, `hip`, `tip_y`, `desk_y` e `seed`, e gere `<nome>_depth.npy` com o Depth Anything.
 
+
+## Motor 6.0: animação 3D no Blender (`blender/`)
+Personagens 3D estilizados, com esqueleto, animados em **todos os quadros** (24 fps) e renderizados com Eevee (luz, sombra, bloom do neon e profundidade de campo).
+- `base3d.py`: materiais, estúdio 3D (parede acústica, neon, mesa, microfone, poções), luzes de cinema e câmera.
+- `mago3d.py` e `flamingo3d.py`: modelam cada personagem e o esqueleto. Os dois usam os mesmos nomes de ossos (cabeça, mandíbula, pálpebras, sobrancelhas, braços, ponta do chapéu ou crista).
+- `canais.py`: transforma dublagem e roteiro em curvas de animação por osso, com física de molas:
+  - boca pelo volume da voz;
+  - cabeça marcando as sílabas fortes;
+  - sobrancelhas na ênfase;
+  - piscadas naturais;
+  - respiração;
+  - gestos do roteiro (apontar, abrir os braços, dar de ombros, mão no peito);
+  - quem escuta vira e acena;
+  - a ponta do chapéu atrasa (movimento secundário);
+  - a risada sacode.
+- `animar.py`: aplica as curvas ao esqueleto (keyframe em cada quadro), cuida da câmera (empurrão, close e leve câmera na mão) e renderiza só os quadros em que o personagem está no ar.
+- `podcast/corte6.py`: planeja os planos e monta o Short (legendas, gancho, fotos, figurinhas, CTA, loop e áudio).
+
+```bash
+python3 podcast/corte6.py corte6_gta6 plan          # quais quadros de cada personagem
+python3 blender/canais.py corte6_gta6 M blender/ch_M.json; python3 blender/canais.py corte6_gta6 Y blender/ch_Y.json
+blender/render_all.sh                               # cerca de 15 s por quadro em CPU (4 núcleos)
+python3 podcast/corte6.py corte6_gta6               # vídeo final
+```
+
 ## Como rodar
 ```bash
 # 1) dublagem (ambiente com torch + chatterbox)
