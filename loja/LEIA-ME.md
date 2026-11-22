@@ -1,4 +1,4 @@
-# Como colocar o Lida no Sertão na Play Store (versão 21.0)
+# Como colocar o Lida no Sertão na Play Store (versão 23.0)
 
 Tudo o que dá para preparar sem a sua conta já está pronto:
 
@@ -13,8 +13,8 @@ Os passos abaixo são os que **só você** pode fazer, porque pedem a sua conta 
 
 | Item | Onde |
 |---|---|
-| App para enviar à loja (`.aab`, versão 21.0.0, código 87, Android 16 / API 36) | enviado no chat: `LidaNoSertao-21.0.0.aab` |
-| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-21.0.0.apk` |
+| App para enviar à loja (`.aab`, versão 23.0.0, código 88, Android 16 / API 36) | enviado no chat: `LidaNoSertao-23.0.0.aab` |
+| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-23.0.0.apk` |
 | Chave de upload e senha | já enviadas antes no chat, em `chave_upload_lida.zip` (**é a mesma chave; guarde bem!**) |
 | Ícone 512 × 512 | `loja/imagens/icone_512.png` |
 | Banner 1024 × 500 | `loja/imagens/banner_1024x500.png` |
@@ -33,6 +33,31 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 - **Modo online:** funciona no app, ligando um celular direto no outro.
 - **Android 16 (API 36):** o app mira a versão que a Play Store exige para apps novos.
 - **Tela "Sobre e privacidade":** fica em Configurações. Os créditos agora incluem PeerJS e OpenStreetMap.
+
+## Novidades da 23.0 — gráficos 2.0
+- **Gente nova:**
+  - corpo com joelho, cotovelo, mãos e rosto (olhos que piscam, sobrancelha, barba e bigode);
+  - os 8 cortes de cabelo e cada tipo de chapéu, roupa e bota.
+- **Animação de verdade:** a gente anda dobrando o joelho, balança os braços, respira e olha em volta.
+- **Bichos novos:**
+  - cavalos com passo, trote e galope;
+  - gado com cupim, barbela, chifres de cada raça e ruminando;
+  - cão abanando o rabo.
+- **Texturas:** capim, terra, calçada, asfalto, tábua, reboco, telha, pedra e água, desenhadas pelo próprio jogo.
+- **Câmera mais baixa:** mostra o rosto do vaqueiro, o horizonte e o céu, com sol, lua, estrelas, nuvens e serras ao longe. A câmera alta continua nos ajustes.
+- **Mato e morros:** capim e flores que balançam com o vento, copas balançando e morros suaves no campo aberto.
+- **Luz:**
+  - sombras de casas, árvores, gente e bicho, que acompanham o sol;
+  - água que reflete o céu;
+  - brilho nas luzes e cor mais viva.
+- **Imagem mais nítida:** 288 em vez de 192 pixels no lado curto da tela.
+- **Configurações › Ajustes do 3D:** cada novidade pode ser desligada para deixar o jogo mais leve.
+
+## Novidades da 22.0 — visual 3D (fase 3)
+- **Luzes da noite:** postes, fogueira, janelas e lampião iluminam o chão. Dentro de casa, vela e fogão.
+- **Pássaros e cidade:** pássaros do sertão, pombos, semáforos, enfeites e fios da cidade.
+- **Festa na praça:** bandeirolas, barracas e palco.
+- **Mais leve:** só desenha o que aparece na tela, com cerca de 3 vezes menos triângulos.
 
 ## Novidades da 21.0 — visual 3D (fase 2)
 - **Casas por dentro em 3D:** os cômodos viram uma maquete com piso de tábua, paredes caiadas e móveis. Tocar no chão anda lá dentro.
@@ -85,7 +110,7 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 
 ## Passo 1 — Testar no celular (5 minutos)
 
-1. Passe `LidaNoSertao-21.0.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
+1. Passe `LidaNoSertao-23.0.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
 2. Jogue um pouco.
 3. Teste o botão voltar, o **Exportar save** e uma sala online com outro celular.
 
@@ -151,7 +176,7 @@ Depois do primeiro envio manual, o GitHub pode compilar e mandar cada versão no
 
 Sem esses segredos, o GitHub continua gerando um **APK de teste** a cada atualização (em **Actions**, na parte de baixo da execução, em "Artifacts").
 
-O número de versão da nuvem é automático (100, 200, 300…). Ele é sempre maior que o 87 deste envio.
+O número de versão da nuvem é automático (100, 200, 300…). Ele é sempre maior que o 88 deste envio.
 
 ## Avisos
 
