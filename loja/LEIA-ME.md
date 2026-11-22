@@ -1,4 +1,4 @@
-# Como colocar o Lida no Sertão na Play Store (versão 23.0)
+# Como colocar o Lida no Sertão na Play Store (versão 24.0)
 
 Tudo o que dá para preparar sem a sua conta já está pronto:
 
@@ -13,8 +13,8 @@ Os passos abaixo são os que **só você** pode fazer, porque pedem a sua conta 
 
 | Item | Onde |
 |---|---|
-| App para enviar à loja (`.aab`, versão 23.0.0, código 88, Android 16 / API 36) | enviado no chat: `LidaNoSertao-23.0.0.aab` |
-| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-23.0.0.apk` |
+| App para enviar à loja (`.aab`, versão 24.0.0, código 89, Android 16 / API 36) | enviado no chat: `LidaNoSertao-24.0.0.aab` |
+| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-24.0.0.apk` |
 | Chave de upload e senha | já enviadas antes no chat, em `chave_upload_lida.zip` (**é a mesma chave; guarde bem!**) |
 | Ícone 512 × 512 | `loja/imagens/icone_512.png` |
 | Banner 1024 × 500 | `loja/imagens/banner_1024x500.png` |
@@ -33,6 +33,23 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 - **Modo online:** funciona no app, ligando um celular direto no outro.
 - **Android 16 (API 36):** o app mira a versão que a Play Store exige para apps novos.
 - **Tela "Sobre e privacidade":** fica em Configurações. Os créditos agora incluem PeerJS e OpenStreetMap.
+
+## Novidades da 24.0 — acabamento do 3D
+- **Casas:**
+  - barra pintada na parede, janelas com moldura e folhas de madeira, porta com batente e degrau;
+  - a sede ganhou alpendre e chaminé.
+- **Cidade:** Igreja Matriz com torre, sino e cruz; prefeitura e banco com colunas; bandeira no mastro; lojas com toldo e letreiro.
+- **Dentro de casa:**
+  - fogão a lenha com panelas e fogo, cama com cabeceira e colcha;
+  - mesa com toalha, pratos e vela; baú, guarda-roupa, selas e quadros.
+- **Árvores:** com galhos e copa cheia; ipê florido, manga e caju com frutos.
+- **Veículos:** carros, ônibus e caminhões com rodas, faróis que acendem e lanternas.
+- **Ver através do telhado:** quando uma casa fica na frente do vaqueiro, a parte que tapa vira pontilhado.
+- **Ações do vaqueiro:**
+  - laço girando, aboio com a mão na boca, enxada, martelo, regar, dar comida, selar, acenar;
+  - o cavaleiro acompanha o sobe e desce do cavalo.
+- **Partículas:** poeira do galope, respingos da chuva e vaga-lumes nas noites das águas.
+- **Mais leve:** só monta o que aparece na tela e simplifica quem está longe.
 
 ## Novidades da 23.0 — gráficos 2.0
 - **Gente nova:**
@@ -110,7 +127,7 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 
 ## Passo 1 — Testar no celular (5 minutos)
 
-1. Passe `LidaNoSertao-23.0.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
+1. Passe `LidaNoSertao-24.0.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
 2. Jogue um pouco.
 3. Teste o botão voltar, o **Exportar save** e uma sala online com outro celular.
 
@@ -176,7 +193,7 @@ Depois do primeiro envio manual, o GitHub pode compilar e mandar cada versão no
 
 Sem esses segredos, o GitHub continua gerando um **APK de teste** a cada atualização (em **Actions**, na parte de baixo da execução, em "Artifacts").
 
-O número de versão da nuvem é automático (100, 200, 300…). Ele é sempre maior que o 88 deste envio.
+O número de versão da nuvem é automático (100, 200, 300…). Ele é sempre maior que o 89 deste envio.
 
 ## Avisos
 
