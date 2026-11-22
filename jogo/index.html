@@ -7175,7 +7175,7 @@ function cfgHTML(inGame) {
   h += `<div class="card"><b>Visual</b><p class="mut">HD-2D: câmera em perspectiva com profundidade, sombras do sol, luz das fogueiras e desfoque nas bordas, mantendo a pixel art. Clássico: o 2D de antes.</p><div class="ch">${opt('view', '3d', '3D (novo)')}${opt('view', 'hd2d', 'HD-2D')}${opt('view', '2d', 'Clássico 2D')}</div><b>Desfoque de profundidade</b><div class="ch">${opt('dof', true, 'Ligado')}${opt('dof', false, 'Desligado')}</div><b>Cenas curtas da lida</b><p class="mut">Caminhão boiadeiro, parto, brete, ladrão de gado… Desligue para ir direto ao resultado.</p><div class="ch">${opt('cenas', true, 'Ligadas')}${opt('cenas', false, 'Desligadas')}</div><b>Trânsito na cidade</b><div class="ch">${opt('transito', true, 'Ligado')}${opt('transito', false, 'Desligado')}</div></div>`;
   h += `<div class="card"><b>Conversas com IA</b><p class="mut">Na versão publicada, os moradores podem responder perguntas livres usando o Claude (pede sua permissão na primeira vez). Sem internet ou sem permissão, eles usam as falas do próprio jogo.</p><div class="ch">${opt('ia', true, 'Ligada')}${opt('ia', false, 'Desligada')}</div><b>Limite por dia</b><div class="ch">${opt('iaMax', 15, '15')}${opt('iaMax', 30, '30')}${opt('iaMax', 60, '60')}</div></div>`;
   h += `<div class="card"><b>Gráficos</b><div class="ch">${opt('q', 'alta', 'Alta resolução')}${opt('q', 'media', 'Desempenho')}${opt('q', 'leve', 'Modo leve')}</div><p class="mut">${SET.q === 'leve' ? 'Modo leve: resolução menor, até 30 quadros por segundo, visual 2D e menos aves. Ideal para celulares simples e para poupar bateria.' : SET.q === 'media' ? 'Desempenho: resolução menor, bom para a maioria dos celulares.' : 'Alta resolução: mais nitidez, pede um aparelho mais forte.'}</p><b>Modo de controle</b><div class="ch">${opt('mode', 'joy', 'Joystick')}${opt('mode', 'touch', 'Toque na tela')}</div><p class="mut">${SET.mode === 'touch' ? 'Toque no chão para ir até lá; toque duas vezes para correr ou galopar. Os botões de ação continuam na tela.' : 'Joystick virtual (ou WASD/setas no teclado). Segure “Correr” para correr ou galopar.'}</p><b>Tamanho dos botões</b><div class="ch">${opt('ctl', 1, 'Normal')}${opt('ctl', 1.2, 'Grandes')}</div><b>Orientação da tela</b><div class="ch">${opt('ori', 'livre', 'Livre')}${opt('ori', 'retrato', 'Retrato')}${opt('ori', 'paisagem', 'Paisagem')}</div><p class="mut">Travar a orientação só funciona em tela cheia no celular.</p><div class="row">${btn('Tela cheia', 'fs')}</div><b>Cenas dos leilões</b><div class="ch">${opt('aucCs', 'on', 'Mostrar')}${opt('aucCs', 'off', 'Pular sempre')}</div><b>Vibração</b><div class="ch">${opt('vib', true, 'Ligada')}${opt('vib', false, 'Desligada')}</div><b>Zoom</b><p class="mut">Use dois dedos na tela (pinça) ou a rodinha do mouse.</p><div class="row">${btn('Zoom padrão', 'zoomReset')}</div></div>`;
-  if (SET.view === '3d') h += `<div class="card"><b>Ajustes do 3D</b><p class="mut">O jeitão de PlayStation: imagem em baixa resolução e vértices que "tremem". Gire a câmera com ↺ ↻ (ou Z e X).</p><div class="ch">${opt('r3snap', true, 'Tremidinho PS1')}${opt('r3snap', false, 'Sem tremidinho')}</div><div class="ch" style="margin-top:6px">${opt('r3res', 'baixa', 'Nitidez baixa (mais leve)')}${opt('r3res', 'media', 'Nitidez média')}${opt('r3res', 'alta', 'Nitidez alta')}</div><div class="ch" style="margin-top:6px">${opt('r3cenas', true, 'Cenas em 3D')}${opt('r3cenas', false, 'Cenas em 2D')}</div><div class="row">${opt('r3tex', true, 'Com texturas')}${opt('r3tex', false, 'Sem texturas')}</div><div class="row">${opt('r3cam', 'baixa', 'Câmera baixa (com céu)')}${opt('r3cam', 'alta', 'Câmera alta')}</div></div>`;
+  if (SET.view === '3d') h += `<div class="card"><b>Ajustes do 3D</b><p class="mut">O jeitão de PlayStation: imagem em baixa resolução e vértices que "tremem". Gire a câmera com ↺ ↻ (ou Z e X).</p><div class="ch">${opt('r3snap', true, 'Tremidinho PS1')}${opt('r3snap', false, 'Sem tremidinho')}</div><div class="ch" style="margin-top:6px">${opt('r3res', 'baixa', 'Nitidez baixa (mais leve)')}${opt('r3res', 'media', 'Nitidez média')}${opt('r3res', 'alta', 'Nitidez alta')}</div><div class="ch" style="margin-top:6px">${opt('r3cenas', true, 'Cenas em 3D')}${opt('r3cenas', false, 'Cenas em 2D')}</div><div class="row">${opt('r3tex', true, 'Com texturas')}${opt('r3tex', false, 'Sem texturas')}</div><div class="row">${opt('r3cam', 'baixa', 'Câmera baixa (com céu)')}${opt('r3cam', 'alta', 'Câmera alta')}</div><div class="row">${opt('r3mato', true, 'Com mato')}${opt('r3mato', false, 'Sem mato (mais leve)')}${opt('r3morro', true, 'Com morros')}${opt('r3morro', false, 'Chão plano')}</div></div>`;
   h += kbHTML() + a11yHTML(opt);
   h += saveFileCard(inGame);
   h += `<div class="card"><b>ℹ️ Sobre e privacidade</b><p class="mut">Lida no Sertão ${GAME_V} · RF Games. O jogo não coleta dados pessoais, não tem anúncios nem compras. Os saves ficam só neste aparelho (desinstalar ou limpar os dados do navegador apaga). No modo online, os aparelhos dos vaqueiros se ligam direto entre si (o nome do vaqueiro, a posição e as mensagens do chat vão para os outros da sala); o código da sala passa pelo servidor público da PeerJS, só para os aparelhos se acharem.</p>${btn('Créditos e licenças', 'credits')}</div>`;
@@ -12323,9 +12323,9 @@ function r3Pedaco(cx, cy) {
       const bank = [0.45, 0.34, 0.22]; for (const [dx, dy, a, b] of [[1, 0, [X0 + TS, 0, Z0 + TS], [X0 + TS, 0, Z0]], [-1, 0, [X0, 0, Z0], [X0, 0, Z0 + TS]], [0, 1, [X0, 0, Z0 + TS], [X0 + TS, 0, Z0 + TS]], [0, -1, [X0 + TS, 0, Z0], [X0, 0, Z0]]]) { const nx = tx + dx, ny = ty + dy; if (nx < 0 || ny < 0 || nx >= MW || ny >= MH) continue; const g2 = ground[gi(nx, ny)]; if (g2 !== G.WATER && g2 !== G.BRIDGE) r3quad(B, [a[0], -3, a[2]], [b[0], -3, b[2]], b, a, bank); }
       continue; }
     if (g === G.BRIDGE) { r3quad(B, [X0, -3, Z0 + TS], [X0 + TS, -3, Z0 + TS], [X0 + TS, -3, Z0], [X0, -3, Z0], [0.2, 0.42, 0.66], 1); r3box(B, X0, -0.5, Z0, X0 + TS, 1, Z0 + TS, [0.52, 0.36, 0.2]); continue; }
-    { R3.mat = (R3.mc || (R3.mc = R3MATCHAO()))[g] || 0; const c = r3Chao(g, i, tx * 2, ty * 2, se), cv = (dx, dz) => { const h = (H2(tx * 2 + dx, ty * 2 + dz, 91) - 0.5) * 0.08; return [cl(c[0] + h, 0, 1), cl(c[1] + h, 0, 1), cl(c[2] + h * 0.7, 0, 1)]; }; // um ladrilho = 2 triângulos, com degradê nos cantos
+    { R3.mat = (R3.mc || (R3.mc = R3MATCHAO()))[g] || 0; R3.chao = 1; const c = r3Chao(g, i, tx * 2, ty * 2, se), cv = (dx, dz) => { const h = (H2(tx * 2 + dx, ty * 2 + dz, 91) - 0.5) * 0.08; return [cl(c[0] + h, 0, 1), cl(c[1] + h, 0, 1), cl(c[2] + h * 0.7, 0, 1)]; }; // um ladrilho = 2 triângulos, com degradê nos cantos
       const p00 = [X0, 0, Z0], p10 = [X0 + TS, 0, Z0], p01 = [X0, 0, Z0 + TS], p11 = [X0 + TS, 0, Z0 + TS], c00 = cv(0, 0), c10 = cv(2, 0), c01 = cv(0, 2), c11 = cv(2, 2);
-      r3v(B, ...p01, c01, 0, 1, 0); r3v(B, ...p11, c11, 0, 1, 0); r3v(B, ...p10, c10, 0, 1, 0); r3v(B, ...p01, c01, 0, 1, 0); r3v(B, ...p10, c10, 0, 1, 0); r3v(B, ...p00, c00, 0, 1, 0); R3.mat = 0; }
+      r3v(B, ...p01, c01, 0, 1, 0); r3v(B, ...p11, c11, 0, 1, 0); r3v(B, ...p10, c10, 0, 1, 0); r3v(B, ...p01, c01, 0, 1, 0); r3v(B, ...p10, c10, 0, 1, 0); r3v(B, ...p00, c00, 0, 1, 0); R3.mat = 0; R3.chao = 0; if (g === G.GRASS || g === G.PAST || g === G.DRY) r3Mato(B, tx, ty, g, i, se); }
     if (obj[i] === 1) r3Cerca(B, tx, ty);
   }
   for (const q of PROPS) { const tx = q.x / TS, ty = q.y / TS; if (tx >= x0 && tx < x1 && ty >= y0 && ty < y1) try { r3Prop(B, q); } catch (e) { } }
@@ -12405,9 +12405,10 @@ const R3VS = `#version 300 es
 precision highp float;
 layout(location=0) in vec3 aP; layout(location=1) in vec3 aC; layout(location=2) in vec3 aN; layout(location=3) in float aK;
 uniform mat4 uVP; uniform vec3 uEye, uSun, uAmb, uSunC; uniform float uT, uNight; uniform vec2 uSnap;
-uniform vec4 uL[12]; uniform vec3 uLC[12]; uniform int uLN;
+uniform vec4 uL[12]; uniform vec3 uLC[12]; uniform int uLN; uniform float uWind;
 out vec3 vC; out float vD; flat out float vM; out vec3 vW; out vec3 vNn;
 void main(){ vec3 p=aP; vec3 c=aC; float mt=floor((aK+0.01)/8.0); float kk=aK-mt*8.0; vM=mt; vNn=aN;
+  if(kk>3.5&&kk<4.5){ float w=sin(uT*2.2+p.x*0.07+p.z*0.05)+0.5*sin(uT*3.7+p.z*0.11+p.x*0.03); p.x+=w*uWind; p.z+=w*uWind*0.6; }
   if(kk>0.5&&kk<1.5){ float w=sin(p.x*0.15+uT*1.7)*0.6+sin(p.z*0.21+uT*1.3)*0.6; p.y+=w*0.5; c*=0.9+0.14*w; }
   vec4 cp=uVP*vec4(p,1.0);
   if(uSnap.x>0.0){ cp.xy=floor(cp.xy/cp.w*uSnap+0.5)/uSnap*cp.w; }
@@ -12415,7 +12416,7 @@ void main(){ vec3 p=aP; vec3 c=aC; float mt=floor((aK+0.01)/8.0); float kk=aK-mt
   float d=max(dot(normalize(aN),uSun),0.0); vec3 lit=c*(uAmb+uSunC*d);
   vec3 nn=normalize(aN); for(int i=0;i<12;i++){ if(i>=uLN) break; vec3 dv=uL[i].xyz-p; float dd=length(dv); float at=max(0.0,1.0-dd/uL[i].w); lit+=c*uLC[i]*at*at*(0.45+0.55*max(dot(nn,dv/max(dd,0.001)),0.0)); }
   if(kk>1.5&&kk<2.5) lit=mix(lit,vec3(1.0,0.86,0.5),uNight*0.9);
-  if(kk>2.5) lit=c;
+  if(kk>2.5&&kk<3.5) lit=c;
   vC=lit; vD=distance(p,uEye); vW=p; }`;
 const R3FS = `#version 300 es
 precision mediump float; precision mediump sampler2DArray; in vec3 vC; in float vD; flat in float vM; in vec3 vW; in vec3 vNn; uniform vec3 uFog; uniform vec2 uFogR; uniform sampler2DArray uTex; uniform float uTexOn; out vec4 o;
@@ -13037,6 +13038,44 @@ function r3Ceu(L) { const gl = R3.gl; if (!R3.PS) r3SkyInit(); const u = R3.us, 
   gl.disable(gl.DEPTH_TEST); gl.useProgram(R3.PS); gl.uniformMatrix4fv(u.uIVP, false, R3.M.IVP); gl.uniform3fv(u.uSun, L.sun); gl.uniform3fv(u.uTop, top); gl.uniform3fv(u.uHor, hor); gl.uniform3fv(u.uSerra, serra.map(v => v * (1 - n * 0.5)));
   gl.uniform1f(u.uNight, n); gl.uniform1f(u.uT, performance.now() / 1000); gl.uniform1f(u.uCloud, S.wx ? S.wx.ci || 0 : 0.2); gl.uniform1f(u.uRain, S.wx ? S.wx.ri || 0 : 0);
   gl.bindVertexArray(R3.tri); gl.drawArrays(gl.TRIANGLES, 0, 3); gl.bindVertexArray(null); gl.enable(gl.DEPTH_TEST); }
+
+/* ============ v23: MORROS, MATO E VENTO NO 3D ============
+   O campo aberto ganha morros suaves (perto de casa, cerca, água, estrada e cidade o chão fica plano, com transição macia).
+   Tufos de capim e florzinhas nascem no pasto (verde nas águas, palha na seca) e balançam com o vento junto com as copas.
+   Tudo que fica no chão (gente, bicho, árvore, pedra) acompanha a altura do terreno. */
+R3.dy = 0; R3.chao = 0;
+function r3Ruido(x, y) { const ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy, s = t => t * t * (3 - 2 * t), h = (a, b) => { const n = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return n - Math.floor(n); };
+  const a = h(ix, iy), b = h(ix + 1, iy), c = h(ix, iy + 1), d = h(ix + 1, iy + 1), u = s(fx), v = s(fy); return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; }
+function r3Mascara() { if (R3.mk && R3.mk.ver === R3.ver && R3.mk.n === MW * MH) return R3.mk.m; const n = MW * MH, m = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const g = ground[i]; m[i] = (g === G.GRASS || g === G.PAST || g === G.DRY) && !obj[i] ? 1 : 0; }
+  const zera = (x0, y0, x1, y1) => { for (let y = Math.max(0, y0); y <= Math.min(MH - 1, y1); y++) for (let x = Math.max(0, x0); x <= Math.min(MW - 1, x1); x++) m[gi(x, y)] = 0; };
+  for (const b of BLD) zera(b.r[0] - 2, b.r[1] - 2, b.r[2] + 2, b.r[3] + 3);
+  try { if (typeof LST !== 'undefined' && LST.ok) for (const s of LST.sedes) zera(s.tx - 2, s.ty - 2, s.tx + s.w + 2, s.ty + s.h + 2); if (typeof SR !== 'undefined' && SR.ok) for (const s of SR.casas) zera(s.tx - 2, s.ty - 2, s.tx + s.w + 2, s.ty + s.h + 2); } catch (e) { }
+  try { for (const k in (typeof S !== 'undefined' && S.lots) || {}) { const L = S.lots[k]; if (L && L.r) zera(L.r[0] - 1, L.r[1] - 1, L.r[2] + 1, L.r[3] + 1); } } catch (e) { }
+  const t = new Float32Array(n); for (let pass = 0; pass < 2; pass++) { for (let y = 0; y < MH; y++) { let acc = 0; for (let x = -3; x < MW + 3; x++) { if (x + 3 < MW) acc += m[gi(x + 3, y)]; if (x - 4 >= 0) acc -= m[gi(x - 4, y)]; if (x >= 0 && x < MW) t[gi(x, y)] = acc / 7; } }
+    for (let x = 0; x < MW; x++) { let acc = 0; for (let y = -3; y < MH + 3; y++) { if (y + 3 < MH) acc += t[gi(x, y + 3)]; if (y - 4 >= 0) acc -= t[gi(x, y - 4)]; if (y >= 0 && y < MH) m[gi(x, y)] = acc / 7; } } }
+  for (let i = 0; i < n; i++) m[i] = Math.max(0, Math.min(1, (m[i] - 0.15) / 0.85)); R3.mk = { ver: R3.ver, n, m }; return m; }
+function r3Alt(x, z) { if (SET.r3morro === false) return 0; const m = r3Mascara(), tx = x / TS - 0.5, ty = z / TS - 0.5, ix = Math.floor(tx), iy = Math.floor(ty); if (ix < 0 || iy < 0 || ix >= MW - 1 || iy >= MH - 1) return 0;
+  const fx = tx - ix, fy = ty - iy, k = m[gi(ix, iy)] * (1 - fx) * (1 - fy) + m[gi(ix + 1, iy)] * fx * (1 - fy) + m[gi(ix, iy + 1)] * (1 - fx) * fy + m[gi(ix + 1, iy + 1)] * fx * fy; if (k <= 0.001) return 0;
+  const n = r3Ruido(x / 210, z / 210) * 0.65 + r3Ruido(x / 90 + 7, z / 90 + 3) * 0.35; return Math.max(0, n - 0.38) * 26 * k; }
+{ const _v2 = r3v; r3v = function (B, x, y, z, c, nx, ny, nz, k) { return _v2(B, x, y + (R3.chao ? r3Alt(x, z) : R3.dy), z, c, nx, ny, nz, k); }; }
+const r3NoChao = (f, px) => function () { const p = px.apply(null, arguments); if (!p) return f.apply(this, arguments); const d0 = R3.dy, c0 = R3.chao; R3.dy = r3Alt(p[0], p[1]); R3.chao = 0; try { return f.apply(this, arguments); } finally { R3.dy = d0; R3.chao = c0; } };
+r3Prop = r3NoChao(r3Prop, (B, q) => [q.x, q.y - 2]); r3Cerca = r3NoChao(r3Cerca, (B, tx, ty) => [(tx + 0.5) * TS, (ty + 0.5) * TS]);
+r3Gente = r3NoChao(r3Gente, (B, x, z) => [x, z]); r3Bicho = r3NoChao(r3Bicho, (B, a, x, z) => [x, z]); r3Bicho2 = r3NoChao(r3Bicho2, (B, w) => [w.x, w.y]);
+r3Veiculo = r3NoChao(r3Veiculo, (B, x, z) => [x, z]); r3Ave = r3NoChao(r3Ave, (B, a) => [a.x, a.y]); r3Sombra = r3NoChao(r3Sombra, (B, x, z) => [x, z]);
+{ const _ws = r3w2s; r3w2s = function (wx, wy, h) { return _ws(wx, wy, (h || 0) + r3Alt(wx, wy)); }; }
+/* tufos de capim e flores */
+function r3Mato(B, tx, ty, g, i, se) { if (obj[i] || SET.r3mato === false) return; const gr = g === G.PAST ? cl((grass[i] || 0) / 255, 0, 1) : g === G.GRASS ? 0.7 : 0.35, R = mulberry(tx * 7919 + ty * 104729), n = Math.round(gr * (SET.q === 'leve' ? 1.2 : 2.6) * (0.6 + R() * 0.8)); if (n <= 0) return;
+  const seco = se || g === G.DRY, c0 = seco ? [0.72, 0.62, 0.36] : [0.34, 0.56, 0.2], c1 = seco ? [0.86, 0.76, 0.48] : [0.52, 0.74, 0.3], m0 = R3.mat; R3.mat = 0; R3.chao = 1;
+  for (let j = 0; j < n; j++) { const x = (tx + 0.1 + R() * 0.8) * TS, z = (ty + 0.1 + R() * 0.8) * TS, h = (3 + R() * 4) * (0.6 + gr * 0.6), v = (R() - 0.5) * 0.08, cb = c0.map(q => q * 0.75 + v), ct = c1.map(q => q + v);
+    for (let b = 0; b < 3; b++) { const a = R() * 6.28, dx = Math.cos(a) * 1.1, dz = Math.sin(a) * 1.1, lx = (R() - 0.5) * 2.4;
+      r3v(B, x - dx, 0, z - dz, cb, 0, 1, 0, 0); r3v(B, x + dx, 0, z + dz, cb, 0, 1, 0, 0); r3v(B, x + lx, h, z + lx * 0.5, ct, 0, 1, 0, 4); }
+    if (!seco && R() < 0.12) { const fc = [[0.95, 0.85, 0.2], [0.95, 0.95, 0.95], [0.85, 0.4, 0.75], [0.95, 0.5, 0.2]][Math.floor(R() * 4)], fy = h * 0.9; r3v(B, x - 1.2, fy, z, fc, 0, 1, 0, 4); r3v(B, x + 1.2, fy, z, fc, 0, 1, 0, 4); r3v(B, x, fy + 1.8, z, fc, 0, 1, 0, 4); } }
+  R3.mat = m0; R3.chao = 0; }
+/* copas balançam com o vento */
+{ const _bl2 = r3blob; r3blob = function (B, cx, cy, cz, rx, ry, rz, col, seed, seg) { const n0 = B.a.length; const r = _bl2(B, cx, cy, cz, rx, ry, rz, col, seed, seg); if (col[1] > col[0] * 1.08 && col[1] > col[2] && cy > 8) for (let j = n0 + 9; j < B.a.length; j += 10) { const kk = B.a[j] % 8; if (kk < 0.5) B.a[j] += 4; } return r; }; }
+{ const _lz2 = r3Luzes; r3Luzes = function (L, s) { _lz2(L, s); const gl = R3.gl; if (R3.u.uWind === undefined) R3.u.uWind = gl.getUniformLocation(R3.P, 'uWind'); gl.uniform1f(R3.u.uWind, s ? 0 : S.weather === 'tempestade' ? 2.2 : S.weather === 'vento' ? 1.6 : S.weather === 'chuva' ? 1.1 : 0.55); }; }
+{ const _so4 = A.setOpt; A.setOpt = v => { const r = _so4(v); if (/^r3(mato|morro)/.test(String(v))) { R3.mk = null; try { r3Dirty(); } catch (e) { } } return r; }; }
 
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
