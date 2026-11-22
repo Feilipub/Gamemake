@@ -12618,6 +12618,21 @@ function r3Caminhao(B, t) { const a = t.f > 0 ? 0 : Math.PI, W = { x: t.x, y: 0,
 { const _ra2 = r3Active; r3Active = function () { if (SET.view === '3d' && r3Supported() && mode === 'cs' && !IN.on && SET.r3cenas !== false) return true; return _ra2(); }; }
 { const _rd6 = render; render = function (dt) { if (SET.view === '3d' && IN.on && mode === 'cs' && r3Supported() && SET.r3cenas !== false) { try { if (r3RenderIn(dt)) return; } catch (e) { console.error(e); } } return _rd6(dt); }; }
 
+/* ============ v21: PESCA E CANOA EM 3D ============ */
+{ const _ra3 = r3Active; r3Active = function () { if (SET.view === '3d' && r3Supported() && mode === 'play' && !IN.on && typeof FS !== 'undefined' && FS.on && !(typeof VQ !== 'undefined' && VQ.on)) return true; return _ra3(); }; }
+{ const _rd7 = r3Dinamico; r3Dinamico = function () { const B = _rd7(); if (P.boat) { const h = R3.hd.P, a = h ? h.a : 0, W = { x: P.x, y: 0, z: P.y, ca: Math.cos(a), sa: Math.sin(a) }; r3bx(B, W, 0, -1.5, 0, 30, 4, 9, r3c('#6a4a2a')); r3bx(B, W, 0, 0.6, 0, 26, 0.6, 6, r3c('#8a6a42')); r3bx(B, W, 14, -0.5, 0, 4, 3, 5, r3c('#5a3a1a')); r3bx(B, W, -14, -0.5, 0, 4, 3, 5, r3c('#5a3a1a')); } return B; }; }
+{ const _so2 = r3Sobre; r3Sobre = function (L) { _so2(L); if (typeof FS === 'undefined' || !FS.on) return; const g = R3.og, B0 = BASE || 1;
+  const hx = P.x + FS.dx * 4, hz = P.y + FS.dy * 4, tipX = P.x + FS.dx * 22, tipZ = P.y + FS.dy * 22 + (FS.dx ? 0 : 0), hY = (P.boat ? 12 : 16) * 1.15, tY = hY + 14;
+  const [ax, ay] = r3w2s(hx, hz, hY), [tx, ty] = r3w2s(tipX, tipZ, tY); if (!isFinite(ax) || !isFinite(tx)) return;
+  g.strokeStyle = FS.rod === 'molinete' ? '#2a2a30' : '#a8844a'; g.lineWidth = Math.max(1.5, B0 * 0.9); g.beginPath(); g.moveTo(ax, ay); g.lineTo(tx, ty); g.stroke();
+  if (FS.st === 'aim' || FS.st === 'done' || FS.st === 'net') { g.strokeStyle = 'rgba(240,240,230,0.75)'; g.lineWidth = 1; g.beginPath(); g.moveTo(tx, ty); g.lineTo(tx, ty + 10 * B0); g.stroke(); return; }
+  let bx = FS.bx, bz = FS.by + 4, by = 0; if (FS.st === 'fly') { const u = Math.min(1, FS.t / 0.55); bx = lerp(tipX, FS.bx, u); bz = lerp(tipZ, FS.by + 4, u); by = lerp(tY, 0, u) + Math.sin(u * Math.PI) * 26; }
+  const sink = FS.st === 'bite' ? -2 : FS.st === 'fight' ? -1.5 : Math.sin(FS.t * 3) * 0.5, [sx, sy] = r3w2s(bx, bz, by + sink); if (!isFinite(sx)) return;
+  const sag = FS.st === 'fight' ? (1 - Math.min(1, FS.ten)) * 18 : 14; g.strokeStyle = 'rgba(240,240,230,0.8)'; g.lineWidth = 1; g.beginPath(); g.moveTo(tx, ty); g.quadraticCurveTo((tx + sx) / 2, Math.max(ty, sy) + sag * B0 * 0.5, sx, sy); g.stroke();
+  if (FS.st !== 'fight') { g.fillStyle = '#e83a2a'; g.fillRect(sx - 2 * B0 * 0.6, sy - 4 * B0 * 0.6, 4 * B0 * 0.6, 2.5 * B0 * 0.6); g.fillStyle = '#f8f0e0'; g.fillRect(sx - 2 * B0 * 0.6, sy - 1.5 * B0 * 0.6, 4 * B0 * 0.6, 2.5 * B0 * 0.6); }
+  if (FS.st === 'wait' || FS.st === 'bite' || FS.st === 'fight') { const n = 16, rr = FS.st === 'fight' ? 6 + Math.sin(FS.t * 9) * 1.5 : 4 + (FS.t % 1) * 4; g.strokeStyle = 'rgba(220,245,255,0.6)'; g.beginPath(); for (let i = 0; i <= n; i++) { const a2 = i / n * 6.2832, [qx, qy] = r3w2s(bx + Math.cos(a2) * rr, bz + Math.sin(a2) * rr * 0.6, -2.5); if (i) g.lineTo(qx, qy); else g.moveTo(qx, qy); } g.stroke(); }
+}; }
+
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
