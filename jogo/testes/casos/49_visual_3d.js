@@ -1,8 +1,8 @@
-// v20: visual 3D (fase 1) — mundo e bonecos em polígonos, câmera que gira, toque no chão, telas especiais no 2D, foto e opção nas Configurações
+// v20–v22: visual 3D — mundo e bonecos em polígonos, câmera que gira, toque no chão, telas especiais no 2D, foto e opção nas Configurações
 module.exports = { nome: 'Visual 3D: mundo, câmera, toque, telas especiais e foto', tempo: 300, async rodar(t) {
   await t.abrir({ ajustes: { view: '3d', cenas: false } }); await t.jogoNovo(); await t.ev('toast = () => {}; 0'); await t.espera(2500);
   const st = JSON.parse(await t.ev('JSON.stringify({ vis: R3.vis, st: R3.stats, hd: HD.on, c: C.style.opacity })'));
-  t.ok(st.vis && st.st.tris > 20000 && st.st.pedacos > 9 && !st.hd && st.c === '0', 'o 3D desenha o mundo no lugar do 2D ' + JSON.stringify(st));
+  t.ok(st.vis && st.st.tris > 8000 && st.st.pedacos + (st.st.cortados || 0) > 9 && !st.hd && st.c === '0', 'o 3D desenha o mundo no lugar do 2D ' + JSON.stringify(st));
   t.ok(await t.ev("(() => { cfgHTML; showOptions(); const ok = /data-v=.view\\|3d./.test($('mn').innerHTML); closeModal(); return ok; })()"), 'Configurações › Visual tem a opção 3D');
   // o toque no chão aponta para o lugar certo e a seta sabe projetar o 3D
   t.ok(await t.ev("(() => { const [sx, sy] = w2s(P.x + 40, P.y); const p = s2w(sx, sy); return isFinite(sx) && Math.hypot(p[0] - (P.x + 40), p[1] - P.y) < 3; })()"), 'tela ↔ mundo: tocar no chão acha o ponto certo');
@@ -19,5 +19,10 @@ module.exports = { nome: 'Visual 3D: mundo, câmera, toque, telas especiais e fo
   t.ok(await t.ev("(async () => { const im = new Image(); im.src = FOTO.last; await im.decode(); const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const g = c.getContext('2d'); g.drawImage(im, 0, 0); const d = g.getImageData(0, 0, c.width, c.height * 0.8).data; let mn = 255, mx = 0; for (let i = 0; i < d.length; i += 4 * 101) { mn = Math.min(mn, d[i + 1]); mx = Math.max(mx, d[i + 1]); } fotoSair(); return mx - mn > 50; })()"), 'o modo foto fotografa o 3D');
   // mapa muda → o 3D refaz o pedaço (porteira aberta/fechada aparece na hora)
   t.ok(await t.ev("(() => { const v0 = R3.ver; applyObjs(); return R3.ver > v0; })()"), 'mudança no mapa refaz o 3D');
+  // v22: luzes da noite, recorte da câmera, aves, enfeites e festa, carro-pipa
+  t.ok(await t.ev("(async () => { S.min = 21 * 60; S.fires.fog = 99999; S.fireLitAt = -99999; P.x = 17 * TS; P.y = 40 * TS; cam.snap = true; await new Promise(r => setTimeout(r, 1200)); return R3.luzes > 0 && R3.stats.cortados > 0; })()"), 'de noite a fogueira acende luz no 3D e o que está fora da tela não é desenhado');
+  t.ok(await t.ev("(() => { AVES.length = 0; for (const [k, st, z] of [['garca', 'idle', 0], ['garcaVaq', 'peck', 0], ['garca', 'pass', 40], ['urubu', 'circle', 80]]) AVES.push({ id: 990 + AVES.length, k, x: P.x + 20, y: P.y + 10, z, st, vx: 1, vy: 0, f: 1, ph: 0, an: 0, w: 0.3 }); const n0 = (() => { const a = AVES.splice(0); const n = r3Dinamico().n; AVES.push(...a); return n; })(); return r3Dinamico().n > n0 + 100; })()"), 'as aves entram no 3D');
+  t.ok(await t.ev("(() => { const ev0 = eventsOnDay; eventsOnDay = d => ['junina']; S.min = 20 * 60; let n = 0; try { const B = r3B(); r3Festa(B); n = B.n; } finally { eventsOnDay = ev0; } const B2 = r3B(); for (const o of CDECO) { if (o.k === 'semaforo') r3Semaforo(B2, o); else if (o.k === 'pombo') r3Pombo(B2, o); else r3CDeco(B2, o); } return n > 300 && B2.n > 300; })()"), 'festa na praça e enfeites da cidade em 3D');
+  t.ok(await t.ev("(() => { S.pipa = { due: S.day * 1440 + S.min - 200, on: 1, t: 0 }; pipaTick(); return S.pipa === null; })()"), 'o carro-pipa vai embora mesmo no 3D');
   t.semErros();
 } };

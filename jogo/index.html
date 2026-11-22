@@ -426,7 +426,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '21.0.0', SAVE_V = 9;
+const GAME_V = '22.0.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -12244,7 +12244,7 @@ function r3blob(B, cx, cy, cz, rx, ry, rz, col, seed, seg) { // copa de árvore:
 function r3bx(B, W, lx, ly, lz, sx, sy, sz, col, pv) {
   const hx = sx / 2, hy = sy / 2, hz = sz / 2, c = [];
   for (const [dx, dy, dz] of [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]]) { let x = lx + dx * hx, y = ly + dy * hy, z = lz + dz * hz;
-    if (pv) { const cr = Math.cos(pv[2]), sr = Math.sin(pv[2]), ox = x - pv[0], oy = y - pv[1]; x = pv[0] + ox * cr - oy * sr; y = pv[1] + ox * sr + oy * cr; }
+    if (pv) { const cr = Math.cos(pv[2]), sr = Math.sin(pv[2]), ox = x - pv[0], oy = y - pv[1]; x = pv[0] + ox * cr - oy * sr; y = pv[1] + ox * sr + oy * cr; if (pv[3]) { const cq = Math.cos(pv[3]), sq = Math.sin(pv[3]), oq = y - pv[1], nz = z * cq - oq * sq; y = pv[1] + oq * cq + z * sq; z = nz; } }
     c.push([W.x + x * W.ca - z * W.sa, W.y + y, W.z + x * W.sa + z * W.ca]); }
   const s1 = col.map(v => v * 0.82), s2 = col.map(v => v * 0.7), tp = col.map(v => Math.min(1, v * 1.08));
   r3quad(B, c[3], c[7], c[6], c[2], tp); r3quad(B, c[4], c[5], c[6], c[7], s1); r3quad(B, c[1], c[0], c[3], c[2], s1); r3quad(B, c[5], c[1], c[2], c[6], col); r3quad(B, c[0], c[4], c[7], c[3], s2); r3quad(B, c[0], c[1], c[5], c[4], s2);
@@ -12281,7 +12281,7 @@ function r3Prop(B, q) {
     case 'milho': { const c = r3c('#8ab040'); for (let i = 0; i < 3; i++) r3cyl(B, x + (i - 1) * 3, z, 0, 14, 0.8, 0.5, 3, c); return; }
     case 'cisterna': r3cyl(B, x, z, 0, 12, 7, 7, 8, r3c('#d8d4c8'), r3c('#8a8a88')); return;
     case 'coreto': { r3cyl(B, x, z, 0, 3, 16, 16, 8, r3c('#e8e0d0'), r3c('#d0c8b8')); for (let i = 0; i < 8; i++) { const a = i / 8 * 6.28; r3cyl(B, x + Math.cos(a) * 13, z + Math.sin(a) * 13, 3, 18, 0.9, 0.9, 4, r3c('#f4f0e8')); } r3cyl(B, x, z, 18, 26, 17, 1, 8, r3c('#b0502a')); return; }
-    case 'poste': r3cyl(B, x, z, 0, 26, 0.8, 0.8, 4, r3c('#4a4a4a')); r3box(B, x - 1, 25, z - 1, x + 3, 27, z + 1, r3c('#f0e0a0')); return;
+    case 'poste': { r3cyl(B, x, z, 0, 26, 0.8, 0.8, 4, r3c('#4a4a4a')); const n0 = B.a.length; r3box(B, x - 1, 25, z - 1, x + 3, 27, z + 1, r3c('#f0e0a0')); for (let j = n0 + 9; j < B.a.length; j += 10) B.a[j] = 2; return; }
     case 'palhoca': case 'tapera': case 'barraca': { r3box(B, x - 10, 0, z - 8, x + 10, 12, z + 8, r3c(t === 'barraca' ? '#e8d8b0' : '#b89060')); r3roof(B, x - 12, z - 10, x + 12, z + 10, 12, 8, r3c('#a88a4a'), true); return; }
     case 'placa': case 'placaHist': case 'placaLeilao': case 'placaTS': case 'placaPorto': case 'placaBarragem': case 'placaVereda': case 'placaMata': case 'placaFaz': case 'quadro': { r3box(B, x - 0.8, 0, z - 0.8, x + 0.8, 12, z + 0.8, r3c('#6a4422')); r3box(B, x - 8, 10, z - 1, x + 8, 18, z + 1, r3c('#a8743a')); return; }
     case 'fogueira': { for (let i = 0; i < 7; i++) { const a = i / 7 * 6.28; r3box(B, x + Math.cos(a) * 6 - 1.5, 0, z + Math.sin(a) * 6 - 1.5, x + Math.cos(a) * 6 + 1.5, 2.5, z + Math.sin(a) * 6 + 1.5, r3c('#8a8680')); } r3cyl(B, x, z, 0, 6, 3, 0.5, 4, r3c('#6a4a2a')); return; }
@@ -12405,6 +12405,7 @@ const R3VS = `#version 300 es
 precision highp float;
 layout(location=0) in vec3 aP; layout(location=1) in vec3 aC; layout(location=2) in vec3 aN; layout(location=3) in float aK;
 uniform mat4 uVP; uniform vec3 uEye, uSun, uAmb, uSunC; uniform float uT, uNight; uniform vec2 uSnap;
+uniform vec4 uL[12]; uniform vec3 uLC[12]; uniform int uLN;
 out vec3 vC; out float vD;
 void main(){ vec3 p=aP; vec3 c=aC;
   if(aK>0.5&&aK<1.5){ float w=sin(p.x*0.15+uT*1.7)*0.6+sin(p.z*0.21+uT*1.3)*0.6; p.y+=w*0.5; c*=0.9+0.14*w; }
@@ -12412,6 +12413,7 @@ void main(){ vec3 p=aP; vec3 c=aC;
   if(uSnap.x>0.0){ cp.xy=floor(cp.xy/cp.w*uSnap+0.5)/uSnap*cp.w; }
   gl_Position=cp;
   float d=max(dot(normalize(aN),uSun),0.0); vec3 lit=c*(uAmb+uSunC*d);
+  vec3 nn=normalize(aN); for(int i=0;i<12;i++){ if(i>=uLN) break; vec3 dv=uL[i].xyz-p; float dd=length(dv); float at=max(0.0,1.0-dd/uL[i].w); lit+=c*uLC[i]*at*at*(0.45+0.55*max(dot(nn,dv/max(dd,0.001)),0.0)); }
   if(aK>1.5&&aK<2.5) lit=mix(lit,vec3(1.0,0.86,0.5),uNight*0.9);
   if(aK>2.5) lit=c;
   vC=lit; vD=distance(p,uEye); }`;
@@ -12428,7 +12430,7 @@ function r3Init() {
   R3.cv = mk(); R3.ov = mk(); R3.og = R3.ov.getContext('2d'); R3.cv.parentElement.insertBefore(R3.ov, R3.cv.nextSibling);
   const gl = R3.gl = R3.cv.getContext('webgl2', { antialias: false, alpha: false, premultipliedAlpha: false, preserveDrawingBuffer: false }); if (!gl) throw new Error('sem WebGL2');
   R3.P = hdProg(gl, R3VS, R3FS).p; R3.PB = hdProg(gl, R3BVS, R3BFS).p;
-  R3.u = {}; for (const n of ['uVP', 'uEye', 'uSun', 'uAmb', 'uSunC', 'uT', 'uNight', 'uSnap', 'uFog', 'uFogR']) R3.u[n] = gl.getUniformLocation(R3.P, n); R3.uS = gl.getUniformLocation(R3.PB, 'uS');
+  R3.u = {}; for (const n of ['uVP', 'uEye', 'uSun', 'uAmb', 'uSunC', 'uT', 'uNight', 'uSnap', 'uFog', 'uFogR', 'uLN']) R3.u[n] = gl.getUniformLocation(R3.P, n); R3.u.uL = gl.getUniformLocation(R3.P, 'uL[0]'); R3.u.uLC = gl.getUniformLocation(R3.P, 'uLC[0]'); R3.uS = gl.getUniformLocation(R3.PB, 'uS');
   R3.fb = gl.createFramebuffer(); R3.ft = gl.createTexture(); R3.fd = gl.createRenderbuffer(); R3.tri = gl.createVertexArray(); R3.dynB = { vao: gl.createVertexArray(), vb: gl.createBuffer(), n: 0, dyn: true };
 }
 function r3Resize() {
@@ -12461,18 +12463,18 @@ function r3Render(dt) {
   // pedaços: refaz no máximo 2 por quadro
   let refeitos = 0; const usar = [];
   for (let cy = ccy - R3R; cy <= ccy + R3R; cy++) for (let cx = ccx - R3R; cx <= ccx + R3R; cx++) { if (cx < 0 || cy < 0 || cx * R3C >= MW || cy * R3C >= MH) continue; const key = cx + ',' + cy; let ch = R3.chunks.get(key);
-    if ((!ch || ch.ver !== R3.ver) && (refeitos < 2 || !ch)) { refeitos++; const g = r3Upload(r3Pedaco(cx, cy), ch && ch.g); ch = { g, ver: R3.ver }; R3.chunks.set(key, ch); R3.rebuilt++; } if (ch) usar.push(ch); }
+    if ((!ch || ch.ver !== R3.ver) && (refeitos < 2 || !ch)) { refeitos++; const g = r3Upload(r3Pedaco(cx, cy), ch && ch.g); ch = { g, ver: R3.ver, cx, cy }; R3.chunks.set(key, ch); R3.rebuilt++; } if (ch) usar.push(ch); }
   if (R3.chunks.size > 120) for (const [k, ch] of R3.chunks) { const [cx, cy] = k.split(',').map(Number); if (Math.abs(cx - ccx) > R3R + 3 || Math.abs(cy - ccy) > R3R + 3) { gl.deleteBuffer(ch.g.vb); gl.deleteVertexArray(ch.g.vao); R3.chunks.delete(k); } }
   const D = r3Dinamico(); R3.dynB = r3Upload(D, R3.dynB);
   const L = r3Luz(); gl.bindFramebuffer(gl.FRAMEBUFFER, R3.fb); gl.viewport(0, 0, R3.lw, R3.lh); gl.clearColor(L.sky[0], L.sky[1], L.sky[2], 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE); gl.disable(gl.BLEND); gl.useProgram(R3.P); const u = R3.u;
-  gl.uniformMatrix4fv(u.uVP, false, R3.M.VP); gl.uniform3fv(u.uEye, R3.eye); gl.uniform3fv(u.uSun, L.sun); gl.uniform3fv(u.uAmb, L.amb); gl.uniform3fv(u.uSunC, L.sc); gl.uniform1f(u.uT, performance.now() / 1000); gl.uniform1f(u.uNight, L.n);
+  gl.uniformMatrix4fv(u.uVP, false, R3.M.VP); gl.uniform3fv(u.uEye, R3.eye); gl.uniform3fv(u.uSun, L.sun); gl.uniform3fv(u.uAmb, L.amb); gl.uniform3fv(u.uSunC, L.sc); gl.uniform1f(u.uT, performance.now() / 1000); gl.uniform1f(u.uNight, L.n); r3Luzes(L, null);
   gl.uniform2f(u.uSnap, SET.r3snap === false ? 0 : R3.lw / 2, SET.r3snap === false ? 0 : R3.lh / 2); gl.uniform3fv(u.uFog, L.sky); gl.uniform2f(u.uFogR, L.fog[0], L.fog[1]);
-  let tris = 0; for (const ch of usar) { gl.bindVertexArray(ch.g.vao); gl.drawArrays(gl.TRIANGLES, 0, ch.g.n); tris += ch.g.n / 3; }
+  let tris = 0, cortados = 0; for (const ch of usar) { if (r3ForaDaTela(ch)) { cortados++; continue; } gl.bindVertexArray(ch.g.vao); gl.drawArrays(gl.TRIANGLES, 0, ch.g.n); tris += ch.g.n / 3; }
   gl.bindVertexArray(R3.dynB.vao); gl.drawArrays(gl.TRIANGLES, 0, R3.dynB.n); tris += R3.dynB.n / 3; gl.bindVertexArray(null);
   // amplia a imagem pequena para a tela (pixel grande, como no PS1)
   gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H); gl.disable(gl.DEPTH_TEST); gl.useProgram(R3.PB); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, R3.ft); gl.uniform1i(R3.uS, 0); gl.bindVertexArray(R3.tri); gl.drawArrays(gl.TRIANGLES, 0, 3); gl.bindVertexArray(null);
-  R3.stats = { tris: Math.round(tris), pedacos: usar.length, res: R3.lw + 'x' + R3.lh }; R3.drawn = true;
+  R3.stats = { tris: Math.round(tris), pedacos: usar.length - cortados, cortados, res: R3.lw + 'x' + R3.lh }; R3.drawn = true;
   r3Sobre(L);
 }
 function r3w2s(wx, wy, h) { const v = M4.xf(R3.M.VP, [wx, h || 0, wy, 1]); if (v[3] <= 0) return [NaN, NaN]; return [(v[0] / v[3] * 0.5 + 0.5) * W, (1 - (v[1] / v[3] * 0.5 + 0.5)) * H]; }
@@ -12595,7 +12597,7 @@ function r3RenderIn(dt) {
   if (!IN.lie) { const h = r3Rumo('inP', IN.x, IN.y, r3DirA(IN.dir)); r3Sombra(B, IN.x, IN.y, 5); r3Gente(B, IN.x, IN.y, h.a, S.cf.ap, h.ph, h.mv, { sentado: !!IN.seat }); }
   R3.dynB = r3Upload(B, R3.dynB); const L = r3Luz(), am = L.amb.map(v => Math.min(0.85, v + 0.22));
   gl.bindFramebuffer(gl.FRAMEBUFFER, R3.fb); gl.viewport(0, 0, R3.lw, R3.lh); gl.clearColor(0.05, 0.035, 0.02, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); gl.enable(gl.DEPTH_TEST); gl.useProgram(R3.P); const u = R3.u;
-  gl.uniformMatrix4fv(u.uVP, false, VP); gl.uniform3fv(u.uEye, eye); gl.uniform3fv(u.uSun, norm3([0.3, 0.9, 0.5])); gl.uniform3fv(u.uAmb, am); gl.uniform3fv(u.uSunC, [0.35 * (1 - L.n * 0.6), 0.33 * (1 - L.n * 0.6), 0.3 * (1 - L.n * 0.6)]); gl.uniform1f(u.uT, performance.now() / 1000); gl.uniform1f(u.uNight, L.n);
+  gl.uniformMatrix4fv(u.uVP, false, VP); gl.uniform3fv(u.uEye, eye); gl.uniform3fv(u.uSun, norm3([0.3, 0.9, 0.5])); gl.uniform3fv(u.uAmb, am); gl.uniform3fv(u.uSunC, [0.35 * (1 - L.n * 0.6), 0.33 * (1 - L.n * 0.6), 0.3 * (1 - L.n * 0.6)]); gl.uniform1f(u.uT, performance.now() / 1000); gl.uniform1f(u.uNight, L.n); r3Luzes(L, r);
   gl.uniform2f(u.uSnap, SET.r3snap === false ? 0 : R3.lw / 2, SET.r3snap === false ? 0 : R3.lh / 2); gl.uniform3fv(u.uFog, [0.05, 0.035, 0.02]); gl.uniform2f(u.uFogR, 4000, 5000);
   gl.bindVertexArray(R3.dynB.vao); gl.drawArrays(gl.TRIANGLES, 0, R3.dynB.n); gl.bindVertexArray(null);
   gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H); gl.disable(gl.DEPTH_TEST); gl.useProgram(R3.PB); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, R3.ft); gl.uniform1i(R3.uS, 0); gl.bindVertexArray(R3.tri); gl.drawArrays(gl.TRIANGLES, 0, 3); gl.bindVertexArray(null);
@@ -12639,7 +12641,7 @@ const R3WILD = { tatu: ['#8a7a68', 9, 4, 3], raposa: ['#8a8a86', 13, 6, 6], tama
 function r3Bicho2(B, w, ang) { // bicho do mato
   const K = WKIND[w.k] || {}, W = { x: w.x, y: K.sky ? 70 : 0, z: w.y, ca: Math.cos(ang), sa: Math.sin(ang) };
   if (K.snake) { const c = r3c(w.k === 'coral' ? '#c83a2a' : w.k === 'cascavel' ? '#a8905a' : w.k === 'jiboia' ? '#6a6a3a' : '#7a6a4a'); for (let i = 0; i < 6; i++) r3bx(B, W, 6 - i * 3, 0.9, Math.sin(i * 1.2 + performance.now() / 300) * 2, 3.2, 1.8, 1.8, i % 2 && w.k === 'coral' ? [0.1, 0.1, 0.1] : c); return; }
-  if (K.sky) { const c = r3c('#7a5a3a'), bat = Math.sin(performance.now() / 120) * 0.5; r3bx(B, W, 0, 0, 0, 7, 2.5, 3, c); r3bx(B, W, 0, 0, 5, 4, 0.6, 8, c, [0, 0, bat]); r3bx(B, W, 0, 0, -5, 4, 0.6, 8, c, [0, 0, -bat]); return; }
+  if (K.sky) { const c = r3c('#7a5a3a'), bat = Math.sin(performance.now() / 120) * 0.5; r3bx(B, W, 0, 0, 0, 7, 2.5, 3, c); r3bx(B, W, 0, 0, 5, 4, 0.6, 8, c, [0, 0, 0, bat]); r3bx(B, W, 0, 0, -5, 4, 0.6, 8, c, [0, 0, 0, -bat]); return; }
   const [cor, L, Hb, legH] = R3WILD[w.k] || ['#7a6a5a', 10, 5, 4], c = r3c(cor), h = R3.hd['w' + (w.id || w.k)] || { ph: 0, mv: 0 }, sw = Math.sin(h.ph) * 0.5 * (h.mv || 0);
   if (K.bird) { r3bx(B, W, 0, legH + Hb / 2, 0, L, Hb, L * 0.7, c); r3bx(B, W, L * 0.5, legH + Hb + 1.5, 0, 3, 3, 3, c); r3bx(B, W, L * 0.5 + 2, legH + Hb + 1.2, 0, 2, 0.8, 0.8, r3c('#e8a020')); for (const z of [-1, 1]) r3bx(B, W, 0, legH / 2, z, 0.6, legH, 0.6, r3c('#c88a3a'), [0, legH, sw * z]); return; }
   r3bx(B, W, 0, legH + Hb / 2, 0, L, Hb, Hb * 0.9, c); r3bx(B, W, L / 2 + 2, legH + Hb * 0.7, 0, 5, Hb * 0.8, Hb * 0.7, c.map(v => v * 0.92));
@@ -12658,6 +12660,133 @@ function r3Veiculo(B, x, z, ang, tipo, cor) { const W = { x, y: 0, z, ca: Math.c
   try { for (const v of vehs()) { if (!v || v.x === undefined || !perto(v.x, v.y)) continue; const h = r3Rumo('vh' + (v.id || v.kind || 'c'), v.x, v.y); const W = { x: v.x, y: 0, z: v.y, ca: Math.cos(h.a), sa: Math.sin(h.a) }; r3bx(B, W, -6, 9, 0, 22, 6, 16, r3c('#8a5a2a')); r3bx(B, W, -6, 13, 0, 22, 1, 16, r3c('#a87a48')); r3bx(B, W, 8, 8, 0, 14, 1.2, 2, r3c('#6a4422')); for (const dz of [-9, 9]) { const cx2 = v.x + (-6) * W.ca - dz * W.sa, cz2 = v.y + (-6) * W.sa + dz * W.ca; r3cyl(B, cx2, cz2, 0, 0.1, 7, 7, 8, r3c('#5a3a1a'), r3c('#6a4422')); } } } catch (e) { }
   try { for (const v of TRAF.list) { const [x, y] = vehXY(v); if (!perto(x, y) || v.a < 0.05) continue; const ang = v.l.ax === 'x' ? (v.l.d > 0 ? 0 : Math.PI) : (v.l.d > 0 ? Math.PI / 2 : -Math.PI / 2); r3Veiculo(B, x, y, ang, v.type, v.col); if (v.type === 'moto' || v.type === 'bike') r3Gente(B, x, y, ang, v._ap || (typeof riderAp === 'function' ? (v._ap = riderAp(v)) : null), 0, 0, { sentado: true, y: 2 }); } } catch (e) { }
   return B; }; }
+
+/* ============ v22: LUZES DA NOITE NO 3D — postes, fogueira, janelas, lampião e fogo iluminam o chão e os bonecos ============
+   Luz por vértice (como no PlayStation): até 12 luzes perto da câmera, mais fortes quanto mais escuro. A fogueira ganha
+   chamas que dançam, brasa e fumaça; a lâmpada do poste e a vela da mesa acendem de noite. */
+const R3LMAX = 12;
+function r3Luzes(L, sala) {
+  const gl = R3.gl, u = R3.u; if (!u.uL) return; const n = L.n, out = [];
+  const add = (x, y, z, r, c, f) => { if (f > 0.01) out.push([x, y, z, r, c[0] * f, c[1] * f, c[2] * f]); };
+  const fl = performance.now() / 1000, tremor = 0.88 + Math.sin(fl * 9) * 0.07 + Math.sin(fl * 23) * 0.05;
+  if (sala) {
+    const T = TS; for (const f of sala.furn || []) { if (f.cond && !f.cond() || !f.t) continue; const [tx, ty, tw, th] = f.t, x1 = (tx + tw) * T - 1, z0 = ty * T + 1;
+      if (f.k === 'mesa' && (hour() >= 17.5 || hour() < 6)) add(x1 - 6, 24, z0 + 6, 70, [1, 0.78, 0.42], 1.1 * tremor);
+      if (f.k === 'fogao' && IN.fire > 0) add(tx * T + 6, 26, z0 + 8, 60, [1, 0.5, 0.18], 1.2 * tremor); }
+  } else {
+    const T = R3.T, perto = (x, z, m) => Math.abs(x - T[0]) < m && Math.abs(z - T[1]) < m, noite = n;
+    if (noite > 0.05) for (const p of PROPS) { if (p.t === 'poste' && perto(p.x, p.y, 520)) add(p.x + 1, 30, p.y - 2, 80, [1, 0.82, 0.5], 1.15 * noite); }
+    for (const p of PROPS) { if (p.t === 'fogueira' && perto(p.x, p.y, 560)) { const lv = fireLevel(); if (lv > 0) add(p.x, 10, p.y - 2, 50 + 55 * lv, [1, 0.55, 0.2], (0.35 + noite * 1.3) * tremor * (0.5 + lv * 0.5)); }
+      if (p.t === 'churrasqueira' && S.fires && S.fires.churr > 0 && perto(p.x, p.y, 520)) add(p.x, 16, p.y - 2, 55, [1, 0.5, 0.2], (0.3 + noite) * tremor); }
+    if (noite > 0.15) for (const b of BLD) { if (/galpao|deposito|Galp|Est$/.test(b.id)) continue; const x = (b.r[0] + b.r[2] + 1) / 2 * TS, z = (b.r[3] + 1) * TS + 4; if (perto(x, z, 520)) add(x, 14, z, 46, [1, 0.8, 0.5], 0.75 * noite); }
+    for (const f of (S.fogo || [])) { const x = (f[0] + 0.5) * TS, z = (f[1] + 0.5) * TS; if (perto(x, z, 500)) add(x, 12, z, 60, [1, 0.45, 0.15], (0.4 + noite) * tremor); }
+    if (noite > 0.05) { const lamp = (typeof has === 'function' && has('lampiao')) || P.cart; add(P.x, lamp ? 22 : 16, P.y, lamp ? 80 : 34, lamp ? [1, 0.8, 0.45] : [0.7, 0.72, 0.85], (lamp ? 1.2 : 0.5) * noite * (lamp ? tremor : 1)); }
+    if (noite > 0.2 && typeof TRAF !== 'undefined' && TRAF.list) for (const v of TRAF.list) { try { const q = vehXY(v); if (q && perto(q[0], q[1], 420)) add(q[0], 8, q[1], 50, [1, 0.95, 0.75], 0.7 * noite); } catch (e) { } }
+  }
+  const cx = sala ? 0 : R3.T[0], cz = sala ? 0 : R3.T[1]; out.sort((a, b) => ((a[0] - cx) ** 2 + (a[2] - cz) ** 2) - ((b[0] - cx) ** 2 + (b[2] - cz) ** 2)); out.length = Math.min(out.length, R3LMAX);
+  const P4 = new Float32Array(R3LMAX * 4), C3 = new Float32Array(R3LMAX * 3); out.forEach((l, i) => { P4.set([l[0], l[1], l[2], l[3]], i * 4); C3.set([l[4], l[5], l[6]], i * 3); });
+  gl.uniform4fv(u.uL, P4); gl.uniform3fv(u.uLC, C3); gl.uniform1i(u.uLN, out.length); R3.luzes = out.length;
+}
+/* chamas da fogueira e da churrasqueira, com fumaça */
+{ const _rd9 = r3Dinamico; r3Dinamico = function () { const B = _rd9(), T = R3.T, t = performance.now() / 1000;
+  for (const p of PROPS) { if ((p.t !== 'fogueira' && p.t !== 'churrasqueira') || Math.abs(p.x - T[0]) > 560 || Math.abs(p.y - T[1]) > 560) continue;
+    const x = p.x, z = p.y - 2, lv = p.t === 'fogueira' ? fireLevel() : (S.fires && S.fires.churr > 0 ? 0.6 : 0); if (lv <= 0) continue; const y0 = p.t === 'fogueira' ? 3 : 12, k = p.t === 'fogueira' ? 1 : 0.6;
+    const n0 = B.a.length; r3cyl(B, x, z, y0 - 1, y0 + 0.5, 4 * k, 4 * k, 6, [1, 0.35, 0.08], null);
+    for (let i = 0; i < 5; i++) { const a = i / 5 * 6.28 + t * 0.7, rr = (i ? 2.6 : 0) * k, h = (6 + 8 * lv) * k * (0.75 + 0.25 * Math.sin(t * 11 + i * 2.3)) * (i ? 0.7 : 1), cor = i ? [1, 0.55 + 0.1 * Math.sin(t * 7 + i), 0.12] : [1, 0.85, 0.35];
+      const fx = x + Math.cos(a) * rr, fz = z + Math.sin(a) * rr; r3cyl(B, fx, fz, y0, y0 + h, (i ? 1.8 : 2.4) * k, 0, 4, cor, null); }
+    for (let j = n0 + 9; j < B.a.length; j += 10) B.a[j] = 3;
+    for (let i = 0; i < 4; i++) { const ph = ((t * 0.35 + i / 4) % 1), sy = y0 + 10 + ph * 34, s = (1.5 + ph * 4) * k, g = 0.55 + 0.2 * (1 - ph); r3blob(B, x + Math.sin(t * 0.8 + i * 1.7) * (2 + ph * 6), sy, z - ph * 4, s, s * 0.8, s, [g, g, g * 1.02], 3 + i, 4); } }
+  return B; }; }
+/* só desenha os pedaços do mapa que aparecem na tela (caixa do pedaço contra a câmera) */
+function r3ForaDaTela(ch) { if (ch.cx === undefined || !R3.M) return false; const m = R3.M.VP, x0 = ch.cx * R3C * TS - 40, z0 = ch.cy * R3C * TS - 40, x1 = x0 + R3C * TS + 80, z1 = z0 + R3C * TS + 80;
+  let fx0 = 0, fx1 = 0, fy0 = 0, fy1 = 0, fw = 0; for (const x of [x0, x1]) for (const y of [0, 90]) for (const z of [z0, z1]) { const v = M4.xf(m, [x, y, z, 1]); if (v[0] < -v[3]) fx0++; if (v[0] > v[3]) fx1++; if (v[1] < -v[3]) fy0++; if (v[1] > v[3]) fy1++; if (v[3] <= 0) fw++; }
+  return fx0 === 8 || fx1 === 8 || fy0 === 8 || fy1 === 8 || fw === 8; }
+
+/* ============ v22: PÁSSAROS, ENFEITES DA CIDADE E FESTAS NO 3D ============
+   As aves do sertão voam, pousam e nadam em 3D; a cidade ganha semáforos, pombos, lixeiras, floreiras, placas, bancas,
+   árvores da calçada e os fios entre os postes; a praça se enfeita com bandeirolas, barracas e palco nos dias de festa.
+   Também: o "!" das missões, o brilho das lembranças, Seu Bené no porto, os donos das fazendas do Leste e o carro-pipa. */
+function r3Ave(B, a) {
+  const D = BIRDS[a.k]; if (!D || a.st === 'dive') return; const s = D.s || 1, c = D.c || ['#8a8a8a', '#9a9a9a', '#7a7a7a', '#6a6a6a', '#e8a020', '#c88a3a'];
+  const fly = a.z > 2 && a.st !== 'perch' && a.st !== 'hover' || a.st === 'pass' || a.st === 'circle', swim = a.st === 'swim', perch = a.st === 'perch' || a.st === 'hover';
+  const ang = a.st === 'circle' ? (a.an || 0) + Math.PI / 2 * Math.sign(a.w || 1) : (a.vx || a.vy) ? Math.atan2(a.vy || 0, a.vx || 0) : (a.f < 0 ? Math.PI : 0);
+  const y = swim ? 0.5 : perch && a.z <= 2 ? 10 : a.z, W = { x: a.x, y, z: a.y, ca: Math.cos(ang), sa: Math.sin(ang) }, legH = swim || fly ? 0 : (D.ll || 4) * s * 0.55;
+  const bl = 6 * s, bh = 3 * s, bw = 3.2 * s, body = r3c(c[0]), asa = r3c(c[1] || c[0]), bico = r3c(c[4] || '#e8a020'), perna = r3c(c[5] || '#c88a3a');
+  r3bx(B, W, 0, legH + bh / 2, 0, bl, bh, bw, body); r3bx(B, W, -bl / 2 - (D.tl || 2) * s * 0.6, legH + bh * 0.6, 0, (D.tl || 2) * s * 1.2, bh * 0.4, bw * 0.7, asa);
+  const nk = (D.nk || 2) * s * (fly ? 0.3 : 0.8), pk = a.st === 'peck' && Math.floor(a.ph * 4) % 2 ? -nk * 0.8 : 0;
+  r3bx(B, W, bl / 2, legH + bh * 0.7 + nk / 2 + pk / 2, 0, 1.4 * s, nk + 0.5, 1.4 * s, body); r3bx(B, W, bl / 2 + 0.8 * s, legH + bh * 0.8 + nk + pk, 0, 2.6 * s, 2.4 * s, 2.2 * s, r3c(c[2] || c[0]));
+  r3bx(B, W, bl / 2 + 2.1 * s + (D.bl || 2) * s * 0.35, legH + bh * 0.75 + nk + pk, 0, (D.bl || 2) * s * 0.7, 0.8 * s, 0.8 * s, bico);
+  if (fly) { const bat = a.st === 'circle' || (a.st === 'pass' && s > 1.5) ? 0.08 : Math.sin((a.ph || 0) * 9 + a.id) * 0.7, wl = 5 * s * (s > 1.4 ? 1.3 : 1);
+    for (const sg of [1, -1]) r3bx(B, W, 0, bh * 0.8, sg * (bw / 2 + wl / 2), bl * 0.6, 0.5, wl, asa, [0, bh * 0.8, 0, sg * bat]); }
+  else if (!swim) { for (const z of [-0.7, 0.7]) r3bx(B, W, 0, legH / 2, z * s, 0.5, legH, 0.5, perna); r3bx(B, W, 0, legH + bh * 0.85, 0, bl * 0.7, bh * 0.4, bw + 0.4, asa); }
+  if (perch && a.z <= 2) { r3cyl(B, a.x + 4, a.y, 0, 10, 0.7, 0.7, 4, r3c('#6a4a2a')); r3bx(B, { x: a.x, y: 0, z: a.y, ca: 1, sa: 0 }, 0, 9.5, 0, 12, 1, 1, r3c('#6a4a2a')); }
+  if (a.z > 2) r3Sombra(B, a.x, a.y, s * 3.5);
+}
+function r3Pombo(B, o) {
+  const t = performance.now() / 1000 + o.ph, dP = Math.hypot(P.x - o.x, P.y - o.y), now = performance.now() / 1000; if (dP < 34 && !o.fly3) { o.fly3 = now; AU.nz && AU.nz(0.3, 0.03, 'highpass', 1800, 2); } if (o.fly3 && now - o.fly3 > 14) o.fly3 = 0;
+  let x = o.x + Math.sin(t * 0.4) * 6, up = 0, ang = Math.cos(t * 0.4) > 0 ? 0 : Math.PI; if (o.fly3) { const k = now - o.fly3; up = Math.min(90, k * 60); x += k * 30 * (o.ph % 2 ? 1 : -1); ang = o.ph % 2 ? 0 : Math.PI; if (up >= 90) return; }
+  const W = { x, y: up, z: o.y, ca: Math.cos(ang), sa: Math.sin(ang) }, g = r3c('#8a8a96'), peck = !o.fly3 && Math.floor(t * 2) % 3 === 0;
+  r3bx(B, W, 0, 2, 0, 4.4, 2.4, 2.6, g); r3bx(B, W, 2.4, peck ? 1.6 : 3.6, 0, 1.8, 1.8, 1.8, r3c('#6a6a78')); r3bx(B, W, 3.6, peck ? 1.4 : 3.4, 0, 1, 0.5, 0.5, r3c('#e8a020'));
+  if (o.fly3) { const b = Math.sin(now * 40) * 0.8; for (const sg of [1, -1]) r3bx(B, W, 0, 2.8, sg * 3, 3, 0.4, 4, r3c("#9a9aa6"), [0, 2.8, 0, sg * b]); } else r3Sombra(B, x, o.y, 2.5);
+}
+function r3Semaforo(B, o) { const x = o.x, z = o.y - 1, st = typeof lightOf === 'function' ? lightOf(o.ax) : 'g';
+  r3cyl(B, x, z, 0, 28, 0.8, 0.8, 4, r3c('#4a4a52')); r3box(B, x - 3, 27, z - 2, x + 3, 40, z + 2, r3c('#1e1e22'));
+  for (const [k, yy, on, off] of [['r', 37, [1, 0.2, 0.15], [0.3, 0.08, 0.06]], ['y', 33.5, [1, 0.78, 0.15], [0.3, 0.24, 0.06]], ['g', 30, [0.25, 0.9, 0.35], [0.06, 0.25, 0.1]]]) {
+    const n0 = B.a.length; r3box(B, x - 1.6, yy - 1.4, z + 2, x + 1.6, yy + 1.4, z + 2.6, st === k ? on : off); if (st === k) for (let j = n0 + 9; j < B.a.length; j += 10) B.a[j] = 3; } }
+function r3CDeco(B, o) { const x = o.x, z = o.y - 1, k = o.k;
+  switch (k) {
+    case 'lixeira': r3cyl(B, x, z, 0, 9, 3, 3.4, 6, r3c('#3a7a3a'), r3c('#2a5a2a')); return;
+    case 'floreira': r3box(B, x - 7, 0, z - 3, x + 7, 5, z + 3, r3c('#b0a898')); for (let i = 0; i < 4; i++) r3blob(B, x - 5 + i * 3.4, 7, z, 2.4, 2, 2.4, r3c(['#e04a6a', '#f0c030', '#e8e8f0', '#d0402a'][i]), i + Math.floor(x), 4); return;
+    case 'hidrante': r3cyl(B, x, z, 0, 7, 2, 2, 6, r3c('#d83a2a'), r3c('#e8c020')); r3box(B, x - 3.5, 3.5, z - 1, x + 3.5, 5, z + 1, r3c('#c83020')); return;
+    case 'pare': case 'velocidade': r3cyl(B, x, z, 0, 20, 0.6, 0.6, 4, r3c('#9a9aa0')); if (k === 'pare') r3cyl(B, x, z + 0.6, 17, 18, 5, 5, 8, r3c('#d8302a'), r3c('#d8302a')); else r3box(B, x - 4, 15, z, x + 4, 23, z + 1, r3c('#f0f0f0')); return;
+    case 'placaRua': r3cyl(B, x, z, 0, 22, 0.6, 0.6, 4, r3c('#4a4a52')); r3box(B, x - 9, 19, z - 0.5, x + 9, 24, z + 0.5, r3c('#2a6aa8')); return;
+    case 'arvoreCalc': r3cyl(B, x, z, 0, 14, 1.4, 1.2, 5, r3c('#6a4a2a')); r3blob(B, x, 20, z, 9, 7, 9, r3c('#4a8a3a'), Math.floor(x), 6); r3box(B, x - 5, 0, z - 5, x + 5, 0.6, z + 5, r3c('#8a6a42')); return;
+    case 'banca': r3box(B, x - 12, 0, z - 8, x + 12, 16, z + 4, r3c('#2a6a3a')); r3box(B, x - 14, 16, z - 10, x + 14, 18, z + 7, r3c('#1e4a2a')); r3box(B, x - 10, 6, z + 4, x + 10, 12, z + 5, r3c('#e8d8b0')); return;
+    case 'pipoca': case 'acaraje': r3box(B, x - 7, 4, z - 4, x + 7, 12, z + 4, r3c(k === 'pipoca' ? '#d83a2a' : '#e8e0d0')); for (const dx of [-5, 5]) r3cyl(B, x + dx, z + 4, 0, 3, 2, 2, 6, r3c('#2a2a2a')); r3cyl(B, x, z, 12, 22, 0.5, 0.5, 4, r3c('#9a9aa0')); r3cyl(B, x, z, 22, 25, 10, 1, 8, r3c(k === 'pipoca' ? '#f0e050' : '#e85a2a')); return;
+    case 'bicicletario': for (let i = 0; i < 4; i++) r3box(B, x - 9 + i * 6, 0, z - 0.4, x - 8 + i * 6, 6, z + 0.4, r3c('#9a9aa0')); r3box(B, x - 9, 5.4, z - 0.4, x + 10, 6.2, z + 0.4, r3c('#9a9aa0')); return;
+    case 'motoParada': r3Veiculo(B, x, z, 0, 'moto', o.c || '#c83a2a'); return;
+  }
+}
+/* enfeites fixos da cidade entram nos pedaços do chão */
+{ const _rpd = r3Pedaco; r3Pedaco = function (cx, cy) { const B = _rpd(cx, cy), x0 = cx * R3C * TS, y0 = cy * R3C * TS, x1 = x0 + R3C * TS, y1 = y0 + R3C * TS;
+  for (const o of CDECO) if (o.k !== 'semaforo' && o.k !== 'pombo' && o.x >= x0 && o.x < x1 && o.y >= y0 && o.y < y1) try { r3CDeco(B, o); } catch (e) { }
+  try { const L = PROPS.filter(q => q.t === 'poste' && q.y > 44 * TS && q.y < 46.5 * TS).sort((a, b) => a.x - b.x); const fio = r3c('#26262a');
+    for (let i = 0; i + 1 < L.length; i++) { const a = L[i], b = L[i + 1]; if (b.x - a.x > 9 * TS || a.x < x0 || a.x >= x1 || a.y < y0 || a.y >= y1) continue;
+      for (const off of [0, 2.5]) for (let s = 0; s < 8; s++) { const u0 = s / 8, u1 = (s + 1) / 8, h0 = 25 - off - Math.sin(u0 * Math.PI) * 5, h1 = 25 - off - Math.sin(u1 * Math.PI) * 5, xa = a.x + (b.x - a.x) * u0, xb = a.x + (b.x - a.x) * u1, za = a.y - 2 + (b.y - a.y) * u0, zb = a.y - 2 + (b.y - a.y) * u1;
+        r3quad(B, [xa, h0, za], [xb, h1, zb], [xb, h1 + 0.5, zb], [xa, h0 + 0.5, za], fio); } } } catch (e) { }
+  return B; }; }
+/* enfeites de festa na praça */
+function r3Festa(B) { const ev = evToday(), m = calDate().m, bands = [];
+  if (ev && EVENTS[ev].place === 'praca') { if (ev === 'junina' || ev === 'forro' || ev === 'agro') for (let r = 0; r < 4; r++) { const y = (46.6 + r * 2.8) * TS - 2; bands.push([79.5 * TS, y, 88.5 * TS, y]); }
+    for (const [bx, by] of EV_STALLS) { const x = bx * TS, z = by * TS - 2, cor = r3c(ev === 'agro' ? '#3a7ab0' : '#c83a2a'); for (const dx of [-10, 10]) r3cyl(B, x + dx, z, 0, 20, 0.8, 0.8, 4, r3c('#7a4a22')); r3box(B, x - 11, 7, z - 4, x + 11, 11, z + 4, r3c('#b08a50'));
+      for (let i = 0; i < 4; i++) r3quad(B, [x - 12 + i * 6, 20, z + 6], [x - 6 + i * 6, 20, z + 6], [x - 6 + i * 6, 23, z - 6], [x - 12 + i * 6, 23, z - 6], i % 2 ? [0.95, 0.94, 0.9] : cor); }
+    if (ev === 'forro' || ev === 'junina') { const x = 84 * TS, z = 51.4 * TS - 6; r3box(B, x - 18, 0, z - 8, x + 18, 5, z + 6, r3c('#8a5a2e')); const t = performance.now() / 250, f = Math.floor(t) % 2;
+      r3Gente(B, x - 8, z, Math.PI / 2, { sex: 'M', skin: 2, hair: 0, hairC: 1, hat: 3, shirt: 1, shirtC: 4, pants: 0, pantsC: 3 }, t, 0.6, { y: 5 }); r3box(B, x - 11, 9 + f, z + 1, x - 5, 14 + f, z + 3, r3c('#c83a2a'));
+      r3Gente(B, x + 8, z, Math.PI / 2, { sex: 'M', skin: 4, hair: 1, hairC: 0, hat: 0, shirt: 1, shirtC: 2, pants: 0, pantsC: 2 }, t + 1, 0.6, { y: 5 }); r3cyl(B, x + 8, z + 3, 10 - f, 14 - f, 2.6, 2.6, 6, r3c('#d8d8e0')); }
+    if (ev === 'junina') { const x = 84 * TS, z = 53.4 * TS; for (let i = 0; i < 6; i++) { const a = i / 6 * 6.28; r3cyl(B, x, z, 0, 10, 0.8, 0.8, 3, r3c('#6a4a2a')); r3box(B, x + Math.cos(a) * 3 - 1, 0, z + Math.sin(a) * 3 - 1, x + Math.cos(a) * 3 + 1, 9, z + Math.sin(a) * 3 + 1, r3c('#6a4a2a')); }
+      const n0 = B.a.length, t = performance.now() / 1000; for (let i = 0; i < 4; i++) r3cyl(B, x + Math.cos(i * 1.6 + t) * 2, z + Math.sin(i * 1.6) * 2, 4, 14 + Math.sin(t * 9 + i) * 3, 2.6, 0, 4, i ? [1, 0.5, 0.12] : [1, 0.85, 0.35]); for (let j = n0 + 9; j < B.a.length; j += 10) B.a[j] = 3; } }
+  if (m === 5 || m === 6) for (const [x0, y0, x1, y1] of [[80.5, 47.5, 87.5, 47.5], [80.5, 56.5, 87.5, 56.5], [80.5, 47.5, 87.5, 56.5], [87.5, 47.5, 80.5, 56.5]]) bands.push([x0 * TS, y0 * TS, x1 * TS, y1 * TS]);
+  const cols = ['#e83a2a', '#f0c020', '#2a8ae0', '#3ab04a', '#f07ab0', '#ffffff'].map(r3c), t = performance.now() / 1000;
+  for (const [ax, ay, bx, by] of bands) { const n = 18; for (let i = 0; i < n; i++) { const u = (i + 0.5) / n, x = ax + (bx - ax) * u, z = ay + (by - ay) * u, h = 30 - Math.sin(u * Math.PI) * 6, dx = (bx - ax) / n * 0.4, dz = (by - ay) / n * 0.4, sw = Math.sin(t * 2 + i) * 0.8;
+    r3tri(B, [x - dx, h, z - dz], [x + dx, h, z + dz], [x + sw, h - 4, z + sw * 0.5], cols[i % cols.length], 3); r3quad(B, [x - dx * 1.3, h, z - dz * 1.3], [x + dx * 1.3, h, z + dz * 1.3], [x + dx * 1.3, h + 0.4, z + dz * 1.3], [x - dx * 1.3, h + 0.4, z - dz * 1.3], [0.3, 0.24, 0.18]); } }
+}
+{ const _rd10 = r3Dinamico; r3Dinamico = function () { const B = _rd10(), T = R3.T, perto = (x, y, m) => Math.abs(x - T[0]) < (m || 600) && Math.abs(y - T[1]) < (m || 600);
+  try { for (const a of AVES) if (perto(a.x, a.y)) r3Ave(B, a); } catch (e) { }
+  try { for (const o of CDECO) { if (!perto(o.x, o.y)) continue; if (o.k === 'semaforo') r3Semaforo(B, o); else if (o.k === 'pombo') r3Pombo(B, o); } } catch (e) { }
+  try { if (perto(84 * TS, 51 * TS, 700)) r3Festa(B); } catch (e) { }
+  try { const bx = 76.2 * TS, by = 162.5 * TS, h = hour(); if (h >= 5.5 && h < 18.5 && perto(bx, by)) { const ang = Math.atan2(P.y - by, P.x - bx); r3Sombra(B, bx + 4, by, 5); r3Gente(B, bx + 4, by, Math.hypot(P.x - bx, P.y - by) < 90 ? ang : Math.PI / 2, BENE_AP, 0, 0); if (Math.random() < 0.002 && Math.hypot(P.x - bx, P.y - by) < 90) say('Seu Bené: ' + pick(['Ô moço, peixe fresquinho aqui!', 'Vai uma vara aí? Hoje o rio tá pra peixe.', 'Quer alugar a canoa?']), 2600); }
+    if (S.boat && !P.boat && perto(S.boat.x, S.boat.y)) { const W = { x: S.boat.x, y: 0, z: S.boat.y, ca: 1, sa: 0 }, c = r3c('#7a4a22'); r3bx(B, W, 0, 1.5, 0, 30, 3, 9, c); r3bx(B, W, 0, 3.2, 0, 26, 0.6, 7, r3c('#5a3418')); r3bx(B, W, 16, 2, 0, 4, 2, 5, c); r3bx(B, W, -16, 2, 0, 4, 2, 5, c); } } catch (e) { }
+  try { if (typeof LST !== 'undefined' && LST.ok && lfOwnerHere()) for (const k in LESTE_F) { const [x, y] = lfOwnerPos(k); if (!perto(x, y)) continue; const look = Math.hypot(P.x - x, P.y - y) < 60; r3Sombra(B, x, y, 5); r3Gente(B, x, y, look ? Math.atan2(P.y - y, P.x - x) : Math.PI / 2, LF_AP[k], 0, 0); } } catch (e) { }
+  try { if (S.pipa && S.pipa.on) { const [cx, cy] = fpx('cistern'); S.pipa.t += 0.016; if (S.pipa.t > 30) S.pipa = null; else if (perto(cx, cy)) { r3Caminhao(B, { x: cx + 34, y: cy + 26, f: -1, col: '#2a5a9a' }); r3cyl(B, cx + 26, cy + 26, 14, 30, 9, 9, 8, r3c('#d8d8d8')); } } } catch (e) { }
+  return B; }; }
+/* "!" das missões e brilho das lembranças por cima do 3D */
+{ const _so3 = r3Sobre; r3Sobre = function (L) { _so3(L); if (mode !== 'play') return; const g = R3.og, B0 = BASE || 1, t = performance.now() / 1000;
+  const marca = (x, y, h) => { const [sx, sy0] = r3w2s(x, y, h); if (!isFinite(sx) || sx < -20 || sx > W + 20 || sy0 < -20 || sy0 > H + 20) return; const sy = sy0 + Math.sin(t * 5) * 2 * B0, w = 5 * B0;
+    g.fillStyle = '#2b1608'; g.fillRect(sx - w / 2 - B0, sy - 12 * B0, w + 2 * B0, 9 * B0); g.fillRect(sx - w / 2 - B0, sy - 1 * B0, w + 2 * B0, 4 * B0); g.fillStyle = '#ffd34a'; g.fillRect(sx - w / 2, sy - 11 * B0, w, 7 * B0); g.fillRect(sx - w / 2, sy, w, 2 * B0); };
+  try { for (const m of misActive()) { if (m.data.ids) for (const i of m.data.ids) { const a = byId(i); if (a) marca(a.x, a.y, 30); } if (m.k === 'cerca') { const [x, y] = m.data.tiles[0]; marca((x + 0.5) * TS, (y + 0.5) * TS, 22); } } } catch (e) { }
+  try { for (const s of memSpots()) { const [sx, sy] = r3w2s(s.x * TS, s.y * TS, 14); if (!isFinite(sx) || sx < 0 || sx > W || sy < 0 || sy > H) continue; g.globalAlpha = 0.45 + Math.sin(t * 4 + s.x) * 0.35; g.fillStyle = '#fff4c0'; g.fillRect(sx - B0, sy - 3 * B0, 2 * B0, 6 * B0); g.fillRect(sx - 3 * B0, sy - B0, 6 * B0, 2 * B0); } g.globalAlpha = 1; } catch (e) { g.globalAlpha = 1; } }; }
+/* o carro-pipa vai embora sozinho mesmo sem o desenho 2D (antes ele podia ficar "a caminho" para sempre no 3D) */
+{ const _pt = pipaTick; pipaTick = function () { _pt(); if (S.pipa && S.pipa.on && S.day * 1440 + S.min - S.pipa.due > 90) S.pipa = null; }; }
 
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
