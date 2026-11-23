@@ -13374,6 +13374,24 @@ const R3AUTO = { ema: 0, t: 0, passo: 0 };
 /* luar: a noite no 3D fica azulada e dá para enxergar o caminho */
 { const _lu = r3Luz; r3Luz = function () { const L = _lu(); const n = L.n || 0; if (n > 0.05) { L.amb = L.amb.map((v, i) => v + [0.05, 0.06, 0.09][i] * n); L.sc = L.sc.map((v, i) => v + [0.09, 0.11, 0.19][i] * n); L.sun = norm3([0.35, 0.8, -0.3].map((v, i) => v * n + L.sun[i] * (1 - n))); } return L; }; }
 { const _lz5 = r3Luzes; r3Luzes = function (L, sala) { _lz5(L, sala); const gl = R3.gl, u = R3.u; if (u.uNuv === undefined) u.uNuv = gl.getUniformLocation(R3.P, 'uNuv'); gl.uniform1f(u.uNuv, sala || SET.r3somb === false ? 0 : (S && S.wx ? cl(S.wx.ci * 1.1 + 0.18, 0, 1) : 0.3) * (1 - (L.n || 0))); }; }
+/* ============ v26: CERCAS DE VERDADE (pela referência de fotos do sertão) ============
+   Pasto: estacas tortas de pau com 4 fios de arame. Curral e brete: cerca de varas — varas tortas empilhadas entre
+   esteios grossos, como nos currais da caatinga. Galinheiro: esteios com tela. */
+function r3Cerca2(B, tx, ty) { const x = (tx + 0.5) * TS, z = (ty + 0.5) * TS, st = typeof fenceStyleAt === 'function' ? fenceStyleAt(tx, ty) : 'a', R = mulberry(tx * 7919 + ty * 131), ok = (a, b) => a >= 0 && b >= 0 && a < MW && b < MH && (obj[gi(a, b)] === 1 || obj[gi(a, b)] === 2);
+  const pau = () => { const v = R(); return v < 0.33 ? r3c('#8a7258') : v < 0.66 ? r3c('#6e5a46') : r3c('#9a8a70'); }, lean = (R() - 0.5) * 0.12, viz = [[1, 0], [0, 1]].filter(([dx, dy]) => ok(tx + dx, ty + dy));
+  if (st === 'm') { // cerca de varas
+    r3Seg(B, { x, y: 0, z, ca: 1, sa: 0 }, 0, 14 + R() * 2, 0, Math.PI + lean, 15, 2.6, 2.6, pau());
+    for (const [dx, dy] of viz) { const L = TS; for (let i = 0; i < 6; i++) { const y0 = 1.5 + i * 2.1 + (R() - 0.5) * 0.8, y1 = y0 + (R() - 0.5) * 1.6, t0 = (R() - 0.5) * 1.2, c = pau(), w = 0.8 + R() * 0.5;
+        if (dx) { const W2 = { x: x + L / 2, y: 0, z: z + t0, ca: 1, sa: 0 }; r3bx(B, W2, 0, (y0 + y1) / 2, 0, L + 4 + R() * 3, w, w, c, [0, (y0 + y1) / 2, Math.atan2(y1 - y0, L)]); }
+        else { const W2 = { x: x + t0, y: 0, z: z + L / 2, ca: 0, sa: 1 }; r3bx(B, W2, 0, (y0 + y1) / 2, 0, L + 4 + R() * 3, w, w, c, [0, (y0 + y1) / 2, Math.atan2(y1 - y0, L)]); } } } return; }
+  r3Seg(B, { x, y: 0, z, ca: 1, sa: 0 }, 0, st === 't' ? 13 : 11, 0, Math.PI + lean, st === 't' ? 13 : 11.5, 1.5, 1.5, pau());
+  const n0 = B.a.length, m0 = R3.mat; R3.mat = 0;
+  for (const [dx, dy] of viz) { const ex = x + dx * TS, ez = z + dy * TS;
+    if (st === 't') { const c = [0.72, 0.74, 0.76]; for (let i = 0; i <= 4; i++) { const u = i / 4, px = x + (ex - x) * u, pz = z + (ez - z) * u; r3box(B, px - 0.15, 0, pz - 0.15, px + 0.15, 11, pz + 0.15, c); } for (const y of [0.5, 3, 5.5, 8, 10.5]) r3quad(B, [x, y, z], [ex, y, ez], [ex, y + 0.25, ez], [x, y + 0.25, z], c); }
+    else { const c = [0.24, 0.23, 0.22]; for (const y of [3, 5.5, 8, 10.2]) { const sag = 0.5; r3quad(B, [x, y, z], [(x + ex) / 2, y - sag, (z + ez) / 2], [(x + ex) / 2, y - sag + 0.4, (z + ez) / 2], [x, y + 0.4, z], c); r3quad(B, [(x + ex) / 2, y - sag, (z + ez) / 2], [ex, y, ez], [ex, y + 0.4, ez], [(x + ex) / 2, y - sag + 0.4, (z + ez) / 2], c); } } }
+  R3.mat = m0; }
+r3Cerca = r3NoChao(r3ComMat(R3MAT.casca, r3Cerca2), (B, tx, ty) => [(tx + 0.5) * TS, (ty + 0.5) * TS]);
+
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
