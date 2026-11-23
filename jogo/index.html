@@ -13397,6 +13397,29 @@ function r3Cerca2(B, tx, ty) { const x = (tx + 0.5) * TS, z = (ty + 0.5) * TS, s
   R3.mat = m0; }
 r3Cerca = r3NoChao(r3ComMat(R3MAT.casca, r3Cerca2), (B, tx, ty) => [(tx + 0.5) * TS, (ty + 0.5) * TS]);
 
+/* ============ v26: CAATINGA DE VERDADE (pela referência de fotos) ============
+   Mandacaru em candelabro (tronco curto, vários braços subindo, gomos e flor branca nas águas); na seca a caatinga
+   perde as folhas: umbuzeiro, barriguda, caju e cajazeira viram galhada cinza retorcida (o juazeiro continua verde). */
+function r3Mandacaru(B, x, z, R, v) { const c = r3c('#3e7a4a'), cc = r3c('#4e8a56'), H = 26 + v * 16, m0 = R3.mat; R3.mat = 0;
+  const gomo = (cx, cz, y0, y1, r) => { r3cyl(B, cx, cz, y0, y1, r, r * 0.92, 8, c, cc); for (let i = 0; i < 4; i++) { const a = i / 4 * 6.28 + 0.4; r3box(B, cx + Math.cos(a) * r * 0.95 - 0.2, y0, cz + Math.sin(a) * r * 0.95 - 0.2, cx + Math.cos(a) * r * 0.95 + 0.2, y1 - 0.4, cz + Math.sin(a) * r * 0.95 + 0.2, cc.map(q => q * 1.1)); } };
+  gomo(x, z, 0, H, 2.8); const nb = 2 + Math.floor(R() * 4);
+  for (let i = 0; i < nb; i++) { const a = i / nb * 6.28 + R() * 0.8, d = 4.5 + R() * 3, y0 = 6 + R() * H * 0.35, h = H * (0.45 + R() * 0.4), ax = x + Math.cos(a) * d, az = z + Math.sin(a) * d;
+    r3cyl(B, (x + ax) / 2, (z + az) / 2, y0 - 1.6, y0 + 1.6, 2.1, 2.1, 6, c, cc); gomo(ax, az, y0, y0 + h, 2.1); if (!season() && R() < 0.4) r3blob(B, ax, y0 + h + 1.2, az, 1.6, 1.2, 1.6, [0.97, 0.96, 0.9], i, 5); }
+  R3.mat = m0; }
+const R3SECA = { umbu: 1, barriguda: 1, caju: 1, cajazeira: 1, ipe: 1, mata1: 0, mata2: 0, juazeiro: 0, manga: 0, inga: 0, jatoba: 0 };
+function r3Galhada(B, q, T0, R, v) { const x = q.x, z = q.y - 2, [cc, H, rr, tc] = T0, h = H * (0.85 + v * 0.3), g = r3c('#8a8478'), g2 = r3c('#6e6a60'), m0 = R3.mat; R3.mat = R3MAT.casca;
+  r3cyl(B, x, z, 0, h * 0.5, 2.2, 1.5, 6, g2);
+  const galho = (x0, y0, z0, a, el, L, w, n) => { const x1 = x0 + Math.cos(a) * Math.cos(el) * L, z1 = z0 + Math.sin(a) * Math.cos(el) * L, y1 = y0 + Math.sin(el) * L, W2 = { x: x0, y: y0, z: z0, ca: Math.cos(a), sa: Math.sin(a) };
+    r3Seg(B, { x: x0, y: 0, z: z0, ca: Math.cos(a), sa: Math.sin(a) }, 0, y0, 0, Math.PI - (Math.PI / 2 - el), L, w, w, n % 2 ? g : g2); if (n > 0) for (let k = 0; k < 2; k++) galho(x1, y1, z1, a + (R() - 0.5) * 1.6, el + (R() - 0.4) * 0.5, L * 0.62, w * 0.65, n - 1); };
+  const nG = 3 + Math.floor(R() * 2); for (let i = 0; i < nG; i++) galho(x, h * 0.45, z, i / nG * 6.28 + v * 3, 0.7 + R() * 0.4, rr * 0.55, 1.1, 2);
+  if (R() < 0.35) { R3.mat = 0; for (let i = 0; i < 4; i++) r3blob(B, x + (R() - 0.5) * rr, h * (0.7 + R() * 0.25), z + (R() - 0.5) * rr, 2.2, 1.6, 2.2, r3c(cc).map(q => q * 0.85), i, 4); }
+  R3.mat = m0; }
+{ const _pp3 = r3Prop; r3Prop = function (B, q) { const R = mulberry(Math.floor(q.x * 7 + (q.y - 2) * 13)), v = R();
+  if (q.t === 'mandacaru' && SET.r3arv !== false) return r3Mandacaru(B, q.x, q.y - 2, R, v);
+  const T0 = R3TREE[q.t]; if (T0 && season() && R3SECA[q.t] && SET.r3arv !== false && (q.x * 13 + q.y * 7) % 10 < 8) return r3Galhada(B, q, T0, R, v);
+  return _pp3(B, q); }; }
+r3Prop = r3NoChao(r3Prop, (B, q) => [q.x, q.y - 2]);
+
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
