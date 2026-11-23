@@ -1,4 +1,4 @@
-# Relatório: sessão de gráficos e animação (v21 → v25)
+# Relatório: sessão de gráficos e animação (v21 → v27)
 
 ## Avaliação sincera do ponto de partida
 
@@ -68,6 +68,45 @@ Na v20, o 3D era uma homenagem ao PlayStation 1. Mesmo assim, ficava abaixo dos 
 - **Casas por dentro:** câmera mais perto no celular em pé.
 - **Bichos:** corpo mais arredondado.
 - **Testes:** o teste do fogo no pasto não depende mais da sorte.
+
+### v26 — Desenhado a partir de fotos reais do sertão
+- **Vaqueiro encourado:** guarda-peito, gibão, perneiras e barbicacho.
+- **Arreio completo:** cabeçada, rédeas, peitoral e estribos.
+- **Cavalos:** sinais (estrela, lista e meias) e crina caída.
+- **Caatinga:** mandacaru em candelabro, galhada seca, macambira, lajedos de granito e xique-xique.
+- **Casas e cidade:** sede viva (fumaça, lenha, potes, rede), sobrados e arena de vaquejada.
+- **Gente:** cachorros, idosos de bengala e gestos parados (mão na cintura, braços cruzados).
+- **Cenário:** carros de boi com rodas em pé, redemoinho de poeira, peixes pulando e lampião com mariposas.
+- **Beira do mapa:** a caatinga continua até o horizonte.
+
+### v27 — Tamanhos reais e o estilo dos desenhos do jogador
+- **Escala única:** 1 unidade ≈ 5 cm, e o vaqueiro mede 1,75 m. Antes, as portas estavam 2,5 vezes pequenas demais e as árvores 5 vezes.
+  - casas ×2,05; cercas ×1,75; árvores ×2,3 a 2,4; postes ×2,2;
+  - carros ×1,45 no comprimento e ×1,75 na altura;
+  - cavalos e bois ×1,3; cães ×0,74.
+- **Vaqueiro como nos desenhos:** cabeça e chapéu maiores, aba larga, copa baixa com amassado, camisa xadrez, lenço vermelho grande e rosto mais claro.
+- **Cavalo alazão:** mais claro e alaranjado, crina escura, baixeiro de couro e laço enrolado na sela.
+- **Laço:** a argola gira acima do chapéu.
+- **Cercas e porteiras:** cerca de três varas grossas, mourões com topo cortado e porteira com travessas em X.
+- **Estradas de terra:** dois sulcos de roda e capim nas beiradas.
+- **Câmera:** mais alta, e o que tapa o vaqueiro some em pontilhado.
+
+#### Comparação com os desenhos (`production/qa/evidence/v27_comparacao_desenhos.png`)
+| Elemento | Bate com o desenho? | O que ainda difere |
+|---|---|---|
+| Chapéu (aba larga, copa amassada, marrom) | sim | — |
+| Camisa xadrez azul, lenço vermelho, calça e bota marrons | sim | o xadrez é mais fino |
+| Barba e cabeça grande | sim | o rosto fica mais escuro com a luz do sol do 3D |
+| Cavalo alazão com crina escura e sela marrom | quase | o corpo é mais quadrado (feito de blocos) |
+| Laço girando sobre a cabeça | sim | — |
+| Cerca de varas, porteira em X, arame farpado | sim | — |
+| Estrada com sulcos e capim na beira | sim | — |
+| Iluminação chapada de pixel art | não | o jogo é 3D com sol e sombra; o desenho é 2D isométrico |
+
+**Avaliação sincera:**
+- Formas, cores e peças batem em quase tudo.
+- A diferença que sobra é de técnica, não de desenho: o jogo é um mundo 3D de blocos com luz do sol, e os desenhos são pixel art 2D com luz chapada.
+- Para chegar perto de 100%, seria preciso trocar o 3D por sprites desenhados à mão, no mesmo estilo dos desenhos.
 
 ## Como está agora, comparado a jogos atuais
 

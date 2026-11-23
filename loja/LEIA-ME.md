@@ -1,4 +1,4 @@
-# Como colocar o Lida no Sertão na Play Store (versão 26.0)
+# Como colocar o Lida no Sertão na Play Store (versão 27.0)
 
 Tudo o que dá para preparar sem a sua conta já está pronto:
 
@@ -13,8 +13,8 @@ Os passos abaixo são os que **só você** pode fazer, porque pedem a sua conta 
 
 | Item | Onde |
 |---|---|
-| App para enviar à loja (`.aab`, versão 26.0.0, código 92, Android 16 / API 36) | enviado no chat: `LidaNoSertao-26.0.0.aab` |
-| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-26.0.0.apk` |
+| App para enviar à loja (`.aab`, versão 27.0.0, código 93, Android 16 / API 36) | enviado no chat: `LidaNoSertao-27.0.0.aab` |
+| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-27.0.0.apk` |
 | Chave de upload e senha | já enviadas antes no chat, em `chave_upload_lida.zip` (**é a mesma chave; guarde bem!**) |
 | Ícone 512 × 512 | `loja/imagens/icone_512.png` |
 | Banner 1024 × 500 | `loja/imagens/banner_1024x500.png` |
@@ -33,6 +33,15 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 - **Modo online:** funciona no app, ligando um celular direto no outro.
 - **Android 16 (API 36):** o app mira a versão que a Play Store exige para apps novos.
 - **Tela "Sobre e privacidade":** fica em Configurações. Os créditos agora incluem PeerJS e OpenStreetMap.
+
+## Novidades da 27.0 — tamanhos reais e o estilo dos desenhos do jogador
+- **Tudo na mesma escala:** casas, portas, cercas, árvores, carros e bichos agora têm o tamanho certo perto do vaqueiro (1 passo do jogo ≈ 80 cm).
+- **Vaqueiro como no desenho de referência:** cabeça e chapéu maiores, aba larga e copa baixa com amassado, camisa xadrez, lenço vermelho grande.
+- **Cavalo alazão:** cor mais clara e alaranjada, crina e rabo escuros, baixeiro de couro e laço enrolado pendurado na sela.
+- **Laço:** a argola gira acima do chapéu no golpe de laço.
+- **Cercas e porteiras:** cerca de três varas grossas de madeira, mourões com o topo cortado e porteira com travessas em X.
+- **Estradas de terra:** dois sulcos de roda e capim nas beiradas.
+- **Câmera:** fica mais alta atrás do vaqueiro, e o que fica entre ela e o vaqueiro some em pontilhado.
 
 ## Novidades da 26.0 — desenhado a partir de fotos reais do sertão
 - **Vaqueiro encourado:** guarda-peito, gibão com abas até a coxa, perneiras na perna toda e barbicacho no chapéu.
@@ -177,7 +186,7 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 
 ## Passo 1 — Testar no celular (5 minutos)
 
-1. Passe `LidaNoSertao-26.0.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
+1. Passe `LidaNoSertao-27.0.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
 2. Jogue um pouco.
 3. Teste o botão voltar, o **Exportar save** e uma sala online com outro celular.
 
