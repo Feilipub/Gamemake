@@ -62,6 +62,13 @@ Na v20, o 3D era uma homenagem ao PlayStation 1. Mesmo assim, ficava abaixo dos 
 - **Mais vida:** moradores falam com as mãos, peões fazem o gesto do trabalho e o cão senta.
 - **Correção:** tecla Z/X personalizada não gira mais a câmera.
 
+### v25.1 — Acabamento final
+- **Noite de luar:** azulada, com o caminho visível.
+- **Nuvens:** sombras de nuvens passando pelo campo.
+- **Casas por dentro:** câmera mais perto no celular em pé.
+- **Bichos:** corpo mais arredondado.
+- **Testes:** o teste do fogo no pasto não depende mais da sorte.
+
 ## Como está agora, comparado a jogos atuais
 
 - **Estilo PS1:** agora está no nível dos bons jogos de fazenda de PS1, e acima deles em luz (sombras pelo sol, água refletindo, céu dinâmico).
