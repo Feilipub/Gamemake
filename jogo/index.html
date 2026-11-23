@@ -12444,7 +12444,7 @@ function r3Init() {
 }
 function r3Resize() {
   for (const c of [R3.cv, R3.ov]) { if (c.width !== W) c.width = W; if (c.height !== H) c.height = H; c.style.position = 'absolute'; c.style.left = C.style.left; c.style.top = C.style.top; c.style.width = C.style.width; c.style.height = C.style.height; }
-  const nv = SET.r3res || (SET.q === 'leve' ? 'baixa' : 'media'), curto = r3Pix() ? (nv === 'baixa' ? 210 : nv === 'alta' ? 340 : 270) : nv === 'baixa' ? 200 : nv === 'alta' ? 420 : 288, esc = Math.min(1, curto / Math.min(W, H)), lw = Math.max(120, Math.round(W * esc)), lh = Math.max(120, Math.round(H * esc));
+  const nv = SET.r3res || (SET.q === 'leve' ? 'baixa' : 'media'), curto = r3Pix() ? (nv === 'minima' ? 160 : nv === 'baixa' ? 210 : nv === 'alta' ? 340 : 270) : nv === 'baixa' ? 200 : nv === 'alta' ? 420 : 288, esc = Math.min(1, curto / Math.min(W, H)), lw = Math.max(120, Math.round(W * esc)), lh = Math.max(120, Math.round(H * esc));
   if (R3.lw === lw && R3.lh === lh) return; const gl = R3.gl; R3.lw = lw; R3.lh = lh;
   gl.bindTexture(gl.TEXTURE_2D, R3.ft); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, lw, lh, 0, gl.RGBA, gl.UNSIGNED_BYTE, null); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.bindTexture(gl.TEXTURE_2D, R3.fd); gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, lw, lh, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null); for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
@@ -13395,7 +13395,7 @@ setTimeout(() => { const _opr = OP.render; OP.render = function () { if (mode ==
 const R3AUTO = { ema: 0, t: 0, passo: 0 };
 { const _rr = r3Render; r3Render = function (dt) { const r = _rr(dt); if (!SET.r3lock && mode === 'play' && dt > 0 && dt < 3) { R3AUTO.ema = R3AUTO.ema ? R3AUTO.ema * 0.9 + dt * 0.1 : dt; if (R3AUTO.ema > 0.05) { if ((R3AUTO.t += dt) > (R3AUTO.ema > 0.2 ? 3 : 6)) { R3AUTO.t = 0; R3AUTO.ema = 0; const p = ++R3AUTO.passo;
     if (p === 1) { SET.r3mato = false; SET.r3somb = false; } else if (p === 2) SET.r3res = 'baixa'; else if (p === 3) { SET.r3fx = false; SET.r3arv = false; SET.r3pos = false; }
-    if (p <= 3) { try { saveSet(); r3Dirty(); } catch (e) { } if (p === 1) toast('🎮 Deixei o 3D mais leve para este aparelho (Configurações › Ajustes do 3D).'); } else if (p === 4) { Object.assign(SET, { q: 'leve', view: '2d', aves: 'poucas', dof: false }); try { saveSet(); } catch (e) { } toast('📱 Este aparelho ficou lento no 3D: troquei para o modo leve (2D). Dá para voltar em Configurações.'); } } } else R3AUTO.t = Math.max(0, R3AUTO.t - dt); } return r; }; }
+    if (p <= 3) { try { saveSet(); r3Dirty(); } catch (e) { } if (p === 1) toast('🎮 Deixei o 3D mais leve para este aparelho (Configurações › Ajustes do 3D).'); } else if (p === 4) { SET.r3res = 'minima'; SET.r3mato = false; SET.aves = 'poucas'; try { saveSet(); r3Dirty(); } catch (e) { } toast('📱 Este aparelho ficou lento: deixei o pixel art mais grosso e leve. Dá para mudar em Configurações.'); } else if (p === 6 && !r3Pix()) { Object.assign(SET, { q: 'leve', view: '2d', aves: 'poucas', dof: false }); try { saveSet(); } catch (e) { } } } } else R3AUTO.t = Math.max(0, R3AUTO.t - dt); } return r; }; }
 /* luar: a noite no 3D fica azulada e dá para enxergar o caminho */
 { const _lu = r3Luz; r3Luz = function () { const L = _lu(); const n = L.n || 0; if (n > 0.05) { L.amb = L.amb.map((v, i) => v + [0.05, 0.06, 0.09][i] * n); L.sc = L.sc.map((v, i) => v + [0.09, 0.11, 0.19][i] * n); L.sun = norm3([0.35, 0.8, -0.3].map((v, i) => v * n + L.sun[i] * (1 - n))); } return L; }; }
 { const _lz5 = r3Luzes; r3Luzes = function (L, sala) { _lz5(L, sala); const gl = R3.gl, u = R3.u; if (u.uNuv === undefined) u.uNuv = gl.getUniformLocation(R3.P, 'uNuv'); gl.uniform1f(u.uNuv, sala || SET.r3somb === false ? 0 : (S && S.wx ? cl(S.wx.ci * 1.1 + 0.18, 0, 1) : 0.3) * (1 - (L.n || 0))); }; }
@@ -17647,8 +17647,9 @@ const PNAV = { prev: [], rep: 0, dirP: '' };
 function padLayer() {
   const q = $('quad'); if (q && q.style.display === 'flex') return null; // a quadrilha cuida do próprio controle
   if (M.open) return $('mn');
+  const st = $('setup'); if (st && st.style.display !== 'none' && st.offsetParent !== null && !document.querySelector('.ov.on:not(#title)')) return st;
   const ov = [...document.querySelectorAll('.ov.on')].pop(); if (ov) return ov;
-  const st = $('setup'); if (st && st.style.display !== 'none' && st.offsetParent !== null) return st;
+  if (st && st.style.display !== 'none' && st.offsetParent !== null) return st;
   if (SH.a) return $('ap');
   if (mode === 'title') return $('title');
   return null;
