@@ -12385,17 +12385,19 @@ function r3Sombra(B, x, z, r) { r *= 0.75; const c = [0.24, 0.21, 0.15]; for (le
 function r3Dinamico() { // o que se mexe: gente, bichos, porteiras, fogo
   const B = r3B(), T = R3.T, R2 = 640 * 640, perto = (x, y) => (x - T[0]) * (x - T[0]) + (y - T[1]) * (y - T[1]) < R2;
   // porteiras
+  R3.esc = { ox: 0, oz: 0, s: 1, sy: R3ESCALA ? R3ESCALA.cerca : 1 };
   for (const g of GATES) { const [a, b] = [g.t[0], g.t[g.t.length - 1]], x0 = a[0] * TS, z0 = a[1] * TS; if (!perto(x0, z0)) continue; const hor = a[1] === b[1], len = g.t.length * TS, col = r3c('#8a5a2a');
     if (!g.open) { if (hor) { for (const y of [3, 6.5, 10]) r3box(B, x0, y, z0 + 7, x0 + len, y + 1.6, z0 + 9, col); } else { for (const y of [3, 6.5, 10]) r3box(B, x0 + 7, y, z0, x0 + 9, y + 1.6, z0 + len, col); } }
     else { if (hor) { for (const y of [3, 6.5, 10]) r3box(B, x0, y, z0 + 8 - len, x0 + 2, y + 1.6, z0 + 8, col); } else { for (const y of [3, 6.5, 10]) r3box(B, x0 + 8 - len, y, z0, x0 + 8, y + 1.6, z0 + 2, col); } } }
+  R3.esc = null;
   // bichos
   let nb = 0; for (const a of S.animals) { if (a.dead || a.hotel || a._rider || a.id === P.mnt || !perto(a.x, a.y)) continue; if (nb++ > 160) break; const h = r3Rumo('a' + a.id, a.x, a.y); r3Sombra(B, a.x, a.y, a.sp === 'galinha' ? 3 : a.sp === 'cao' ? 5 : 10); try { r3Bicho(B, a, a.x, a.y, h.a, h.ph, h.mv); } catch (e) { } }
   // moradores
   for (const e of npcs) { if (e.hidden || !perto(e.x, e.y)) continue; const h = r3Rumo('n' + e.id, e.x, e.y, r3DirA(e.dir)), d = NPCDEF[e.id]; r3Sombra(B, e.x, e.y, 5); r3Gente(B, e.x, e.y, h.a, d && d.ap, h.ph, h.mv, { sentado: e.pose === 'sit', acao: e.bt > 0 && h.mv < 0.1 ? 'talk' : undefined, acaoU: (performance.now() / 1400 + e.x * 0.01) % 1, acaoN: 1 }); }
   // vaqueiros do modo online
-  if (typeof NET !== 'undefined' && NET.on) for (const pid in NET.players) { if (pid === NET.pid) continue; const r = NET.players[pid]; if (r.in || !perto(r.x, r.y)) continue; const h = r3Rumo('p' + pid, r.x, r.y, r3DirA(r.dir)), hz = r.mnt && byId(r.mnt); r3Sombra(B, r.x, r.y, hz ? 10 : 5); if (hz) { r3Bicho(B, hz, r.x, r.y, h.a, h.ph, h.mv); r3Gente(B, r.x - Math.cos(h.a) * 1, r.y - Math.sin(h.a) * 1, h.a, r.ap, 0, 0, { sentado: true, y: 9 }); } else r3Gente(B, r.x, r.y, h.a, r.ap, h.ph, h.mv); }
+  if (typeof NET !== 'undefined' && NET.on) for (const pid in NET.players) { if (pid === NET.pid) continue; const r = NET.players[pid]; if (r.in || !perto(r.x, r.y)) continue; const h = r3Rumo('p' + pid, r.x, r.y, r3DirA(r.dir)), hz = r.mnt && byId(r.mnt); r3Sombra(B, r.x, r.y, hz ? 10 : 5); if (hz) { r3Bicho(B, hz, r.x, r.y, h.a, h.ph, h.mv); r3Gente(B, r.x - Math.cos(h.a) * 1, r.y - Math.sin(h.a) * 1, h.a, r.ap, 0, 0, { sentado: true, y: r3Sela(hz) }); } else r3Gente(B, r.x, r.y, h.a, r.ap, h.ph, h.mv); }
   // o vaqueiro (montado ou a pé)
-  { const hz = P.mnt && byId(P.mnt), h = r3Rumo('P', P.x, P.y, r3DirA(P.dir)); r3Sombra(B, P.x, P.y, hz ? 11 : 5); if (hz) { r3Bicho(B, Object.assign({}, hz, { _pose: 'walk' }), P.x, P.y, h.a, h.ph, h.mv); r3Gente(B, P.x - Math.cos(h.a) * 1, P.y - Math.sin(h.a) * 1, h.a, S.cf.ap, 0, 0, { sentado: true, y: (hz.sp === 'cavalo' ? 12 : 9) }); } else r3Gente(B, P.x, P.y, h.a, S.cf.ap, h.ph, h.mv, { sentado: !!P._sit }); }
+  { const hz = P.mnt && byId(P.mnt), h = r3Rumo('P', P.x, P.y, r3DirA(P.dir)); r3Sombra(B, P.x, P.y, hz ? 11 : 5); if (hz) { r3Bicho(B, Object.assign({}, hz, { _pose: 'walk' }), P.x, P.y, h.a, h.ph, h.mv); r3Gente(B, P.x - Math.cos(h.a) * 1, P.y - Math.sin(h.a) * 1, h.a, S.cf.ap, 0, 0, { sentado: true, y: r3Sela(hz) }); } else r3Gente(B, P.x, P.y, h.a, S.cf.ap, h.ph, h.mv, { sentado: !!P._sit }); }
   // fogo no pasto
   for (const f of (S.fogo || [])) { const x = (f[0] + 0.5) * TS, z = (f[1] + 0.5) * TS; if (!perto(x, z)) continue; const t = performance.now() / 140 + f[0]; for (const [c, r, hh] of [['#c8301a', 6, 12], ['#f08a20', 4, 16], ['#ffe060', 2, 18]]) r3cyl(B, x, z, 0, hh * (0.8 + 0.2 * Math.sin(t)), r, 0, 4, r3c(c), null); }
   return B;
@@ -12422,7 +12424,7 @@ const R3FS = `#version 300 es
 precision mediump float; precision mediump sampler2DArray; in vec3 vC; in float vD; flat in float vM; in vec3 vW; in vec3 vNn; flat in float vK; uniform highp vec3 uSun; uniform highp vec3 uEye; uniform float uTa; uniform highp vec3 uAlvo; uniform float uCut; uniform float uNuv; uniform float uWet;
 float nh(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); } float nv(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(nh(i),nh(i+vec2(1,0)),f.x),mix(nh(i+vec2(0,1)),nh(i+vec2(1,1)),f.x),f.y); } uniform vec3 uFog; uniform vec2 uFogR; uniform sampler2DArray uTex; uniform float uTexOn; out vec4 o;
 const float BY[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.);
-void main(){ if(uCut>0.5&&vW.y>2.5){ vec3 ab=uAlvo-uEye; float tt=dot(vW-uEye,ab)/dot(ab,ab); if(tt>0.02&&tt<0.9){ float dd=distance(vW,uEye+ab*tt); float a=smoothstep(34.0,16.0,dd); ivec2 qq=ivec2(gl_FragCoord.xy)%4; if(BY[qq.x+qq.y*4]/16.0<a*0.9) discard; } }
+void main(){ if(uCut>0.5&&vW.y>2.5){ vec3 ab=uAlvo-uEye; float tt=dot(vW-uEye,ab)/dot(ab,ab); if(tt>0.02&&tt<0.9){ float dd=distance(vW,uEye+ab*tt); float a=smoothstep(48.0,20.0,dd); ivec2 qq=ivec2(gl_FragCoord.xy)%4; if(BY[qq.x+qq.y*4]/16.0<a*0.9) discard; } float tt2=dot(vW-uEye,ab)/dot(ab,ab); if(tt2<0.55&&vW.y>5.0){ float a2=smoothstep(0.55,0.3,tt2); ivec2 q2=ivec2(gl_FragCoord.xy)%4; if(BY[q2.x+q2.y*4]/16.0<a2*0.85) discard; } }
   float f=clamp((vD-uFogR.x)/(uFogR.y-uFogR.x),0.0,1.0); vec3 c0=vC; if(vM>0.5&&uTexOn>0.5){ vec3 n=abs(normalize(vNn)); vec2 uv=n.y>0.6?vW.xz:(n.x>n.z?vW.zy:vW.xy); c0*=texture(uTex,vec3(uv/32.0,vM)).r*2.0; } if(vK>0.5&&vK<1.5){ vec3 v=normalize(uEye-vW); vec3 n=normalize(vec3(sin(vW.x*0.21+uTa*1.6)*0.12+sin(vW.z*0.13+uTa)*0.08,1.0,cos(vW.z*0.19+uTa*1.3)*0.12)); float fr=0.25+0.55*pow(1.0-max(dot(v,n),0.0),3.0); c0=mix(c0,uFog*1.05,fr); vec3 r=reflect(-v,n); c0+=vec3(1.0,0.95,0.8)*pow(max(dot(r,uSun),0.0),48.0)*0.9; } if(uWet>0.02&&vK<0.5&&normalize(vNn).y>0.8&&vW.y<3.0){ c0*=1.0-0.22*uWet; vec3 vv=normalize(uEye-vW); c0=mix(c0,uFog*0.95,uWet*0.18*pow(1.0-max(vv.y,0.0),2.0)); }
   if(uNuv>0.02){ highp vec2 q=vW.xz*0.0035+vec2(uTa*0.012,uTa*0.005); float n=nv(q)*0.65+nv(q*2.3+3.1)*0.35; c0*=1.0-smoothstep(0.52,0.72,n)*uNuv*0.32; } vec3 c=mix(c0,uFog,f); ivec2 q=ivec2(gl_FragCoord.xy)%4; c+=(BY[q.x+q.y*4]/16.0-0.5)/28.0; o=vec4(c,1.0); }`;
 const R3BVS = `#version 300 es
@@ -12448,7 +12450,7 @@ function r3Resize() {
 function r3Mostra(on) { if (R3.vis === on) return; R3.vis = on; if (on && !SET.r3dica) { SET.r3dica = 1; try { saveSet(); } catch (e) { } setTimeout(() => toast('🎮 Visual 3D: gire a câmera com os botões ↺ ↻ (ou Z e X). Ajustes em Configurações › Ajustes do 3D.'), 800); } if (on) { if (HD.on) hdSet(false); R3.cv.style.display = R3.ov.style.display = 'block'; C.style.opacity = '0'; r3Botoes(true); } else { R3.cv.style.display = R3.ov.style.display = 'none'; C.style.opacity = '1'; r3Botoes(false); } }
 function r3Camera(dt) {
   const vw = VW(), vh = VH(), tx = cam.x + vw / 2, tz = cam.y + vh / 2; if (!R3.T) R3.T = [tx, tz]; const k = Math.min(1, dt * 8); R3.T[0] += (tx - R3.T[0]) * k; R3.T[1] += (tz - R3.T[1]) * k;
-  let dy = R3.yawT - R3.yaw; R3.yaw += dy * Math.min(1, dt * 7); const asp = W / H, baixa = SET.r3cam !== 'alta', D = 480 / cl((mode === 'cs' ? cam.z : 0) || cam.uz || 1.3, 0.6, 3.6) * (asp < 1 ? 1.15 : 1) * (baixa ? 0.9 : 1), phi = baixa ? 0.3 : 0.85, th = R3.yaw;
+  let dy = R3.yawT - R3.yaw; R3.yaw += dy * Math.min(1, dt * 7); const asp = W / H, baixa = SET.r3cam !== 'alta', D = 480 / cl((mode === 'cs' ? cam.z : 0) || cam.uz || 1.3, 0.6, 3.6) * (asp < 1 ? 1.15 : 1) * (baixa ? 1.0 : 1), phi = baixa ? 0.46 : 0.85, th = R3.yaw;
   const eye = [R3.T[0] + Math.sin(th) * D * Math.cos(phi), D * Math.sin(phi), R3.T[1] + Math.cos(th) * D * Math.cos(phi)]; R3.eye = eye;
   const VP = M4.mul(M4.persp(baixa && asp < 1 ? 0.92 : 0.78, asp, 6, 2200), M4.look(eye, [R3.T[0], baixa ? 20 : 6, R3.T[1]], [0, 1, 0])); R3.M = { VP, IVP: M4.inv(VP) };
 }
@@ -12537,7 +12539,7 @@ function r3Vaq(B) {
   if (typeof VQ === 'undefined' || !VQ.on || !VQ.bull) return; const b = VQ.bull, fall = VQ.ph === 'fall' && b.fall < 1.6;
   const boi = { sp: 'boi', br: 'nelore', age: 40, coat: null, _pose: fall ? 'lie' : 'walk', c: '#f4f0e8' }; r3Sombra(B, b.x, b.y, 10); r3Bicho(B, boi, b.x, b.y, 0, b.d * 0.3, VQ.ph === 'run' ? 1 : 0.2);
   const ap = (NPCDEF[VQ.npc] || NPCDEF.ryan).ap, hz = { sp: 'cavalo', br: 'qm', coat: 'tordilho', age: 60, _pose: 'walk' }, ph = b.d * 0.3, mv = VQ.ph === 'run' ? 1 : 0.1;
-  if (!VQ.duo) { const px = VQ.papel === 'est' ? (VQ.npcX || b.x - 6) : b.x - 2, pz = VQ.papel === 'est' ? (VQ.y0 + 0.9) * TS : b.y - 18; r3Sombra(B, px, pz, 10); r3Bicho(B, hz, px, pz, 0, ph, mv); r3Gente(B, px - 1, pz, 0, ap, 0, 0, { sentado: true, y: 12 }); }
+  if (!VQ.duo) { const px = VQ.papel === 'est' ? (VQ.npcX || b.x - 6) : b.x - 2, pz = VQ.papel === 'est' ? (VQ.y0 + 0.9) * TS : b.y - 18; r3Sombra(B, px, pz, 10); r3Bicho(B, hz, px, pz, 0, ph, mv); r3Gente(B, px - 1, pz, 0, ap, 0, 0, { sentado: true, y: r3Sela(hz) }); }
   for (const fx of VQ.faixa) r3box(B, fx * TS - 1, 0.2, (VQ.y0 - 2.5) * TS, fx * TS + 1, 0.5, (VQ.y0 + 2.5) * TS, [0.96, 0.96, 0.92], [0.96, 0.96, 0.92]);
 }
 { const _ra = r3Active; r3Active = function () { if (SET.view === '3d' && r3Supported() && mode === 'play' && typeof VQ !== 'undefined' && VQ.on && !IN.on) return true; return _ra(); }; }
@@ -12617,7 +12619,7 @@ function r3Caminhao(B, t) { const a = t.f > 0 ? 0 : Math.PI, W = { x: t.x, y: 0,
   for (const [x0, z0] of [[26, 12], [26, -12], [-24, 12], [-24, -12], [-4, 12], [-4, -12]]) r3bx(B, W, x0, 4, z0, 9, 9, 3, r3c('#1a1a1e')); }
 { const _rd4 = r3Dinamico; r3Dinamico = function () { const B = _rd4(); if (mode !== 'cs') return B; const T = R3.T, perto = (x, y) => (x - T[0]) * (x - T[0]) + (y - T[1]) * (y - T[1]) < 700 * 700;
   try { for (const c of CSA) { if (c._csHide || !perto(c.x, c.y)) continue; const h = r3Rumo('cs' + (c.id || c.n), c.x, c.y); r3Sombra(B, c.x, c.y, 9); r3Bicho(B, c, c.x, c.y, h.a, h.ph, h.mv); } } catch (e) { }
-  try { CINE.actors.forEach((a, i) => { if (a.alpha <= 0.05 || !perto(a.x, a.y)) return; const h = r3Rumo('ca' + i, a.x, a.y, r3DirA(a.dir)); r3Sombra(B, a.x, a.y, a.h ? 10 : 5); if (a.h) { r3Bicho(B, Object.assign({}, a.h, { _pose: 'walk' }), a.x, a.y, h.a, h.ph, h.mv); r3Gente(B, a.x, a.y, h.a, a.ap, 0, 0, { sentado: true, y: 12 }); } else r3Gente(B, a.x, a.y, h.a, a.ap, h.ph, a.pose === 'walk' ? Math.max(0.6, h.mv) : h.mv, { sentado: a.pose === 'sit' }); }); } catch (e) { }
+  try { CINE.actors.forEach((a, i) => { if (a.alpha <= 0.05 || !perto(a.x, a.y)) return; const h = r3Rumo('ca' + i, a.x, a.y, r3DirA(a.dir)); r3Sombra(B, a.x, a.y, a.h ? 10 : 5); if (a.h) { r3Bicho(B, Object.assign({}, a.h, { _pose: 'walk' }), a.x, a.y, h.a, h.ph, h.mv); r3Gente(B, a.x, a.y, h.a, a.ap, 0, 0, { sentado: true, y: r3Sela(a.h) }); } else r3Gente(B, a.x, a.y, h.a, a.ap, h.ph, a.pose === 'walk' ? Math.max(0.6, h.mv) : h.mv, { sentado: a.pose === 'sit' }); }); } catch (e) { }
   try { for (const t of CSX) { if (t.prop || !perto(t.x, t.y)) continue; r3Caminhao(B, t); } } catch (e) { }
   return B; }; }
 // o vaqueiro some quando a cena usa um ator no lugar dele
@@ -12659,10 +12661,10 @@ function r3Veiculo(B, x, z, ang, tipo, cor) { const W = { x, y: 0, z, ca: Math.c
   r3bx(B, W, 0, 4 + Hh / 2, 0, L, Hh, Wd, c); if (!big) { r3bx(B, W, -2, 4 + Hh + 3, 0, 14, 6, Wd - 1, c.map(v => v * 0.95)); r3bx(B, W, 5.2, 4 + Hh + 3, 0, 0.5, 5, Wd - 2, vid); } else r3bx(B, W, L / 2 + 0.2, 4 + Hh * 0.7, 0, 0.5, Hh * 0.45, Wd - 2, vid);
   for (const [dx, dz] of [[L / 2 - 6, Wd / 2], [L / 2 - 6, -Wd / 2], [-L / 2 + 6, Wd / 2], [-L / 2 + 6, -Wd / 2]]) r3bx(B, W, dx, 3, dz, 7, 6, 2.4, pn); }
 { const _rd8 = r3Dinamico; r3Dinamico = function () { const B = _rd8(), T = R3.T, perto = (x, y) => (x - T[0]) * (x - T[0]) + (y - T[1]) * (y - T[1]) < 640 * 640;
-  try { for (const w of S.workers || []) { if (w.x === undefined || w._sleep || !perto(w.x, w.y)) continue; const h = r3Rumo('wk' + (w.id || w.n), w.x, w.y, r3DirA(w.dir || 0)); r3Sombra(B, w.x, w.y, w._mnt ? 10 : 5); const hz = w._mnt && typeof workerHorse === 'function' ? workerHorse(w) : null; if (hz) { r3Bicho(B, Object.assign({}, hz, { _pose: 'walk' }), w.x, w.y, h.a, h.ph, h.mv); r3Gente(B, w.x, w.y, h.a, w.ap, 0, 0, { sentado: true, y: 12 }); } else r3Gente(B, w.x, w.y, h.a, w.ap, h.ph, h.mv, { sentado: w._pose === 'sit', acao: { feed: 'feed', sweep: 'sweep', act: 'hammer', carry: 'saddle' }[w._pose], acaoU: (performance.now() / 1600 + (w.id || 0) * 0.37) % 1 }); } } catch (e) { }
+  try { for (const w of S.workers || []) { if (w.x === undefined || w._sleep || !perto(w.x, w.y)) continue; const h = r3Rumo('wk' + (w.id || w.n), w.x, w.y, r3DirA(w.dir || 0)); r3Sombra(B, w.x, w.y, w._mnt ? 10 : 5); const hz = w._mnt && typeof workerHorse === 'function' ? workerHorse(w) : null; if (hz) { r3Bicho(B, Object.assign({}, hz, { _pose: 'walk' }), w.x, w.y, h.a, h.ph, h.mv); r3Gente(B, w.x, w.y, h.a, w.ap, 0, 0, { sentado: true, y: r3Sela(hz) }); } else r3Gente(B, w.x, w.y, h.a, w.ap, h.ph, h.mv, { sentado: w._pose === 'sit', acao: { feed: 'feed', sweep: 'sweep', act: 'hammer', carry: 'saddle' }[w._pose], acaoU: (performance.now() / 1600 + (w.id || 0) * 0.37) % 1 }); } } catch (e) { }
   try { for (const w of WILD) { if (!perto(w.x, w.y)) continue; const h = r3Rumo('w' + (w.id || w.k), w.x, w.y); r3Bicho2(B, w, h.a); } } catch (e) { }
   try { for (const v of vehs()) { if (!v || v.x === undefined || !perto(v.x, v.y)) continue; const h = r3Rumo('vh' + (v.id || v.kind || 'c'), v.x, v.y); r3Carro(B, v, h.a); } } catch (e) { }
-  try { for (const v of TRAF.list) { const [x, y] = vehXY(v); if (!perto(x, y) || v.a < 0.05) continue; const ang = v.l.ax === 'x' ? (v.l.d > 0 ? 0 : Math.PI) : (v.l.d > 0 ? Math.PI / 2 : -Math.PI / 2); r3Veiculo(B, x, y, ang, v.type, v.col); if (v.type === 'moto' || v.type === 'bike') r3Gente(B, x, y, ang, v._ap || (typeof riderAp === 'function' ? (v._ap = riderAp(v)) : null), 0, 0, { sentado: true, y: 2 }); } } catch (e) { }
+  try { for (const v of TRAF.list) { const [x, y] = vehXY(v); if (!perto(x, y) || v.a < 0.05) continue; const ang = v.l.ax === 'x' ? (v.l.d > 0 ? 0 : Math.PI) : (v.l.d > 0 ? Math.PI / 2 : -Math.PI / 2); r3Veiculo(B, x, y, ang, v.type, v.col); if (v.type === 'moto' || v.type === 'bike') r3Gente(B, x, y, ang, v._ap || (typeof riderAp === 'function' ? (v._ap = riderAp(v)) : null), 0, 0, { sentado: true, y: 4.5 }); } } catch (e) { }
   return B; }; }
 
 /* ============ v22: LUZES DA NOITE NO 3D — postes, fogueira, janelas, lampião e fogo iluminam o chão e os bonecos ============
@@ -13111,13 +13113,13 @@ function r3ShElipse(SB, x, z, rx, rz, ox, oz, cor) { const pts = []; for (let i 
 /* sombras fixas dentro dos pedaços do mapa */
 { const _rpd2 = r3Pedaco; r3Pedaco = function (cx, cy) { R3.SB = r3B(); const sol = R3.sol = SET.r3somb === false ? null : r3SolChao(); let B; try { B = _rpd2(cx, cy); } finally { B && (B.sombra = R3.SB); R3.SB = null; }
   if (sol) { const x0 = cx * R3C * TS, y0 = cy * R3C * TS, x1 = x0 + R3C * TS, y1 = y0 + R3C * TS, SB = B.sombra;
-    for (const b of BLD) { const r = b.r, mx = (r[0] + r[2] + 1) / 2 * TS, my = (r[1] + r[3] + 1) / 2 * TS; if (mx < x0 || mx >= x1 || my < y0 || my >= y1) continue; const h = (b.id === 'casa' ? 34 : 30) + 10, X0 = r[0] * TS - 3, Z0 = r[1] * TS - 3, X1 = (r[2] + 1) * TS + 3, Z1 = (r[3] + 1) * TS + 3, ox = sol.ox * h, oz = sol.oz * h;
+    for (const b of BLD) { const r = b.r, mx = (r[0] + r[2] + 1) / 2 * TS, my = (r[1] + r[3] + 1) / 2 * TS; if (mx < x0 || mx >= x1 || my < y0 || my >= y1) continue; const h = ((b.id === 'casa' ? 34 : 30) + 10) * R3ESCALA.casa, X0 = r[0] * TS - 3, Z0 = r[1] * TS - 3, X1 = (r[2] + 1) * TS + 3, Z1 = (r[3] + 1) * TS + 3, ox = sol.ox * h, oz = sol.oz * h;
       r3ShPoli(SB, r3Casco([[X0, Z0], [X1, Z0], [X1, Z1], [X0, Z1], [X0 + ox, Z0 + oz], [X1 + ox, Z0 + oz], [X1 + ox, Z1 + oz], [X0 + ox, Z1 + oz]]), 0.3); }
     try { if (typeof SR !== 'undefined' && SR.ok) for (const s of SR.casas) { const X0 = s.tx * TS, Z0 = s.ty * TS, X1 = (s.tx + s.w) * TS, Z1 = (s.ty + s.h) * TS; if (X0 < x0 || X0 >= x1 || Z0 < y0 || Z0 >= y1) continue; const h = 34, ox = sol.ox * h, oz = sol.oz * h; r3ShPoli(SB, r3Casco([[X0, Z0], [X1, Z0], [X1, Z1], [X0, Z1], [X0 + ox, Z0 + oz], [X1 + ox, Z0 + oz], [X1 + ox, Z1 + oz], [X0 + ox, Z1 + oz]]), 0.3); } } catch (e) { }
     try { if (typeof LST !== 'undefined' && LST.ok) for (const s of LST.sedes) { const X0 = s.tx * TS, Z0 = s.ty * TS, X1 = (s.tx + s.w) * TS, Z1 = (s.ty + s.h) * TS; if (X0 < x0 || X0 >= x1 || Z0 < y0 || Z0 >= y1) continue; const h = 38, ox = sol.ox * h, oz = sol.oz * h; r3ShPoli(SB, r3Casco([[X0, Z0], [X1, Z0], [X1, Z1], [X0, Z1], [X0 + ox, Z0 + oz], [X1 + ox, Z0 + oz], [X1 + ox, Z1 + oz], [X0 + ox, Z1 + oz]]), 0.3); } } catch (e) { }
     for (const q of PROPS) { if (q.x < x0 || q.x >= x1 || q.y < y0 || q.y >= y1) continue; const T0 = R3TREE[q.t], P0 = R3PALM[q.t]; if (!T0 && !P0 && q.t !== 'mandacaru' && q.t !== 'coreto' && q.t !== 'cisterna') continue;
       const h = T0 ? T0[1] * 0.8 : P0 ? P0[1] * 0.85 : q.t === 'mandacaru' ? 20 : q.t === 'coreto' ? 22 : 10, r = T0 ? T0[2] * 0.85 : P0 ? 9 : q.t === 'mandacaru' ? 3 : q.t === 'coreto' ? 16 : 7;
-      r3ShElipse(SB, q.x, q.y - 2, r, r * 0.8, sol.ox * h, sol.oz * h); if (T0 || P0) { const n = 5; for (let i = 0; i < n; i++) { const u = i / n; r3ShElipse(SB, q.x + sol.ox * h * u * 0.6, q.y - 2 + sol.oz * h * u * 0.6, 1.6, 1.6, 0, 0); } } } }
+      { const fe = r3EscProp(q.t); r3ShElipse(SB, q.x, q.y - 2, r * fe, r * 0.8 * fe, sol.ox * h * fe, sol.oz * h * fe); } if (T0 || P0) { const n = 5; for (let i = 0; i < n; i++) { const u = i / n; r3ShElipse(SB, q.x + sol.ox * h * u * 0.6, q.y - 2 + sol.oz * h * u * 0.6, 1.6, 1.6, 0, 0); } } } }
   return B; }; }
 /* sombra de gente e bicho no buffer de sombras (com o sol, fica um pouco para o lado) */
 { const _rs = r3Sombra; r3Sombra = function (B, x, z, r) { if (!R3.DSB) return _rs(B, x, z, r); const s = R3.solD; const ox = s ? s.ox * r * 1.1 : 0, oz = s ? s.oz * r * 1.1 : 0; const d0 = R3.dy; R3.dy = 0; r3ShElipse(R3.DSB, x, z, r * 1.05, r * 0.8, ox * 0.5, oz * 0.5); r3ShElipse(R3.DSB, x + ox * 0.5, z + oz * 0.5, r * 0.75, r * 0.6, ox * 0.5, oz * 0.5); R3.dy = d0; }; }
@@ -13363,7 +13365,7 @@ function r3Titulo() { if (!R3.gl) r3Init(); const gl = R3.gl; r3Mostra(true); r3
   if (!R3TIT.B) R3TIT.B = r3Upload(r3TituloFixo(), null);
   const B = r3B(); for (let i = 0; i < R3TIT.gado.length; i++) { const a = R3TIT.gado[i], x = X + 20 + (i % 3) * 28 - 30, z = Z + 34 + Math.floor(i / 3) * 22, h = Math.sin(t * 0.3 + i) * 0.4 + i; try { r3Bicho(B, a, x, z, h, 0, 0); } catch (e) { } }
   const ca = t * 0.18, cx = X + Math.cos(ca) * 70, cz = Z + 40 + Math.sin(ca) * 34, hd = ca + Math.PI / 2 + Math.atan2(Math.cos(ca) * 34, -Math.sin(ca) * 70 * 0) * 0;
-  const rumo = Math.atan2(Math.cos(ca) * 34, -Math.sin(ca) * 70); try { r3Bicho(B, R3TIT.cav, cx, cz, rumo, t * 9, 0.3); r3Gente(B, cx - Math.cos(rumo), cz - Math.sin(rumo), rumo, defaultCF().ap, 0, 0, { sentado: true, y: 12 }); r3Bicho(B, R3TIT.cao, cx - Math.cos(rumo) * 22 + 6, cz - Math.sin(rumo) * 22, rumo, t * 11, 0.5); } catch (e) { }
+  const rumo = Math.atan2(Math.cos(ca) * 34, -Math.sin(ca) * 70); try { r3Bicho(B, R3TIT.cav, cx, cz, rumo, t * 9, 0.3); r3Gente(B, cx - Math.cos(rumo), cz - Math.sin(rumo), rumo, defaultCF().ap, 0, 0, { sentado: true, y: r3Sela({ sp: 'cavalo' }) }); r3Bicho(B, R3TIT.cao, cx - Math.cos(rumo) * 22 + 6, cz - Math.sin(rumo) * 22, rumo, t * 11, 0.5); } catch (e) { }
   R3.dynB = r3Upload(B, R3.dynB);
   const L = { sun: norm3([-0.75, 0.32, -0.45]), sky: [0.96, 0.66, 0.42], amb: [0.42, 0.36, 0.34], sc: [0.85, 0.6, 0.4], n: 0, fog: [500, 1400] };
   gl.bindFramebuffer(gl.FRAMEBUFFER, R3.fb); gl.viewport(0, 0, R3.lw, R3.lh); gl.clearColor(L.sky[0], L.sky[1], L.sky[2], 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -13591,6 +13593,26 @@ function r3Borda() { const gl = R3.gl; if (!R3.borda || R3.bordaSe !== season() 
     else if (r < 0.25) { for (let k = 0; k < 2; k++) r3blob(B, x + (R() - 0.5) * 10, 0.6, z + (R() - 0.5) * 10, 1.2 + R() * 2, 0.8 + R(), 1 + R() * 2, c.map(q => q * 0.92), k + tx, 5); }
     else if (r < 0.4) { R3.mat = 0; const g2 = season() ? [0.66, 0.58, 0.36] : [0.4, 0.55, 0.26]; for (let k = 0; k < 4; k++) { const gx = x + (R() - 0.5) * 8, gz = z + (R() - 0.5) * 8, h = 2 + R() * 3; r3v(B, gx - 0.8, 0.2, gz, g2, 0, 1, 0, 0); r3v(B, gx + 0.8, 0.2, gz, g2, 0, 1, 0, 0); r3v(B, gx, h, gz, g2.map(q => q * 1.1), 0, 1, 0, 4); } } } } catch (e) { } finally { R3.mat = m0; }
   return B; }; }
+/* ============ v27: PROPORÇÕES REAIS — tudo na mesma escala do vaqueiro (1 unidade ≈ 5 cm) ============
+   Medido contra fotos: porta 2,1 m, parede 3,2 m, cavalo 1,5 m na cernelha, Nelore 1,4 m, carro 1,5 m de altura,
+   umbuzeiro 5 m, mandacaru 4–6 m, cerca 1,4 m, cão caramelo 0,5 m. */
+const R3ESCALA = { casa: 2.05, cerca: 1.75, gente: 0.92, bicho: { cavalo: 1.3, burro: 1.15, jumento: 1.08, boi: 1.3, cao: 0.74, cabra: 1, ovelha: 1, galinha: 0.85 } };
+R3.esc = null;
+{ const _ve = r3v; r3v = function (B, x, y, z, c, nx, ny, nz, k) { const e = R3.esc; if (e) { x = e.ox + (x - e.ox) * e.s; z = e.oz + (z - e.oz) * e.s; y = y * e.sy; } return _ve(B, x, y, z, c, nx, ny, nz, k); }; }
+const r3ComEsc = (f, px) => function () { const p = px.apply(null, arguments); if (!p) return f.apply(this, arguments); const e0 = R3.esc; R3.esc = { ox: p[0], oz: p[1], s: p[2], sy: p[3] }; try { return f.apply(this, arguments); } finally { R3.esc = e0; } };
+function r3EscProp(t) { if (R3TREE[t]) return t === 'mata1' || t === 'mata2' ? 2.3 : t === 'caju' ? 1.8 : 2.4; if (R3PALM[t]) return t === 'licuri' ? 1.6 : 2.1; if (t === 'mandacaru') return 1.6; if (t === 'xique' || t === 'moita' || t === 'arbusto') return 1.4; if (t === 'poste') return 2.2; if (t === 'coreto' || t === 'cisterna') return 1.5; return 1; }
+r3Casa = r3ComEsc(r3Casa, (B, x0, z0, x1, z1) => [(x0 + x1) / 2, (z0 + z1) / 2, 1, R3ESCALA.casa]);
+r3CidadeExtra = r3ComEsc(r3CidadeExtra, (B, b) => [0, 0, 1, R3ESCALA.casa]);
+r3SedeExtra = r3ComEsc(r3SedeExtra, (B) => [0, 0, 1, R3ESCALA.casa]);
+r3Cerca = r3ComEsc(r3Cerca, () => [0, 0, 1, R3ESCALA.cerca]);
+r3Prop = r3ComEsc(r3Prop, (B, q) => { const f = r3EscProp(q.t); return f === 1 ? null : [q.x, q.y - 2, f, f]; });
+r3Bicho = r3ComEsc(r3Bicho, (B, a, x, z) => { const f = R3ESCALA.bicho[a.sp] || 1; return f === 1 ? null : [x, z, f, f]; });
+r3Gente = r3ComEsc(r3Gente, (B, x, z, a, ap, ph, mv, o) => { const f = R3ESCALA.gente, y0 = (o && o.y) || 0; return [x, z, f, f]; });
+function r3Sela(hz) { const f = R3ESCALA.bicho[hz.sp] || 1, small = hz.sp !== 'cavalo', top = (small ? 18 : 22) * f + 1.2, hip = 12.2 * 1.15 * 0.98 * R3ESCALA.gente; return (top - hip) / R3ESCALA.gente; }
+/* carros na escala da gente: mais compridos e altos (a largura fica presa à faixa da rua, que tem 1 ladrilho) */
+r3Veiculo = r3ComEsc(r3Veiculo, (B, x, z, ang, tipo) => tipo === 'moto' || tipo === 'bike' ? [x, z, 1.35, 1.35] : [x, z, 1, 1.75]);
+{ const _ve2 = r3Veiculo; r3Veiculo = function (B, x, z, ang, tipo, cor) { if (tipo === 'moto' || tipo === 'bike') return _ve2(B, x, z, ang, tipo, cor); const ca = Math.cos(ang), sa = Math.sin(ang), e0 = R3.esc; const L = 1.45; R3.esc = null;
+  const n0 = B.a.length; _ve2(B, x, z, ang, tipo, cor); for (let j = n0; j < B.a.length; j += 10) { const dx = B.a[j] - x, dz = B.a[j + 2] - z, lo = dx * ca + dz * sa, la = -dx * sa + dz * ca, nl = lo * L; B.a[j] = x + nl * ca - la * sa; B.a[j + 2] = z + nl * sa + la * ca; } R3.esc = e0; }; }
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
