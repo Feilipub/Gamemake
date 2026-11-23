@@ -13420,6 +13420,16 @@ function r3Galhada(B, q, T0, R, v) { const x = q.x, z = q.y - 2, [cc, H, rr, tc]
   return _pp3(B, q); }; }
 r3Prop = r3NoChao(r3Prop, (B, q) => [q.x, q.y - 2]);
 
+/* ============ v26: CAATINGA MAIS FECHADA — moitas, macambira e lajedos (pela referência de fotos) ============ */
+{ const _mt = r3Mato; r3Mato = function (B, tx, ty, g, i, se) { _mt(B, tx, ty, g, i, se); if (obj[i] || SET.r3mato === false || g === G.PAST) return; const R = mulberry(tx * 104729 + ty * 7919 + 3), r = R(); if (r > (g === G.DRY ? 0.32 : 0.12)) return;
+  const x = (tx + 0.2 + R() * 0.6) * TS, z = (ty + 0.2 + R() * 0.6) * TS, m0 = R3.mat, d0 = R3.dy; R3.dy = r3Alt(x, z); R3.chao = 0;
+  try { const k = R();
+    if (k < 0.45) { R3.mat = R3MAT.folha; const n = 2 + Math.floor(R() * 3), cor = se ? [0.68, 0.66, 0.56] : [0.46, 0.58, 0.38]; for (let j = 0; j < n; j++) r3blob(B, x + (R() - 0.5) * 8, 3 + R() * 2, z + (R() - 0.5) * 8, 3 + R() * 2.5, 2.4 + R() * 1.5, 3 + R() * 2.5, cor.map(c => c * (0.9 + R() * 0.2)), j + tx, 5);
+      if (se) { R3.mat = R3MAT.casca; for (let j = 0; j < 5; j++) { const a = R() * 6.28; r3Seg(B, { x, y: 0, z, ca: Math.cos(a), sa: Math.sin(a) }, 0, 0, 0, Math.PI - 0.5 - R() * 0.4, 8 + R() * 5, 0.5, 0.5, [0.62, 0.58, 0.5]); } } }
+    else if (k < 0.7) { R3.mat = 0; const c = se ? [0.62, 0.58, 0.4] : [0.42, 0.56, 0.3]; for (let j = 0; j < 9; j++) { const a = j / 9 * 6.28 + R(), l = 4 + R() * 3; r3tri(B, [x, 0.3, z], [x + Math.cos(a) * l, 2 + R() * 3, z + Math.sin(a) * l], [x + Math.cos(a + 0.25) * 1.2, 0.3, z + Math.sin(a + 0.25) * 1.2], c); } }
+    else if (g === G.DRY || k < 0.8) { R3.mat = R3MAT.pedra; const c = [0.7, 0.68, 0.62].map(q => q * (0.9 + R() * 0.15)); r3blob(B, x, 0.6, z, 6 + R() * 6, 1.4 + R(), 5 + R() * 5, c, tx + ty, 6); if (R() < 0.5) r3blob(B, x + 5, 1.2, z - 3, 3, 2, 3, c.map(q => q * 0.92), tx, 5); } }
+  finally { R3.mat = m0; R3.dy = d0; } }; }
+
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
