@@ -35,6 +35,7 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 - **Tela "Sobre e privacidade":** fica em Configurações. Os créditos agora incluem PeerJS e OpenStreetMap.
 
 ## Novidades da 27.0 — tamanhos reais e o estilo dos desenhos do jogador
+- **Visual novo em pixel art, igual aos desenhos do jogador:** câmera isométrica (de cima, na diagonal), luz chapada em três tons, contorno escuro em tudo e pixels grandes. O 3D com perspectiva continua em Configurações › Ajustes do 3D.
 - **Tudo na mesma escala:** casas, portas, cercas, árvores, carros e bichos agora têm o tamanho certo perto do vaqueiro (1 passo do jogo ≈ 80 cm).
 - **Vaqueiro como no desenho de referência:** cabeça e chapéu maiores, aba larga e copa baixa com amassado, camisa xadrez, lenço vermelho grande.
 - **Cavalo alazão:** cor mais clara e alaranjada, crina e rabo escuros, baixeiro de couro e laço enrolado pendurado na sela.

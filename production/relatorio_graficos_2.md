@@ -90,6 +90,12 @@ Na v20, o 3D era uma homenagem ao PlayStation 1. Mesmo assim, ficava abaixo dos 
 - **Cercas e porteiras:** cerca de três varas grossas, mourões com topo cortado e porteira com travessas em X.
 - **Estradas de terra:** dois sulcos de roda e capim nas beiradas.
 - **Câmera:** mais alta, e o que tapa o vaqueiro some em pontilhado.
+- **Pixel art como os desenhos (novo padrão):**
+  - câmera isométrica ortográfica;
+  - luz em três tons (topo, lado claro, lado escuro), sem neblina e sem pontilhado;
+  - contorno escuro desenhado pela profundidade;
+  - cerca de 230 px no lado curto da tela;
+  - pode ser desligado em Ajustes do 3D.
 
 #### Comparação com os desenhos (`production/qa/evidence/v27_comparacao_desenhos.png`)
 | Elemento | Bate com o desenho? | O que ainda difere |
@@ -101,7 +107,7 @@ Na v20, o 3D era uma homenagem ao PlayStation 1. Mesmo assim, ficava abaixo dos 
 | Laço girando sobre a cabeça | sim | — |
 | Cerca de varas, porteira em X, arame farpado | sim | — |
 | Estrada com sulcos e capim na beira | sim | — |
-| Iluminação chapada de pixel art | não | o jogo é 3D com sol e sombra; o desenho é 2D isométrico |
+| Iluminação chapada de pixel art | sim, no modo Pixel art (padrão) | os modelos ainda são de blocos, menos arredondados que o desenho |
 
 **Avaliação sincera:**
 - Formas, cores e peças batem em quase tudo.
