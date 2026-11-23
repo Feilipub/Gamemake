@@ -12967,6 +12967,7 @@ function r3Quadru(B, a, x, z, ang, ph, mv) {
   if (C0 && C0.pat === 'pintas') for (let i = 0; i < 6; i++) { const px = s(L * (-0.35 + (i % 3) * 0.3)), py = yB + s(((i * 7) % 5) - 2), sg = i < 3 ? 1 : -1; r3quad(B, r3Pt(W, px - s(2), py - s(1.4), sg * s(Wd / 2 + 0.05)), r3Pt(W, px + s(2), py - s(1.4), sg * s(Wd / 2 + 0.05)), r3Pt(W, px + s(2), py + s(1.4), sg * s(Wd / 2 + 0.05)), r3Pt(W, px - s(2), py + s(1.4), sg * s(Wd / 2 + 0.05)), r3c(C0.patC || '#efe2c8')); }
   if (co && co.pat === 'dapple') for (let i = 0; i < 8; i++) { const px = s(L * (-0.4 + (i % 4) * 0.22)), py = yB + s(((i * 5) % 4) - 1.5), sg = i < 4 ? 1 : -1; r3quad(B, r3Pt(W, px - s(1.3), py - s(1), sg * s(Wd / 2 + 0.05)), r3Pt(W, px + s(1.3), py - s(1), sg * s(Wd / 2 + 0.05)), r3Pt(W, px + s(1.3), py + s(1), sg * s(Wd / 2 + 0.05)), r3Pt(W, px - s(1.3), py + s(1), sg * s(Wd / 2 + 0.05)), r3c(co.patC)); }
   if (co && co.dorsal) r3bx(B, W, 0, yB + s(Hb / 2) + 0.1, 0, s(L * 0.85), s(0.3), s(1.2), r3c(co.dorsal), pv);
+  if (small) { const cz = r3c('#3a3028'), cl3 = r3c('#e8e2d6'); r3bx(B, W, 0, yB + s(Hb / 2) + 0.12, 0, s(L * 0.9), s(0.3), s(1.4), cz, pv); r3bx(B, W, s(L * 0.3), yB + s(Hb * 0.2), 0, s(1.4), s(Hb * 0.62), s(Wd + 0.3), cz, pv); r3bx(B, W, 0, yB - s(Hb * 0.5), 0, s(L * 0.6), s(1.2), s(Wd * 0.8), cl3, pv); }
   try { const pt = (co && co.pat) || (C0 && C0.pat) || (D0 && D0.pat), pc = (co && co.patC) || (C0 && C0.patC) || (D0 && D0.patC); r3Pelagem(B, W, a, sp, s(L), s(Hb), s(Wd), yB, pt, pc, co || D0); var r3CabecaCor = pt === 'boer' || pt === 'whiteface' ? r3c(pc || '#f2eee6') : null; } catch (e) { }
   // pernas: coxa/braço + canela + casco
   const MKd = equi && !small && typeof mkDec === 'function' ? mkDec(a.mk) : null, meia = n => !!(MKd && ((MKd.socks >> ({ LF: 0, RF: 1, LH: 2, RH: 3 })[n]) & 1)), BR = r3c('#f2eee6');
@@ -13440,6 +13441,15 @@ r3Prop = r3NoChao(r3Prop, (B, q) => [q.x, q.y - 2]);
     const cor = r3c('#5a8a34'); for (let i = 0; i < 7; i++) { const a = i / 7 * 6.28 + v, d = i === 0 ? 0 : rr * (0.45 + R() * 0.25); r3blob(B, x + Math.cos(a) * d, h + (i === 0 ? 2.5 : R() * 1.5), z + Math.sin(a) * d, rr * 0.5, rr * 0.22, rr * 0.5, cor.map(c => c * (0.88 + R() * 0.22)), i + Math.floor(x), 6); }
   } finally { R3.mat = m0; } }; }
 r3Prop = r3NoChao(r3Prop, (B, q) => [q.x, q.y - 2]);
+/* galinha e galo novos: corpo redondo, rabo de penas, crista, barbela, pernas e o bicar */
+function r3Galinha(B, a, x, z, ang, ph, mv) { const t = performance.now() / 1000, W = { x, y: 0, z, ca: Math.cos(ang), sa: Math.sin(ang) }, galo = a.sex === 'M', c = r3c(a.c || (galo ? '#a8482a' : '#e8e0d0')), c2 = galo ? r3c('#2a5a3a') : c.map(v => v * 0.86), pk = !mv && Math.sin(t * 3 + (a.id || 1)) > 0.6, cab = pk ? -1.6 : 0, sw = Math.sin(ph * 2) * 0.6 * Math.min(1, mv * 2);
+  for (const sg of [1, -1]) r3Seg(B, W, 0, 3, sg * 0.8, sw * sg, 3, 0.45, 0.45, r3c('#e8a020'));
+  r3blob(B, x, 5, z, 3.4, 2.6, 2.6, c, (a.id || 1) % 9, 6); r3bx(B, W, -2.6, 6.8, 0, 2.4, 3.6, 1.8, c2, [-2, 5.5, -0.5]); if (galo) r3bx(B, W, -3.4, 8.4, 0, 1.6, 3.6, 0.8, r3c('#1a3a2a'), [-2.6, 6.8, -0.8]);
+  const hx = 2.6 + (pk ? 1 : 0), hy = 8 + cab; r3bx(B, W, hx - 0.6, hy - 1.4, 0, 1.6, 2.4, 1.8, c); r3bx(B, W, hx, hy, 0, 2, 2, 1.8, c); r3bx(B, W, hx + 1.3, hy - 0.2, 0, 1.2, 0.6, 0.7, r3c('#e8a020'));
+  r3bx(B, W, hx - 0.2, hy + 1.3, 0, galo ? 2.2 : 1.2, galo ? 1.4 : 0.7, 0.4, r3c('#d02a1a')); r3bx(B, W, hx + 0.8, hy - 1.1, 0, 0.6, galo ? 1.2 : 0.7, 0.4, r3c('#d02a1a'));
+  for (const sg of [1, -1]) r3bx(B, W, hx + 0.5, hy + 0.3, sg * 0.92, 0.4, 0.4, 0.1, [0.05, 0.05, 0.05]); }
+{ const _qg = r3Quadru; r3Quadru = function (B, a, x, z, ang, ph, mv) { if (a.sp === 'galinha') return r3Galinha(B, a, x, z, ang, ph, mv); return _qg(B, a, x, z, ang, ph, mv); }; }
+r3Bicho = r3SeVisivel(r3NoChao(r3ComMat(0, r3Quadru), (B, a, x, z) => [x, z]), (B, a, x, z) => [x, z, 12]);
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
