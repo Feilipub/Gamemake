@@ -12574,7 +12574,7 @@ const R3IN_COR = { fogao: '#a8482a', coador: '#8a5a2a', bancada: '#9a6a3a', mesa
 const R3IN_ALT = { fogao: 22, coador: 16, bancada: 14, mesa: 12, cama: 8, bau: 9, roupa: 30, trab: 13, banco: 7, feno: 12, tambor: 14, tapete: 0.4, balcao: 16, estante: 30 };
 function r3InSala(B, r) {
   const T = TS, X0 = T, X1 = (r.w - 1) * T, Z0 = 2 * T, Z1 = (r.h - 1) * T, HW = 42, parede = r.city ? r3c('#f0e8d8') : r3c('#f4ecd8'), rodape = r3c('#8a6a42');
-  R3.mat = R3MAT.tabua; for (let z = Z0; z < Z1; z += T) for (let x = X0; x < X1; x += T) { const k = (Math.floor(z / T) % 2 ? 0.03 : -0.03) + (H2(x, z, 5) - 0.5) * 0.04; r3quad(B, [x, 0, z + T], [x + T, 0, z + T], [x + T, 0, z], [x, 0, z], [0.72 + k, 0.55 + k, 0.36 + k]); }
+  const lajota = IN.id !== 'galpao' && IN.id !== 'deposito' && !/Est$|Galpao$|estabulo/.test(IN.id || ''); R3.mat = lajota ? R3MAT.calcada : R3MAT.tabua; for (let z = Z0; z < Z1; z += T) for (let x = X0; x < X1; x += T) { const k = (Math.floor(z / T) % 2 ? 0.03 : -0.03) + (H2(x, z, 5) - 0.5) * 0.04; r3quad(B, [x, 0, z + T], [x + T, 0, z + T], [x + T, 0, z], [x, 0, z], lajota ? [0.64 + k, 0.42 + k, 0.31 + k] : [0.72 + k, 0.55 + k, 0.36 + k]); }
   R3.mat = R3MAT.reboco; r3quad(B, [X0, 0, Z0], [X1, 0, Z0], [X1, HW, Z0], [X0, HW, Z0], parede); r3box(B, X0, 0, Z0, X1, 3, Z0 + 0.6, rodape);
   r3quad(B, [X0, 0, Z1], [X0, 0, Z0], [X0, HW, Z0], [X0, HW, Z1], parede.map(v => v * 0.88)); r3quad(B, [X1, 0, Z0], [X1, 0, Z1], [X1, HW, Z1], [X1, HW, Z0], parede.map(v => v * 0.88));
   const dx = (r.door + 0.5) * T; r3box(B, X0, 0, Z1, dx - 9, 6, Z1 + 3, parede.map(v => v * 0.8)); r3box(B, dx + 9, 0, Z1, X1, 6, Z1 + 3, parede.map(v => v * 0.8)); // parede da frente baixa (maquete) com o vão da porta
@@ -13430,6 +13430,10 @@ r3Prop = r3NoChao(r3Prop, (B, q) => [q.x, q.y - 2]);
     else if (g === G.DRY || k < 0.8) { R3.mat = R3MAT.pedra; const c = [0.7, 0.68, 0.62].map(q => q * (0.9 + R() * 0.15)); r3blob(B, x, 0.6, z, 6 + R() * 6, 1.4 + R(), 5 + R() * 5, c, tx + ty, 6); if (R() < 0.5) r3blob(B, x + 5, 1.2, z - 3, 3, 2, 3, c.map(q => q * 0.92), tx, 5); } }
   finally { R3.mat = m0; R3.dy = d0; } }; }
 
+/* barra pintada nas paredes de dentro e batente colorido na porta (como nas casas antigas do sertão) */
+{ const _isl3 = r3InSala; r3InSala = function (B, r) { _isl3(B, r); if (/galpao|deposito|Est$|Galpao$|estabulo/.test(IN.id || '')) return; const T = TS, X0 = T, X1 = (r.w - 1) * T, Z0 = 2 * T, Z1 = (r.h - 1) * T, hsh = [...String(IN.id || 'x')].reduce((a, c) => a + c.charCodeAt(0), 0), barra = r3c(R3BARRA[hsh % R3BARRA.length]).map(v => v * 0.9), m0 = R3.mat; R3.mat = R3MAT.reboco;
+  r3quad(B, [X0, 0, Z0 + 0.25], [X1, 0, Z0 + 0.25], [X1, 9, Z0 + 0.25], [X0, 9, Z0 + 0.25], barra); r3quad(B, [X0 + 0.25, 0, Z1], [X0 + 0.25, 0, Z0], [X0 + 0.25, 9, Z0], [X0 + 0.25, 9, Z1], barra.map(v => v * 0.88)); r3quad(B, [X1 - 0.25, 0, Z0], [X1 - 0.25, 0, Z1], [X1 - 0.25, 9, Z1], [X1 - 0.25, 9, Z0], barra.map(v => v * 0.88));
+  R3.mat = R3MAT.tabua; const dx = (r.door + 0.5) * T, bat = barra.map(v => Math.min(1, v * 1.25)); r3box(B, dx - 10, 0, Z1 - 0.4, dx - 8, 9, Z1 + 3.4, bat); r3box(B, dx + 8, 0, Z1 - 0.4, dx + 10, 9, Z1 + 3.4, bat); R3.mat = m0; }; }
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
