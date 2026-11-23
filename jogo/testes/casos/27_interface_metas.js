@@ -22,7 +22,7 @@ module.exports = { nome: 'Avisos em fila, painel Início, dicas, retratos e desa
   t.ok((await t.ev('S.cash + S.acct')) > c0, 'o desafio paga prêmio');
   t.ok(await t.ev("rankList().length === Object.keys(FARMS).length + 1 && rankList().some(x => x.k === 'me')"), 'o ranking lista as fazendas da região e a sua');
   // dicas
-  await t.ev("S.flags.tip_doente = 0; tipLast = -99; tipAcc = 5; M.open = false; tipTick(0.1); 0");
+  await t.ev("if (S.tut) S.tut.done = 1; S.min = Math.max(S.min, 10 * 60); S.flags.tip_doente = 0; tipLast = -99; tipAcc = 5; M.open = false; tipTick(0.1); 0");
   t.ok(await t.ev("document.getElementById('tipC') && document.getElementById('tipC').classList.contains('on')"), 'a dica aparece na hora certa');
   t.ok(await t.ev("!!S.flags.tip_doente || Object.keys(S.flags).some(k => k.startsWith('tip_') && S.flags[k])"), 'a dica fica marcada para não repetir');
   // retratos
