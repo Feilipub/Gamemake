@@ -19,7 +19,7 @@ module.exports = { nome: 'O ano no sertão: Santa Luzia, São José, Festa da Co
   await t.ev('closeModal(); 0');
   // fogo no pasto
   const fogo = JSON.parse(await t.ev(`(() => { S.weather = 'sol'; const k = 'p1'; for (let y = AREAS[k].r[1]; y <= AREAS[k].r[3]; y++) for (let x = AREAS[k].r[0]; x <= AREAS[k].r[2]; x++) { const i = gi(x, y); if (ground[i] === G.PAST) grass[i] = 220; }
-    S.aceiro = 0; window.__wk = S.workers; S.workers = []; const ok = fogoComeca(k); const rnd0 = Math.random; let sd = 7; Math.random = () => { sd = (sd * 16807) % 2147483647; return (sd % 1000) / 1000 * 0.3; }; try { for (let i = 0; i < 40; i++) fogoTick(0.5); } finally { Math.random = rnd0; } const n = S.fogo.length; return JSON.stringify({ ok, n }); })()`));
+    S.aceiro = 0; window.__wk = S.workers; S.workers = []; const ok = fogoComeca(k); const rnd0 = Math.random, seq = [0.1, 0.05, 0.2, 0.3, 0.3, 0.55, 0.4, 0.8]; let qi = 0; Math.random = () => seq[qi++ % seq.length]; try { for (let i = 0; i < 40; i++) fogoTick(0.5); } finally { Math.random = rnd0; } const n = S.fogo.length; return JSON.stringify({ ok, n }); })()`));
   t.ok(fogo.ok && fogo.n > 2, 'o fogo pega no pasto e se espalha (' + fogo.n + ' chamas)');
   t.ok(await t.ev("(() => { const f = S.fogo[0]; P.mnt = null; P.x = (f[0] + 0.5) * TS; P.y = (f[1] + 1.2) * TS; computeCtx(); return P._ctx && /Apagar o fogo/.test(P._ctx.label); })()"), 'perto do fogo a AÇÃO é apagar');
   t.ok(await t.ev("(() => { let g = 0; while (S.fogo.length && g++ < 80) { const f = S.fogo[0]; fogoApagar((f[0] + 0.5) * TS, (f[1] + 0.5) * TS); } return !S.fogo.length && S.stats.fogos === 1; })()"), 'apagando as chamas, o fogo acaba');
