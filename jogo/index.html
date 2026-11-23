@@ -13545,6 +13545,17 @@ function r3Carro(B, v, ang) { const W = { x: v.x, y: 0, z: v.y, ca: Math.cos(ang
     if (v.load || (S.cartLoad && S.cart === v)) { R3.mat = 0; for (let i = 0; i < 3; i++) r3box(B, v.x - 6, y0 + 2, v.y - 4, v.x + 6, y0 + 6, v.y + 4, [0.85, 0.75, 0.45]); }
   } finally { R3.mat = m0; } }
 r3Carro = r3NoChao(r3Carro, (B, v) => [v.x, v.y]);
+/* paisagem viva: redemoinho de poeira na seca e peixes pulando na água */
+const R3VIVA = { rd: null, px: [] };
+function r3Viva(B) { if (SET.r3fx === false || !R3.T || mode !== 'play') return; const t = performance.now() / 1000, m0 = R3.mat; R3.mat = 0;
+  try { if (season() && !(S.wx && S.wx.ri > 0.05)) { let r = R3VIVA.rd; if (!r || t > r.fim) { r = R3VIVA.rd = Math.random() < 0.35 ? { x: R3.T[0] + (Math.random() - 0.5) * 400, z: R3.T[1] - 60 - Math.random() * 200, vx: (Math.random() - 0.5) * 18, vz: (Math.random() - 0.5) * 10, ini: t, fim: t + 9 + Math.random() * 8 } : { fim: t + 12 }; }
+      if (r.x !== undefined) { const g = ground[gi(Math.floor(r.x / TS), Math.floor(r.z / TS))]; if (g !== G.WATER && g !== G.PAVE) { const vida = Math.min(1, (t - r.ini) / 2, (r.fim - t) / 2), x = r.x + r.vx * (t - r.ini), z = r.z + r.vz * (t - r.ini), d0 = R3.dy; R3.dy = r3Alt(x, z);
+        for (let i = 0; i < 10; i++) { const h = i * 4.5 * vida, w = (2 + i * 1.4) * vida, a = t * 7 + i * 0.8, cx = x + Math.sin(a) * (1 + i * 0.4), cz = z + Math.cos(a) * (1 + i * 0.3), c = i % 2 ? [0.8, 0.7, 0.54] : [0.88, 0.8, 0.66]; for (let k = 0; k < 6; k++) { if ((k + i) % 2) continue; const b0 = k / 6 * 6.28 + a, b1 = (k + 1) / 6 * 6.28 + a; r3quad(B, [cx + Math.cos(b0) * w, h, cz + Math.sin(b0) * w], [cx + Math.cos(b1) * w, h, cz + Math.sin(b1) * w], [cx + Math.cos(b1) * w * 1.1, h + 1.6, cz + Math.sin(b1) * w * 1.1], [cx + Math.cos(b0) * w * 1.1, h + 1.6, cz + Math.sin(b0) * w * 1.1], c, 3); } } R3.dy = d0; } } }
+    if (Math.random() < 0.03 && R3VIVA.px.length < 3) { const x = R3.T[0] + (Math.random() - 0.5) * 360, z = R3.T[1] + (Math.random() - 0.5) * 300, j = gi(Math.floor(x / TS), Math.floor(z / TS)); if (ground[j] === G.WATER) R3VIVA.px.push({ x, z, t0: t, a: Math.random() * 6.28 }); }
+    R3VIVA.px = R3VIVA.px.filter(p => t - p.t0 < 1.4); for (const p of R3VIVA.px) { const u = (t - p.t0) / 0.9; if (u <= 1) { const W = { x: p.x + Math.cos(p.a) * u * 8, y: -2 + Math.sin(u * Math.PI) * 8, z: p.z + Math.sin(p.a) * u * 8, ca: Math.cos(p.a), sa: Math.sin(p.a) }; r3bx(B, W, 0, 0, 0, 4, 1.4, 0.9, [0.78, 0.82, 0.86], [0, 0, (0.5 - u) * 2]); r3bx(B, W, -2.4, 0, 0, 1.2, 1.6, 0.4, [0.6, 0.65, 0.7], [0, 0, (0.5 - u) * 2]); }
+      const rr = (t - p.t0) * 6; for (const q of [0, 1]) { const qx = p.x + Math.cos(p.a) * q * 8, qz = p.z + Math.sin(p.a) * q * 8, R0 = rr - q * 2; if (R0 <= 0) continue; for (let k = 0; k < 8; k++) { const b0 = k / 8 * 6.28, b1 = (k + 1) / 8 * 6.28; r3quad(B, [qx + Math.cos(b0) * R0, -2.6, qz + Math.sin(b0) * R0], [qx + Math.cos(b1) * R0, -2.6, qz + Math.sin(b1) * R0], [qx + Math.cos(b1) * (R0 + 0.6), -2.6, qz + Math.sin(b1) * (R0 + 0.6)], [qx + Math.cos(b0) * (R0 + 0.6), -2.6, qz + Math.sin(b0) * (R0 + 0.6)], [0.85, 0.9, 0.95], 3); } } }
+  } finally { R3.mat = m0; } }
+{ const _rd14 = r3Dinamico; r3Dinamico = function () { const B = _rd14(); try { r3Viva(B); } catch (e) { } return B; }; }
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
