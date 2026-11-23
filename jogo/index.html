@@ -426,7 +426,7 @@ body:not(:has(#mn.on)):has(#msg.on) #toast{top:calc(118px + var(--sat))}body.lan
 /* ============ NÚCLEO ============ */
 const $ = i => document.getElementById(i);
 const TS = 16, MW = 376, MH = 264, WPX = MW * TS, HPX = MH * TS;
-const GAME_V = '27.1.0', SAVE_V = 9;
+const GAME_V = '27.2.0', SAVE_V = 9;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rint = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -4685,7 +4685,7 @@ function cattleGrow(a, B) {
   a.wt = Math.round(cl((a.wt || 30) + g, 22, maxW) * 10) / 10; a._fA = 0; a._fT = 0; weighLog(a);
 }
 /* ---------- preço: reposição (com ágio para animal jovem) x frigorífico (por arroba) ---------- */
-const kgPrice = () => S.arroba / 15; // R$ por kg vivo de boi gordo (escala do jogo)
+const kgPrice = () => S.arroba * 0.52 / 15; // R$ por kg vivo: a arroba é de carcaça (rendimento ~52%)
 function repoF() { return 1 + (season() === 0 ? 0.06 : -0.04); } // nas águas todo mundo quer bezerro
 function catFactor(a) { const w = a.wt || 0; if (a.sex === 'M') return a.age >= 24 && !a.cast ? (a.repro ? 1.15 : 0.95) : 1 + 0.24 * cl((430 - w) / 250, 0, 1); return a.age >= 24 ? 0.92 * (a.preg ? 1.15 : 1) * (a.lact ? 1.08 : 1) : 0.96 + 0.18 * cl((380 - w) / 230, 0, 1); }
 function frigPriceBoi(a) {
@@ -4747,7 +4747,7 @@ const arrobas = a => (a.wt || 0) * 0.52 / 15; // carcaça com 52% de rendimento
 const acabN = e => e >= 3.5 ? 'acabado (gordo)' : e >= 2.5 ? 'médio' : 'magro';
 const precoce = a => a.sp === 'boi' && a.age <= 30 && (a.cast || a.sex === 'F') && ecc(a) >= 3.5;
 function abateMeta(a) { return Math.round(adultW(a.br, a.sex, a.cast) * (a.sex === 'F' ? 0.8 : 0.82)); }
-const prontoAbate = a => a.sp === 'boi' && a.age >= 18 && ecc(a) >= 3.5 && (a.wt || 0) >= abateMeta(a) * 0.95;
+const prontoAbate = a => a.sp === 'boi' && a.age >= 18 && !(a.lact > 0) && !(a.preg > 0) && ecc(a) >= 3.5 && (a.wt || 0) >= abateMeta(a) * 0.95;
 function sparkSVG(a) {
   const w = (a.wh || []).slice(-14); if (w.length < 2) return '<span class="mut">A curva aparece depois de alguns dias.</span>';
   const ys = w.map(p => p[1]), mn = Math.min(...ys), mx = Math.max(...ys), r = Math.max(1, mx - mn), W = 180, H = 36;
@@ -5202,7 +5202,7 @@ function dayTick() { storyCheck(); try { histDaily(); custosDay(); } catch (e) {
   // clima
   wxDay();
   // mercado
-  S.arroba = Math.round(cl(S.arroba * (1 + gauss() * 0.018) + (se ? 0.9 : -0.6), 255, 390) * 100) / 100; S.arrHist.push(S.arroba); if (S.arrHist.length > 30) S.arrHist.shift();
+  S.arroba = Math.round(cl(S.arroba * (1 + gauss() * 0.008) + (312 * (se ? 1.06 : 0.96) - S.arroba) * 0.05, 255, 390) * 100) / 100; S.arrHist.push(S.arroba); if (S.arrHist.length > 30) S.arrHist.shift();
   // animais
   const born = [];
   for (const a of S.animals) {
@@ -5239,7 +5239,7 @@ function dayTick() { storyCheck(); try { histDaily(); custosDay(); } catch (e) {
       if ((a.sp === 'cavalo') && built('estrebaria')) mate = males.find(m => m.sp === 'cavalo' || m.sp === 'jumento');
       if (a.sp === 'jumento') mate = males.find(m => m.sp === 'jumento');
       if (a.sp === 'cabra') mate = males.find(m => m.sp === 'cabra');
-      if (mate && (a.sp !== 'boi' || a.cio === S.day) && Math.random() < (a.sp === 'boi' ? 0.45 : a.sp === 'cabra' ? 0.14 : 0.07) * (a.hap / 80)) { a.preg = a.sp === 'boi' ? 7 : a.sp === 'cabra' ? 5 : 9; a._pai = mate.id; a._paiN = mate.n; a._paiSp = mate.sp; a._paiBr = mate.br; a._paiGen = mate.gen; a._paiCoat = mate.coat; a._paiMk = mate.mk; a._paiAnd = mate.and ? mate.and.nv : 0; }
+      if (mate && (a.sp !== 'boi' || a.cio === S.day) && Math.random() < (a.sp === 'boi' ? 0.45 : a.sp === 'cabra' ? 0.14 : 0.07) * (a.hap / 80)) { a.preg = a.sp === 'boi' ? 11 : a.sp === 'cabra' ? 6 : 13; a._pai = mate.id; a._paiN = mate.n; a._paiSp = mate.sp; a._paiBr = mate.br; a._paiGen = mate.gen; a._paiCoat = mate.coat; a._paiMk = mate.mk; a._paiAnd = mate.and ? mate.and.nv : 0; }
     }
   }
   for (const m of born) { if (m.sp === 'boi' && startLabor(m)) continue; birthCalf(m); }
@@ -7605,7 +7605,7 @@ A.mnj = k => {
 };
 function iaHTML(a) { const L = Object.keys(SEMEN).filter(k => (S.semen || {})[k] > 0); return `<div class="card"><b>Inseminar ${esc(a.n)}</b><p class="mut">Escolha o touro (dose de sêmen do botijão). Chance de emprenhar ≈ ${Math.round(iaChance(a) * 100)}%.</p><div class="row">${L.map(k => btn(SEMEN[k][0] + ' (' + S.semen[k] + ')', 'iaDo', k)).join('') || '<span class="mut">Sem sêmen. Compre na Casa do Agro › Genética.</span>'}</div></div>`; }
 function iaChance(a) { return cl(0.55 * (a.hap / 80) * (ecc(a) >= 3 ? 1 : ecc(a) >= 2.5 ? 0.8 : 0.5) * (1 + skill('pec') * 0.04), 0.1, 0.8); }
-A.iaDo = k => { const a = SH.a; if (!a || !(S.semen[k] > 0)) return; SH.sub = null; doAnimal(a, 'insem', 2.4, () => { S.semen[k]--; if (a.cio === S.day && Math.random() < iaChance(a)) { a.preg = 7; a._pai = null; a._paiN = 'Touro ' + SEMEN[k][0] + ' (IA)'; a._paiSp = 'boi'; a._paiBr = k; a._paiGen = rint(78, 92); a._ia = 1; } a.cio = 0; hist(a, 'Inseminada com ' + SEMEN[k][0]); toast('💉 ' + a.n + ' inseminada com ' + SEMEN[k][0] + '. Faça o toque em alguns dias para confirmar.'); }); };
+A.iaDo = k => { const a = SH.a; if (!a || !(S.semen[k] > 0)) return; SH.sub = null; doAnimal(a, 'insem', 2.4, () => { S.semen[k]--; if (a.cio === S.day && Math.random() < iaChance(a)) { a.preg = 11; a._pai = null; a._paiN = 'Touro ' + SEMEN[k][0] + ' (IA)'; a._paiSp = 'boi'; a._paiBr = k; a._paiGen = rint(78, 92); a._ia = 1; } a.cio = 0; hist(a, 'Inseminada com ' + SEMEN[k][0]); toast('💉 ' + a.n + ' inseminada com ' + SEMEN[k][0] + '. Faça o toque em alguns dias para confirmar.'); }); };
 /* ---------- brete: manejo do lote inteiro do curral ---------- */
 function breteLot() { return myAnimals('boi').filter(a => a.area === 'curral' && !isHitched(a.id)); }
 function openBrete() {
@@ -13977,7 +13977,7 @@ function cobrirHTML(a) {
 function cobrir(a, sire, paid) {
   a._cobD = S.day; SH.sub = null;
   doAnimal(a, 'brush', 2.4, () => {
-    if (Math.random() < (paid ? 0.9 : 0.75) * (0.7 + (a.hap || 60) / 300)) { a.preg = 9; a._pai = sire.id || null; a._paiN = sire.n; a._paiSp = sire.sp || 'cavalo'; a._paiBr = sire.br; a._paiGen = sire.gen; a._paiCoat = sire.coat; a._paiMk = sire.mk; a._paiAnd = sire.and && sire.and.nv !== undefined ? sire.and.nv : (sire.and || 0); hist(a, 'Coberta por ' + sire.n); toast('🐎 ' + a.n + ' pegou cria de ' + sire.n + '! O potro nasce em cerca de 9 dias.'); }
+    if (Math.random() < (paid ? 0.9 : 0.75) * (0.7 + (a.hap || 60) / 300)) { a.preg = 13; a._pai = sire.id || null; a._paiN = sire.n; a._paiSp = sire.sp || 'cavalo'; a._paiBr = sire.br; a._paiGen = sire.gen; a._paiCoat = sire.coat; a._paiMk = sire.mk; a._paiAnd = sire.and && sire.and.nv !== undefined ? sire.and.nv : (sire.and || 0); hist(a, 'Coberta por ' + sire.n); toast('🐎 ' + a.n + ' pegou cria de ' + sire.n + '! O potro nasce em cerca de 9 dias.'); }
     else toast('A cobertura de ' + a.n + ' não pegou. Tente de novo amanhã.');
   });
 }
@@ -14246,7 +14246,7 @@ function openAcougue() { showModal('🥩 Açougue do Tonho', [['cor', 'Cortes'],
   if (t === 'aba') { const L = myAnimals('boi').filter(a => a.area === 'curral'); h += `<p>Arroba hoje: <b>${fmt2(S.arroba)}</b>. Animais acima de 3★ ganham bônus de acabamento.</p>` + (L.map(a => `<div class="card"><div class="row sp">${animalImg(a, 1)}<span style="flex:1">${esc(a.n)} · ${Math.round(a.wt)} kg<br><span class="stars">${starStr(stars(a))}</span></span><b>${fmt(abatePrice(a))}</b></div>${btn('Vender ao açougue', 'abate', a.id)}</div>`).join('') || '<p class="mut">Coloque no Curral Principal os bois que quer vender.</p>'); }
   if (t === 'cot') h += `<div class="card">${spark(S.arrHist)}<p>Arroba do boi: ${fmt2(S.arroba)} (Seca = preço mais alto)</p><table class="t"><tr><th>Corte</th><th>Preço/kg</th></tr>${CUTS.map(c => `<tr><td>${IT[c].n}</td><td>${fmt2(IT[c].p)}</td></tr>`).join('')}</table></div>`;
   return h; }); }
-function abatePrice(a) { const st = stars(a); return Math.round(a.wt / 15 * S.arroba * (0.9 + st * 0.05) * (a.age >= 20 ? 1 : 0.85)); }
+function abatePrice(a) { const st = stars(a); return Math.round(a.wt * (a.sex === 'F' ? 0.5 : 0.52) / 15 * S.arroba * (0.9 + st * 0.05) * (a.age >= 20 ? 1 : 0.85)); }
 A.abate = v => { const a = byId(+v); if (!a) return; receive(abatePrice(a), 'Venda ao açougue: ' + a.n); S.animals = S.animals.filter(x => x !== a); S.stats.sold++; addFr('tonho', 10); remember('tonho', 'vendeu o boi ' + a.n); renderModal(); };
 /* ---------- pedreiro ---------- */
 function openPedreiro() { showModal('🔨 Casa do Pedreiro', [['pro', 'Projetos'], ['mat', 'Materiais'], ['obr', 'Obras']], 'pro', t => {
@@ -14472,7 +14472,7 @@ A.machGo = src => { let fk = 1; if (src === 'dep') { if (S.dep.milho < 20) retur
 A.machGet = () => { if (machState() !== 'done') return; if (depKg() + S.mach.out > depCap()) return say('Depósito cheio!'); S.dep.racao += S.mach.out; toast('🌽 +' + S.mach.out + ' kg de ração no depósito'); AU.pickup(); S.mach = null; renderModal(); };
 function cleanCurral(k) { if ((S.dirt[k] || 0) < 5) return say('Está limpo.'); act('sweep', 3.2, { x: P.x + 10, y: P.y }, () => { const ek = Math.round((S.dirt[k] || 0) * 1.5); S.dep.esterco = (S.dep.esterco || 0) + ek; S.dirt[k] = 0; P.en = Math.max(0, P.en - 5); toast('🧹 ' + AREAS[k].n + ' limpo! +' + ek + ' kg de esterco no depósito.'); AU.chime(); }, { int: 1 }); }
 /* ---------- ajuda e opções ---------- */
-function showHelp() { showModal('❓ Como jogar', null, null, () => `<p><b>Andar:</b> joystick (ou WASD/setas). Segure <b>Correr/Galope</b> (Shift) para ir mais rápido.</p><p><b>Toque no mapa:</b> toque em um <b>animal</b> para abrir a ficha dele com as ações. Toque em pessoas, porteiras, cochos, portas e objetos para o vaqueiro ir até lá e interagir.</p><p><b>Zoom:</b> use dois dedos (pinça) na tela ou a rodinha do mouse.</p><p><b>Ação</b> (E/Espaço): o botão amarelo mostra a interação mais próxima.</p><p><b>Aboio</b> (Q): o gado e os cavalos próximos seguem você. <b>Laço</b> (F): laça o animal mais próximo. <b>Montar</b> (R): sela e monta; longe do cavalo, assobia para ele vir.</p><p><b>Vender:</b> animais no Curral Principal, no Açougue ou pela ficha do animal.</p><p><b>Pastagens:</b> o capim acaba e rebrota; faça rodízio entre os piquetes.</p><p><b>Dia:</b> ~${SET.dia || 12} minutos reais (ajuste em Configurações › Tempo). Durma na Casa Sede após as 18h.</p><p><b>Primeira vez?</b> Siga o 🎓 Tutorial e depois a 📜 Jornada no canto da tela.</p><p><b>Controle de videogame:</b> analógico anda · A ação · B/RT correr · X aboio · Y montar · LB laço · RB cães · LT arma · Select mochila · Start menu (e pula cenas) · analógico direito faz zoom. Nos menus, na tela inicial e na criação do vaqueiro: direcional escolhe, A confirma, B volta, analógico direito rola.</p><p class="mut">Teclado: I mochila · M menu · Esc fecha. Troque as teclas em Configurações › Teclado.</p>`, 'scroll'); }
+function showHelp() { showModal('❓ Como jogar', null, null, () => `<p><b>Tempo dos bichos:</b> cada dia de jogo vale mais ou menos 1 mês na vida dos animais (o bezerro vira boi em poucas semanas de jogo, a vaca fica prenhe uns 11 dias).</p><p><b>Andar:</b> joystick (ou WASD/setas). Segure <b>Correr/Galope</b> (Shift) para ir mais rápido.</p><p><b>Toque no mapa:</b> toque em um <b>animal</b> para abrir a ficha dele com as ações. Toque em pessoas, porteiras, cochos, portas e objetos para o vaqueiro ir até lá e interagir.</p><p><b>Zoom:</b> use dois dedos (pinça) na tela ou a rodinha do mouse.</p><p><b>Ação</b> (E/Espaço): o botão amarelo mostra a interação mais próxima.</p><p><b>Aboio</b> (Q): o gado e os cavalos próximos seguem você. <b>Laço</b> (F): laça o animal mais próximo. <b>Montar</b> (R): sela e monta; longe do cavalo, assobia para ele vir.</p><p><b>Vender:</b> animais no Curral Principal, no Açougue ou pela ficha do animal.</p><p><b>Pastagens:</b> o capim acaba e rebrota; faça rodízio entre os piquetes.</p><p><b>Dia:</b> ~${SET.dia || 12} minutos reais (ajuste em Configurações › Tempo). Durma na Casa Sede após as 18h.</p><p><b>Primeira vez?</b> Siga o 🎓 Tutorial e depois a 📜 Jornada no canto da tela.</p><p><b>Controle de videogame:</b> analógico anda · A ação · B/RT correr · X aboio · Y montar · LB laço · RB cães · LT arma · Select mochila · Start menu (e pula cenas) · analógico direito faz zoom. Nos menus, na tela inicial e na criação do vaqueiro: direcional escolhe, A confirma, B volta, analógico direito rola.</p><p class="mut">Teclado: I mochila · M menu · Esc fecha. Troque as teclas em Configurações › Teclado.</p>`, 'scroll'); }
 function showCredits() { closeModal(); OP.credits(); }
 function showOptions() { showModal('Configurações', null, null, () => cfgHTML(false), 'gear'); }
 

@@ -13,8 +13,8 @@ Os passos abaixo são os que **só você** pode fazer, porque pedem a sua conta 
 
 | Item | Onde |
 |---|---|
-| App para enviar à loja (`.aab`, versão 27.1.0, código 94, Android 16 / API 36) | enviado no chat: `LidaNoSertao-27.1.0.aab` |
-| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-27.1.0.apk` |
+| App para enviar à loja (`.aab`, versão 27.2.0, código 95, Android 16 / API 36) | enviado no chat: `LidaNoSertao-27.2.0.aab` |
+| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-27.2.0.apk` |
 | Chave de upload e senha | já enviadas antes no chat, em `chave_upload_lida.zip` (**é a mesma chave; guarde bem!**) |
 | Ícone 512 × 512 | `loja/imagens/icone_512.png` |
 | Banner 1024 × 500 | `loja/imagens/banner_1024x500.png` |
@@ -33,6 +33,29 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 - **Modo online:** funciona no app, ligando um celular direto no outro.
 - **Android 16 (API 36):** o app mira a versão que a Play Store exige para apps novos.
 - **Tela "Sobre e privacidade":** fica em Configurações. Os créditos agora incluem PeerJS e OpenStreetMap.
+
+## Novidades da 27.2 — o que 20 jogadores de teste pediram
+- **Preços reais:** a arroba é de carcaça (rendimento de ~52%) e não sobe mais 20% numa seca.
+- **Gado:** gestação no tempo certo; vaca dando leite ou prenhe não aparece "pronta para abate".
+- **Cultura:**
+  - Missa do Vaqueiro com a história de Serrita;
+  - São João com licor de jenipapo e amendoim;
+  - Sela de Vaquejada;
+  - Barbatão derrubado pelo rabo;
+  - Joana é veterinária.
+- **Começo mais claro:**
+  - origem padrão Bahia e cavalo Nordestino;
+  - botão "Próximo" sempre à vista;
+  - nada de "Shift" no celular;
+  - dicas só depois do tutorial;
+  - árvore transparente sobre o vaqueiro.
+- **Celular fraco:** se o 3D ficar lento demais, o jogo troca sozinho para o modo leve.
+- **Botões:** maiores e com letra legível; o botão "Arma" agora se chama "Facão".
+- **Correções:**
+  - salvar no meio de uma cena não trava mais;
+  - comprar e revender o mesmo bicho ao mesmo morador não dá mais lucro garantido;
+  - no online, o convidado não mexe mais no dinheiro de quem abriu a fazenda.
+- **Falas:** os moradores não repetem as mesmas frases.
 
 ## Novidades da 27.1 — mais perto dos desenhos (2ª revisão do Diretor de Arte)
 - **Vaqueiro:** baixinho e parrudo como no desenho, com xadrez da camisa visível.
@@ -193,7 +216,7 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 
 ## Passo 1 — Testar no celular (5 minutos)
 
-1. Passe `LidaNoSertao-27.1.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
+1. Passe `LidaNoSertao-27.2.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
 2. Jogue um pouco.
 3. Teste o botão voltar, o **Exportar save** e uma sala online com outro celular.
 
