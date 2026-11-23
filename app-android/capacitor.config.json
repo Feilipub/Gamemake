@@ -1,0 +1,6 @@
+{
+  "appId": "br.com.rfgames.lidanosertao",
+  "appName": "Lida no Sertão",
+  "webDir": "www",
+  "android": { "backgroundColor": "#1f140e", "allowMixedContent": false, "webContentsDebuggingEnabled": false }
+}

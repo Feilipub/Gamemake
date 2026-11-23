@@ -1,0 +1,74 @@
+# Lida no Sertão — gera o app Android (Capacitor) e, se os segredos existirem, envia para a Play Store sozinho.
+# Segredos (Settings › Secrets and variables › Actions), todos opcionais:
+#   LIDA_KEYSTORE_BASE64   chave de upload (.jks) em base64        LIDA_KEYSTORE_SENHA  senha da chave
+#   PLAY_SERVICE_ACCOUNT_JSON  conta de serviço do Play Console (envio automático para a loja)
+# Sem a chave: gera só um APK de teste (debug). Com a chave: AAB e APK assinados. Com a conta de serviço: envia o AAB.
+name: Lida no Sertão — Android
+on:
+  push:
+    branches: [ccr-8494ac05-m0vb49, main]
+    paths: ['jogo/index.html', 'app-android/**', '.github/workflows/lida-android.yml']
+  workflow_dispatch:
+    inputs:
+      faixa:
+        description: 'Faixa da Play Store (internal = teste interno, alpha = teste fechado, production = produção)'
+        default: internal
+        type: choice
+        options: [internal, alpha, beta, production]
+      status:
+        description: 'completed = publica na faixa; draft = rascunho (use enquanto o app ainda não foi revisado pela primeira vez)'
+        default: completed
+        type: choice
+        options: [completed, draft]
+permissions:
+  contents: read
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    env:
+      VERSION_CODE: ${{ github.run_number }}00
+      TEM_CHAVE: ${{ secrets.LIDA_KEYSTORE_BASE64 != '' }}
+      TEM_PLAY: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Android SDK 36
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;35.0.0" > /dev/null
+      - name: Copiar o jogo para o app
+        working-directory: app-android
+        run: npm ci && npm run sync
+      - name: Chave de upload
+        if: env.TEM_CHAVE == 'true'
+        working-directory: app-android/android
+        run: |
+          echo "${{ secrets.LIDA_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/lida-upload.jks"
+          printf 'storeFile=%s\nstorePassword=%s\nkeyAlias=lida-upload\nkeyPassword=%s\n' "$RUNNER_TEMP/lida-upload.jks" "${{ secrets.LIDA_KEYSTORE_SENHA }}" "${{ secrets.LIDA_KEYSTORE_SENHA }}" > keystore.properties
+      - name: Compilar (assinado)
+        if: env.TEM_CHAVE == 'true'
+        working-directory: app-android/android
+        run: chmod +x gradlew && ./gradlew --no-daemon bundleRelease assembleRelease
+      - name: Compilar (APK de teste, sem chave)
+        if: env.TEM_CHAVE != 'true'
+        working-directory: app-android/android
+        run: chmod +x gradlew && ./gradlew --no-daemon assembleDebug
+      - name: Guardar os arquivos
+        uses: actions/upload-artifact@v4
+        with:
+          name: lida-no-sertao-android-${{ env.VERSION_CODE }}
+          path: |
+            app-android/android/app/build/outputs/bundle/release/*.aab
+            app-android/android/app/build/outputs/apk/*/*.apk
+          if-no-files-found: error
+      - name: Enviar para a Play Store
+        if: env.TEM_CHAVE == 'true' && env.TEM_PLAY == 'true' && (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main')
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: br.com.rfgames.lidanosertao
+          releaseFiles: app-android/android/app/build/outputs/bundle/release/app-release.aab
+          track: ${{ inputs.faixa || 'internal' }}
+          status: ${{ inputs.status || 'completed' }}
+          inAppUpdatePriority: 2
