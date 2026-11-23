@@ -13,8 +13,8 @@ Os passos abaixo são os que **só você** pode fazer, porque pedem a sua conta 
 
 | Item | Onde |
 |---|---|
-| App para enviar à loja (`.aab`, versão 27.0.0, código 93, Android 16 / API 36) | enviado no chat: `LidaNoSertao-27.0.0.aab` |
-| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-27.0.0.apk` |
+| App para enviar à loja (`.aab`, versão 27.1.0, código 94, Android 16 / API 36) | enviado no chat: `LidaNoSertao-27.1.0.aab` |
+| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-27.1.0.apk` |
 | Chave de upload e senha | já enviadas antes no chat, em `chave_upload_lida.zip` (**é a mesma chave; guarde bem!**) |
 | Ícone 512 × 512 | `loja/imagens/icone_512.png` |
 | Banner 1024 × 500 | `loja/imagens/banner_1024x500.png` |
@@ -33,6 +33,12 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 - **Modo online:** funciona no app, ligando um celular direto no outro.
 - **Android 16 (API 36):** o app mira a versão que a Play Store exige para apps novos.
 - **Tela "Sobre e privacidade":** fica em Configurações. Os créditos agora incluem PeerJS e OpenStreetMap.
+
+## Novidades da 27.1 — mais perto dos desenhos (2ª revisão do Diretor de Arte)
+- **Vaqueiro:** baixinho e parrudo como no desenho, com xadrez da camisa visível.
+- **Bichos:** cavalo e boi com pernas mais finas; gado com corpo mais curto e alto.
+- **Brancos limpos:** sem cinza nas laterais e sem riscos dentro dos corpos.
+- **Cercas e chão:** arame em linha fina, capim sem contorno e mourões em marrom-médio.
 
 ## Novidades da 27.0 — tamanhos reais e o estilo dos desenhos do jogador
 - **Visual novo em pixel art, igual aos desenhos do jogador:** câmera isométrica (de cima, na diagonal), luz chapada em três tons, contorno escuro em tudo e pixels grandes. O 3D com perspectiva continua em Configurações › Ajustes do 3D.
@@ -187,7 +193,7 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 
 ## Passo 1 — Testar no celular (5 minutos)
 
-1. Passe `LidaNoSertao-27.0.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
+1. Passe `LidaNoSertao-27.1.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
 2. Jogue um pouco.
 3. Teste o botão voltar, o **Exportar save** e uma sala online com outro celular.
 
