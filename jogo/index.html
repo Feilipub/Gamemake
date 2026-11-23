@@ -13558,6 +13558,11 @@ function r3Viva(B) { if (SET.r3fx === false || !R3.T || mode !== 'play') return;
   } finally { R3.mat = m0; } }
 { const _rd14 = r3Dinamico; r3Dinamico = function () { const B = _rd14(); try { r3Viva(B); } catch (e) { } return B; }; }
 { const _lz6 = r3Luzes; r3Luzes = function (L, sala) { _lz6(L, sala); const gl = R3.gl, u = R3.u; if (u.uWet === undefined) { u.uWet = gl.getUniformLocation(R3.P, 'uWet'); R3.wet = 0; } const alvo = sala ? 0 : (S && S.wx ? cl(S.wx.ri * 1.4, 0, 1) : 0); R3.wet += (alvo - R3.wet) * (alvo > R3.wet ? 0.01 : 0.002); gl.uniform1f(u.uWet, R3.wet); }; }
+/* idosos (cabelo grisalho ou branco): um pouco curvados e com bengala */
+{ const _pb2 = r3PoseBraco; r3PoseBraco = function (o, sg, ang, cot, t) { if (o.acao === 'bengala') return sg > 0 ? [0.42 + Math.sin(t * 3) * 0.04 * (o.mvB || 0), 0.05] : [ang * 0.5, cot]; return _pb2(o, sg, ang, cot, t); }; }
+{ const _pt2 = r3PoseTronco; r3PoseTronco = function (o) { if (o.acao === 'bengala') return 0.2; return _pt2(o); }; }
+{ const _fe = r3Ferramenta; r3Ferramenta = function (B, W, o, x, y, z, a, s, t) { if (o.acao === 'bengala') { r3Seg(B, W, x + s(0.4), y, z, 0.12, (y - 0.3) / Math.cos(0.12), s(0.5), s(0.5), r3c('#6a4422')); r3bx(B, W, x + s(0.4), y + s(0.3), z, s(1.6), s(0.6), s(0.6), r3c('#6a4422')); return; } return _fe(B, W, o, x, y, z, a, s, t); }; }
+{ const _gv = r3Gente; r3Gente = function (B, x, z, a, ap, ph, mv, o) { if (ap && (ap.hairC === 5 || ap.hairC === 6) && !(o && (o.acao || o.sentado)) && !(typeof P !== 'undefined' && P && x === P.x && z === P.y)) o = Object.assign({}, o || {}, { acao: 'bengala', mvB: mv || 0 }); return _gv(B, x, z, a, ap, (ph || 0) * 0.8, (mv || 0) * 0.75, o); }; }
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
