@@ -114,7 +114,24 @@ Na v20, o 3D era uma homenagem ao PlayStation 1. Mesmo assim, ficava abaixo dos 
 - A diferença que sobra é de técnica, não de desenho: o jogo é um mundo 3D de blocos com luz do sol, e os desenhos são pixel art 2D com luz chapada.
 - Para chegar perto de 100%, seria preciso trocar o 3D por sprites desenhados à mão, no mesmo estilo dos desenhos.
 
-## Como está agora, comparado a jogos atuais
+#### Revisão do Diretor de Arte (agente `art-director` do estúdio)
+O que foi aplicado:
+- **Contorno:** 1 px na cor do próprio objeto ×0,45, mais linhas internas ×0,70 e um limiar maior.
+- **Sombras:** as sombras no chão voltaram no pixel art; a névoa estava apagando todas.
+- **Luz:** três tons — topo 1,00, lado claro 0,88 e lado escuro 0,64, com tom frio.
+- **Cores:** sem o reforço de saturação, contraste 1,05, e cada cor puxada 45% para a paleta terrosa da revisão (24 cores).
+- **Resolução:** 270 px.
+- **Chapéu:** aba menor, em couro #7d5232.
+- **Cupim:** da cor do corpo (antes saía uma caixa preta).
+- **Cores por raça:** seguem a folha do jogador.
+- **Girolando:** branco com manchas pretas.
+- **Arame:** mais claro.
+- **Chão:** textura mais limpa e 60% menos tufos de capim.
+
+O que ficou de fora e por quê:
+- **Meias brancas do cavalo:** ficam, porque são escolha do jogador na personalização.
+- **Proporção "chibi" de 4 cabeças, reforma do corpo do cavalo e do boi (pernas finas, barbela), oclusão na base e arame fora do contorno:** são mudanças grandes nos modelos e ficam para a próxima etapa.
+
 
 - **Estilo PS1:** agora está no nível dos bons jogos de fazenda de PS1, e acima deles em luz (sombras pelo sol, água refletindo, céu dinâmico).
 - **Ainda falta para jogos atuais de 2024–2026:**
