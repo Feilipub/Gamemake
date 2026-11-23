@@ -12891,7 +12891,7 @@ function r3Humano(B, x, z, a, ap, ph, mv, o) {
     const curta = shBase === 1, mangaCor = sh;
     const [ex, ey] = r3Seg(B, W, ombroX, ombroY, zz, ang, s(4.4), s(2.5), s(2.5), mangaCor);
     const [hx, hy] = r3Seg(B, W, ex, ey, zz, ang + cot, s(4.1), s(2.2), s(2.2), curta ? sk : mangaCor);
-    r3bx(B, W, hx + Math.sin(ang + cot) * s(0.9), hy - Math.cos(ang + cot) * s(0.9), zz, s(1.9), s(2), s(1.7), ap.gl ? couro : sk, [hx, hy, ang + cot]); }
+    r3bx(B, W, hx + Math.sin(ang + cot) * s(0.9), hy - Math.cos(ang + cot) * s(0.9), zz, s(1.9), s(2), s(1.7), ap.gl ? couro : sk, [hx, hy, ang + cot]); if (sg > 0 && o.acao) try { r3Ferramenta(B, W, o, hx + Math.sin(ang + cot) * s(1.4), hy - Math.cos(ang + cot) * s(1.4), zz, ang + cot, s, t); } catch (e) { } }
   r3bx(B, W, ombroX, ombroY + s(0.2), 0, s(4.6), s(1.4), s(f ? 8.6 : 9.6), shBase === 2 ? couro : sh.map(v => v * 0.94)); // ombros
   // ---------- pescoço e cabeça ----------
   const ny = cy2 + s(0.4); r3bx(B, W, cx2, ny + s(0.7), 0, s(2.4), s(1.6), s(2.4), sk);
@@ -13450,6 +13450,15 @@ function r3Galinha(B, a, x, z, ang, ph, mv) { const t = performance.now() / 1000
   for (const sg of [1, -1]) r3bx(B, W, hx + 0.5, hy + 0.3, sg * 0.92, 0.4, 0.4, 0.1, [0.05, 0.05, 0.05]); }
 { const _qg = r3Quadru; r3Quadru = function (B, a, x, z, ang, ph, mv) { if (a.sp === 'galinha') return r3Galinha(B, a, x, z, ang, ph, mv); return _qg(B, a, x, z, ang, ph, mv); }; }
 r3Bicho = r3SeVisivel(r3NoChao(r3ComMat(0, r3Quadru), (B, a, x, z) => [x, z]), (B, a, x, z) => [x, z, 12]);
+/* ferramentas na mão durante as ações */
+function r3Ferramenta(B, W, o, x, y, z, a, s, t) { const pau = r3c('#8a6a42'), ferro = [0.62, 0.62, 0.66], k = o.acao;
+  if (k === 'laco') { const cx = x + s(1), cy = y + s(3), r = s(7), n = 10, rot = t * 9, corda = r3c('#c8a060'); for (let i = 0; i < n; i++) { const a0 = i / n * 6.28 + rot, a1 = (i + 1) / n * 6.28 + rot; const p0 = [cx + Math.cos(a0) * r, cy + Math.sin(a0) * r * 0.25, z + Math.sin(a0) * r], p1 = [cx + Math.cos(a1) * r, cy + Math.sin(a1) * r * 0.25, z + Math.sin(a1) * r]; const L = Math.hypot(p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]); r3bx(B, W, (p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, (p0[2] + p1[2]) / 2, L, s(0.35), s(0.35), corda); } return; }
+  if (k === 'hoe') { const [ex, ey] = r3Seg(B, W, x, y, z, a + 2.6, s(9), s(0.5), s(0.5), pau); r3bx(B, W, ex + Math.sin(a) * s(0.6), ey, z, s(2.6), s(0.4), s(2.6), ferro, [ex, ey, a]); return; }
+  if (k === 'hammer' || k === 'slash') { const [ex, ey] = r3Seg(B, W, x, y, z, a + Math.PI, s(k === 'slash' ? 6 : 4), s(0.5), s(0.5), k === 'slash' ? ferro : pau); if (k === 'hammer') r3bx(B, W, ex, ey, z, s(2.2), s(1), s(1), ferro, [ex, ey, a]); return; }
+  if (k === 'water' || k === 'waterCan') { r3bx(B, W, x + s(1.2), y - s(1.5), z, s(3), s(3), s(2.2), [0.4, 0.55, 0.62]); r3Seg(B, W, x + s(2.6), y - s(1), z, 1.2, s(3), s(0.5), s(0.5), [0.4, 0.55, 0.62]); return; }
+  if (k === 'feed' || k === 'fill') { r3cyl(B, W.x + (x * W.ca - z * W.sa), W.z + (x * W.sa + z * W.ca), W.y + y - s(3.6), W.y + y - s(0.6), s(1.6), s(2), 6, [0.55, 0.55, 0.58], [0.85, 0.75, 0.45]); return; }
+  if (k === 'sweep') { const [ex, ey] = r3Seg(B, W, x, y, z, a + 2.8, s(8), s(0.45), s(0.45), pau); r3bx(B, W, ex, ey - s(0.6), z, s(1.2), s(1.6), s(3), r3c('#c8b070'), [ex, ey, a]); return; }
+}
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
