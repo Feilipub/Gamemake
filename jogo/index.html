@@ -13426,7 +13426,7 @@ function r3Galhada(B, q, T0, R, v) { const x = q.x, z = q.y - 2, [cc, H, rr, tc]
 r3Prop = r3NoChao(r3Prop, (B, q) => [q.x, q.y - 2]);
 
 /* ============ v26: CAATINGA MAIS FECHADA — moitas, macambira e lajedos (pela referência de fotos) ============ */
-{ const _mt = r3Mato; r3Mato = function (B, tx, ty, g, i, se) { _mt(B, tx, ty, g, i, se); if (obj[i] || SET.r3mato === false || g === G.PAST) return; const R = mulberry(tx * 104729 + ty * 7919 + 3), r = R(); if (r > (g === G.DRY ? 0.32 : 0.12)) return;
+{ const _mt = r3Mato; r3Mato = function (B, tx, ty, g, i, se) { _mt(B, tx, ty, g, i, se); if (obj[i] || SET.r3mato === false || g === G.PAST || g === G.ROCK) return; { let pedra = 0; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = tx + dx, ny = ty + dy; if (nx >= 0 && ny >= 0 && nx < MW && ny < MH && ground[gi(nx, ny)] === G.ROCK) pedra++; } if (pedra >= 2) return; } const R = mulberry(tx * 104729 + ty * 7919 + 3), r = R(); if (r > (g === G.DRY ? 0.32 : 0.12)) return;
   const x = (tx + 0.2 + R() * 0.6) * TS, z = (ty + 0.2 + R() * 0.6) * TS, m0 = R3.mat, d0 = R3.dy; R3.dy = r3Alt(x, z); R3.chao = 0;
   try { const k = R();
     if (k < 0.45) { R3.mat = R3MAT.folha; const n = 2 + Math.floor(R() * 3), cor = se ? [0.68, 0.66, 0.56] : [0.46, 0.58, 0.38]; for (let j = 0; j < n; j++) r3blob(B, x + (R() - 0.5) * 8, 3 + R() * 2, z + (R() - 0.5) * 8, 3 + R() * 2.5, 2.4 + R() * 1.5, 3 + R() * 2.5, cor.map(c => c * (0.9 + R() * 0.2)), j + tx, 5);
@@ -13584,6 +13584,13 @@ function r3BordaMesh() { const B = r3B(), se = season(), W0 = MW * TS, H0 = MH *
     const t = arv[Math.floor(R() * arv.length)]; try { R3.mat = 0; r3Prop(B, { t, x, y: z + 2 }); } catch (e) { } }
   R3.mat = m0; return B; }
 function r3Borda() { const gl = R3.gl; if (!R3.borda || R3.bordaSe !== season() || R3.bordaV !== (R3.verB || 0)) { R3.borda = r3Upload(r3BordaMesh(), R3.borda); R3.bordaSe = season(); R3.bordaV = R3.verB || 0; } gl.bindVertexArray(R3.borda.vao); gl.drawArrays(gl.TRIANGLES, 0, R3.borda.n); gl.bindVertexArray(null); }
+/* lajes de granito (áreas de pedra): matacões, lascas e capim nas frestas */
+{ const _rpd8 = r3Pedaco; r3Pedaco = function (cx, cy) { const B = _rpd8(cx, cy), x0 = cx * R3C, y0 = cy * R3C, x1 = Math.min(MW, x0 + R3C), y1 = Math.min(MH, y0 + R3C), m0 = R3.mat;
+  try { for (let ty = y0; ty < y1; ty++) for (let tx = x0; tx < x1; tx++) { if (ground[gi(tx, ty)] !== G.ROCK || obj[gi(tx, ty)]) continue; const R = mulberry(tx * 4111 + ty * 977), r = R(); const x = (tx + 0.2 + R() * 0.6) * TS, z = (ty + 0.2 + R() * 0.6) * TS, c = [0.8, 0.77, 0.7].map(q => q * (0.9 + R() * 0.15));
+    R3.mat = R3MAT.pedra; if (r < 0.09) { const rr = 4 + R() * 6; r3blob(B, x, rr * 0.75, z, rr, rr * 0.8, rr * 0.9, c, tx * 7 + ty, 7); if (R() < 0.4) r3blob(B, x + rr * 0.6, rr * 1.4, z - 1, rr * 0.55, rr * 0.5, rr * 0.5, c.map(q => q * 1.05), ty, 6); }
+    else if (r < 0.25) { for (let k = 0; k < 2; k++) r3blob(B, x + (R() - 0.5) * 10, 0.6, z + (R() - 0.5) * 10, 1.2 + R() * 2, 0.8 + R(), 1 + R() * 2, c.map(q => q * 0.92), k + tx, 5); }
+    else if (r < 0.4) { R3.mat = 0; const g2 = season() ? [0.66, 0.58, 0.36] : [0.4, 0.55, 0.26]; for (let k = 0; k < 4; k++) { const gx = x + (R() - 0.5) * 8, gz = z + (R() - 0.5) * 8, h = 2 + R() * 3; r3v(B, gx - 0.8, 0.2, gz, g2, 0, 1, 0, 0); r3v(B, gx + 0.8, 0.2, gz, g2, 0, 1, 0, 0); r3v(B, gx, h, gz, g2.map(q => q * 1.1), 0, 1, 0, 4); } } } } catch (e) { } finally { R3.mat = m0; }
+  return B; }; }
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
