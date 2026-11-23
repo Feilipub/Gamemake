@@ -1,4 +1,4 @@
-# Como colocar o Lida no Sertão na Play Store (versão 25.1)
+# Como colocar o Lida no Sertão na Play Store (versão 26.0)
 
 Tudo o que dá para preparar sem a sua conta já está pronto:
 
@@ -13,8 +13,8 @@ Os passos abaixo são os que **só você** pode fazer, porque pedem a sua conta 
 
 | Item | Onde |
 |---|---|
-| App para enviar à loja (`.aab`, versão 25.1.0, código 91, Android 16 / API 36) | enviado no chat: `LidaNoSertao-25.1.0.aab` |
-| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-25.1.0.apk` |
+| App para enviar à loja (`.aab`, versão 26.0.0, código 92, Android 16 / API 36) | enviado no chat: `LidaNoSertao-26.0.0.aab` |
+| App para instalar direto no celular e testar | enviado no chat: `LidaNoSertao-26.0.0.apk` |
 | Chave de upload e senha | já enviadas antes no chat, em `chave_upload_lida.zip` (**é a mesma chave; guarde bem!**) |
 | Ícone 512 × 512 | `loja/imagens/icone_512.png` |
 | Banner 1024 × 500 | `loja/imagens/banner_1024x500.png` |
@@ -33,6 +33,35 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 - **Modo online:** funciona no app, ligando um celular direto no outro.
 - **Android 16 (API 36):** o app mira a versão que a Play Store exige para apps novos.
 - **Tela "Sobre e privacidade":** fica em Configurações. Os créditos agora incluem PeerJS e OpenStreetMap.
+
+## Novidades da 26.0 — desenhado a partir de fotos reais do sertão
+- **Vaqueiro encourado:** guarda-peito, gibão com abas até a coxa, perneiras na perna toda e barbicacho no chapéu.
+- **Gente com proporção mais adulta:** cabeça menor, corpo e pernas mais longos.
+- **Rosto esculpido:** nariz saltado, bochechas e queixo.
+- **Mulheres:** saia rodada que balança e cabelo comprido de verdade.
+- **Ferramentas na mão:** argola do laço girando, enxada, martelo, regador, balde e vassoura.
+- **Cavalos:**
+  - cabeçada, rédeas, peitoral e estribos;
+  - estrela, lista e meias brancas;
+  - pescoço encorpado, crina caída e rabo longo;
+  - cabeça afinando até o focinho.
+- **Gado e outros bichos:**
+  - Gir com testa abaulada, orelhas enroladas e chifres certos;
+  - úbere nas vacas;
+  - jumento com a cruz escura;
+  - galinhas e galos novos;
+  - cães com pernas mais longas.
+- **Caatinga:**
+  - mandacaru em candelabro com flor e xique-xique rasteiro;
+  - árvores sem folhas na seca, umbuzeiro em guarda-chuva e licuri com cachos;
+  - moitas, macambira e lajedos com matacões;
+  - na seca a imagem fica quente e desbotada.
+- **Cercas:** curral de varas, arame farpado no pasto e tela no galinheiro.
+- **Sede:** fumaça na chaminé, lenha, potes de barro e rede.
+- **Casas por dentro:** piso de lajota com barra pintada.
+- **Cidade:** sobrados no centro, com sacadas de ferro.
+- **Pista de vaquejada:** areia, cerca de tábuas brancas e arquibancada.
+- **Beira dos rios:** areia molhada e pedras; a água fica mais clara na margem.
 
 ## Novidades da 25.1
 - **Noite de luar:** a noite no 3D ficou azulada, e dá para enxergar o caminho.
@@ -148,7 +177,7 @@ O identificador do app é **br.com.rfgames.lidanosertao**. Ele é para sempre: d
 
 ## Passo 1 — Testar no celular (5 minutos)
 
-1. Passe `LidaNoSertao-25.1.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
+1. Passe `LidaNoSertao-26.0.0.apk` para o celular e toque nele. Permita "instalar apps desta fonte".
 2. Jogue um pouco.
 3. Teste o botão voltar, o **Exportar save** e uma sala online com outro celular.
 
@@ -214,7 +243,7 @@ Depois do primeiro envio manual, o GitHub pode compilar e mandar cada versão no
 
 Sem esses segredos, o GitHub continua gerando um **APK de teste** a cada atualização (em **Actions**, na parte de baixo da execução, em "Artifacts").
 
-O número de versão da nuvem é automático (100, 200, 300…). Ele é sempre maior que o 91 deste envio.
+O número de versão da nuvem é automático (100, 200, 300…). Ele é sempre maior que o 92 deste envio.
 
 ## Avisos
 
