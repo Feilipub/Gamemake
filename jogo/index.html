@@ -12391,7 +12391,7 @@ function r3Dinamico() { // o que se mexe: gente, bichos, porteiras, fogo
   // bichos
   let nb = 0; for (const a of S.animals) { if (a.dead || a.hotel || a._rider || a.id === P.mnt || !perto(a.x, a.y)) continue; if (nb++ > 160) break; const h = r3Rumo('a' + a.id, a.x, a.y); r3Sombra(B, a.x, a.y, a.sp === 'galinha' ? 3 : a.sp === 'cao' ? 5 : 10); try { r3Bicho(B, a, a.x, a.y, h.a, h.ph, h.mv); } catch (e) { } }
   // moradores
-  for (const e of npcs) { if (e.hidden || !perto(e.x, e.y)) continue; const h = r3Rumo('n' + e.id, e.x, e.y, r3DirA(e.dir)), d = NPCDEF[e.id]; r3Sombra(B, e.x, e.y, 5); r3Gente(B, e.x, e.y, h.a, d && d.ap, h.ph, h.mv, { sentado: e.pose === 'sit' }); }
+  for (const e of npcs) { if (e.hidden || !perto(e.x, e.y)) continue; const h = r3Rumo('n' + e.id, e.x, e.y, r3DirA(e.dir)), d = NPCDEF[e.id]; r3Sombra(B, e.x, e.y, 5); r3Gente(B, e.x, e.y, h.a, d && d.ap, h.ph, h.mv, { sentado: e.pose === 'sit', acao: e.bt > 0 && h.mv < 0.1 ? 'talk' : undefined, acaoU: (performance.now() / 1400 + e.x * 0.01) % 1, acaoN: 1 }); }
   // vaqueiros do modo online
   if (typeof NET !== 'undefined' && NET.on) for (const pid in NET.players) { if (pid === NET.pid) continue; const r = NET.players[pid]; if (r.in || !perto(r.x, r.y)) continue; const h = r3Rumo('p' + pid, r.x, r.y, r3DirA(r.dir)), hz = r.mnt && byId(r.mnt); r3Sombra(B, r.x, r.y, hz ? 10 : 5); if (hz) { r3Bicho(B, hz, r.x, r.y, h.a, h.ph, h.mv); r3Gente(B, r.x - Math.cos(h.a) * 1, r.y - Math.sin(h.a) * 1, h.a, r.ap, 0, 0, { sentado: true, y: 9 }); } else r3Gente(B, r.x, r.y, h.a, r.ap, h.ph, h.mv); }
   // o vaqueiro (montado ou a pé)
@@ -12657,7 +12657,7 @@ function r3Veiculo(B, x, z, ang, tipo, cor) { const W = { x, y: 0, z, ca: Math.c
   r3bx(B, W, 0, 4 + Hh / 2, 0, L, Hh, Wd, c); if (!big) { r3bx(B, W, -2, 4 + Hh + 3, 0, 14, 6, Wd - 1, c.map(v => v * 0.95)); r3bx(B, W, 5.2, 4 + Hh + 3, 0, 0.5, 5, Wd - 2, vid); } else r3bx(B, W, L / 2 + 0.2, 4 + Hh * 0.7, 0, 0.5, Hh * 0.45, Wd - 2, vid);
   for (const [dx, dz] of [[L / 2 - 6, Wd / 2], [L / 2 - 6, -Wd / 2], [-L / 2 + 6, Wd / 2], [-L / 2 + 6, -Wd / 2]]) r3bx(B, W, dx, 3, dz, 7, 6, 2.4, pn); }
 { const _rd8 = r3Dinamico; r3Dinamico = function () { const B = _rd8(), T = R3.T, perto = (x, y) => (x - T[0]) * (x - T[0]) + (y - T[1]) * (y - T[1]) < 640 * 640;
-  try { for (const w of S.workers || []) { if (w.x === undefined || w._sleep || !perto(w.x, w.y)) continue; const h = r3Rumo('wk' + (w.id || w.n), w.x, w.y, r3DirA(w.dir || 0)); r3Sombra(B, w.x, w.y, w._mnt ? 10 : 5); const hz = w._mnt && typeof workerHorse === 'function' ? workerHorse(w) : null; if (hz) { r3Bicho(B, Object.assign({}, hz, { _pose: 'walk' }), w.x, w.y, h.a, h.ph, h.mv); r3Gente(B, w.x, w.y, h.a, w.ap, 0, 0, { sentado: true, y: 12 }); } else r3Gente(B, w.x, w.y, h.a, w.ap, h.ph, h.mv, { sentado: w._pose === 'sit' }); } } catch (e) { }
+  try { for (const w of S.workers || []) { if (w.x === undefined || w._sleep || !perto(w.x, w.y)) continue; const h = r3Rumo('wk' + (w.id || w.n), w.x, w.y, r3DirA(w.dir || 0)); r3Sombra(B, w.x, w.y, w._mnt ? 10 : 5); const hz = w._mnt && typeof workerHorse === 'function' ? workerHorse(w) : null; if (hz) { r3Bicho(B, Object.assign({}, hz, { _pose: 'walk' }), w.x, w.y, h.a, h.ph, h.mv); r3Gente(B, w.x, w.y, h.a, w.ap, 0, 0, { sentado: true, y: 12 }); } else r3Gente(B, w.x, w.y, h.a, w.ap, h.ph, h.mv, { sentado: w._pose === 'sit', acao: { feed: 'feed', sweep: 'sweep', act: 'hammer', carry: 'saddle' }[w._pose], acaoU: (performance.now() / 1600 + (w.id || 0) * 0.37) % 1 }); } } catch (e) { }
   try { for (const w of WILD) { if (!perto(w.x, w.y)) continue; const h = r3Rumo('w' + (w.id || w.k), w.x, w.y); r3Bicho2(B, w, h.a); } } catch (e) { }
   try { for (const v of vehs()) { if (!v || v.x === undefined || !perto(v.x, v.y)) continue; const h = r3Rumo('vh' + (v.id || v.kind || 'c'), v.x, v.y); const W = { x: v.x, y: 0, z: v.y, ca: Math.cos(h.a), sa: Math.sin(h.a) }; r3bx(B, W, -6, 9, 0, 22, 6, 16, r3c('#8a5a2a')); r3bx(B, W, -6, 13, 0, 22, 1, 16, r3c('#a87a48')); r3bx(B, W, 8, 8, 0, 14, 1.2, 2, r3c('#6a4422')); for (const dz of [-9, 9]) { const cx2 = v.x + (-6) * W.ca - dz * W.sa, cz2 = v.y + (-6) * W.sa + dz * W.ca; r3cyl(B, cx2, cz2, 0, 0.1, 7, 7, 8, r3c('#5a3a1a'), r3c('#6a4422')); } } } catch (e) { }
   try { for (const v of TRAF.list) { const [x, y] = vehXY(v); if (!perto(x, y) || v.a < 0.05) continue; const ang = v.l.ax === 'x' ? (v.l.d > 0 ? 0 : Math.PI) : (v.l.d > 0 ? Math.PI / 2 : -Math.PI / 2); r3Veiculo(B, x, y, ang, v.type, v.col); if (v.type === 'moto' || v.type === 'bike') r3Gente(B, x, y, ang, v._ap || (typeof riderAp === 'function' ? (v._ap = riderAp(v)) : null), 0, 0, { sentado: true, y: 2 }); } } catch (e) { }
@@ -12940,7 +12940,7 @@ r3Gente = r3ComMat(0, r3Humano);
    no lombo, tordilho rajado e sela. */
 function r3Quadru(B, a, x, z, ang, ph, mv) {
   const sp = a.sp; if (sp === 'galinha') return r3BichoVelho(B, a, x, z, ang, ph, mv);
-  const pose = a._pose || 'idle', deit = pose === 'lie' || pose === 'sleep', pasta = pose === 'graze' || pose === 'eat' || pose === 'drink', t = performance.now() / 1000, seed = (a.id || 1) * 1.37;
+  const pose = a._pose || 'idle', senta = a.sp === 'cao' && (pose === 'sit' || pose === 'sitg' || pose === 'crouch'), deit = pose === 'lie' || pose === 'sleep', pasta = pose === 'graze' || pose === 'eat' || pose === 'drink', t = performance.now() / 1000, seed = (a.id || 1) * 1.37;
   const W = { x, y: 0, z, ca: Math.cos(ang), sa: Math.sin(ang) }; let co = null; try { co = RIG.COATS[rigCoat(a)]; } catch (e) { }
   const jov = (a.age !== undefined && a.age < 8 && sp !== 'cao') ? 0.62 : 1, equi = sp === 'cavalo' || sp === 'burro' || sp === 'jumento', small = sp === 'burro' || sp === 'jumento';
   let L = 26, Hb = 11, Wd = 11, legH = 10, cor, sombra, claro, perna, focinho = r3c('#2a1e1a'), C0 = null, D0 = null, rabo, chifre = null, orelha = 'curta';
@@ -12954,7 +12954,7 @@ function r3Quadru(B, a, x, z, ang, ph, mv) {
   const OF = gait === 'passo' ? { LH: 0, LF: 0.25, RH: 0.5, RF: 0.75 } : gait === 'trote' ? { LF: 0, RH: 0, RF: 0.5, LH: 0.5 } : { LH: 0, RH: 0.12, LF: 0.52, RF: 0.64 };
   const amp = (gait === 'galope' ? 0.75 : gait === 'trote' ? 0.5 : 0.36) * Math.min(1, mv * 2.2), cyc = ph * (gait === 'galope' ? 0.8 : 1);
   const balan = gait === 'galope' ? Math.sin(cyc + 1.2) * 0.1 * mv : 0, sobe = deit ? 0 : gait === 'galope' ? Math.max(0, Math.sin(cyc)) * s(2.2) * mv : gait === 'trote' ? Math.abs(Math.sin(cyc * 2)) * s(0.9) * mv : Math.abs(Math.sin(cyc * 2)) * s(0.3) * mv;
-  if (equi) R3.ultBob = deit ? 0 : sobe; const yB = deit ? s(Hb / 2 + 1.5) : s(legH + Hb / 2) + sobe, resp = parado ? Math.sin(t * 1.6 + seed) * s(0.15) : 0, pv = [0, yB, balan];
+  if (equi) R3.ultBob = deit ? 0 : sobe; const yB = deit ? s(Hb / 2 + 1.5) : senta ? s(legH * 0.75 + Hb / 2) : s(legH + Hb / 2) + sobe, resp = parado ? Math.sin(t * 1.6 + seed) * s(0.15) : 0, pv = [0, yB, senta ? 0.45 : balan];
   // corpo: peito, barriga e anca
   r3bx(B, W, 0, yB, 0, s(L * 0.62), s(Hb) + resp, s(Wd), cor, pv);
   r3bx(B, W, s(L * 0.3), yB + s(0.3), 0, s(L * 0.32), s(Hb * 1.02) + resp, s(Wd * 0.96), sp === 'boi' ? sombra.map((v, i) => (v + cor[i]) / 2) : cor, pv);
@@ -12964,25 +12964,26 @@ function r3Quadru(B, a, x, z, ang, ph, mv) {
   if (C0 && C0.pat === 'pintas') for (let i = 0; i < 6; i++) { const px = s(L * (-0.35 + (i % 3) * 0.3)), py = yB + s(((i * 7) % 5) - 2), sg = i < 3 ? 1 : -1; r3quad(B, r3Pt(W, px - s(2), py - s(1.4), sg * s(Wd / 2 + 0.05)), r3Pt(W, px + s(2), py - s(1.4), sg * s(Wd / 2 + 0.05)), r3Pt(W, px + s(2), py + s(1.4), sg * s(Wd / 2 + 0.05)), r3Pt(W, px - s(2), py + s(1.4), sg * s(Wd / 2 + 0.05)), r3c(C0.patC || '#efe2c8')); }
   if (co && co.pat === 'dapple') for (let i = 0; i < 8; i++) { const px = s(L * (-0.4 + (i % 4) * 0.22)), py = yB + s(((i * 5) % 4) - 1.5), sg = i < 4 ? 1 : -1; r3quad(B, r3Pt(W, px - s(1.3), py - s(1), sg * s(Wd / 2 + 0.05)), r3Pt(W, px + s(1.3), py - s(1), sg * s(Wd / 2 + 0.05)), r3Pt(W, px + s(1.3), py + s(1), sg * s(Wd / 2 + 0.05)), r3Pt(W, px - s(1.3), py + s(1), sg * s(Wd / 2 + 0.05)), r3c(co.patC)); }
   if (co && co.dorsal) r3bx(B, W, 0, yB + s(Hb / 2) + 0.1, 0, s(L * 0.85), s(0.3), s(1.2), r3c(co.dorsal), pv);
+  try { const pt = (co && co.pat) || (C0 && C0.pat) || (D0 && D0.pat), pc = (co && co.patC) || (C0 && C0.patC) || (D0 && D0.patC); r3Pelagem(B, W, a, sp, s(L), s(Hb), s(Wd), yB, pt, pc, co || D0); var r3CabecaCor = pt === 'boer' || pt === 'whiteface' ? r3c(pc || '#f2eee6') : null; } catch (e) { }
   // pernas: coxa/braço + canela + casco
   const lx = s(L / 2 - 3), lz = s(Wd / 2 - 1.6), grossa = s(sp === 'cao' ? 1.8 : sp === 'boi' ? 3 : equi ? 2.6 : 2), up = s(legH * 0.52), lo = s(legH * 0.5);
   for (const [nome, px, pz] of [['LF', lx, lz], ['RF', lx, -lz], ['LH', -lx, lz], ['RH', -lx, -lz]]) {
     const fr = nome[1] === 'F', p = cyc + OF[nome] * 6.2832, top = yB - s(Hb * 0.25) + (fr ? 1 : -1) * Math.sin(balan) * px * 0.6;
-    if (deit) { const dob = fr ? -1.5 : 1.5; const [kx, ky] = r3Seg(B, W, px * 0.8, s(Hb * 0.4), pz * 1.15, dob, s(legH * 0.4), grossa, grossa, perna); r3Seg(B, W, kx, ky, pz * 1.15, fr ? 1.4 : -1.4, s(legH * 0.35), grossa * 0.8, grossa * 0.8, perna); continue; }
+    if (deit || (senta && !fr)) { const dob = fr ? -1.5 : 1.5; const [kx, ky] = r3Seg(B, W, px * 0.8, s(Hb * 0.4), pz * 1.15, dob, s(legH * 0.4), grossa, grossa, perna); r3Seg(B, W, kx, ky, pz * 1.15, fr ? 1.4 : -1.4, s(legH * 0.35), grossa * 0.8, grossa * 0.8, perna); continue; }
     const sw = parado ? 0 : Math.sin(p) * amp, lev = parado ? 0 : Math.max(0, Math.cos(p)) * amp * 1.6;
     const u = sw + (fr ? 0.04 : 0.12), dobra = fr ? -lev : lev * 0.7 - 0.22;
     const [kx, ky] = r3Seg(B, W, px, top, pz, u, up + (top - s(legH)) * 0.0, grossa * 1.15, grossa * 1.1, fr ? perna : cor.map((v, i) => (v + perna[i]) / 2));
     const rest = Math.max(s(1), ky - s(1.4)); const [hx, hy] = r3Seg(B, W, kx, ky, pz, u + dobra, Math.min(lo, rest), grossa * 0.8, grossa * 0.8, perna);
     r3bx(B, W, hx + s(0.3), hy - s(0.7), pz, grossa * 1.05, s(1.4), grossa * 1.05, sp === 'cao' ? perna : r3c(equi ? '#2a2420' : '#3a3028'), [hx, hy, (u + dobra) * 0.5]); }
   // pescoço e cabeça
-  const pesc = equi ? 1 : sp === 'cao' ? 0.5 : 0.35, nod = parado ? 0 : Math.sin(cyc * 2) * (gait === 'passo' ? 0.08 : 0.05), nx0 = s(L / 2 - 2.5), ny0 = yB + s(Hb * 0.25);
+  const pesc = equi ? 1 : sp === 'cao' ? 0.5 : 0.35, nod = parado ? 0 : Math.sin(cyc * 2) * (gait === 'passo' ? 0.08 : 0.05), nx0 = s(L / 2 - 2.5) - (senta ? s(1.2) : 0), ny0 = yB + s(Hb * 0.25) + (senta ? s(L * 0.2) : 0);
   const nA = pasta ? 0.95 : deit ? 2.5 : equi ? 2.45 - nod * 2 - (gait === 'galope' ? 0.4 : 0) : sp === 'cao' ? 2.3 : 2.05 - nod;
   const nLen = s(equi ? (small ? 8 : 10) : sp === 'cao' ? 4 : 5) * (pasta ? 1.25 : 1), nW = s(equi ? 5 : sp === 'boi' ? Hb * 0.62 : Hb * 0.6);
   const [hx0, hy0] = r3Seg(B, W, nx0, ny0, 0, nA, nLen, nW, s(Wd * (equi ? 0.5 : 0.62)), cor);
   if (equi) { const cr = rabo; r3Seg(B, W, nx0 - s(1.4), ny0 + s(2.2), 0, nA, nLen * 1.05, s(1.4), s(1.5), cr); }
   if (C0 && C0.dew) r3Seg(B, W, nx0 + s(0.6), ny0 - s(2.8), 0, nA + 0.25, nLen * 0.9, s(1 + C0.dew * 0.4), s(1.4), sombra);
   const hA = pasta ? 0.25 : equi ? (gait === 'galope' ? 1.15 : 0.85) : sp === 'cao' ? 1.45 : sp === 'boi' ? 1.05 : 0.95, hLen = s(equi ? (small ? 8 : 9.5) : sp === 'cao' ? 4.6 : sp === 'boi' ? 7.4 : 6), hW = s(equi ? 3.8 : sp === 'cao' ? 3.4 : Wd * 0.48);
-  const [mx, my] = r3Seg(B, W, hx0, hy0, 0, hA, hLen, s(equi ? 4.2 : sp === 'cao' ? 3.8 : 5.6), hW, sp === 'boi' ? sombra.map((v, i) => (v + cor[i]) / 2) : (co && co.head ? r3c(co.head) : cor));
+  const [mx, my] = r3Seg(B, W, hx0, hy0, 0, hA, hLen, s(equi ? 4.2 : sp === 'cao' ? 3.8 : 5.6), hW, typeof r3CabecaCor !== 'undefined' && r3CabecaCor ? r3CabecaCor : sp === 'boi' ? sombra.map((v, i) => (v + cor[i]) / 2) : (co && co.head ? r3c(co.head) : cor));
   r3Seg(B, W, mx - Math.sin(hA) * s(1.4), my + Math.cos(hA) * s(1.4), 0, hA, s(1.8), s(equi ? 3.4 : 4.2), hW * 0.9, focinho);
   const rum = sp === 'boi' && parado && !pasta ? Math.sin(t * 5 + seed) * s(0.3) : 0; if (sp === 'boi' || equi) r3Seg(B, W, mx - Math.sin(hA) * s(2.6) - s(0.6), my + Math.cos(hA) * s(2.6) - s(0.8) + rum, 0, hA, s(2.4), s(1), hW * 0.8, focinho.map(v => v * 1.15));
   // olhos, orelhas, chifres (perto do alto da cabeça)
@@ -13290,6 +13291,28 @@ function r3FxDesenha(B) { const m0 = R3.mat; R3.mat = 0; const pinta = (n0, k) =
 
 /* o cavaleiro sobe e desce junto com o cavalo (trote e galope) */
 R3.ultBob = 0; { const _gb = r3Gente; r3Gente = function (B, x, z, a, ap, ph, mv, o) { if (o && o.sentado && (o.y || 0) > 5 && R3.ultBob) { o = Object.assign({}, o, { y: o.y + R3.ultBob * 0.9 }); } const r = _gb(B, x, z, a, ap, ph, mv, o); if (o && o.sentado && (o.y || 0) > 5) R3.ultBob = 0; return r; }; }
+/* ============ v25: TODAS AS PELAGENS NO 3D ============
+   Malhado (holandês, girolando), malhas, tobiano, overo, sabino, appaloosa (manta e leopardo), ruão, tordilho, merle,
+   rajado, preto-e-castanho, sela, cara branca e as cabras Boer, Moxotó, Canindé e Repartida. */
+function r3Mancha(B, W, x, y, z, w, h, lado, col) { const zz = lado * (z + 0.08); r3quad(B, r3Pt(W, x - w, y - h, zz), r3Pt(W, x + w, y - h, zz), r3Pt(W, x + w, y + h, zz), r3Pt(W, x - w, y + h, zz), col); }
+function r3Topo(B, W, x, z, w, d, y, col) { r3quad(B, r3Pt(W, x - w, y, z + d), r3Pt(W, x + w, y, z + d), r3Pt(W, x + w, y, z - d), r3Pt(W, x - w, y, z - d), col); }
+function r3Pelagem(B, W, a, sp, L, Hb, Wd, yB, pat, patC, extra) { if (!pat || pat === 'pintas' || pat === 'dapple') return; const R = mulberry((a.id || 7) * 977 + 13), c = r3c(patC || '#f2eee6'), hz = Wd / 2, topo = yB + Hb / 2 + 0.08;
+  const manchas = (n, wmin, wmax) => { for (let i = 0; i < n; i++) { const lado = R() < 0.5 ? 1 : -1, x = (R() - 0.5) * L * 0.85, y = yB + (R() - 0.5) * Hb * 0.8, w = wmin + R() * (wmax - wmin), h = w * (0.6 + R() * 0.5); r3Mancha(B, W, x, Math.min(y, yB + Hb / 2 - h), hz, w, h, lado, c); if (R() < 0.4) r3Topo(B, W, x, (R() - 0.5) * hz, w * 0.8, w * 0.6, topo, c); } };
+  const pontos = (n, sz, cc) => { for (let i = 0; i < n; i++) { const lado = R() < 0.5 ? 1 : -1, x = (R() - 0.5) * L * 0.9, y = yB + (R() - 0.5) * Hb * 0.85; r3Mancha(B, W, x, y, hz, sz, sz * 0.8, lado, cc || c); } };
+  switch (pat) {
+    case 'malhado': case 'malhas': case 'chita': manchas(pat === 'chita' ? 10 : 7, L * 0.08, L * 0.17); break;
+    case 'tobiano': { for (const lado of [1, -1]) { r3Mancha(B, W, L * 0.05, yB + Hb * 0.05, hz, L * 0.2, Hb * 0.42, lado, c); r3Mancha(B, W, -L * 0.32, yB - Hb * 0.1, hz, L * 0.12, Hb * 0.35, lado, c); } r3Topo(B, W, L * 0.05, 0, L * 0.16, hz * 0.9, topo, c); break; }
+    case 'overo': case 'sabino': manchas(5, L * 0.07, L * 0.13); for (const lado of [1, -1]) r3Mancha(B, W, 0, yB - Hb * 0.38, hz, L * 0.3, Hb * 0.14, lado, c); break;
+    case 'blanket': { for (const lado of [1, -1]) r3Mancha(B, W, -L * 0.28, yB + Hb * 0.1, hz, L * 0.2, Hb * 0.38, lado, c); r3Topo(B, W, -L * 0.28, 0, L * 0.2, hz, topo, c); const sc = r3c(extra && extra.spotC || '#4a2a1a'); for (let i = 0; i < 10; i++) { const lado = R() < 0.5 ? 1 : -1; r3Mancha(B, W, -L * 0.28 + (R() - 0.5) * L * 0.34, yB + (R() - 0.3) * Hb * 0.6, hz + 0.05, 0.7, 0.6, lado, sc); } break; }
+    case 'leopard': case 'pontos': case 'flea': pontos(pat === 'flea' ? 40 : 26, pat === 'flea' ? 0.35 : 0.8); break;
+    case 'roan': case 'grizzle': case 'ticked': pontos(46, 0.3); break;
+    case 'merle': manchas(9, L * 0.04, L * 0.09); break;
+    case 'brindle': for (let i = 0; i < 9; i++) { const x = -L * 0.4 + i * L * 0.1; for (const lado of [1, -1]) r3Mancha(B, W, x, yB, hz, 0.35, Hb * 0.4, lado, c); } break;
+    case 'blacktan': case 'saddle': case 'hound': case 'terrier': case 'cross': { r3Topo(B, W, -L * 0.05, 0, L * (pat === 'saddle' || pat === 'hound' ? 0.25 : 0.4), hz + 0.05, topo + 0.05, pat === 'blacktan' ? r3c(extra && extra.b || '#2a2420') : c); for (const lado of [1, -1]) r3Mancha(B, W, -L * 0.05, yB + Hb * 0.25, hz + 0.05, L * (pat === 'saddle' || pat === 'hound' ? 0.25 : 0.4), Hb * 0.25, lado, pat === 'blacktan' ? r3c(extra && extra.b || '#2a2420') : c); if (pat === 'blacktan') for (const lado of [1, -1]) r3Mancha(B, W, 0, yB - Hb * 0.38, hz + 0.05, L * 0.4, Hb * 0.12, lado, c); break; }
+    case 'boer': case 'caninde': case 'moxoto': case 'repartida': { if (pat === 'moxoto') r3Topo(B, W, 0, 0, L * 0.45, 0.6, topo + 0.05, c); if (pat === 'caninde') for (const lado of [1, -1]) r3Mancha(B, W, 0, yB - Hb * 0.38, hz + 0.05, L * 0.4, Hb * 0.12, lado, c); if (pat === 'repartida') for (const lado of [1, -1]) r3Mancha(B, W, L * 0.2, yB, hz + 0.05, L * 0.28, Hb * 0.48, lado, c); break; }
+    case 'whiteface': break;
+  } }
+
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
