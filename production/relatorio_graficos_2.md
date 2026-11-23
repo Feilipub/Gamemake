@@ -54,10 +54,13 @@ Na v20, o 3D era uma homenagem ao PlayStation 1. Mesmo assim, ficava abaixo dos 
 - **Partículas:** poeira do galope, respingos da chuva e vaga-lumes.
 - **Desempenho:** montar os quadros na cidade ficou quase 2 vezes mais rápido.
 
-### v25 — Mais vida
-- Moradores gesticulam quando estão falando.
-- Peões fazem o gesto do trabalho.
-- O cachorro senta quando está parado.
+### v25 — Mais vida e o 3D como padrão
+- **3D padrão:** o 3D vira o visual padrão, e o jogo alivia o 3D sozinho em celular fraco.
+- **Tela inicial em 3D:** a fazenda ao entardecer atrás do título.
+- **Criação de personagem em 3D:** o vaqueiro aparece na criação e no guarda-roupa.
+- **Pelagens:** todas as pelagens de gado, cavalo, cão e cabra.
+- **Mais vida:** moradores falam com as mãos, peões fazem o gesto do trabalho e o cão senta.
+- **Correção:** tecla Z/X personalizada não gira mais a câmera.
 
 ## Como está agora, comparado a jogos atuais
 
