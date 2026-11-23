@@ -13370,6 +13370,8 @@ const R3AUTO = { ema: 0, t: 0, passo: 0 };
 { const _rr = r3Render; r3Render = function (dt) { const r = _rr(dt); if (!SET.r3lock && dt > 0 && dt < 0.5) { R3AUTO.ema = R3AUTO.ema ? R3AUTO.ema * 0.95 + dt * 0.05 : dt; if (R3AUTO.ema > 0.05) { if ((R3AUTO.t += dt) > 8) { R3AUTO.t = 0; R3AUTO.ema = 0; const p = ++R3AUTO.passo;
     if (p === 1) { SET.r3mato = false; SET.r3somb = false; } else if (p === 2) SET.r3res = 'baixa'; else if (p === 3) { SET.r3fx = false; SET.r3arv = false; SET.r3pos = false; }
     if (p <= 3) { try { saveSet(); r3Dirty(); } catch (e) { } toast('🎮 Deixei o 3D mais leve para este aparelho (Configurações › Ajustes do 3D).'); } } } else R3AUTO.t = Math.max(0, R3AUTO.t - dt); } return r; }; }
+/* luar: a noite no 3D fica azulada e dá para enxergar o caminho */
+{ const _lu = r3Luz; r3Luz = function () { const L = _lu(); const n = L.n || 0; if (n > 0.05) { L.amb = L.amb.map((v, i) => v + [0.05, 0.06, 0.09][i] * n); L.sc = L.sc.map((v, i) => v + [0.09, 0.11, 0.19][i] * n); L.sun = norm3([0.35, 0.8, -0.3].map((v, i) => v * n + L.sun[i] * (1 - n))); } return L; }; }
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
