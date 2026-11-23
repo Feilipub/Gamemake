@@ -13335,6 +13335,36 @@ function r3Previa(c) { if (!R3.gl) r3Init(); const gl = R3.gl; r3Resize(); const
 function r3SombraDisco(B, x, z, r) { const c = [0.36, 0.34, 0.2]; for (let i = 0; i < 10; i++) { const a0 = i / 10 * 6.28, a1 = (i + 1) / 10 * 6.28; r3tri(B, [x, 0.2, z], [x + Math.cos(a1) * r, 0.2, z + Math.sin(a1) * r * 0.7], [x + Math.cos(a0) * r, 0.2, z + Math.sin(a0) * r * 0.7], c, 3); } }
 { const _dp = drawPreview; drawPreview = function (dt) { const c = $('pv'); if (c && $('setup').style.display !== 'none' && SET.view === '3d' && r3Supported() && (setupEdit || setStep < 2)) { try { if (r3Previa(c)) return; } catch (e) { console.error(e); } } return _dp(dt); }; }
 
+/* ============ v25: TELA INICIAL EM 3D ============
+   Com o visual 3D ligado, atrás do título aparece um diorama ao entardecer: a sede com alpendre, mandacarus e umbuzeiro,
+   o gado pastando, um vaqueiro a cavalo passeando com o cachorro, o céu com as serras e a câmera girando devagar. */
+const R3TIT = { B: null, gado: [{ id: 901, sp: 'boi', br: 'nelore', sex: 'F', age: 40, _pose: 'graze' }, { id: 902, sp: 'boi', br: 'gir', sex: 'F', age: 40, _pose: 'graze' }, { id: 903, sp: 'boi', br: 'nelore', sex: 'M', age: 50, _pose: 'idle' }, { id: 904, sp: 'boi', br: 'guzera', sex: 'F', age: 6, _pose: 'idle' }, { id: 905, sp: 'boi', br: 'girolando', sex: 'F', age: 40, _pose: 'graze' }],
+  cav: { id: 906, sp: 'cavalo', coat: 'castanho', age: 60, saddle: 1, _pose: 'walk' }, cao: { id: 907, sp: 'cao', br: 'caramelo', age: 20, _pose: 'walk' } };
+function r3TituloFixo() { const B = r3B(), X = -3000, Z = -3000;
+  for (let gx = -12; gx < 12; gx++) for (let gz = -12; gz < 12; gz++) { const x0 = X + gx * 32, z0 = Z + gz * 32, v = ((gx * 7 + gz * 13) & 3) * 0.012, estr = Math.abs(gz * 32 + 40) < 18; R3.mat = estr ? R3MAT.terra : R3MAT.capim; R3.chao = 0; r3quad(B, [x0, 0, z0 + 32], [x0 + 32, 0, z0 + 32], [x0 + 32, 0, z0], [x0, 0, z0], estr ? [0.7, 0.55, 0.36] : [0.62 + v, 0.6 + v, 0.33]); }
+  R3.mat = 0; r3Casa(B, X - 70, Z - 120, X + 30, Z - 60, '#f2ead8', '#2f6f9f', '#b0502a', X - 20, 34);
+  for (const [t, dx, dz] of [['mandacaru', 70, -40], ['mandacaru', -110, 20], ['umbu', 110, -90], ['mandacaru', 40, 70], ['xique', -60, 60], ['umbu', -150, -60], ['pedra', 90, 40], ['moita', -30, 90]]) try { r3Prop(B, { t, x: X + dx, y: Z + dz }); } catch (e) { }
+  for (let i = -8; i <= 8; i++) { const x = X + i * 16; R3.mat = R3MAT.tabua; r3box(B, x - 1.2, 0, Z - 1.2 + 10, x + 1.2, 11, Z + 1.2 + 10, r3c('#7a5232')); if (i < 8) for (const y of [4, 8]) r3box(B, x, y, Z + 9.4, x + 16, y + 1.6, Z + 10.6, r3c('#8a6040')); }
+  R3.mat = 0; return B; }
+function r3Titulo() { if (!R3.gl) r3Init(); const gl = R3.gl; r3Mostra(true); r3Botoes(false); r3Resize(); const t = performance.now() / 1000, X = -3000, Z = -3000, asp = W / H;
+  const ang = t * 0.05, D = asp < 1 ? 260 : 210, eye = [X + Math.sin(ang) * D, 70, Z + 40 + Math.cos(ang) * D], VP = M4.mul(M4.persp(asp < 1 ? 0.95 : 0.8, asp, 6, 2400), M4.look(eye, [X, asp < 1 ? 34 : 22, Z - 10], [0, 1, 0]));
+  R3.M = { VP, IVP: M4.inv(VP) }; R3.eye = eye; R3.T = [X, Z];
+  if (!R3TIT.B) R3TIT.B = r3Upload(r3TituloFixo(), null);
+  const B = r3B(); for (let i = 0; i < R3TIT.gado.length; i++) { const a = R3TIT.gado[i], x = X + 20 + (i % 3) * 28 - 30, z = Z + 34 + Math.floor(i / 3) * 22, h = Math.sin(t * 0.3 + i) * 0.4 + i; try { r3Bicho(B, a, x, z, h, 0, 0); } catch (e) { } }
+  const ca = t * 0.18, cx = X + Math.cos(ca) * 70, cz = Z + 40 + Math.sin(ca) * 34, hd = ca + Math.PI / 2 + Math.atan2(Math.cos(ca) * 34, -Math.sin(ca) * 70 * 0) * 0;
+  const rumo = Math.atan2(Math.cos(ca) * 34, -Math.sin(ca) * 70); try { r3Bicho(B, R3TIT.cav, cx, cz, rumo, t * 9, 0.3); r3Gente(B, cx - Math.cos(rumo), cz - Math.sin(rumo), rumo, defaultCF().ap, 0, 0, { sentado: true, y: 12 }); r3Bicho(B, R3TIT.cao, cx - Math.cos(rumo) * 22 + 6, cz - Math.sin(rumo) * 22, rumo, t * 11, 0.5); } catch (e) { }
+  R3.dynB = r3Upload(B, R3.dynB);
+  const L = { sun: norm3([-0.75, 0.32, -0.45]), sky: [0.96, 0.66, 0.42], amb: [0.42, 0.36, 0.34], sc: [0.85, 0.6, 0.4], n: 0, fog: [500, 1400] };
+  gl.bindFramebuffer(gl.FRAMEBUFFER, R3.fb); gl.viewport(0, 0, R3.lw, R3.lh); gl.clearColor(L.sky[0], L.sky[1], L.sky[2], 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  try { if (!R3.PS) r3SkyInit(); const us = R3.us; gl.disable(gl.DEPTH_TEST); gl.useProgram(R3.PS); gl.uniformMatrix4fv(us.uIVP, false, R3.M.IVP); gl.uniform3fv(us.uSun, L.sun); gl.uniform3fv(us.uTop, [0.42, 0.5, 0.78]); gl.uniform3fv(us.uHor, L.sky); gl.uniform3fv(us.uSerra, [0.62, 0.48, 0.52]); gl.uniform1f(us.uNight, 0); gl.uniform1f(us.uT, t); gl.uniform1f(us.uCloud, 0.3); gl.uniform1f(us.uRain, 0); gl.bindVertexArray(R3.tri); gl.drawArrays(gl.TRIANGLES, 0, 3); gl.bindVertexArray(null); } catch (e) { }
+  gl.enable(gl.DEPTH_TEST); gl.useProgram(R3.P); const u = R3.u, U = n => gl.getUniformLocation(R3.P, n);
+  gl.uniformMatrix4fv(u.uVP, false, VP); gl.uniform3fv(u.uEye, eye); gl.uniform3fv(u.uSun, L.sun); gl.uniform3fv(u.uAmb, L.amb); gl.uniform3fv(u.uSunC, L.sc); gl.uniform1f(u.uT, t); gl.uniform1f(u.uNight, 0);
+  gl.uniform2f(u.uSnap, SET.r3snap === false ? 0 : R3.lw / 2, SET.r3snap === false ? 0 : R3.lh / 2); gl.uniform3fv(u.uFog, L.sky); gl.uniform2f(u.uFogR, L.fog[0], L.fog[1]); gl.uniform1i(U('uLN'), 0); gl.uniform1f(U('uCut'), 0); gl.uniform1f(U('uWind'), 0.6); gl.uniform1f(U('uTa'), t % 1000); try { r3TexBind(); } catch (e) { }
+  for (const g of [R3TIT.B, R3.dynB]) { gl.bindVertexArray(g.vao); gl.drawArrays(gl.TRIANGLES, 0, g.n); } gl.bindVertexArray(null);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H); gl.disable(gl.DEPTH_TEST); gl.useProgram(R3.PB); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, R3.ft); gl.uniform1i(R3.uS, 0); gl.uniform1f(R3.uPos, SET.r3pos === false ? 0 : 1); gl.bindVertexArray(R3.tri); gl.drawArrays(gl.TRIANGLES, 0, 3); gl.bindVertexArray(null);
+  const g2 = R3.og; g2.setTransform(1, 0, 0, 1, 0, 0); g2.clearRect(0, 0, W, H); R3.titulo = true; return true; }
+setTimeout(() => { const _opr = OP.render; OP.render = function () { if (mode === 'title' && SET.view === '3d' && r3Supported() && SET.r3titulo !== false) { try { if (r3Titulo()) return; } catch (e) { console.error(e); } } if (R3.titulo) { R3.titulo = false; R3.T = null; try { r3Mostra(false); } catch (e) { } } return _opr.apply(this, arguments); }; }, 0);
+
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;

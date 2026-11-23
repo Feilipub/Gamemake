@@ -1,6 +1,6 @@
 // v20–v22: visual 3D — mundo e bonecos em polígonos, câmera que gira, toque no chão, telas especiais no 2D, foto e opção nas Configurações
 module.exports = { nome: 'Visual 3D: mundo, câmera, toque, telas especiais e foto', tempo: 300, async rodar(t) {
-  await t.abrir({ ajustes: { view: '3d', cenas: false } }); await t.jogoNovo(); await t.ev('toast = () => {}; 0'); await t.espera(2500);
+  await t.abrir({ ajustes: { view: '3d', cenas: false } }); await t.espera(1500); t.ok(await t.ev("mode === 'title' ? !!(R3.titulo && R3.vis && R3TIT.B && R3TIT.B.n > 1000) : true"), 'a tela inicial mostra o diorama 3D'); await t.jogoNovo(); await t.ev('toast = () => {}; 0'); await t.espera(2500);
   const st = JSON.parse(await t.ev('JSON.stringify({ vis: R3.vis, st: R3.stats, hd: HD.on, c: C.style.opacity })'));
   t.ok(st.vis && st.st.tris > 8000 && st.st.pedacos + (st.st.cortados || 0) > 9 && !st.hd && st.c === '0', 'o 3D desenha o mundo no lugar do 2D ' + JSON.stringify(st));
   t.ok(await t.ev("(() => { cfgHTML; showOptions(); const ok = /data-v=.view\\|3d./.test($('mn').innerHTML); closeModal(); return ok; })()"), 'Configurações › Visual tem a opção 3D');
