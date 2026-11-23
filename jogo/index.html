@@ -266,7 +266,7 @@ body.auc #joy,body.auc .pad,body.auc #bar{display:none!important}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:6px 0;text-align:center;font-size:calc(12px*var(--fs))}
 .cal b{color:#7a4a20}.cal span{position:relative;padding:5px 0;background:rgba(255,240,200,.5);border:1px solid rgba(90,60,30,.25)}
 .cal span.td{background:#ffd890;font-weight:700;border-color:#7a4a20}.cal span.ev i{position:absolute;left:50%;bottom:2px;width:5px;height:5px;margin-left:-2px;background:#b03a20;border-radius:50%}
-#cstitle{position:absolute;left:0;right:0;top:30%;z-index:26;text-align:center;pointer-events:none;opacity:0;transition:opacity 1.1s}
+#cstitle{position:absolute;left:0;right:0;top:30%;max-width:100%;overflow:hidden;box-sizing:border-box;padding:0 8px;z-index:26;text-align:center;pointer-events:none;opacity:0;transition:opacity 1.1s}
 #cstitle.on{opacity:1}
 #cstitle .t1{font:400 clamp(22px,7vw,52px) var(--fL);color:#ffd890;text-shadow:0 3px 0 #3a1a08,0 0 18px rgba(255,170,60,.55);letter-spacing:2px}
 #cstitle .t2{font:600 clamp(14px,3.6vw,21px) var(--fT);color:#fff0d0;text-shadow:0 2px 0 #2a1208;margin-top:6px}
@@ -4983,8 +4983,8 @@ function npcLine(id) {
   if (isNight()) opts.push(L.night);
   const herd = myAnimals('boi').length; if ((id === 'felipe' || id === 'tonho') && herd > 12 && Math.random() < .4) opts.push('Já são ' + herd + ' cabeças no seu rebanho! Tá virando fazendão.');
   if (id === 'bene' && Math.random() < .4) opts.push('Aboia aí pra eu ouvir! "Êêê boi..."');
-  opts.push(...L[tier], ...L[tier], ...(tier !== 't0' ? L.t0 : []));
-  return pick(opts);
+  opts.push(...L[tier], ...L[tier], ...(tier !== 't0' ? L.t0 : []), ...(tier === 't3' ? L.t2 || [] : []), ...(tier === 't2' ? L.t1 || [] : []));
+  const rec = s.ult || (s.ult = []), novas = opts.filter(o => o && !rec.includes(o)), f = pick(novas.length ? novas : opts); rec.push(f); while (rec.length > 4) rec.shift(); return f;
 }
 function talk(id) {
   const s = npcState(id), L = NPC_LINES[id];
@@ -7548,7 +7548,7 @@ function tradeView(id) {
 }
 A.tSelT = v => { M.tsel.theirs = +v; renderModal(); };
 A.tSelM = v => { M.tsel.mine = +v; renderModal(); };
-function npcBuy(id, a, price) { if (!pay(price, 'Compra de ' + a.n + ' (' + NPCDEF[id].n + ')')) return false; S.delivery.push({ id: a.id, day: S.day + 1, to: 'receb' }); a.own = 'delivery'; a.x = -999; a.y = -999; addFr(id, 15); npcState(id).trades++; remember(id, 'vendeu ' + a.n + ' para você'); return true; }
+function npcBuy(id, a, price) { if (!pay(price, 'Compra de ' + a.n + ' (' + NPCDEF[id].n + ')')) return false; S.delivery.push({ id: a.id, day: S.day + 1, to: 'receb' }); a.compradoDe = id; a.compradoEm = S.day; a.own = 'delivery'; a.x = -999; a.y = -999; addFr(id, 15); npcState(id).trades++; remember(id, 'vendeu ' + a.n + ' para você'); return true; }
 function npcSell(id, a, price) { soldRecord(a, price, NPCDEF[id] ? NPCDEF[id].n : 'vizinho'); const q = npcState(id).quest; if (lasso.t === a) lasso.t = null; if (P.lead === a.id) P.lead = null; unhitchId(a.id); a.own = id; const p = randIn(NPCDEF[id].area); a.x = p[0]; a.y = p[1]; a._st = null; receive(price, 'Venda de ' + a.n + ' para ' + NPCDEF[id].n); S.stats.sold++; addFr(id, 15); remember(id, 'comprou ' + a.n + ' de você'); if (q && q.k === 'animal' && a.sp === q.sp && stars(a) >= q.st) { M.txt = finishQuest(id); } }
 A.tBuy = () => { const id0 = M.npc, a0 = byId(M.tsel.theirs); if (npcState(id0).noDeal === S.day) { M.txt = 'Hoje eu não negocio mais, já falei.'; M.sub = null; return renderModal(); } if (a0) return openHaggle(id0, a0, false); const id = M.npc, hm = hearts(id), a = byId(M.tsel.theirs); if (npcBuy(id, a, animalValue(a) * (1.1 - hm * 0.015))) { M.txt = 'Negócio fechado! Amanhã cedo ' + a.n + ' tá no seu Recebimento.'; M.sub = null; } renderModal(); };
 A.tSell = () => { const id0 = M.npc, a0 = byId(M.tsel.mine); if (npcState(id0).noDeal === S.day) { M.txt = 'Hoje eu não negocio mais, já falei.'; M.sub = null; return renderModal(); } if (a0) return openHaggle(id0, a0, true); const id = M.npc, hm = hearts(id), a = byId(M.tsel.mine); npcSell(id, a, animalValue(a) * (0.88 + hm * 0.012)); if (!M.txt || M.txt.indexOf('obrigado') < 0) M.txt = 'Bom animal! Fechado.'; M.sub = null; renderModal(); };
@@ -8937,7 +8937,7 @@ const felE = () => npcs.find(e => e.id === 'felipe');
 function estrela() { const id = S.story && S.story.estrela; return S.animals.find(a => a.own === 'player' && !a.dead && (id ? a.id === id : a.sp === 'boi' && a.n === 'Estrela')); }
 function introObj() {
   if (!S || !S.story || mode !== 'play') return null;
-  if (S.story.ride) return 'Siga a seta pela estrada até o rancho: o Seu Felipe espera você. ' + (SET.mode === 'touch' ? 'Segure o botão de galope (o primeiro, acima do Laço) para correr!' : 'Segure <b>Shift</b> para galopar!');
+  if (S.story.ride) return 'Siga a seta pela estrada até o rancho: o Seu Felipe espera você. ' + (SET.mode === 'touch' ? 'Segure o botão de galope (o primeiro, acima do Laço) para correr!' : (window.matchMedia && matchMedia('(pointer:coarse)').matches) ? 'Segure o botão <b>Galope</b> para correr!' : 'Segure <b>Shift</b> (ou o botão Galope) para galopar!');
   if (S.story.parto === 1) { const m = estrela(); return '🐄 ' + (m ? esc(m.n) : 'A vaca') + ' está parindo no pasto! Vá até ela e ajude.'; }
   return null;
 }
@@ -11451,15 +11451,15 @@ function netLite() { // o resto do estado da fazenda, uma vez por segundo
   L.acts = NET.acts; netSend({ t: 'L', s: L });
 }
 function netHostPatch(pid, p) { // o que o convidado fez, aplicado na fazenda de verdade
-  let n = 0;
+  let n = 0; const NG = NET.gateT || (NET.gateT = {});
   if (p.tr) for (const i in p.tr) { const v = +p.tr[i]; if (S.tr[i] !== undefined && isFinite(v)) { if (v > S.tr[i] + 0.5) n++; S.tr[i] = Math.max(0, Math.min(trCap(+i), v)); } }
-  if (p.gate) for (const i in p.gate) { const g = GATES[+i]; if (g && !g.lock && !!g.open !== !!p.gate[i]) { g.open = !!p.gate[i]; n++; } }
-  if (p.dep) for (const k in p.dep) { if (S.dep[k] !== undefined && isFinite(+p.dep[k])) S.dep[k] = Math.max(0, S.dep[k] + +p.dep[k]); }
-  if (p.cash && isFinite(+p.cash)) { const v = +p.cash; if (v >= 0) S.cash += v; else { const c = Math.min(S.cash, -v); S.cash -= c; S.acct -= (-v - c); } }
+  if (p.gate) for (const i in p.gate) { const g = GATES[+i]; if (g && !g.lock && !!g.open !== !!p.gate[i]) { g.open = !!p.gate[i]; const kk = pid + ':' + i; if (!NG[kk] || S.day * 1440 + S.min - NG[kk] > 60) { NG[kk] = S.day * 1440 + S.min; n++; } } }
+  if (p.dep) for (const k in p.dep) { if (S.dep[k] !== undefined && isFinite(+p.dep[k])) S.dep[k] = Math.max(0, S.dep[k] + Math.max(-50, Math.min(50, +p.dep[k]))); }
+  if (p.cash && isFinite(+p.cash)) { const v = Math.max(-500, Math.min(2000, +p.cash)); if (v >= 0) S.cash += v; else { const c = Math.min(S.cash, -v); S.cash -= c; } }
   if (p.eggs !== undefined) S.eggs = Math.max(0, +p.eggs || 0);
   if (p.dirt) for (const k in p.dirt) if (S.dirt[k] !== undefined) { if (+p.dirt[k] < S.dirt[k] - 5) n++; S.dirt[k] = +p.dirt[k]; }
-  if (p.agro) { S.agro = p.agro; n++; }
-  if (p.ani) for (const id in p.ani) { const a = byId(+id); if (!a) continue; Object.assign(a, p.ani[id]); n++; }
+  if (p.agro && typeof p.agro === 'object' && S.agro && typeof S.agro === 'object') { for (const k in p.agro) if (k in S.agro && typeof p.agro[k] === typeof S.agro[k]) S.agro[k] = p.agro[k]; n++; }
+  if (p.ani) for (const id in p.ani) { const a = byId(+id); if (!a || a.own !== 'player') continue; const q = p.ani[id] || {}; for (const k of NET_AF) if (k in q && (q[k] === null || typeof q[k] !== 'object')) a[k] = q[k]; n++; }
   if (p.aboio) { netAboio(pid, p.aboio); n++; MURAL.aboio = (MURAL.aboio || 0) + 1; }
   if (p.sono) netSonoIn(pid);
   if (p.apaga && typeof fogoApagar === 'function') { fogoApagar(+p.apaga[0], +p.apaga[1]); n++; }
@@ -12450,7 +12450,7 @@ function r3Resize() {
   gl.bindTexture(gl.TEXTURE_2D, R3.fd); gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, lw, lh, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null); for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
   gl.bindFramebuffer(gl.FRAMEBUFFER, R3.fb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, R3.ft, 0); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, R3.fd, 0); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
-function r3Mostra(on) { if (R3.vis === on) return; R3.vis = on; if (on && !SET.r3dica) { SET.r3dica = 1; try { saveSet(); } catch (e) { } setTimeout(() => toast('🎮 Visual 3D: gire a câmera com os botões ↺ ↻ (ou Z e X). Ajustes em Configurações › Ajustes do 3D.'), 800); } if (on) { if (HD.on) hdSet(false); R3.cv.style.display = R3.ov.style.display = 'block'; C.style.opacity = '0'; r3Botoes(true); } else { R3.cv.style.display = R3.ov.style.display = 'none'; C.style.opacity = '1'; r3Botoes(false); } }
+function r3Mostra(on) { if (R3.vis === on) return; R3.vis = on; if (on && !SET.r3dica) { SET.r3dica = 1; try { saveSet(); } catch (e) { } setTimeout(() => toast('🎮 Visual 3D: gire a câmera com os botões ↺ ↻' + ((window.matchMedia && matchMedia('(pointer:coarse)').matches) ? '' : ' (ou Z e X)') + '. Ajustes em Configurações › Ajustes do 3D.'), 800); } if (on) { if (HD.on) hdSet(false); R3.cv.style.display = R3.ov.style.display = 'block'; C.style.opacity = '0'; r3Botoes(true); } else { R3.cv.style.display = R3.ov.style.display = 'none'; C.style.opacity = '1'; r3Botoes(false); } }
 function r3Camera(dt) {
   const vw = VW(), vh = VH(), tx = cam.x + vw / 2, tz = cam.y + vh / 2; if (!R3.T) R3.T = [tx, tz]; const k = Math.min(1, dt * 8); R3.T[0] += (tx - R3.T[0]) * k; R3.T[1] += (tz - R3.T[1]) * k;
   let dy = R3.yawT - R3.yaw; R3.yaw += dy * Math.min(1, dt * 7); const asp = W / H, baixa = SET.r3cam !== 'alta', D = 480 / cl((mode === 'cs' ? cam.z : 0) || cam.uz || 1.3, 0.6, 3.6) * (asp < 1 ? 1.15 : 1) * (baixa ? 1.0 : 1), phi = baixa ? 0.46 : 0.85, th = R3.yaw;
@@ -14809,7 +14809,7 @@ A.region = () => showModal('Região de Itarantim', null, null, regionHTML, 'map'
 // preço de reserva do NPC conforme qualidade, idade, saúde, procura, mercado e amizade
 const HAGGLE = { felipe: { pat: 3, give: 0.06 }, ryan: { pat: 2, give: 0.04 }, abilio: { pat: 2, give: 0.03 }, graca: { pat: 2, give: 0.05 }, prea: { pat: 4, give: 0.08 } };
 function marketF(a) { const d = S.region ? S.region.demand[a.sp === 'burro' ? 'jumento' : a.sp] || 1 : 1; return a.sp === 'boi' ? d * (S.arroba / 312) : d; }
-function npcReserve(id, a, npcBuys) { const v = animalValue(a) * marketF(a), hm = hearts(id), H = HAGGLE[id] || { give: 0.05 }; return npcBuys ? v * (0.9 + hm * 0.012 + H.give) * (a.sick ? 0.7 : 1) : v * (1.12 - hm * 0.015 - H.give); }
+function npcReserve(id, a, npcBuys) { const v = animalValue(a) * marketF(a), hm = hearts(id), H = HAGGLE[id] || { give: 0.05 }; const vende = v * (1.12 - hm * 0.015 - H.give), compra = v * (0.9 + hm * 0.012 + H.give) * (a.sick ? 0.7 : 1); return npcBuys ? Math.min(compra, vende * 0.94) * (a.compradoDe === id && S.day - (a.compradoEm || 0) < 28 ? 0.9 : 1) : vende; }
 function openHaggle(id, a, npcBuys) { M.hg = { id, a: a.id, buy: npcBuys, ask: Math.round(npcBuys ? animalValue(a) * marketF(a) * 1.08 : animalValue(a) * marketF(a) * 1.12), round: 0, pat: (HAGGLE[id] || { pat: 3 }).pat, msg: '' }; M.hg.offer = M.hg.ask; M.sub = 'haggle'; renderModal(); }
 function haggleView() {
   const g = M.hg, a = byId(g.a), d = NPCDEF[g.id]; if (!a) { M.sub = 'trade'; return tradeView(g.id); }
@@ -17034,6 +17034,7 @@ const SAVE = {
     return false;
   },
   apply(o, v) {
+    try { if (typeof CS !== 'undefined' && CS.on) { CS.on = false; if (typeof csClear === 'function') csClear(); } } catch (e) { }
     v = o.v || v || 1; while (v < SAVE_V && MIGR[v]) v = MIGR[v](o); o.v = SAVE_V;
     const base = newState(); for (const k in base) if (o[k] === undefined) o[k] = base[k];
     for (const k in base.dep) if (o.dep[k] === undefined) o.dep[k] = 0;
@@ -17142,8 +17143,8 @@ const muarFree = () => !!(MULES[CF.hbr] && MULES[CF.hbr].free);
 const mtSp = mt => mt === 'muar' ? 'burro' : mt === 'jegue' ? 'jumento' : 'cavalo';
 const mtTab = mt => mt === 'muar' ? MULES : mt === 'jegue' ? DONKEYS : HORSES;
 function defaultCF() {
-  const st = 4; const pre = STATES[st][3];
-  return { dogs: [defDog(0)], di: 0, dogO: 'BR', dAllC: false, name: 'Zé do Gado', st, sk: Object.assign({}, STATES[st][6]), mt: 'cavalo', hn: 'Trovão', hbr: 'mm', coat: RIG.BR.mm.coats[0], mk: 5, hsex: 'M', sd: 0, aj: 2, age: 2, cust: defCust(), allC: false, ap: { sex: 'M', skin: 2, hair: 0, hairC: 1, hat: pre.hat, shirt: pre.shirt, shirtC: pre.shirtC, pants: pre.pants, pantsC: pre.pantsC, boots: pre.boots, acc: pre.acc, scarfC: pre.scarfC, orn: STATES[st][4] } };
+  const st = 8; const pre = STATES[st][3];
+  return { dogs: [defDog(0)], di: 0, dogO: 'BR', dAllC: false, name: 'Zé do Gado', st, sk: Object.assign({}, STATES[st][6]), mt: 'cavalo', hn: 'Trovão', hbr: 'nordestino', coat: RIG.BR.nordestino.coats[0], mk: 5, hsex: 'M', sd: 0, aj: 2, age: 2, cust: defCust(), allC: false, ap: { sex: 'M', skin: 2, hair: 0, hairC: 1, hat: pre.hat, shirt: pre.shirt, shirtC: pre.shirtC, pants: pre.pants, pantsC: pre.pantsC, boots: pre.boots, acc: pre.acc, scarfC: pre.scarfC, orn: STATES[st][4] } };
 }
 function randomCF(full) { // vaqueiro pronto: visual sorteado com bom gosto, roupa típica do estado
   const F = Math.random() < 0.5, st = rint(0, STATES.length - 1), pre = STATES[st][3], a = CF.ap;
@@ -17198,7 +17199,7 @@ function renderSetup() {
   let h = `<div class="sw2"><div class="pvbox"><h2>${ic(setupEdit ? 'brush' : 'hat', 20)} ${setupEdit ? 'Guarda-roupa' : 'Novo vaqueiro'}</h2><canvas id="pv" width="360" height="170"></canvas>
     <div class="steps">${STEPS.map((n, i) => `<button data-s="step" data-v="${i}" class="${i === setStep ? 'on' : ''}">${i + 1}. ${n}</button>`).join('')}</div></div><div>`;
   if (setStep === 0) {
-    if (!setupEdit) h += `<label>Escolha o mapa</label><div class="row" style="gap:8px;margin:2px 0 10px">${[['gado', '🐂 Fazenda de Gado', 'O mapa original: criação de gado, com cavalos e piquetes também.'], ['haras', '🐎 Haras', 'A fazenda vira um haras: éguas, garanhão, potros, picadeiro, pista, provas, coberturas, hotel e aulas.']].map(([k, n, d]) => `<button data-s="modo" data-v="${k}" class="${(CF.modo || 'gado') === k ? 'on' : ''}" style="flex:1;padding:10px;text-align:left;white-space:normal"><b style="font-size:calc(15px*var(--fs))">${n}</b><br><span style="font-size:calc(12px*var(--fs));opacity:.85">${d}</span></button>`).join('')}</div>`;
+    if (!setupEdit) h += `<label>Escolha o mapa</label><div class="row" style="gap:8px;margin:2px 0 10px">${[['gado', '🐂 Fazenda de Gado', 'O mapa original: criação de gado, com cavalos e piquetes também.'], ['haras', '🐎 Haras', 'A fazenda vira um haras: éguas, garanhão, potros, picadeiro, pista, provas, coberturas, hotel e aulas.']].map(([k, n, d]) => `<button data-s="modo" data-v="${k}" class="${(CF.modo || 'gado') === k ? 'on' : ''}" style="flex:1;padding:10px;text-align:left;white-space:normal;${(CF.modo || 'gado') === k ? 'outline:3px solid #fff;outline-offset:-3px;' : 'opacity:.8;'}"><b style="font-size:calc(15px*var(--fs))">${(CF.modo || 'gado') === k ? '✓ ' : ''}${n}</b><br><span style="font-size:calc(12px*var(--fs));opacity:.85">${d}</span></button>`).join('')}</div>`;
     if (!setupEdit) h += `<div class="desc" style="text-align:center"><b>Com pressa de ir pra lida?</b><br>O jogo monta um vaqueiro pronto e você muda tudo depois no guarda-roupa.</div><div class="row" style="gap:8px;margin:6px 0 4px"><button data-s="quick" style="flex:2;padding:11px;font-size:calc(15px*var(--fs))">⚡ Começar rápido</button><button class="btn" data-s="rand" style="flex:1;padding:11px">🎲 Sortear visual</button></div>`;
     if (!setupEdit) h += `<label>Nome do vaqueiro</label><input id="pn" maxlength="16" value="${esc(CF.name)}">`;
     h += `<label>Sexo</label><div class="ch"><button data-s="sex" data-v="M" class="${a.sex === 'M' ? 'on' : ''}">Homem</button><button data-s="sex" data-v="F" class="${a.sex === 'F' ? 'on' : ''}">Mulher</button></div>`;
@@ -17247,7 +17248,7 @@ function renderSetup() {
     const B = mountData();
     h += `<div class="desc" style="font-size:calc(13px*var(--fs))"><b>${esc(CF.name)}</b>, vindo(a) de <b>${st[1]}</b>.<br>Montaria: <b>${esc(CF.hn)}</b> — ${B.n}, ${RIG.COATS[greyAge(CF.coat, ageDays(MOUNT_AGES[CF.age][1]))].n.toLowerCase()}${CF.mt === 'cavalo' ? (CF.hsex === 'F' ? ', égua' : ', garanhão') : CF.mt === 'muar' ? (CF.hsex === 'F' ? ', mula' : ', burro') : (CF.hsex === 'F' ? ', jumenta' : ', jumento')}, ${MOUNT_AGES[CF.age][1]} anos${CF.mt !== 'jegue' ? ', ' + markStr(CF.mk) : ''}.<br>${CF.dogs.length > 1 ? 'Cães' : 'Cão'}: ${CF.dogs.map(d => '<b>' + esc(d.n) + '</b> — ' + DOGS[d.br].n + ', ' + RIG.COATS[d.coat].n.toLowerCase() + ', ' + (d.sex === 'F' ? 'fêmea' : 'macho') + ', ' + DOG_AGES[d.age][0].toLowerCase() + ', ' + DOG_ESP[d.esp][0].toLowerCase()).join('; ')}.<br><br>Você começa pequeno em Itarantim: um rancho simples, poucos piquetes, <b>dois bois Pé-Duro</b>, a vaca <b>Estrela prenha</b>, sementes para a horta e pouco dinheiro. O resto, a lida constrói.</div>`;
   }
-  h += `<div class="row" style="margin-top:14px">`;
+  h += `<div class="row" style="margin-top:14px;position:sticky;bottom:0;z-index:5;padding:8px 0 calc(6px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--pap,#f4e4bc) 30%)">`;
   if (setStep > 0) h += `<button class="btn" data-s="prev" style="flex:1;padding:11px">◀ Voltar</button>`;
   else if (!setupEdit) h += `<button class="btn" data-s="back" style="flex:1;padding:11px">Menu</button>`;
   if (setStep < STEPS.length - 1) h += `<button data-s="next" style="flex:2;padding:11px;font-size:calc(15px*var(--fs))">Próximo ▶</button>`;
