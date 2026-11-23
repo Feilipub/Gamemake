@@ -12969,6 +12969,7 @@ function r3Quadru(B, a, x, z, ang, ph, mv) {
   if (co && co.dorsal) r3bx(B, W, 0, yB + s(Hb / 2) + 0.1, 0, s(L * 0.85), s(0.3), s(1.2), r3c(co.dorsal), pv);
   try { const pt = (co && co.pat) || (C0 && C0.pat) || (D0 && D0.pat), pc = (co && co.patC) || (C0 && C0.patC) || (D0 && D0.patC); r3Pelagem(B, W, a, sp, s(L), s(Hb), s(Wd), yB, pt, pc, co || D0); var r3CabecaCor = pt === 'boer' || pt === 'whiteface' ? r3c(pc || '#f2eee6') : null; } catch (e) { }
   // pernas: coxa/braço + canela + casco
+  const MKd = equi && !small && typeof mkDec === 'function' ? mkDec(a.mk) : null, meia = n => !!(MKd && ((MKd.socks >> ({ LF: 0, RF: 1, LH: 2, RH: 3 })[n]) & 1)), BR = r3c('#f2eee6');
   const lx = s(L / 2 - 3), lz = s(Wd / 2 - 1.6), grossa = s(sp === 'cao' ? 1.8 : sp === 'boi' ? 3 : equi ? 2.6 : 2), up = s(legH * 0.52), lo = s(legH * 0.5);
   for (const [nome, px, pz] of [['LF', lx, lz], ['RF', lx, -lz], ['LH', -lx, lz], ['RH', -lx, -lz]]) {
     const fr = nome[1] === 'F', p = cyc + OF[nome] * 6.2832, top = yB - s(Hb * 0.25) + (fr ? 1 : -1) * Math.sin(balan) * px * 0.6;
@@ -12976,18 +12977,20 @@ function r3Quadru(B, a, x, z, ang, ph, mv) {
     const sw = parado ? 0 : Math.sin(p) * amp, lev = parado ? 0 : Math.max(0, Math.cos(p)) * amp * 1.6;
     const u = sw + (fr ? 0.04 : 0.12), dobra = fr ? -lev : lev * 0.7 - 0.22;
     const [kx, ky] = r3Seg(B, W, px, top, pz, u, up + (top - s(legH)) * 0.0, grossa * 1.15, grossa * 1.1, fr ? perna : cor.map((v, i) => (v + perna[i]) / 2));
-    const rest = Math.max(s(1), ky - s(1.4)); const [hx, hy] = r3Seg(B, W, kx, ky, pz, u + dobra, Math.min(lo, rest), grossa * 0.8, grossa * 0.8, perna);
+    const rest = Math.max(s(1), ky - s(1.4)); const [hx, hy] = r3Seg(B, W, kx, ky, pz, u + dobra, Math.min(lo, rest), grossa * 0.8, grossa * 0.8, meia(nome) ? BR : perna);
     r3bx(B, W, hx + s(0.3), hy - s(0.7), pz, grossa * 1.05, s(1.4), grossa * 1.05, sp === 'cao' ? perna : r3c(equi ? '#2a2420' : '#3a3028'), [hx, hy, (u + dobra) * 0.5]); }
   // pescoço e cabeça
   const pesc = equi ? 1 : sp === 'cao' ? 0.5 : 0.35, nod = parado ? 0 : Math.sin(cyc * 2) * (gait === 'passo' ? 0.08 : 0.05), nx0 = s(L / 2 - 2.5) - (senta ? s(1.2) : 0), ny0 = yB + s(Hb * 0.25) + (senta ? s(L * 0.2) : 0);
   const nA = pasta ? 0.95 : deit ? 2.5 : equi ? 2.45 - nod * 2 - (gait === 'galope' ? 0.4 : 0) : sp === 'cao' ? 2.3 : 2.05 - nod;
-  const nLen = s(equi ? (small ? 8 : 10) : sp === 'cao' ? 4 : 5) * (pasta ? 1.25 : 1), nW = s(equi ? 5 : sp === 'boi' ? Hb * 0.62 : Hb * 0.6);
+  const nLen = s(equi ? (small ? 8 : 11.5) : sp === 'cao' ? 4 : 5) * (pasta ? 1.25 : 1), nW = s(equi ? 5 : sp === 'boi' ? Hb * 0.62 : Hb * 0.6);
   const [hx0, hy0] = r3Seg(B, W, nx0, ny0, 0, nA, nLen, nW, s(Wd * (equi ? 0.5 : 0.62)), cor);
-  if (equi) { const cr = rabo; r3Seg(B, W, nx0 - s(1.4), ny0 + s(2.2), 0, nA, nLen * 1.05, s(1.4), s(1.5), cr); }
+  if (equi) { const cr = rabo; r3Seg(B, W, nx0 - s(0.4), ny0 - s(0.5), 0, nA, nLen * 0.5, nW * 1.3, s(Wd * 0.62), cor); r3Seg(B, W, nx0 - s(1.4), ny0 + s(2.2), s(0.9), nA, nLen * 1.05, s(1.6), s(1.4), cr); r3Seg(B, W, nx0 - s(1.2), ny0 + s(1.4), s(1.6), nA - 0.08, nLen * 0.95, s(0.9), s(0.8), cr.map(v => v * 0.9)); }
   if (C0 && C0.dew) r3Seg(B, W, nx0 + s(0.6), ny0 - s(2.8), 0, nA + 0.25, nLen * 0.9, s(1 + C0.dew * 0.4), s(1.4), sombra);
   const hA = pasta ? 0.25 : equi ? (gait === 'galope' ? 1.15 : 0.85) : sp === 'cao' ? 1.45 : sp === 'boi' ? 1.05 : 0.95, hLen = s(equi ? (small ? 8 : 9.5) : sp === 'cao' ? 4.6 : sp === 'boi' ? 7.4 : 6), hW = s(equi ? 3.8 : sp === 'cao' ? 3.4 : Wd * 0.48);
   const [mx, my] = r3Seg(B, W, hx0, hy0, 0, hA, hLen, s(equi ? 4.2 : sp === 'cao' ? 3.8 : 5.6), hW, typeof r3CabecaCor !== 'undefined' && r3CabecaCor ? r3CabecaCor : sp === 'boi' ? sombra.map((v, i) => (v + cor[i]) / 2) : (co && co.head ? r3c(co.head) : cor));
   r3Seg(B, W, mx - Math.sin(hA) * s(1.4), my + Math.cos(hA) * s(1.4), 0, hA, s(1.8), s(equi ? 3.4 : 4.2), hW * 0.9, focinho);
+  if (MKd && MKd.face) { const fc = MKd.face, nx = Math.cos(hA), ny = Math.sin(hA), hw2 = s(equi ? 4.2 : 4) / 2 + 0.06, at = u => [hx0 + (mx - hx0) * u + nx * hw2, hy0 + (my - hy0) * u + ny * hw2], pl = (u0, u1, w) => { const [ax, ay] = at(u0), [bx, by] = at(u1); r3bx(B, W, (ax + bx) / 2, (ay + by) / 2, 0, 0.25, Math.hypot(bx - ax, by - ay), w, BR, [(ax + bx) / 2, (ay + by) / 2, hA]); };
+    if (fc === 1 || fc === 5) pl(0.18, 0.32, s(1.6)); if (fc === 2 || fc === 7) pl(0.15, 0.95, s(1)); if (fc === 3) pl(0.12, 0.98, s(2.4)); if (fc === 4) pl(0.05, 1, hW * 0.95); if (fc === 5 || fc === 6) pl(0.78, 0.98, s(0.8)); }
   const rum = sp === 'boi' && parado && !pasta ? Math.sin(t * 5 + seed) * s(0.3) : 0; if (sp === 'boi' || equi) r3Seg(B, W, mx - Math.sin(hA) * s(2.6) - s(0.6), my + Math.cos(hA) * s(2.6) - s(0.8) + rum, 0, hA, s(2.4), s(1), hW * 0.8, focinho.map(v => v * 1.15));
   // olhos, orelhas, chifres (perto do alto da cabeça)
   const topX = hx0 + Math.sin(hA) * s(1.6), topY = hy0 - Math.cos(hA) * s(1.6) + s(equi ? 1.8 : 2.2);
@@ -13009,7 +13012,7 @@ function r3Quadru(B, a, x, z, ang, ph, mv) {
   // rabo: espanta mosca parado; abana no cão; levanta no galope
   const raboA = sp === 'cao' ? Math.PI - 0.7 + Math.sin(t * (a._st === 'follow' ? 14 : 6) + seed) * 0.35 : gait === 'galope' ? 1.2 : parado ? 0.15 + Math.max(0, Math.sin(t * 1.3 + seed)) * Math.sin(t * 7 + seed) * 0.5 : 0.25 + Math.sin(cyc) * 0.1;
   const rx = -s(L / 2) + s(0.4), ry = yB + s(Hb * 0.35); r3Seg(B, W, rx, ry, 0, -raboA, s(sp === 'cao' ? 4.5 : equi ? 3 : Hb * 0.7), s(equi ? 1.6 : 0.9), s(equi ? 2 : 0.9), equi ? rabo : cor.map(v => v * 0.85));
-  if (equi) { const [ex, ey] = [rx - Math.sin(raboA) * s(3), ry - Math.cos(raboA) * s(3)]; r3Seg(B, W, ex, ey, 0, -raboA * 0.6, s(small ? 4 : 7), s(2.4), s(2.2), rabo); }
+  if (equi) { const [ex, ey] = [rx - Math.sin(raboA) * s(3), ry - Math.cos(raboA) * s(3)]; r3Seg(B, W, ex, ey, 0, -raboA * 0.6, s(small ? 5 : 10), s(2.6), s(2.3), rabo); }
   else if (sp === 'boi') { const ex = rx - Math.sin(raboA) * s(Hb * 0.7), ey = ry - Math.cos(raboA) * s(Hb * 0.7); r3Seg(B, W, ex, ey, 0, -raboA * 0.5, s(2.2), s(1.6), s(1.6), rabo); }
   // sela
   if (equi && a.saddle && !deit && jov === 1) { const tp = yB + s(Hb / 2); r3bx(B, W, s(0.5), tp + 0.3, 0, small ? 9 : 11, 0.8, small ? 8.4 : 9.4, r3c('#a8382a'), pv); r3bx(B, W, s(1), tp + 1.6, 0, small ? 6 : 7.5, 2, small ? 6 : 7, r3c('#5a3418'), pv); r3bx(B, W, s(4.2), tp + 3, 0, 1.2, 2, 1.4, r3c('#5a3418'), pv);
