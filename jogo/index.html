@@ -13477,6 +13477,29 @@ function r3SedeExtra(B) { const b = BLD.find(q => q.id === 'casa'); if (!b) retu
 { const _rd13 = r3Dinamico; r3Dinamico = function () { const B = _rd13(); try { const b = BLD.find(q => q.id === 'casa'); if (b && R3.T && Math.abs(b.r[0] * TS - R3.T[0]) < 600 && Math.abs(b.r[1] * TS - R3.T[1]) < 600 && SET.r3fx !== false) { const X0 = b.r[0] * TS, X1 = (b.r[2] + 1) * TS, Z0 = b.r[1] * TS, cx = X0 + (X1 - X0) * 0.22, cz = Z0 + 8, h0 = 34 + Math.min(16, (Math.min(X1 - X0, (b.r[3] + 1 - b.r[1]) * TS)) * 0.42) + 11, t = performance.now() / 1000, cozinha = (hour() > 5 && hour() < 8) || (hour() > 11 && hour() < 13) || (hour() > 17 && hour() < 20), n = cozinha ? 6 : 2, m0 = R3.mat; R3.mat = 0;
     for (let i = 0; i < n; i++) { const ph = ((t * 0.18 + i / n) % 1), s = 1.6 + ph * 5, g = 0.78 + 0.12 * (1 - ph), w = (S.weather === 'vento' ? 2.5 : 1) * ph * 14; r3blob(B, cx + w + Math.sin(t * 0.7 + i) * 2, h0 + ph * 30, cz - ph * 4, s, s * 0.8, s, [g, g, g * 1.02], 11 + i, 5); } R3.mat = m0; } } catch (e) { } return B; }; }
 
+/* ============ v26: PISTA DE VAQUEJADA E PALMEIRAS (pela referência de fotos) ============
+   Pista de areia fofa entre cercas de tábuas brancas com esteios, as duas faixas brancas e a arquibancada de madeira.
+   Licuri e coqueiro com folhas compridas que arqueiam e balançam; o licuri com cachos amarelos. */
+function r3Arena(B) { const y0 = VQ.y0 * TS, x0 = VQ.x0 * TS, x1 = VQ.x1 * TS, za = (VQ.y0 - 1.7) * TS, zb = (VQ.y0 + 1.7) * TS, m0 = R3.mat, d0 = R3.dy; R3.dy = 0;
+  try { R3.mat = R3MAT.areia; for (let x = x0; x < x1; x += TS) r3quad(B, [x, 0.2, zb], [Math.min(x1, x + TS), 0.2, zb], [Math.min(x1, x + TS), 0.2, za], [x, 0.2, za], [0.86, 0.76, 0.56]);
+    R3.mat = 0; for (const fx of VQ.faixa) r3quad(B, [fx * TS - 1, 0.35, zb], [fx * TS + 1, 0.35, zb], [fx * TS + 1, 0.35, za], [fx * TS - 1, 0.35, za], [0.97, 0.96, 0.92]);
+    R3.mat = R3MAT.tabua; const br = r3c('#f2efe6'), es = r3c('#e8e2d4');
+    for (const z of [za, zb]) { for (let x = x0; x <= x1; x += 12) r3box(B, x - 0.9, 0, z - 0.9, x + 0.9, 13, z + 0.9, es); for (const y of [3.5, 7.5, 11.5]) r3box(B, x0, y, z - 0.4, x1, y + 2.4, z + 0.4, br); }
+    const az = zb + 10; for (let i = 0; i < 4; i++) r3box(B, x0 + 20, i * 3, az + i * 5, x1 - 20, i * 3 + 1.2, az + i * 5 + 4, r3c('#8a6a42')); for (let x = x0 + 20; x <= x1 - 20; x += 30) r3box(B, x - 0.8, 0, az, x + 0.8, 12, az + 20, r3c('#6a4a2a'));
+  } finally { R3.mat = m0; R3.dy = d0; } }
+{ const _rpd6 = r3Pedaco; r3Pedaco = function (cx, cy) { const B = _rpd6(cx, cy); try { const mx = (VQ.x0 + VQ.x1) / 2, my = VQ.y0; if (mx >= cx * R3C && mx < (cx + 1) * R3C && my >= cy * R3C && my < (cy + 1) * R3C) r3Arena(B); } catch (e) { } return B; }; }
+function r3Palma(B, x, z, t, v, R) { const [cc, H] = R3PALM[t], h = H * (0.85 + v * 0.3), lean = (v - 0.5) * 6, tr = r3c(t === 'licuri' ? '#7a6a52' : '#8a6a42'), c = r3c(cc), m0 = R3.mat;
+  try { R3.mat = R3MAT.casca; const n = 5; for (let i = 0; i < n; i++) { const u0 = i / n, u1 = (i + 1) / n; r3cyl(B, x + lean * u0 * u0, z, h * u0, h * u1 + 0.4, 1.9 - u0 * 0.5, 1.9 - u1 * 0.5, 6, i % 2 ? tr : tr.map(q => q * 0.9)); }
+    R3.mat = 0; const tx = x + lean, nf = t === 'licuri' ? 9 : 8;
+    for (let i = 0; i < nf; i++) { const a = i / nf * 6.28 + v * 2, L = (t === 'licuri' ? 13 : 16) * (0.85 + R() * 0.3), up = 0.5 + R() * 0.4; let px = tx, py = h + 0.6, pz = z;
+      for (let k = 0; k < 4; k++) { const u = (k + 1) / 4, el = up - u * 1.5, nx = tx + Math.cos(a) * L * u, nz = z + Math.sin(a) * L * u, ny = h + 0.6 + Math.sin(up) * L * 0.4 * u - u * u * L * 0.55, w = (1 - u * 0.6) * 2.6, pxn = -Math.sin(a) * w, pzn = Math.cos(a) * w, cor = c.map(q => q * (0.85 + k * 0.06));
+        r3quad(B, [px - pxn, py, pz - pzn], [nx - pxn * 0.7, ny, nz - pzn * 0.7], [nx + pxn * 0.7, ny, nz + pzn * 0.7], [px + pxn, py, pz + pzn], cor, 4); px = nx; py = ny; pz = nz; } }
+    if (t === 'licuri') for (let i = 0; i < 2; i++) { const a = R() * 6.28; r3blob(B, tx + Math.cos(a) * 2, h - 2, z + Math.sin(a) * 2, 1.6, 2.6, 1.6, [0.92, 0.72, 0.22], i, 5); }
+    else if (t === 'coqueiro') for (let i = 0; i < 4; i++) { const a = i * 1.6; r3blob(B, tx + Math.cos(a) * 1.6, h - 0.8, z + Math.sin(a) * 1.6, 1.3, 1.3, 1.3, [0.45, 0.55, 0.2], i, 5); }
+  } finally { R3.mat = m0; } }
+{ const _pp4 = r3Prop; r3Prop = function (B, q) { if (R3PALM[q.t] && SET.r3arv !== false) { const R = mulberry(Math.floor(q.x * 7 + (q.y - 2) * 13)), v = R(); return r3Palma(B, q.x, q.y - 2, q.t, v, R); } return _pp4(B, q); }; }
+r3Prop = r3NoChao(r3Prop, (B, q) => [q.x, q.y - 2]);
+
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
