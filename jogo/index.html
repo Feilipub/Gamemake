@@ -12474,7 +12474,7 @@ function r3Render(dt) {
   gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE); gl.disable(gl.BLEND); gl.useProgram(R3.P); const u = R3.u;
   gl.uniformMatrix4fv(u.uVP, false, R3.M.VP); gl.uniform3fv(u.uEye, R3.eye); gl.uniform3fv(u.uSun, L.sun); gl.uniform3fv(u.uAmb, L.amb); gl.uniform3fv(u.uSunC, L.sc); gl.uniform1f(u.uT, performance.now() / 1000); gl.uniform1f(u.uNight, L.n); r3Luzes(L, null);
   gl.uniform2f(u.uSnap, SET.r3snap === false ? 0 : R3.lw / 2, SET.r3snap === false ? 0 : R3.lh / 2); gl.uniform3fv(u.uFog, L.sky); { const fk = SET.r3cam !== 'alta' ? 1.35 : 1; gl.uniform2f(u.uFogR, L.fog[0] * fk, L.fog[1] * fk); }
-  let tris = 0, cortados = 0; for (const ch of usar) { if (r3ForaDaTela(ch)) { cortados++; continue; } gl.bindVertexArray(ch.g.vao); gl.drawArrays(gl.TRIANGLES, 0, ch.g.n); tris += ch.g.n / 3; }
+  let tris = 0, cortados = 0; try { r3Borda(); } catch (e) { } for (const ch of usar) { if (r3ForaDaTela(ch)) { cortados++; continue; } gl.bindVertexArray(ch.g.vao); gl.drawArrays(gl.TRIANGLES, 0, ch.g.n); tris += ch.g.n / 3; }
   gl.bindVertexArray(R3.dynB.vao); gl.drawArrays(gl.TRIANGLES, 0, R3.dynB.n); tris += R3.dynB.n / 3; gl.bindVertexArray(null); try { r3DesenhaSombras(L, usar); } catch (e) { }
   // amplia a imagem pequena para a tela (pixel grande, como no PS1)
   gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H); gl.disable(gl.DEPTH_TEST); gl.useProgram(R3.PB); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, R3.ft); gl.uniform1i(R3.uS, 0); gl.uniform1f(R3.uPos, SET.r3pos === false ? 0 : 1); if (R3.uSeca === undefined) R3.uSeca = gl.getUniformLocation(R3.PB, 'uSeca'); gl.uniform1f(R3.uSeca, S && season() ? (S.clima && S.clima.seca === 'severa' ? 1 : 0.75) : 0); gl.bindVertexArray(R3.tri); gl.drawArrays(gl.TRIANGLES, 0, 3); gl.bindVertexArray(null);
@@ -13575,6 +13575,15 @@ function r3Viva(B) { if (SET.r3fx === false || !R3.T || mode !== 'play') return;
   try { for (let ty = y0; ty < y1; ty++) for (let tx = x0; tx < x1; tx++) { if (ground[gi(tx, ty)] !== G.WATER) continue; let viz = 0; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = tx + dx, ny = ty + dy; if (nx >= 0 && ny >= 0 && nx < MW && ny < MH && ground[gi(nx, ny)] !== G.WATER) viz++; } if (!viz) continue; const R = mulberry(tx * 613 + ty * 2711); if (R() > 0.4) continue;
     const n = 2 + Math.floor(R() * 4); for (let i = 0; i < n; i++) { const x = (tx + R()) * TS, z = (ty + R()) * TS, r = 1.4 + R() * 1.6, c = [0.25 + R() * 0.1, 0.5 + R() * 0.12, 0.22]; for (let k = 0; k < 6; k++) { const a0 = k / 6 * 6.28, a1 = (k + 1) / 6 * 6.28; if (k === 0) continue; r3tri(B, [x, -2.75, z], [x + Math.cos(a1) * r, -2.75, z + Math.sin(a1) * r], [x + Math.cos(a0) * r, -2.75, z + Math.sin(a0) * r], c); } if (R() < 0.3) r3blob(B, x, -2.2, z, 0.7, 0.6, 0.7, [0.75, 0.55, 0.85], i, 4); } } } catch (e) { } finally { R3.mat = m0; }
   return B; }; }
+/* além da beira do mapa: a caatinga continua até o horizonte (antes a terra acabava e aparecia o céu) */
+function r3BordaMesh() { const B = r3B(), se = season(), W0 = MW * TS, H0 = MH * TS, F = 3200, c = se ? [0.6, 0.55, 0.36] : [0.4, 0.55, 0.26], m0 = R3.mat; R3.mat = R3MAT.capim; R3.chao = 0;
+  const q = (x0, z0, x1, z1) => { const N = 8, dx = (x1 - x0) / N, dz = (z1 - z0) / N; for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { const v = (((i * 7 + j * 13) % 5) - 2) * 0.012; r3quad(B, [x0 + i * dx, -0.2, z0 + (j + 1) * dz], [x0 + (i + 1) * dx, -0.2, z0 + (j + 1) * dz], [x0 + (i + 1) * dx, -0.2, z0 + j * dz], [x0 + i * dx, -0.2, z0 + j * dz], c.map(k => k + v)); } };
+  q(-F, -F, W0 + F, 0); q(-F, H0, W0 + F, H0 + F); q(-F, 0, 0, H0); q(W0, 0, W0 + F, H0);
+  const R = mulberry(777), arv = ['umbu', 'juazeiro', 'mandacaru', 'moita', 'xique', 'pedra', 'moita', 'mandacaru'];
+  for (let k = 0; k < 900; k++) { const lado = Math.floor(R() * 4), d = 20 + Math.pow(R(), 1.6) * 700, u = R(); let x, z; if (lado === 0) { x = -F * 0.2 + u * (W0 + F * 0.4); z = -d; } else if (lado === 1) { x = -F * 0.2 + u * (W0 + F * 0.4); z = H0 + d; } else if (lado === 2) { x = -d; z = u * H0; } else { x = W0 + d; z = u * H0; }
+    const t = arv[Math.floor(R() * arv.length)]; try { R3.mat = 0; r3Prop(B, { t, x, y: z + 2 }); } catch (e) { } }
+  R3.mat = m0; return B; }
+function r3Borda() { const gl = R3.gl; if (!R3.borda || R3.bordaSe !== season() || R3.bordaV !== (R3.verB || 0)) { R3.borda = r3Upload(r3BordaMesh(), R3.borda); R3.bordaSe = season(); R3.bordaV = R3.verB || 0; } gl.bindVertexArray(R3.borda.vao); gl.drawArrays(gl.TRIANGLES, 0, R3.borda.n); gl.bindVertexArray(null); }
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
