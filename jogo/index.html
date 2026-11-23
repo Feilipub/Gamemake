@@ -7183,7 +7183,7 @@ function cfgHTML(inGame) {
   h += `<div class="card"><b>🎵 Vitrola do sertão</b><p class="mut">Trilha original em 8-bit, tocada pelo próprio jogo: sanfona e pífano de videogame, viola, baixo e percussão nordestina (zabumba, bacalhau, triângulo e ganzá). A música muda sozinha conforme o lugar, a hora, a seca e as festas. Toque para ouvir cada tema.</p>${Object.keys(THEMES).map(k => `<div class="row sp" style="margin:3px 0"><span>${MUS.cur === k ? '▶ ' : ''}<b>${THEMES[k].n}</b> <span class="mut">${THEMES[k].bpm} bpm</span></span>${btn('Ouvir', 'musPrev', k)}</div>`).join('')}${btn('Voltar à música automática', 'musAuto')}</div>`;
   h += devHTML(inGame) + `<p class="mut" data-a="devTap" style="cursor:default;user-select:none">Versão ${GAME_V} · save v${SAVE_V}</p>`; return h;
 }
-A.setOpt = v => { const [k, x] = v.split('|'); if (k === 'view') { SET.viewLock = x === 'hd2d'; setTimeout(() => hdSet(x === 'hd2d' && mode !== 'title'), 0); } SET[k] = x === 'true' ? true : x === 'false' ? false : isNaN(+x) ? x : +x; saveSet(); if (k === 'font' || k === 'fs') { if (typeof SPR !== 'undefined') { } setTimeout(() => { try { renderModal(); } catch (e) { } }, 30); } if (k === 'q') { resize(); if (x === 'leve') { SET.view = '2d'; SET.viewLock = false; SET.aves = 'poucas'; SET.dof = false; saveSet(); setTimeout(() => hdSet(false), 0); toast('Modo leve ligado: visual 2D, 30 quadros por segundo e menos aves.'); } } if (k === 'mode' && P) { P._auto = null; input.x = input.y = 0; } if (k === 'ori') OP.applyOri(); if (k === 'cb' || k === 'hc') cbApply(); renderModal(); };
+A.setOpt = v => { const [k, x] = v.split('|'); if (/^r3/.test(k)) SET.r3lock = 1; if (k === 'view') { SET.viewLock = x === 'hd2d' || x === '2d'; setTimeout(() => hdSet(x === 'hd2d' && mode !== 'title'), 0); } SET[k] = x === 'true' ? true : x === 'false' ? false : isNaN(+x) ? x : +x; saveSet(); if (k === 'font' || k === 'fs') { if (typeof SPR !== 'undefined') { } setTimeout(() => { try { renderModal(); } catch (e) { } }, 30); } if (k === 'q') { resize(); if (x === 'leve') { SET.view = '2d'; SET.viewLock = false; SET.aves = 'poucas'; SET.dof = false; saveSet(); setTimeout(() => hdSet(false), 0); toast('Modo leve ligado: visual 2D, 30 quadros por segundo e menos aves.'); } } if (k === 'mode' && P) { P._auto = null; input.x = input.y = 0; } if (k === 'ori') OP.applyOri(); if (k === 'cb' || k === 'hc') cbApply(); renderModal(); };
 A.musPrev = k => { AU.init(); MUS.unlocked = true; MUS.preview(k); renderModal(); };
 A.musAuto = () => { MUS.force = null; MUS.forceT = 0; MUS.pick(true, 1.5); renderModal(); };
 A.zoomReset = () => { cam.uz = 1.3; SET.uz = 1.3; saveSet(); toast('Zoom restaurado'); };
@@ -13365,6 +13365,11 @@ function r3Titulo() { if (!R3.gl) r3Init(); const gl = R3.gl; r3Mostra(true); r3
   const g2 = R3.og; g2.setTransform(1, 0, 0, 1, 0, 0); g2.clearRect(0, 0, W, H); R3.titulo = true; return true; }
 setTimeout(() => { const _opr = OP.render; OP.render = function () { if (mode === 'title' && SET.view === '3d' && r3Supported() && SET.r3titulo !== false) { try { if (r3Titulo()) return; } catch (e) { console.error(e); } } if (R3.titulo) { R3.titulo = false; R3.T = null; try { r3Mostra(false); } catch (e) { } } return _opr.apply(this, arguments); }; }, 0);
 
+/* 3D mais leve sozinho em aparelho fraco: se ficar lento por um tempo, desliga o que pesa (sem sair do 3D) */
+const R3AUTO = { ema: 0, t: 0, passo: 0 };
+{ const _rr = r3Render; r3Render = function (dt) { const r = _rr(dt); if (!SET.r3lock && dt > 0 && dt < 0.5) { R3AUTO.ema = R3AUTO.ema ? R3AUTO.ema * 0.95 + dt * 0.05 : dt; if (R3AUTO.ema > 0.05) { if ((R3AUTO.t += dt) > 8) { R3AUTO.t = 0; R3AUTO.ema = 0; const p = ++R3AUTO.passo;
+    if (p === 1) { SET.r3mato = false; SET.r3somb = false; } else if (p === 2) SET.r3res = 'baixa'; else if (p === 3) { SET.r3fx = false; SET.r3arv = false; SET.r3pos = false; }
+    if (p <= 3) { try { saveSet(); r3Dirty(); } catch (e) { } toast('🎮 Deixei o 3D mais leve para este aparelho (Configurações › Ajustes do 3D).'); } } } else R3AUTO.t = Math.max(0, R3AUTO.t - dt); } return r; }; }
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
@@ -17631,7 +17636,7 @@ $('tm').onclick = async e => {
 (async function init() {
   try { const v = JSON.parse(localStorage.getItem('lida_vol')); if (v) Object.assign(AU.vol, v); } catch (e) { }
   initAssets(); $('tver').textContent = 'v' + GAME_V + ' · RF Games'; if (!OP.fsOK()) $('tfs').style.display = 'none';
-  mode = 'boot'; OP.init(); resize(); try { PWA.init(); cbApply(); } catch (e) { } if (!SET.view) SET.view = hdSupported() ? 'hd2d' : '2d'; if (SET.dof === undefined) SET.dof = true; if (SET.view === 'hd2d' && hdSupported()) { hdSet(true); hdSuspend(); } requestAnimationFrame(loop);
+  mode = 'boot'; OP.init(); resize(); try { PWA.init(); cbApply(); } catch (e) { } if (!SET.view) { SET.view = r3Supported() ? '3d' : hdSupported() ? 'hd2d' : '2d'; SET.v3mig = 1; } if (!SET.v3mig) { SET.v3mig = 1; if (SET.view === 'hd2d' && !SET.viewLock && r3Supported()) SET.view = '3d'; try { saveSet(); } catch (e) { } } if (SET.dof === undefined) SET.dof = true; if (SET.view === 'hd2d' && hdSupported()) { hdSet(true); hdSuspend(); } requestAnimationFrame(loop);
   if (location.hash.includes('nointro')) { $('gate').style.display = 'none'; OP.phase = 'scene'; OP.t = 20; OP.toMenu(); }
   await SAVE.migrateLegacy(); refreshTitle();
   if (location.hash.includes('debug')) window.__lida = { ev: s => eval(s), get S() { return S; }, get P() { return P; }, get mode() { return mode; }, SAVE };
