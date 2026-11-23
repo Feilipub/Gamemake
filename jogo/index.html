@@ -12490,7 +12490,7 @@ function r3Sobre(L) { // nomes e balões por cima do 3D
 // ---------- botões de girar a câmera ----------
 function r3Botoes(on) { let el = $('r3rot'); if (!el) { el = document.createElement('div'); el.id = 'r3rot'; el.innerHTML = '<button data-r="-1" aria-label="Girar câmera para a esquerda">↺</button><button data-r="1" aria-label="Girar câmera para a direita">↻</button>'; ($('mn').parentNode || document.body).appendChild(el); el.addEventListener('pointerdown', e => { const b = e.target.closest('[data-r]'); if (!b) return; e.preventDefault(); r3Gira(+b.dataset.r); }); } el.style.display = on ? 'flex' : 'none'; }
 function r3Gira(s) { R3.yawT += s * Math.PI / 2; AU.click && AU.click(); }
-addEventListener('keydown', e => { if (!R3.vis || M.open) return; if (e.code === 'KeyZ') r3Gira(-1); else if (e.code === 'KeyX') r3Gira(1); });
+addEventListener('keydown', e => { if (!R3.vis || M.open || (typeof KB !== 'undefined' && KB.wait)) return; const usada = c => typeof KB !== 'undefined' && Object.keys(KB.def).some(k => KB.cur(k) === c); if (e.code === 'KeyZ' && !usada('KeyZ')) r3Gira(-1); else if (e.code === 'KeyX' && !usada('KeyX')) r3Gira(1); });
 // ---------- ganchos: quem desenha, a mira do toque, a seta e o direcional girado ----------
 { const _rd = render; render = function (dt) { if (r3Active()) return r3Render(dt); if (R3.vis) r3Mostra(false); return _rd(dt); }; }
 { const _w2s = w2s; w2s = function (wx, wy) { if (R3.vis && R3.M) return r3w2s(wx, wy, 0); return _w2s(wx, wy); }; }
