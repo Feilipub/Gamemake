@@ -12868,12 +12868,12 @@ function r3Humano(B, x, z, a, ap, ph, mv, o) {
     const pe = montado ? -0.3 : sentado ? 0 : Math.max(-0.5, Math.min(0.4, (coxa - dob) * 0.5 + (Math.sin(p) < -0.3 ? -0.25 * mv : 0)));
     const alp = ap.boots === 2, fw = W; r3bx(B, fw, tx2 + s(1.1), ty2 - s(0.75), zz, s(ap.boots === 3 ? 4.8 : 4.2), s(1.5), s(2.7), alp ? sk : bota, [tx2, ty2, pe]); if (alp) r3bx(B, fw, tx2 + s(1.1), ty2 - s(1.3), zz, s(4.4), s(0.5), s(2.9), r3c('#6a3a1a'), [tx2, ty2, pe]); }
   // ---------- quadril, saia e tronco ----------
-  if (pnt === 4) { const bal = Math.sin(ph) * 0.12 * mv; r3bx(B, W, 0, quadril - s(4), 0, s(6.2), s(9), s(7.4), pa, [0, quadril, bal]); r3bx(B, W, 0, quadril - s(8.2), 0, s(6.8), s(1), s(8), pa.map(v => v * 0.82), [0, quadril, bal]); }
-  else r3bx(B, W, 0, quadril + s(0.6), 0, s(4.2), s(2.4), s(f ? 6.8 : 6.2), pa);
+  if (pnt === 4) { const bal = Math.sin(ph) * 0.16 * mv, sc2 = pa.map(v => v * 0.82); if (!montado) { const top = quadril + s(1.2), H1 = top - s(1.6); for (let i = 0; i < 6; i++) { const y0 = top - i * H1 / 6, y1 = top - (i + 1) * H1 / 6 - s(0.3), w0 = s(6.4 + i * 0.6), d0 = s(4.6 + i * 0.5); r3bx(B, W, Math.sin(bal) * (i * s(0.5)), (y0 + y1) / 2, 0, d0, y0 - y1 + 0.05, w0, i === 5 ? sc2 : pa, [0, top, bal * (i / 5)]); } } else r3bx(B, W, s(2), quadril, 0, s(8), s(3), s(9), pa); }
+  else r3bx(B, W, 0, quadril + s(0.6), 0, s(f ? 4.6 : 4.2), s(2.6), s(f ? 7.4 : 6.2), pa);
   const resp = parado ? Math.sin(t * 2.1 + seed) * 0.18 : 0, tor0 = quadril + s(1.6), inc = (sentado ? (montado ? 0.05 : 0.02) : lean) + (o.acao ? r3PoseTronco(o) : 0);
   const [bx2, by2] = r3Seg(B, W, 0, tor0, 0, Math.PI - inc, s(5), s(4.2), s(f ? 6 : 6.6), sh);
   const [cx2, cy2] = r3Seg(B, W, bx2, by2, 0, Math.PI - inc, s(5.6 + resp * 0.3), s(4.8), s(f ? 7 : 8), shBase === 2 ? sh.map(v => v * 1.06) : sh);
-  if (f) r3bx(B, W, bx2 + s(2.1), by2 + s(2.6), 0, s(1.4), s(2.4), s(5.6), sh.map(v => v * 0.96));
+  if (f) { r3bx(B, W, bx2 + s(2.2), by2 + s(2.4), 0, s(1.6), s(2.6), s(5.8), sh.map(v => v * 0.97)); r3bx(B, W, bx2, by2 - s(0.6), 0, s(3.8), s(1.4), s(5.4), sh.map(v => v * 0.9)); }
   // cinto e fivela
   r3bx(B, W, 0, tor0 - s(0.2), 0, s(4.5), s(1), s(f ? 6.4 : 6.6), r3c('#2a1a0e')); r3Fq(B, W, s(2.3), tor0 - s(0.6), tor0 + s(0.4), s(-0.7), s(0.7), r3c(ap.acc === 2 || ap.acc >= 8 ? '#f0d060' : '#b89040'));
   // camisa: botões, xadrez, gibão
@@ -12920,7 +12920,7 @@ function r3Humano(B, x, z, a, ap, ph, mv, o) {
   else r3bx(B, Wh, sH(-0.5), hTop - sH(0.2), 0, HD + sH(0.2), sH(0.5), HW + sH(0.2), hr.map(v => v * 0.7 + 0.2));
   if (hs === 2) for (let i = 0; i < 6; i++) r3bx(B, Wh, sH(-2 + (i % 3) * 1.6), hTop + sH(0.3), sH(-2.4 + (i % 2) * 4.6), sH(1.6), sH(1.4), sH(1.6), hr.map(v => v * 0.92));
   if (hs === 3) r3blob(B, Wh.x - sH(1.2) * Wh.ca, W.y + hTop + sH(2), Wh.z - sH(1.2) * Wh.sa, sH(5), sH(3.4), sH(5.2), hr, 9, 6);
-  if (hs === 4 || (f && hs === 0)) r3bx(B, Wh, -HD / 2 + sH(0.4), hy0 - sH(2.2), 0, sH(1.6), sH(6.5), HW + sH(0.4), hr);
+  if (hs === 4 || (f && hs === 0)) { const bal2 = Math.sin(ph) * 0.12 * mv; r3Seg(B, Wh, -HD / 2 + sH(0.2), hy0 + sH(2), 0, 0.05 + bal2, sH(f ? 10 : 7), sH(1.8), HW + sH(0.5), hr); for (const sg of [1, -1]) r3Seg(B, Wh, sH(0.2), hy0 + sH(1.6), sg * (HW / 2 + sH(0.3)), 0.02, sH(f ? 7 : 4.5), sH(2.6), sH(0.9), hr); }
   if (hs === 5 || hs === 6) { const bal = Math.sin(ph) * 0.3 * mv + Math.sin(t * 1.5) * 0.05; r3Seg(B, Wh, -HD / 2 - sH(0.6), hy0 + sH(1.5), 0, -0.25 + bal, sH(hs === 6 ? 7.5 : 5.5), sH(1.6), sH(1.6), hr); }
   if (hs === 7) r3bx(B, Wh, -HD / 2 - sH(0.6), hTop - sH(0.4), 0, sH(2.6), sH(2.6), sH(2.8), hr);
   // chapéu
