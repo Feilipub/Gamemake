@@ -13645,6 +13645,15 @@ r3Cerca = r3ComEsc(r3NoChao(r3ComMat(R3MAT.casca, r3Cerca2), (B, tx, ty) => [(tx
     for (let k = 0; k < 5; k++) { const u = k / 5, px = cx + Math.cos(rot) * R * u, pz = cz + Math.sin(rot) * R * u; r3box(B, px - 0.4, cy - 8 + 8 * u - 0.4, pz - 0.4, px + 0.4, cy - 8 + 8 * u + 0.4, pz + 0.4, cor); } R3.mat = m0; } catch (e) { } return r; }; }
 { const _vsc = r3v; r3v = function (B, x, y, z, c, nx, ny, nz, k) { return _vsc(B, x, y, z, c, nx, ny, nz, R3.semCont === 2 ? (k === 4 ? 6 : k) : R3.semCont ? 5 : k); }; }
 { const _mtc = r3Mato; r3Mato = function () { const s0 = R3.semCont; R3.semCont = 2; try { return _mtc.apply(this, arguments); } finally { R3.semCont = s0; } }; }
+/* telhado de telha colonial (capa e canal) e beiral escuro no pixel art — Especialista 4 */
+{ const _rr = r3roof; r3roof = function (B, x0, z0, x1, z1, y, h, col, alongX) { _rr(B, x0, z0, x1, z1, y, h, col, alongX); if (SET.r3pix === false || h < 3) return;
+  try { const zinco = Math.abs(col[0] - col[2]) < 0.08 && Math.abs(col[0] - col[1]) < 0.08, capa = zinco ? col.map(v => v * 0.86) : col.map(v => Math.min(1, v * 1.14)), canal = col.map(v => v * (zinco ? 0.78 : 0.7)), beir = col.map(v => v * 0.55), m0 = R3.mat; R3.mat = 0; const e = 0.35, passo = zinco ? 2.4 : 4;
+    const faixa = (a0, b0, a1, b1, c) => r3quad(B, a0, b0, b1, a1, c);
+    if (alongX) { const zm = (z0 + z1) / 2; for (const [ze, sg] of [[z1, 1], [z0, -1]]) { for (let x = x0 + 1.5; x < x1 - 1; x += passo) { const w = zinco ? 0.8 : 1.6; faixa([x, y + e, ze], [x + w, y + e, ze], [x, y + h + e, zm], [x + w, y + h + e, zm], capa); if (!zinco) faixa([x + w, y + e * 0.6, ze], [x + w + 0.6, y + e * 0.6, ze], [x + w, y + h + e * 0.6, zm], [x + w + 0.6, y + h + e * 0.6, zm], canal); }
+      const t = 1.5 / (Math.abs(zm - ze) || 1); faixa([x0, y + e, ze], [x1, y + e, ze], [x0, y + e + h * t, ze + (zm - ze) * t], [x1, y + e + h * t, ze + (zm - ze) * t], beir); } }
+    else { const xm = (x0 + x1) / 2; for (const xe of [x1, x0]) { for (let z = z0 + 1.5; z < z1 - 1; z += passo) { const w = zinco ? 0.8 : 1.6; faixa([xe, y + e, z], [xe, y + e, z + w], [xm, y + h + e, z], [xm, y + h + e, z + w], capa); if (!zinco) faixa([xe, y + e * 0.6, z + w], [xe, y + e * 0.6, z + w + 0.6], [xm, y + h + e * 0.6, z + w], [xm, y + h + e * 0.6, z + w + 0.6], canal); }
+      const t = 1.5 / (Math.abs(xm - xe) || 1); faixa([xe, y + e, z0], [xe, y + e, z1], [xe + (xm - xe) * t, y + e + h * t, z0], [xe + (xm - xe) * t, y + e + h * t, z1], beir); } }
+    R3.mat = m0; } catch (e) { } }; }
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
