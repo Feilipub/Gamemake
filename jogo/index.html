@@ -12660,7 +12660,7 @@ function r3Veiculo(B, x, z, ang, tipo, cor) { const W = { x, y: 0, z, ca: Math.c
 { const _rd8 = r3Dinamico; r3Dinamico = function () { const B = _rd8(), T = R3.T, perto = (x, y) => (x - T[0]) * (x - T[0]) + (y - T[1]) * (y - T[1]) < 640 * 640;
   try { for (const w of S.workers || []) { if (w.x === undefined || w._sleep || !perto(w.x, w.y)) continue; const h = r3Rumo('wk' + (w.id || w.n), w.x, w.y, r3DirA(w.dir || 0)); r3Sombra(B, w.x, w.y, w._mnt ? 10 : 5); const hz = w._mnt && typeof workerHorse === 'function' ? workerHorse(w) : null; if (hz) { r3Bicho(B, Object.assign({}, hz, { _pose: 'walk' }), w.x, w.y, h.a, h.ph, h.mv); r3Gente(B, w.x, w.y, h.a, w.ap, 0, 0, { sentado: true, y: 12 }); } else r3Gente(B, w.x, w.y, h.a, w.ap, h.ph, h.mv, { sentado: w._pose === 'sit', acao: { feed: 'feed', sweep: 'sweep', act: 'hammer', carry: 'saddle' }[w._pose], acaoU: (performance.now() / 1600 + (w.id || 0) * 0.37) % 1 }); } } catch (e) { }
   try { for (const w of WILD) { if (!perto(w.x, w.y)) continue; const h = r3Rumo('w' + (w.id || w.k), w.x, w.y); r3Bicho2(B, w, h.a); } } catch (e) { }
-  try { for (const v of vehs()) { if (!v || v.x === undefined || !perto(v.x, v.y)) continue; const h = r3Rumo('vh' + (v.id || v.kind || 'c'), v.x, v.y); const W = { x: v.x, y: 0, z: v.y, ca: Math.cos(h.a), sa: Math.sin(h.a) }; r3bx(B, W, -6, 9, 0, 22, 6, 16, r3c('#8a5a2a')); r3bx(B, W, -6, 13, 0, 22, 1, 16, r3c('#a87a48')); r3bx(B, W, 8, 8, 0, 14, 1.2, 2, r3c('#6a4422')); for (const dz of [-9, 9]) { const cx2 = v.x + (-6) * W.ca - dz * W.sa, cz2 = v.y + (-6) * W.sa + dz * W.ca; r3cyl(B, cx2, cz2, 0, 0.1, 7, 7, 8, r3c('#5a3a1a'), r3c('#6a4422')); } } } catch (e) { }
+  try { for (const v of vehs()) { if (!v || v.x === undefined || !perto(v.x, v.y)) continue; const h = r3Rumo('vh' + (v.id || v.kind || 'c'), v.x, v.y); r3Carro(B, v, h.a); } } catch (e) { }
   try { for (const v of TRAF.list) { const [x, y] = vehXY(v); if (!perto(x, y) || v.a < 0.05) continue; const ang = v.l.ax === 'x' ? (v.l.d > 0 ? 0 : Math.PI) : (v.l.d > 0 ? Math.PI / 2 : -Math.PI / 2); r3Veiculo(B, x, y, ang, v.type, v.col); if (v.type === 'moto' || v.type === 'bike') r3Gente(B, x, y, ang, v._ap || (typeof riderAp === 'function' ? (v._ap = riderAp(v)) : null), 0, 0, { sentado: true, y: 2 }); } } catch (e) { }
   return B; }; }
 
@@ -13529,6 +13529,22 @@ r3Prop = r3NoChao(r3Prop, (B, q) => [q.x, q.y - 2]);
     if (k && !(k === 'coca' && (t + seed) % 6 > 1.6)) o = Object.assign({}, o || {}, { acao: k, acaoU: 0 }); }
   return _gg(B, x, z, a, ap, ph, mv, o); }; }
 
+/* carro de boi (pela pintura de referência) e carroça: rodas em pé, mesa com fueiros, cabeçalho */
+function r3RodaV(B, W, lx, lz, r, maciça, sg) { const c = r3c('#6a4a2a'), cc = r3c('#8a6a42'), fer = [0.3, 0.28, 0.27], n = 10;
+  for (let i = 0; i < n; i++) { const a0 = i / n * 6.2832, a1 = (i + 1) / n * 6.2832, P = (a, rr, dz) => r3Pt(W, lx + Math.cos(a) * rr, r + Math.sin(a) * rr, lz + dz);
+    r3quad(B, P(a0, r, -1.4), P(a1, r, -1.4), P(a1, r, 1.4), P(a0, r, 1.4), fer);
+    if (maciça) { r3tri(B, P(0, 0, sg * 1.5), P(a0, r, sg * 1.4), P(a1, r, sg * 1.4), i % 2 ? c : cc); r3tri(B, P(0, 0, -sg * 1.5), P(a1, r, -sg * 1.4), P(a0, r, -sg * 1.4), c); }
+    else { r3quad(B, P(a0, r * 0.82, sg * 1.2), P(a1, r * 0.82, sg * 1.2), P(a1, r, sg * 1.2), P(a0, r, sg * 1.2), cc); if (i % 2 === 0) r3bx(B, W, lx + Math.cos(a0) * r * 0.42, r + Math.sin(a0) * r * 0.42, lz + sg * 1.1, r * 0.82, 0.8, 0.8, c, [lx + Math.cos(a0) * r * 0.42, r + Math.sin(a0) * r * 0.42, a0]); } }
+  r3cyl(B, W.x + lx * W.ca - (lz + sg * 1.6) * W.sa, W.z + lx * W.sa + (lz + sg * 1.6) * W.ca, r - 1.4, r + 1.4, 1.4, 1.4, 6, c, c); }
+function r3Carro(B, v, ang) { const W = { x: v.x, y: 0, z: v.y, ca: Math.cos(ang), sa: Math.sin(ang) }, boi = v.kind === 'boi', mad = r3c('#8a6a42'), madE = r3c('#6a4a2a'), m0 = R3.mat; R3.mat = R3MAT.tabua;
+  try { const r = boi ? 7.5 : 6.5, L = boi ? 28 : 22, Wd = boi ? 15 : 14, y0 = r + 1.5;
+    r3bx(B, W, -6, y0, 0, L, 1.6, Wd, mad); r3bx(B, W, -6, y0 + 1.2, 0, L - 1, 0.4, Wd - 1, mad.map(q => q * 1.08));
+    if (boi) { for (let i = 0; i < 7; i++) for (const sg of [1, -1]) r3bx(B, W, -6 - L / 2 + 2 + i * (L - 4) / 6, y0 + 5, sg * (Wd / 2 - 0.6), 0.9, 8, 0.9, madE); for (const sg of [1, -1]) r3bx(B, W, -6, y0 + 8.6, sg * (Wd / 2 - 0.6), L - 2, 0.8, 0.8, madE); r3bx(B, W, L / 2 + 9, y0 - 1, 0, 26, 1.4, 1.6, madE, [-6 + L / 2, y0, 0.08]); r3bx(B, W, L / 2 + 20, y0 - 1.6, 0, 2, 1.6, 20, madE); }
+    else { for (const sg of [1, -1]) r3bx(B, W, -6, y0 + 2.6, sg * (Wd / 2 - 0.5), L - 1, 3.6, 0.8, madE); r3bx(B, W, -6 - L / 2 + 0.5, y0 + 2.6, 0, 0.8, 3.6, Wd - 1, madE); for (const sg of [1, -1]) r3bx(B, W, L / 2 + 6, y0 - 0.5, sg * 4, 18, 1.2, 1.2, madE, [-6 + L / 2, y0, 0.05]); }
+    r3bx(B, W, -6, r, 0, 1.6, 1.6, Wd + 4, madE); for (const sg of [1, -1]) r3RodaV(B, W, -6, sg * (Wd / 2 + 1.8), r, boi, sg);
+    if (v.load || (S.cartLoad && S.cart === v)) { R3.mat = 0; for (let i = 0; i < 3; i++) r3box(B, v.x - 6, y0 + 2, v.y - 4, v.x + 6, y0 + 6, v.y + 4, [0.85, 0.75, 0.45]); }
+  } finally { R3.mat = m0; } }
+r3Carro = r3NoChao(r3Carro, (B, v) => [v.x, v.y]);
 /* ---------- CONQUISTAS ---------- */
 const nAni = sp => S.animals.filter(a => a.own === 'player' && a.sp === sp && !a.dead).length;
 const nFriends = h => Object.keys(NPCDEF).filter(id => S.npcs && S.npcs[id] && hearts(id) >= h).length;
