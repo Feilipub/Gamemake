@@ -11,14 +11,13 @@ poeira brilhando no ar, vinheta), câmera com movimentos suaves + tremor nos mom
 figurinhas de reação (!, ?!, KKKK) com som, legenda que destaca números, gancho com pancada de câmera e grave,
 brilho passando nas fotos reais e ambiente sonoro mais rico.
 uso: python3 podcast/corte2.py corte_x [test t1 t2 ...]"""
-import os as _o, sys as _s; _s.path.insert(0, _o.path.join(_o.path.dirname(_o.path.abspath(__file__)), '..', 'lib'))  # libs do repositório
 import json, os, sys, math, random, subprocess, importlib
 import numpy as np, soundfile as sf
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.join(HERE, '..'); sys.path[:0] = [HERE, ROOT, os.path.join(ROOT, '..')]
-import estudio as ST, biblia as BB, convidados as CV, convidados2 as CV2, convidados3 as CV3, voz as VZ
+import estudio as ST, biblia as BB, convidados as CV, convidados2 as CV2, convidados3 as CV3, convidados4 as CV4, voz as VZ
 import media as MD, musicas2 as MU, sfxlib as X
-E = importlib.import_module(sys.argv[1]); ARGS = sys.argv[2:]; G = E.GUEST; GFN = {**CV.GUESTS, **CV2.GUESTS, **CV3.GUESTS}[E.GUEST_FN]
+E = importlib.import_module(sys.argv[1]); ARGS = sys.argv[2:]; G = E.GUEST; GFN = {**CV.GUESTS, **CV2.GUESTS, **CV3.GUESTS, **CV4.GUESTS}[E.GUEST_FN]
 VOZ = os.path.join(ROOT, E.VOZ); TL = json.load(open(os.path.join(VOZ, 'timeline.json')))
 SR = 44100; FPS = 30; W, H = 1080, 1920; CAM_Y = 430; CAM = 1080; CAMH = 900; AR = CAM / CAMH
 BEBAS = '/usr/share/fonts/opentype/bebas-neue/BebasNeue-Bold.otf'; SANS = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'

@@ -90,7 +90,13 @@ def fetch_openverse(query, maxpx=2000):
     if os.environ.get('MEDIA_OFFLINE'): raise FileNotFoundError(query)
     q, _, pick = query.partition('#')
     url = 'https://api.openverse.org/v1/images/?' + urllib.parse.urlencode({'q': q, 'license': 'cc0,pdm,by,by-sa', 'page_size': 12, 'mature': 'false'})
-    with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=60) as r: res = json.load(r)['results']
+    for k in range(6):                                                                   # Openverse rate limit: back off and retry
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=60) as r: res = json.load(r)['results']
+            break
+        except urllib.error.HTTPError as e:
+            if e.code != 429 or k == 5: raise
+            time.sleep(20 * (k + 1))
     if pick: res = res[int(pick):]
     else: res = [x for x in res if (x.get('width') or 0) >= 800] or res
     raw = f'{D}/raw_ov_{slug(query)}.jpg'; best = None

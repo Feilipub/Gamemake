@@ -5,7 +5,6 @@ Controle de qualidade: cada fala é transcrita por reconhecimento de voz; se as 
 com outra semente (até 4 tentativas) e fica a melhor. Saída idêntica ao voz.py (cache/*.npy + conversa.wav + timeline.json),
 então os motores de vídeo (corte3, corte4) funcionam sem mudança.
 uso (no ambiente cbenv):  python podcast/dublagem.py <modulo_do_roteiro>"""
-import os as _o, sys as _s; _s.path.insert(0, _o.path.join(_o.path.dirname(_o.path.abspath(__file__)), '..', 'lib'))  # libs do repositório
 import os, sys, re, difflib, random, subprocess, importlib, json
 import numpy as np, soundfile as sf
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.join(HERE, '..'); SCR = os.path.join(ROOT, '..')
@@ -21,7 +20,7 @@ REFS = os.path.join(SCR, 'tts', 'refs')
 VOICES = {'M': ('mago.wav', 1.0), 'Y': ('flamingo.wav', 1.15), 'J': ('medio_m.wav', 1.0), 'R': ('grave.wav', 1.0), 'S': ('grave.wav', 0.8),
           'U': ('grave.wav', 0.9), 'W': ('madura_f.wav', 0.9), 'N': ('madura_f.wav', 1.0), 'X': ('jovem_f.wav', 1.1), 'T': ('jovem_f.wav', 1.15),
           'Q': ('jovem_f.wav', 1.1), 'B': ('jovem_f.wav', 1.05), 'F': ('jovem_f.wav', 1.05), 'G': ('madura_f.wav', 1.0), 'O': ('madura_f.wav', 1.05),
-          'P': ('flamingo.wav', 1.05), 'V': ('grave.wav', 1.05), 'I': ('medio_m.wav', 0.9), 'D': ('flamingo.wav', 1.1)}
+          'P': ('flamingo.wav', 1.05), 'V': ('grave.wav', 1.05), 'I': ('medio_m.wav', 0.9), 'D': ('flamingo.wav', 1.1), 'K': ('jovem_f.wav', 1.1), 'H': ('medio_m.wav', 0.75), 'Z': ('medio_m.wav', 1.2)}
 EMO = {'wide': 0.68, 'angry': 0.72, 'scared': 0.66, 'happy': 0.58, 'curious': 0.52, 'serious': 0.45, 'sad': 0.45, 'mystic': 0.5}
 _M = None; _W = None
 

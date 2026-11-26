@@ -33,7 +33,6 @@ CONVIDADOS
          Piadas recorrentes: o café que vaza pelas costelas; "a culpa é sua, Mago"; acha que celular é espelho.
          Voz: pm_alex natural, um pouquinho mais grave.
 """
-import os as _o, sys as _s; _s.path.insert(0, _o.path.join(_o.path.dirname(_o.path.abspath(__file__)), '..', 'lib'))  # libs do repositório
 CAST = {
     'M': dict(name='MAGO', voice='pm_santa', pitch=1.00, speed=1.00, color=(255, 210, 60)),
     'J': dict(name='JUVENAL', voice='pm_alex', pitch=0.96, speed=1.02, color=(150, 220, 255)),
@@ -54,5 +53,8 @@ CAST = {
     'X': dict(name='LOLO', voice={'pf_dora': 0.7, 'af_nicole': 0.3}, pitch=1.05, speed=1.02, color=(255, 150, 190)),
     'W': dict(name='MARINA', voice={'pf_dora': 0.7, 'af_kore': 0.3}, pitch=0.9, speed=0.92, color=(110, 170, 255)),
     'Y': dict(name='FLÁVIO FLAMINGO', voice={'pm_alex': 0.75, 'am_puck': 0.25}, pitch=1.04, speed=1.05, color=(255, 120, 180)),
+    'K': dict(name='KIKA', voice='pf_dora', pitch=1.08, speed=1.05, color=(150, 170, 255)),
+    'H': dict(name='SERAFIM', voice='pm_alex', pitch=0.95, speed=0.85, color=(200, 170, 120)),
+    'Z': dict(name='ZECA', voice='pm_alex', pitch=1.08, speed=1.12, color=(90, 220, 150)),
     'I': dict(name='BERG', voice={'pm_alex': 0.7, 'bm_daniel': 0.3}, pitch=0.92, speed=0.94, color=(150, 220, 255)),
 }
